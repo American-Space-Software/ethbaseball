@@ -428,7 +428,7 @@ class TeamService {
 
     }
 
-    async getStandingsViewModel(seasons: Season[], league: League, season: Season, options?: any) {
+    async getStandingsViewModel(seasons: Season[], leagues:League[], league: League, season: Season, options?: any) {
 
         let leagueVm 
 
@@ -506,6 +506,13 @@ class TeamService {
                 }
             }),
             leagueVm: leagueVm,
+            leagues: leagues.map(l => {
+                return {
+                    _id: l._id,
+                    name: l.name,
+                    rank: l.rank
+                }
+            })
         }
 
     }

@@ -16,7 +16,7 @@
                     ${gameTransactions?.transactions.map( t => $h`
 
                         <tr>
-                            <td >${dayjs(t.date).format("ddd, MMM D, YYYY")}<div class="small-gray">${dayjs(t.dateCreated).format("h:mm A")}</div></td>
+                            <td >${dayjs(t.date).format("ddd, MMM D, YYYY")} <span class="small-gray">${dayjs(t.dateCreated).format("h:mm A")}</span></td>
                             <td class="label-cell">
 
                                 ${t.events.map( e => $h`

@@ -151,23 +151,7 @@
           $f7.emit('team-loaded')
           $f7.emit('refresh')
 
-          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-            detail: {
-              tabLink: "/l/", breadcrumbs: [
-                {
-                  text: "Leagues",
-                  path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
-                },
-                {
-                  text: "Standings",
-                  path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                }, 
-                { 
-                    text: teamWebService.getTeamName(team), 
-                    path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                }, { text: 'Activity'}]
-            }
-          }))
+
 
         await $update()
 
@@ -229,18 +213,17 @@
           await loadActivity()
 
           eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-              detail: {
-                  visible: true,
-                  tabLink: "/",
-                  breadcrumbs: [
-                    { text: "Home", path: "/" }, { 
-                        text: teamWebService.getTeamName(team), 
-                        path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                    }, { 
-                      text: 'Activity (Player Moves)'
-                    }
-                  ]
-              }
+            detail: {
+              tabLink: "/l/standings", breadcrumbs: [
+                {
+                  text: "Standings",
+                  path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
+                }, 
+                { 
+                    text: teamWebService.getTeamName(team), 
+                    path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
+                }, { text: 'Activity'}]
+            }
           }))
 
 

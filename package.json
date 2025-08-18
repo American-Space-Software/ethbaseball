@@ -1,10 +1,10 @@
 {
-  "name": "playebl",
+  "name": "ethbaseball",
   "version": "1.0.23",
   "description": "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned.",
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/american-space-software/playebl"
+    "url": "git+https://github.com/American-Space-Software/ethbaseball"
   },
   "scripts": {
     "test": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register",
@@ -43,9 +43,9 @@
   "types": "./dist/src/index.d.ts",
   "author": "Patrick Toner",
   "bugs": {
-    "url": "https://gitlab.com/american-space-software/ebl/issues"
+    "url": "https://github.com/American-Space-Software/ethbaseball/issues"
   },
-  "homepage": "https://gitlab.com/american-space-software/ebl#readme",
+  "homepage": "https://github.com/American-Space-Software/ethbaseball#readme",
   "devDependencies": {
     "crypto-random-bigint": "2.1.1",
     "chatgpt": "5.2.5",

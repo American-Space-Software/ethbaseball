@@ -26,6 +26,22 @@
                         `)}
                     </select>
 
+                    <br />
+
+                    <strong>League</strong> <br />
+                    <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
+                        ${viewModel?.leagues?.map( (l, index) => $h`
+
+                            ${l.rank == universeWebService.rank ? $h`
+                                <option value="${l.rank}" selected>${l.name}</option>
+                            ` : $h`
+                                <option value="${l.rank}">${l.name}</option>
+                            `}
+
+                        `)}
+                    </select>
+
+
                 </form>
 
                 <strong>${viewModel?.leagueVm?.league?.name}</strong><br />
@@ -120,7 +136,7 @@
                       lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
                   </div>
 
-                </div>
+              </div>
 
           </div>
 
@@ -197,11 +213,23 @@
             return false
         }
 
+
+        const leagueChange = (e) => {
+
+            universeWebService.rank = $(e.target).val()
+
+            let url = `/l/standings/${universeWebService.rank}?startDate=${universeWebService.getStartDate()}`
+
+            $f7.views.main.router.navigate(url, { reloadCurrent: true })
+
+        }
+
+
         const startDateChange = (e) => {
 
             universeWebService.startDate = $(e.target).val()
 
-            let url = `/l/standings/${leagueVm.league.rank}?leagueId=${leagueVm.league._id}&startDate=${universeWebService.getStartDate()}`
+            let url = `/l/standings/${universeWebService.rank}?startDate=${universeWebService.getStartDate()}`
 
             $f7.views.main.router.navigate(url, { reloadCurrent: true })
 
@@ -234,10 +262,7 @@
 
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {
-                    tabLink: "/l/", breadcrumbs: [{
-                        text: "Leagues",
-                        path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
-                    }, { text: 'Standings' }]
+                    tabLink: "/l/standings", breadcrumbs: [{ text: 'Standings' }]
                 }
             }))
 
@@ -259,25 +284,6 @@
     
 
 
-
-        // $f7.once('leagues-loaded', async () => {
-
-        //     viewModel = leagueComponentService.viewModel
-        //     leagueVm = viewModel.leagueVms.find( vm => vm.league.rank == universeWebService.getRank())
-
-        //     await $update()
-
-        //     $('.hide-on-pageinit').hide()
-        //     $('.hidden-on-load').removeClass('hidden-on-load')
-
-        // })
-
-        // $onMounted(async (e) => {
-
-        //     await $update()
-
-
-        // })
 
         return $render
 

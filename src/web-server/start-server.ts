@@ -1613,7 +1613,8 @@ let startWebServer = async () => {
 
       let rank = req.params.leagueRank ? parseIntWithException(req.params.leagueRank) : 1
 
-      let league: League = await leagueService.getByRank(rank)
+      let leagues:League[] = await leagueService.listByRankAsc()
+      let league: League = leagues.find( l => l.rank == rank)
 
       let seasons: Season[] = await seasonService.list(100, 0)
 
@@ -1627,7 +1628,7 @@ let startWebServer = async () => {
         season = seasons[0]
       }
 
-      return res.json(await teamService.getStandingsViewModel(seasons, league, season))
+      return res.json(await teamService.getStandingsViewModel(seasons,leagues, league, season))
 
     } catch (ex) {
       console.log(ex)

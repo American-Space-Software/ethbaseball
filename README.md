@@ -69,8 +69,8 @@ This document provides a technical overview of the stack plus quick-start steps 
 
 1) **Clone & install**
 
-    git clone https://gitlab.com/american-space-software/playebl.git
-    cd playebl
+    git clone https://github.com/American-Space-Software/ethbaseball
+    cd ethbaseball
     npm install
 
 2) **Create environment file (combined config)**

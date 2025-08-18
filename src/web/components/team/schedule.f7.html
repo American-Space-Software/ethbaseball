@@ -199,11 +199,7 @@
 
           eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: {
-              tabLink: "/l/", breadcrumbs: [
-                {
-                  text: "Leagues",
-                  path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
-                },
+              tabLink: "/l/standings", breadcrumbs: [
                 {
                   text: "Standings",
                   path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)

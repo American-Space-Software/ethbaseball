@@ -41,20 +41,50 @@
           
               ${!authInfo?._id ? $h`
 
-                <div class="block-title block-title-large">
-                  Step Into the Owner’s Box. The League Awaits.
+                <div class="home-banner">
+
+                  <div class="left">
+
+                    <div class="block-title block-title-large">
+                      Step Into the Owner’s Box. The League Awaits.
+                    </div>
+                    
+                    <div class="block">
+
+                      <p class="lead">
+                        Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator.
+                        Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
+                        where teams and Diamonds are bought, sold, and earned.
+                      </p>
+
+                      <ul>
+                        <li>Own a franchise as an NFT (ERC-721) on Ethereum.</li>
+                        <li>10 leagues · 280 teams · 162-day seasons with a 30-day offseason.</li>
+                        <li>Daily simulated games with live box scores and play-by-play.</li>
+                        <li>Diamonds (ERC-20) fund contracts, payroll, and operations.</li>
+                        <li>Promotion & relegation — climb to the Apex League or fall behind.</li>
+                        <li>100% open source (MIT) — fork and run your own custom universe.</li>
+                      </ul>
+
+                      <div class="segmented">
+                        <a class="button button-small button-fill" href="/about">Learn More</a>
+                        <a class="button button-small button-outline popup-open" data-popup=".login-popup" href="#">Login</a>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div class="right">
+                    <div class="block">
+                      <img src="/game.png" alt="Ethereum Baseball League" />
+                    </div>
+                    
+                  </div>
+
                 </div>
 
-                <div class="block">
-                  <p class="lead">
-                    Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator.
-                    Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                    where teams and Diamonds are bought, sold, and earned. 
-                  </p>
 
-                  <a href="/about" class="button button-fill small-button">Learn More</a>
-
-                </div>
 
               ` : $h` 
               
@@ -64,24 +94,11 @@
               
               `}
 
-              ${vm.featuredPost ? $h`
-                <div class="card card-outline card-header-divider">
-                  <div class="card-header">News</div>
-                  <div class="card-content">
-                    <div class="block-title block-title-medium">
-                      <span class="publish-date">${dayjs(vm.featuredPost.publishDate).format("YYYY-MM-DD")}</span>
-                      <a href="/news?newsId=${vm.featuredPost._id}">${vm.featuredPost.title}</a>
-                    </div>
-                    <div class="block" innerHTML="${postWebService.translateShort(vm.featuredPost)}"></div>
-                  </div>
-                </div>
-              ` : $h` `}
-
 
               ${vm?.topTeams?.length > 0 ? $h`
 
                 <div class="card card-outline card-header-divider">
-                  <div class="card-header">Apex League Standings</div>
+                  <div class="card-header">Top Teams</div>
                   <div class="card-content card-content-padding">
 
                     <div class="stat-table-wrapper">
@@ -92,6 +109,10 @@
                                 <th>Losses</th>
                                 <th>Win%</th>
                                 <th>GB</th>
+                                <th class="numeric-cell">Cash</th>
+                                <th class="numeric-cell">Projected Revenue</th>
+                                <th class="numeric-cell">Projected Expenses</th>
+                                <th class="numeric-cell">Projected Profit</th>
                             </tr>
 
                             ${vm?.topTeams?.map( (t, index) => $h`
@@ -104,6 +125,11 @@
                                     <td>${t.overallRecord.losses}</td>
                                     <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
                                     <td>${t.overallRecord.gamesBack}</td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.revenue.projectedTotal.total)}</td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.expenses.projectedTotal.total)}</td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.profit.projectedTotal.total)}</td>
+
                                 </tr>
                             `)}
                         </table>
@@ -117,28 +143,6 @@
                 </div>
 
               ` : $h` `}
-
-              <!-- 1. Meet the Teams -->
-              <div class="card card-outline card-header-divider">
-                <div class="card-header">🧾 Meet the Teams</div>
-                <div class="card-content card-content-padding">
-                  <p class="micro-teaser"><em>Start here. See the ladder and pick a franchise.</em></p>
-                  <p>280 teams compete in a 10‑league ladder. Find your city, scout rivals, and size up the competition.</p>
-
-                  ${env.OPENSEA_SLUG ? $h`
-                    <div class="segmented">
-                      <a href="${universeWebService.startDateLink(`/l/`)}" class="button button-fill">Browse Teams</a>
-                      <a href="https://opensea.io/collection/${OPENSEA_SLUG}" class="button button-outline external">Buy a Team on OpenSea</a>
-                    </div>
-                    
-                  ` : $h`
-                    <a href="${universeWebService.startDateLink(`/l/`)}" class="button button-outline small-button">Browse Teams</a>
-                  
-                  `}
-
-
-                </div>
-              </div>
 
               <!-- 2. Learn the Rules -->
               <div class="card card-outline card-header-divider">
@@ -170,15 +174,6 @@
                 </div>
               </div>
 
-              <!-- 5. Run Your Own League -->
-              <div class="card card-outline card-header-divider">
-                <div class="card-header">💻 Run Your Own League</div>
-                <div class="card-content card-content-padding">
-                  <p class="micro-teaser"><em>Open source and forkable.</em></p>
-                  <p>Download the code, host your own universe, and create a custom version of the game with new teams, rules, or themes.</p>
-                  <a href="https://github.com/American-Space-Software/playebl" class="button button-outline small-button external">View on GitHub</a>
-                </div>
-              </div>
 
               <div class="card card-outline card-header-divider">
                 <div class="card-header">Links</div>
@@ -189,7 +184,7 @@
                         <a href="/about" class="link">About</a>
                       </li>
                       <li>
-                        <a href="https://github.com/American-Space-Software/playebl" class="external">GitHub</a>
+                        <a href="https://github.com/American-Space-Software/ethbaseball" class="external">GitHub</a>
                       </li>
                     </ul>
                   </div>
