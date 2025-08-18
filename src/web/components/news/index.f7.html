@@ -1,0 +1,125 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="news-index">
+
+    <div class="page-content">
+
+
+      <div class="hidden-on-load">
+
+        <div class="fixed-width-content center">
+
+          ${post ? $h`
+
+            <div class="card card-outline card-header-divider">
+              <div class="card-header">
+                <span class="publish-date">${dayjs(post.publishDate).format("YYYY-MM-DD")}</span>
+              </div>
+              <div class="card-content">
+                <div class="block-title block-title-medium">
+                  ${post.title}
+                </div>
+                <div class="block" innerHTML="${postWebService.translateContent(post)}"></div>
+
+              </div>
+            </div>
+
+            ` : $h` `}
+
+        </div>
+
+
+      </div>
+
+      <div class="hide-on-pageinit">
+
+        <div class="card skeleton-text">
+            <div class="card-header">News</div>
+            <div class="card-content card-content-padding data-table">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+                lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+            </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ContainerService } from "../../../service/container-service.ts"
+ 
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { PostWebService } from "../../service/post-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let postWebService = ContainerService.getInstance(PostWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let _id 
+    let post 
+
+    const load = async () => {
+        post = await postWebService.get(_id)
+    }
+
+    $on('pageInit', async (e) => {
+      
+      
+
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeIn', async () => {
+
+        _id = $f7.views.main.router.currentRoute?.query?.newsId
+
+        await load()
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: {
+            visible: true,
+            tabLink: "/",
+            breadcrumbs: [{ text: "Home", path: "/" }, { text:  post?.title}]
+          }
+        }))
+
+        universeWebService.setMetadata(`${post?.title} - Ethereum Baseball League`, window.location.href, '', '') 
+
+        $('.hide-on-pageinit').hide()
+        $('.hidden-on-load').removeClass('hidden-on-load')
+
+        await $update()
+
+    })
+
+
+    return $render
+
+  }
+</script>

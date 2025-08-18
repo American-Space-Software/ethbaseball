@@ -1,0 +1,76 @@
+<template>
+
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+    import { ethers } from "ethers"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { Position } from "../../../service/enums.ts"
+    import { TeamComponentService } from "../../service/team-component-service.ts"
+    import { LeagueComponentService } from "../../service/league-component-service.ts"
+
+    export default (props, { $on, $, $f7, $onMounted, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
+        let teamComponentService = ContainerService.getInstance(TeamComponentService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let leagueComponentService = ContainerService.getInstance(LeagueComponentService)
+
+        let id
+
+        let viewModel
+
+        $f7.once('leagues-loaded', async () => {
+            viewModel = leagueComponentService.viewModel
+            await $update()
+
+            $('.hide-on-pageinit').hide()
+            $('.hidden-on-load').removeClass('hidden-on-load')
+
+        })
+
+        $onMounted(async (e) => {
+
+            eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                detail: { tabLink: "/l/", breadcrumbs:[{ text: 'Leagues' }] }
+            }))
+
+            universeWebService.setMetadata(`Leagues - Ethereum Baseball League`, window.location.href, '', '') 
+
+            $update()
+        })
+
+        
+        return $render
+
+    }
+</script>

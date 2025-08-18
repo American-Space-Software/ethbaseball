@@ -1,0 +1,137 @@
+<template>
+
+  ${effectiveTeams?.length > 0 ? $h`
+
+    <div class="block data-table">
+<!-- 
+      <div class="paging">
+        Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE,
+        currentPage) + 1, effectiveTeams.length)} of ${effectiveTeams.length} teams.
+        <slot></slot>
+      </div> -->
+
+      ${displayTeams?.length > 0 ? $h`
+
+      <table>
+        <thead>
+          <tr>
+            <th class="label-cell team-name"></th>
+            <th class="numeric-cell" style="width:100px;">Record</th>
+            <th class="numeric-cell" style="width:50px;">Win %</th>
+            <th class="numeric-cell" style="width:30px;">Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          ${displayTeams?.map(t => $h`
+          <tr>
+            <td class="label-cell team-name">${t.hasValidLineup ? $h`🟢` : $h`🔴`} <a
+                href="/t/${t.tokenId}">${t.name}</a></td>
+            <td class="numeric-cell">${t.overallRecord.wins}-${t.overallRecord.losses}</td>
+            <td class="numeric-cell">${statService.formatRatio(t.winPercent)}</td>
+            <td class="numeric-cell">${t.rating.rating.toFixed(0)}</td>
+          </tr>
+          `)}
+
+        </tbody>
+      </table>
+
+      ` : $h`
+      No owned teams.
+      `}
+<!-- 
+      <div class="block split-row-both">
+        <div>
+          ${pagingService.hasPreviousPage(PAGE_SIZE, currentPage, effectiveTeams) ? $h`
+          <a @click="${previousClick}" class="button button-outline color-gray">Previous</a>
+          ` : $h` `}
+        </div>
+        <div>
+          ${pagingService.hasNextPage(PAGE_SIZE, currentPage, effectiveTeams) ? $h`
+          <a @click="${nextClick}" class="button button-fill">Next</a>
+          ` : $h` `}
+        </div>
+
+      </div> -->
+
+
+    </div>
+
+  ` : $h`
+
+  <div class="block">
+    No teams owned.
+  </div>
+
+  `}
+
+
+
+
+
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import { ContainerService } from "../../../service/container-service"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { PagingService } from "../../../service/paging-service.ts"
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let statService = ContainerService.getInstance(StatService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let pagingService = ContainerService.getInstance(PagingService)
+
+    let currentPage = 0
+
+    const PAGE_SIZE = parseInt(props.pagesize)
+
+    let effectiveTeams = []
+    let displayTeams = []
+
+    const setEffectiveTeams = (teams) => {
+      effectiveTeams = teams
+    }
+
+    const nextClick = (e) => {
+      currentPage++
+      setCurrentPage()
+      $update()
+    }
+
+    const previousClick = (e) => {
+      currentPage--
+      setCurrentPage()
+      $update()
+    }
+
+    const setCurrentPage = (teams) => {
+
+      if (teams) {
+        effectiveTeams = teams
+      }
+
+      let start = pagingService.startIndex(PAGE_SIZE, currentPage)
+      let end = pagingService.endIndex(PAGE_SIZE, currentPage)
+
+
+      displayTeams.length = 0
+
+      displayTeams.push(...effectiveTeams.slice(start, end))
+
+    }
+
+    setCurrentPage(props.teams)
+
+    return $render
+  }
+</script>

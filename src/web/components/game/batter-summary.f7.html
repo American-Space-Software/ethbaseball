@@ -1,0 +1,60 @@
+<template>
+
+  <div class="batter-summary">
+    ${doubles?.length > 0 ? $h`<strong>2B:</strong> ${arrayToStr(doubles)}<br />` : $h``}
+    ${triples?.length > 0 ? $h`<strong>3B:</strong> ${arrayToStr(triples)}<br />` : $h``}
+    ${hr?.length > 0 ? $h`<strong>HR:</strong> ${arrayToStr(hr)}<br />` : $h``}
+    ${tb?.length > 0 ? $h`<strong>TB:</strong> ${arrayToStr(tb)}<br />` : $h``}
+    ${rbi?.length > 0 ? $h`<strong>RBI:</strong> ${arrayToStr(rbi)}<br />` : $h``}
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+  
+<script>
+
+import { StatService } from "../../../service/stat-service.ts"
+import { ContainerService } from "../../../service/container-service.ts"
+
+export default (props, { $on, $, $f7, $update }) => {
+
+    let statService = ContainerService.getInstance(StatService)
+
+    let vm = props.vm
+
+    let doubles = vm.teamInfo.players.filter(p => p.hitResult.doubles > 0).map( p => {
+      return { _id: p._id, name: p.fullName, value: p.hitResult.doubles }
+    })
+
+    let triples = vm.teamInfo.players.filter(p => p.hitResult.triples > 0).map( p => {
+      return {  _id: p._id, name: p.fullName, value: p.hitResult.triples }
+    })
+
+    let hr = vm.teamInfo.players.filter(p => p.hitResult.homeRuns > 0).map( p => {
+      return {  _id: p._id, name: p.fullName, value: p.hitResult.homeRuns }
+    })
+
+    let tb = vm.teamInfo.players.filter(p => p.hitResult.tb > 0).map( p => {
+      return {  _id: p._id, name: p.fullName, value: p.hitResult.tb }
+    })
+
+    let rbi = vm.teamInfo.players.filter(p => p.hitResult.rbi > 0).map( p => {
+      return { name: p.fullName, value: p.hitResult.rbi }
+    })
+
+    const arrayToStr = (arr) => {
+
+      let mapped = arr.map( v => `${v.name} ${v.value > 1 ? `${v.value}` : ``}`.trim())
+      return `${mapped.join("; ")}`
+    }
+
+    return $render
+}
+</script>
+
+  
+  

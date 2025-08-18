@@ -1,0 +1,282 @@
+<template>
+
+    <div>
+
+        ${team ? $h`
+            
+            <div class="block-title">Location</div>
+            <div class="block">
+                ${team.city.name}, ${team.city.state}
+                <div style="font-size: .75em; color: darkslategray;">
+                    Population: ${new Intl.NumberFormat().format(team.city.population)}
+                </div>
+            </div>
+
+        ` : $h` `}
+
+
+        <div class="block-title block-title-large">Roster</div>
+
+        <div class="block">
+
+            <p>Roster can contain up to ${MAX_ROSTER_SIZE} players at a time. Players can only join a new team once every 24 hours.</p>
+
+            <div class="list list-dividers-ios">
+                <ul>
+                    <li>
+                        <a id="edit-roster" class="item-link smart-select" data-open-in="popup" data-popup-close-link-text="Close"  >
+
+                            <select name="_id" multiple maxlength="${MAX_ROSTER_SIZE}" >
+            
+                                ${players().map( p => $h`
+                                    <option value="${p._id}" data-option-image="/player/image/${p._id}" selected>
+                                        ${p.lastName}, ${p.firstName} - ${p.primaryPosition}
+                                    </option>
+                                `)}
+
+                                ${unrosteredPlayers?.map( p => $h`
+                                    <option value="${p._id}" data-option-image="/player/image/${p._id}">
+                                        ${p.lastName}, ${p.firstName} - ${p.primaryPosition}
+                                    </option>
+                                `)}
+                            </select>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">Edit Roster</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card card-outline card-header-divider">
+    
+            <div class="card-content card-content-padding">
+    
+                            
+                ${selected == "stats" ? $h`
+                    <hitter-stats hitters=${allHitters} pagesize=${PAGE_SIZE} filters=${filters}> 
+                        <select @change="${statsChange}" class="stats-dropdown">
+                            <option value="stats" selected>Career Stats</option>
+                            <option value="ratings">Ratings</option>
+                        </select>
+                    </hitter-stats>
+                ` : $h` `}
+
+                ${selected == "ratings" ? $h`
+                    <hitter-ratings hitters=${allHitters} pagesize=${PAGE_SIZE} filters=${filters}> 
+                        <select @change="${statsChange}" class="stats-dropdown">
+                            <option value="stats">Career Stats</option>
+                            <option value="ratings" selected>Ratings</option>
+                        </select>
+                    </hitter-ratings>
+                ` : $h` `}
+
+
+
+                
+                ${selected == "stats" ? $h`
+                    <pitcher-stats pitchers=${allPitchers} pagesize=${PAGE_SIZE} filters=${filters}> 
+                        <span />
+                    </pitcher-stats>
+                ` : $h` `}
+
+                ${selected == "ratings" ? $h`
+                    <pitcher-ratings pitchers=${allPitchers} pagesize=${PAGE_SIZE} filters=${filters}> 
+                        <span />
+                    </pitcher-ratings>
+                ` : $h` `}
+
+
+    
+            </div>
+    
+        </div>
+        
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+
+    export default (props, { $on, $, $f7, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
+
+        const MAX_ROSTER_SIZE = 20
+
+        let id
+
+        let loading
+        
+        let team
+        let unrosteredPlayers
+
+        let selected = "stats"
+        const PAGE_SIZE = 25
+
+        let allHitters = []
+        let allPitchers = []
+
+        let filters = {
+            position: undefined,
+            name: undefined
+        }
+
+        const players = () => {
+            return [].concat(allHitters).concat(allPitchers)
+        }
+
+        const statsChange = async (e) => {
+            selected = $(e.srcElement).val()
+            await loadPlayers()
+            $update()
+        }
+
+        const loadPlayers = async () => {
+
+            let result 
+
+            switch(selected) {
+                case "stats":
+                    result = await teamWebService.getStatsByTeam(team._id)
+                    break
+                case "ratings":
+                    result = await teamWebService.getRatingsByTeam(team._id)
+                    break
+            }
+
+            allHitters.length = 0
+            allPitchers.length = 0
+
+            allHitters.push(...result.hitters)
+            allPitchers.push(...result.pitchers)
+
+            unrosteredPlayers = await playerWebService.getByOwnerUnrostered(team.ownerId)
+
+            $f7.emit('refresh')
+
+
+        }
+
+        const loadTeam = async () => {
+
+            $f7.preloader.show()
+
+            team = await teamWebService.get(id)
+           
+            await loadPlayers()
+
+            eventTarget.dispatchEvent(new CustomEvent('breadcrumbs', {
+                detail: {
+                    breadcrumbs: [{
+                            text: "Home",
+                            path: "/"
+                        }, {
+                            text: walletService.truncateEthAddress(team.ownerId),
+                            path: `/u/teams/?address=${team.ownerId}`
+                        },
+                        {
+                            text: `${team.city.name} ${team.name}`,
+                            path: `/t/${team.tokenId}`
+                        }, {
+                            text: 'Roster'
+                        }
+                    ]
+                }
+            }))
+
+            await $update()
+
+            $f7.preloader.hide()
+
+        }
+
+        const setRoster = async (playerIds) => {
+
+            $f7.preloader.show()
+
+            try {
+
+                await teamWebService.setRoster(team, playerIds)
+                await loadPlayers()
+
+                await $update()
+
+            } catch(ex) {
+                console.log(ex)
+                $f7.dialog.alert(ex.response.data, "There was an error")
+            }
+
+            $f7.preloader.hide()
+        }
+
+        $on('tab:init', async (e) => {
+
+            id = $f7.views.main.router.currentRoute?.query?.id
+
+            await loadTeam()
+
+            let initialSelected = [].concat(allHitters).concat(allPitchers).map(p => p._id).sort((a,b) => b-a)
+
+            let ss = $f7.smartSelect.create({
+                el: '#edit-roster',
+                virtualList: true,
+                searchbar: true,
+                searchbarPlaceholder: 'Search eligible players...',
+                on: {
+                    close: async (e) => {
+
+                        let selected = ss.getValue().map(p => parseInt(p)).sort((a,b) => b-a)
+
+                        if (JSON.stringify(selected) != JSON.stringify(initialSelected)) {
+
+                            // let toAdd = selected.filter(p => !initialSelected.includes(p))
+                            // let toRemove = initialSelected.filter(p => !selected.includes(p))
+
+                            $f7.dialog.confirm(`Are you sure you want to save these changes?`, "Update Roster", async () => {
+                                await setRoster(selected)
+                                initialSelected = selected
+                            })
+
+                        }
+
+                    }
+                }
+            })
+
+        })
+
+        return $render
+
+    }
+</script>

@@ -1,0 +1,117 @@
+<template>
+
+    <div class="card card-outline card-header-divider">
+        <div class="card-header">On-chain Events</div>
+        <div class="card-content">
+            <div class="stat-table-wrapper">
+                <table class="data-table game-transactions">
+                    <thead>
+                        <th>Block #</th>
+                        <th>Contract</th>
+                        <th>Transaction</th>
+                        <th>Description</th>
+                        <th class="numeric-cell">Amount</th>
+                        <th>From Address</th>
+                        <th>To Address</th>
+                    </thead>
+                    <tbody>
+
+
+                        ${onChainEvents?.map( oce => $h`
+                        <tr>
+                            <td>${oce.blockNumber}</td>
+                            <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${oce.contractAddress}"
+                                    class="external">${walletService.truncateEthAddress(oce.contractAddress)}</a>
+                            </td>
+                            <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${oce.processedTransactionId}"
+                                    class="external">${
+                                    walletService.truncateEthAddress(oce.processedTransactionId) }</a></td>
+                            <td>${getOnChainDescription(oce)}</td>
+                            <td class="numeric-cell">
+                                ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `}
+                            </td>
+                            <td>
+                                ${oce.fromAddress ? $h`
+                                    <a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
+                                ` : $h` `}
+                            </td>
+                            <td>
+                                ${oce.toAddress ? $h`
+                                    <a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
+                                ` : $h` `}
+                            </td>
+                        </tr>
+                        `)}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</template>
+
+
+<script>
+
+    import { ContainerService } from "../../../service/container-service"
+    import { WalletService } from "../../../service/wallet-service"
+    import { LoginWebService } from "../../service/login-web-service"
+    import { UniverseWebService } from "../../service/universe-web-service"
+    import { GameWebService } from "../../service/game-web-service"
+
+    import logo from "../../html/images/logo.png"
+    import { ethers } from "ethers"
+    import dayjs from "dayjs"
+    import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
+
+    export default (props, { $on, $f7, $update }) => {
+
+        let env = ContainerService.getInstance("env")()
+        let walletService = ContainerService.getInstance("WalletService")
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let gameWebService = ContainerService.getInstance(GameWebService)
+        let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
+
+        const getOnChainTransferAmount = (oce) => {
+
+            if (oce.event == "DepositToTeam") return universeWebService.displayDiamonds(oce.amount)
+
+            if (oce.event == "WithdrawFromTeam") return `-${universeWebService.displayDiamonds(oce.amount)}`
+
+            if (oce.event == "Transfer") {
+                if (oce.toAddress == "0x0000000000000000000000000000000000000000") return `-${universeWebService.displayDiamonds(oce.amount)}`
+                if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return universeWebService.displayDiamonds(oce.amount)
+            }
+        }
+
+
+        const getOnChainDescription = (oce) => {
+
+            if (oce.event == "DepositToTeam") {
+                if (!oce.offChainEventId) return "Deposit To Team (Pending)"
+                return "Deposit To Team"
+            }
+
+
+
+            if (oce.event == "WithdrawFromTeam") return "Withdraw From Team"
+
+            if (oce.isMint) {
+                if (oce.contractAddress == env.UNIVERSE_ADDRESS) return "Team Minted"
+                return "Mint"
+            }
+            if (oce.isTransfer) return "Transfer"
+            return oce.event
+        }
+
+
+
+        let onChainEvents = props.events
+
+        return $render
+    }
+</script>

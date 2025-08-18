@@ -1,0 +1,214 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="owners">
+
+    <div class="page-content">
+
+      <div class="hidden-on-load">
+
+        <div class="data-table card" id="owner-data-table">
+          <div class="card-header">
+            <div class="data-table-title">Owners</div>
+          </div>
+          <div class="card-content">
+
+            ${tokenOwners?.length > 0 ? $h`
+
+              <table>
+                <thead>
+                  <tr>
+                    <th class="address-cell">Address</th>
+                    <th class="numeric-cell"> <a href="/u/owners?page=${page}&sort=team">Owned</a></th>
+                    <th class="numeric-cell"><a href="/u/owners?page=${page}&sort=diamonds">Diamonds</a></th>
+                    <th class="numeric-cell"><a href="/u/owners?page=${page}&sort=rewards">Rewards</a></th>
+                  </tr>
+                </thead>
+
+
+                <tbody>
+
+                  ${tokenOwners?.map( owner => $h`
+                    <tr>
+                      <td class="address-cell"><a href="/u/activity?address=${owner._id}">${owner._id}</a></td>
+                      <td class="numeric-cell">${owner.count}</td>
+                      <td class="numeric-cell">${universeWebService.displayDiamonds(owner.diamondBalance)}</td>
+                      <td class="numeric-cell">${universeWebService.displayDiamonds(owner.offChainDiamondBalance)}</td>
+                    </tr>
+                    
+                  `)}
+
+                </tbody>
+
+              </table>
+
+            ` : $h`<span />`}
+
+
+
+          </div>
+        </div>
+
+        <div class="block split-row-both">
+          <div>
+            ${showPrevious ? $h`
+            <a href="/u/owners?page=${page-1}&sort=${sort}"
+              class="button button-outline color-gray">Previous</a>
+            ` : $h` `}
+          </div>
+          <div>
+            ${showNext ? $h`
+            <a href="/u/owners?page=${page+1}&sort=${sort}"
+              class="button button-fill">Next</a>
+            ` : $h` `}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hide-on-pageinit">
+
+        <div class="card skeleton-text">
+          <div class="card-header">Leaderboard</div>
+          <div class="card-content card-content-padding data-table">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+            lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+  import Toolbar from "../common/toolbar.f7.html"
+
+  import { ContainerService } from "../../../service/container-service"
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import dayjs from "dayjs"
+
+
+  export default (props, { $, $on, $f7, $update, $onMounted }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+
+    let tokenOwners = []
+    let sort = "team"
+    let page = 0
+
+    let showNext
+    let showPrevious
+
+
+
+    const loadLeaderboard = async () => {
+
+        try  {
+
+            tokenOwners.length = 0
+            
+            let results = await ownerWebService.list(page, sort)
+
+            tokenOwners.push(...results)
+
+            showNext = tokenOwners?.length == 25
+            showPrevious = page > 0
+
+        } catch(ex) { 
+          $f7.dialog.alert(`${ex.message}`, "There was an error")
+          console.log(ex) 
+        }
+        
+        
+
+        await $update()
+
+    }
+
+    $on('pageBeforeIn', async (e) => {
+
+      if ($f7.views.main.router.currentRoute?.query?.page) {
+        page = parseInt($f7.views.main.router.currentRoute?.query?.page)
+      }
+
+      if ($f7.views.main.router.currentRoute?.query?.sort) {
+        sort = $f7.views.main.router.currentRoute?.query?.sort
+      }
+
+
+      await loadLeaderboard()
+
+      eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+        detail: {
+          tabLink: "/u/owners",
+          breadcrumbs: [{ text: "Owners" }]
+        }
+      }))
+
+      let table = getOrCreateTable()
+
+      universeWebService.setMetadata(
+                `Owners - Ethereum Baseball League`, 
+              window.location.href, 
+              `${env.WEB}/logo.png`,
+              `Owners in Ethereum Baseball League.`
+      ) 
+
+
+      await $update()
+
+      $('.hide-on-pageinit').hide()
+      $('.hidden-on-load').show()
+
+      $f7.preloader.hide()
+
+
+    })
+
+
+
+    $on('pageInit', async () => {
+
+    })
+
+
+    const getOrCreateTable = () => {
+
+      let existing = $f7.dataTable.get('#owner-data-table')
+
+      if (!existing) {
+        existing = $f7.dataTable.create({
+          el: '#owner-data-table'
+        })
+      }
+
+      return existing
+
+    }
+
+
+
+    return $render
+  }
+</script>

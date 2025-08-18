@@ -1,0 +1,184 @@
+<template>
+
+    <div class="page page-with-subnavbar" data-name="activity">
+
+        <div class="page-content">
+
+            <div class="hidden-on-load">
+
+                <div class="fixed-width-content center">
+
+                    <div class="block">
+                        <p class="segmented">
+                            <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link" >On-chain</a>
+                            <a href="${universeWebService.fullLink(`/activity/off`)}" class="button button-outline tab-link">Off-chain</a>
+                            <a href="${universeWebService.fullLink(`/activity/game`)}" class="button button-outline tab-link tab-link-active">Player Moves</a>
+                        </p>
+                    </div>
+
+
+                    ${model?.transactions?.length > 0 ? $h`
+                        <${GameTransactions} transactions="${model}" />
+                    ` : $h` `}
+
+                    <div class="block split-row-both">
+                        <div>
+                            ${previousPage ? $h`
+                            <a data-reload-current="true" data-force="true" data-browser-history="true"
+                                href="/activity/game?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
+                                class="button button-outline color-gray">Previous</a>
+                            ` : $h` `}
+                        </div>
+                        <div>
+                            ${nextPage ? $h`
+                            <a data-reload-current="true" data-force="true" data-browser-history="true"
+                                href="/activity/game?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
+                                class="button button-fill">Next</a>
+                            ` : $h` `}
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+            <div class="hide-on-pageinit">
+
+                <div class="card skeleton-text">
+                    <div class="card-header">Activity</div>
+                    <div class="card-content card-content-padding data-table">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+                        lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+    import OffChainEvents from "./offchain-events.f7.html"
+    import OnChainEvents from "./onchain-events.f7.html"
+    import GameTransactions from "./game-transaction-events.f7.html"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+    import { GameTransactionWebService } from "../../service/game-transaction-web-service.ts"
+    import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
+
+
+    export default (props, { $on, $, $f7, $update }) => {
+
+        let env = ContainerService.getInstance("env")()
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let dayjs = ContainerService.getInstance("dayjs")
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
+        let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
+
+        let model = []
+        let page = 1
+
+        let previousPage 
+        let nextPage
+
+        let rank
+
+        const loadActivity = async () => {
+
+            $f7.preloader.show()
+
+            try {
+
+                rank = $f7.views.main.router.currentRoute?.query?.rank || 0
+
+                if (rank > 0) {
+                    universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank)
+                } 
+
+                let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
+
+                Object.assign(model, await gameTransactionWebService.latest(page))
+
+
+                if (page > 1) {
+                    previousPage = page - 1
+                }
+
+                if (model.transactions?.length == 25 ) {
+                    nextPage = page + 1
+                }
+
+
+                await $update()
+
+            } catch (ex) { console.log(ex) }
+
+            $f7.preloader.hide()
+
+        }
+
+
+        const link = (href) => {
+            return "/" + href
+        }
+
+
+        $on('pageInit', async () => { })
+
+
+        $on('pageBeforeIn', async () => {
+
+            await loadActivity()
+
+            eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                detail: {
+                    tabLink: "/activity/game",
+                    breadcrumbs: [{ text: "Home", path: "/" }, { text: "Activity (Player Moves)" }],
+                }
+            }))
+
+
+            universeWebService.setMetadata(
+                     `Activity (Player Moves) - Ethereum Baseball League`, 
+                    window.location.href, 
+                    `${env.WEB}/logo.png`,
+                   `Activity (Player Moves) in Ethereum Baseball League.`
+            ) 
+
+            $('.hide-on-pageinit').hide()
+            $('.hidden-on-load').removeClass('hidden-on-load')
+
+            await $update()
+
+        })
+
+        $on('pageBeforeOut', async () => {
+        })
+
+
+        return $render
+
+    }
+</script>

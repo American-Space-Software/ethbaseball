@@ -1,0 +1,1407 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="team-index">
+
+    <div class="page-content">
+
+      <${StartDate} />
+
+
+      ${teamComponentService.team ? $h`
+
+        <div class="fixed-width-content center">
+
+          <div class="block">
+            <div class="team-owner">
+              ${!teamComponentService.team.ownerId ? $h`
+              Team is unminted and computer managed. <a href="/t/mint/${teamComponentService.team.tokenId}"
+                class="link">Mint Team</a>
+              ` : $h`
+              Owned by: <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${teamComponentService.team.ownerId}"
+                class="external">${walletService.truncateEthAddress(teamComponentService.team.ownerId)}</a>
+              `}
+            </div>
+          </div>
+
+          <div class="block-title block-title-large team-info">
+
+            <div class="left">
+              <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" class="profilePic" />
+            </div>
+
+            <div class="right">
+
+              ${teamWebService.getTeamName(teamComponentService.team)} <span class="tokenId"> #${
+                teamComponentService.team.tokenId }</span>
+
+              <div class="team-record">
+                Ranked ${ teamComponentService.team.overallRank } <span class="separator">|</span>
+                ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span
+                  class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)}
+                <span class="separator">|</span> ${teamComponentService.team.overallRecord.gamesBack} GB <span
+                  class="separator">|</span> ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="block">
+            <div class="list links-list list-inset list-outline-ios list-dividers-ios">
+                <ul>
+                <li><a class="link" href="${universeWebService.startDateLink(`/t/schedule/${teamComponentService.team.tokenId}`)}">Full Schedule</a></li>
+                <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/${teamComponentService.team.tokenId}`)}">Activity</a></li>
+                <li><a data-popup=".front-office-popup" class="link popup-open" href="#">Front Office</a> </li>        
+                </ul>
+            </div>
+          </div>
+
+
+
+          <div class="grid medium-grid-cols-2">
+
+            ${yesterdaysGames?.length > 0 ? $h`
+
+                <div class="card card-outline card-header-divider">
+                    <div class="card-header">Yesterday</div>
+
+                    <div class="card-content card-content-padding">
+                        <div class="list">
+                            <ul>
+
+                                ${teamComponentService.yesterdaysGames?.map( game => $h`
+
+                                  ${!game.isStarted ? $h`
+                                    <${Scheduled} game=${game} />
+                                  ` : $h` `}
+
+                                  ${game.isStarted && !game.isFinished ? $h`
+                                    <${InProgress} game=${game} />
+                                  ` : $h` `}
+
+                                  ${game.isStarted && game.isFinished ? $h`
+                                    <${Result} game=${game} />
+                                  ` : $h` `}
+
+
+                                `)}
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            ` : $h` `}
+
+
+            ${todaysGames?.length > 0 ? $h`
+
+                <div class="card card-outline card-header-divider">
+                    <div class="card-header">Today</div>
+
+                    <div class="card-content card-content-padding">
+                        <div class="list list-dividers-ios">
+                            <ul>
+
+                                ${teamComponentService.todaysGames?.map( game => $h`
+
+                                    ${!game.isStarted ? $h`
+                                        <${Scheduled} game=${game} />
+                                    ` : $h` `}
+
+                                    ${game.isStarted && !game.isFinished ? $h`
+                                        <${InProgress} game=${game} />
+                                    ` : $h` `}
+
+                                    ${game.isStarted && game.isFinished ? $h`
+                                        <${Result} game=${game} />
+                                    ` : $h` `}
+
+                                `)}
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            ` : $h` `}
+
+
+
+          </div>
+
+          <div class="card card-outline card-header-divider ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
+              <div class="card-header">Lineup <span class="flex">
+                      <!-- ${teamComponentService.isTeamOwner() && teamComponentService.hasEmptySpots ? $h`<button
+                  style="margin-right: 10px;" class="button button-outline inline"
+                  @click="${autoFillClick}">Auto-fill</button>` : $h` `} -->
+
+                      ${teamComponentService.isTeamOwner() && teamComponentService.hasChanges ? $h`<button
+                          class="button button-fill inline" @click="${saveClick}">Save Roster</button>` : $h` `}
+                  </span>
+              </div>
+
+              <div class="card-content">
+
+                  ${teamComponentService.selected == "stats" ? $h`
+                  <hitter-stats hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
+                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}"
+                      statprop="seasonStats">
+                      <select @change="${statsChange}" class="stats-dropdown">
+                          <option value="stats" selected>Season Stats</option>
+                          <option value="ratings">Ratings</option>
+                          <option value="contracts">Contracts</option>
+                      </select>
+                  </hitter-stats>
+                  ` : $h` `}
+
+                  ${teamComponentService.selected == "ratings" ? $h`
+                  <hitter-ratings hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
+                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
+                      <select @change="${statsChange}" class="stats-dropdown">
+                          <option value="stats">Season Stats</option>
+                          <option value="ratings" selected>Ratings</option>
+                          <option value="contracts">Contracts</option>
+                      </select>
+                  </hitter-ratings>
+                  ` : $h` `}
+
+                  ${teamComponentService.selected == "contracts" ? $h`
+                  <hitter-contracts hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
+                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
+                      <select @change="${statsChange}" class="stats-dropdown">
+                          <option value="stats">Season Stats</option>
+                          <option value="ratings">Ratings</option>
+                          <option value="contracts" selected>Contracts</option>
+                      </select>
+                  </hitter-contracts>
+                  ` : $h` `}
+
+
+              </div>
+
+          </div>
+
+          <div class="card card-outline card-header-divider ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
+              <div class="card-header">Pitching Rotation</div>
+
+              <div class="card-content">
+
+                  ${teamComponentService.selected == "stats" ? $h`
+                  <pitcher-stats pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}"
+                      statprop="seasonStats">
+                      <span />
+                  </pitcher-stats>
+                  ` : $h` `}
+
+                  ${teamComponentService.selected == "ratings" ? $h`
+                  <pitcher-ratings pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
+                      <span />
+                  </pitcher-ratings>
+                  ` : $h` `}
+
+                  ${teamComponentService.selected == "contracts" ? $h`
+                  <pitcher-contracts pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
+                      <span />
+                  </pitcher-contracts>
+                  ` : $h` `}
+
+              </div>
+
+          </div>
+
+
+          ${teamComponentService?.team?.seasonHistory ? $h`
+
+            <div class="card card-outline card-header-divider">
+              <div class="card-header">History</div>
+              <div class="card-content">
+                <div class="stat-table-wrapper">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th class="label-cell" style="min-width: 110px;">Season</th>
+                        <th>League</th>
+                        <th class="numeric-cell">Rank</th>
+                        <th>Record</th>
+                        <th class="numeric-cell">Win%</th>
+                        <th class="numeric-cell">Rating</th>
+                        <th class="numeric-cell" style="min-width: 70px;">Cash</th>
+                        <th class="numeric-cell">Revenue</th>
+                        <th class="numeric-cell">Expenses</th>
+                        <th class="numeric-cell">Profit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${teamComponentService.team.seasonHistory.map( (sh, index) => $h`
+                      <tr>
+                        <td class="label-cell">
+                          <a href="/t/?startDate=${sh.startDate}&tokenId=${teamComponentService.team.tokenId}">${sh.startDate}</a>
+                        </td>
+                        <td class="numeric-cell">${sh.leagueRank}</td>
+                        <td class="numeric-cell">${sh.overallRecord.rank}</td>
+                        <td class="numeric-cell">${sh.overallRecord.wins}-${sh.overallRecord.losses}</td>
+                        <td class="numeric-cell">${statService.formatRatio(sh.overallRecord.winPercent)}</td>
+                        <td class="numeric-cell">${sh.rating.rating.toFixed(0)}</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(sh.financeSeason.diamondBalance)}</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(sh.financeSeason.revenue.seasonToDate.total)}</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(sh.financeSeason.expenses.seasonToDate.total)}</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(sh.financeSeason.profit.seasonToDate.total)}</td>
+                      </tr>
+                      `)}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+
+          ` : $h` `}
+
+
+
+          <!-- And somewhere in DOM -->
+          <div class="popup front-office-popup">
+            <div class="view">
+              <div class="page">
+                <div class="navbar">
+                  <div class="navbar-bg"></div>
+                  <div class="navbar-inner">
+                    <div class="title">Front Office</div>
+                    <div class="right">
+                      <!-- Link to close popup -->
+                      <a class="link popup-close">Close</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="page-content">
+
+                  <div class="card card-outline card-header-divider">
+                      <div class="card-header">Cash</div>
+                      <div class="card-content card-content-padding">
+
+                          <div class="list list-strong list-dividers">
+                              <ul>
+                                  <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                              <div class="item-title">
+                                                  Cash
+                                              </div>
+                                              <div class="item-after">
+                                                  ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} 
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+
+                                  ${authInfo?.address && authInfo?.address == teamComponentService.team.ownerId ? $h`
+
+                                      <div class="item-inner">
+                                          <div class="item-title-row">
+                                            <div class="item-title">
+
+                                              <div style="padding: 10px;">
+
+                                                    ${teamComponentService.team.diamondBalance && BigInt(teamComponentService.team.diamondBalance) > 0 ? $h`
+                                                        <a @click="${withdrawClick}" class="button button-fill withdraw-button color-red">Withdraw</a>
+                                                    ` : $h``}
+
+                                                    <a @click="${depositClick}" class="button button-fill withdraw-button color-green">Deposit</a>
+
+                                              </div>
+
+                                            </div>
+                                          </div>
+                                      </div>
+
+                                  ` : $h` `}
+
+                              </ul>
+                          </div>
+
+
+                          ${teamComponentService.team.diamondMintPasses?.length > 0 ? $h`
+
+                              <br /><br />
+
+                              <strong>Mint Pass History</strong>
+                              <br /><br />
+                              <div class="list media-list">
+                                <ul>
+
+                                  ${teamComponentService.team.diamondMintPasses.map( mp => $h`
+                                    <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                            <div class="item-title-row">
+                                              <div class="item-title">${universeWebService.displayDiamonds(mp.amount)}</div>
+                                              <div class="item-after">
+                                                ${isSigned(mp) ? $h`
+                                                    <a class="button button-outline" @click="${mintPassClick}" data-id="${mp._id}">Redeem</a>
+                                                ` : $h`
+                                                    Processing...
+                                                `}
+                                                
+                                            </div>
+                                            </div>
+                                            <div class="item-text">Expires ${dayjs(mp.expires * 1000 ).fromNow()}</div>
+                                          </div>
+                
+                                      </div>
+                                    </li>
+                                  `)}
+
+                                </ul>
+                              </div>
+
+
+                            
+                            ` : $h` `}
+
+
+                      </div>
+                  </div>
+
+                  <div class="card card-outline card-header-divider">
+                      <div class="card-header">Financial Summary</div>
+              
+                      <div class="card-content card-content-padding">
+              
+                      <div class="list list-strong list-dividers">
+                          <ul>
+              
+
+
+                              <li>
+                                  <div class="item-content">
+                                      <div class="item-inner">
+                                          <div class="item-title">
+                                              Projected Revenue
+                                          </div>
+                                          <div class="item-after">
+                                              ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}
+                                          </div>
+                                      </div>
+                                  </div>
+                              </li>
+
+                              <li>
+                                  <div class="item-content">
+                                      <div class="item-inner">
+                                          <div class="item-title">
+                                              Projected Expenses
+                                          </div>
+                                          <div class="item-after">
+                                              ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}
+                                          </div>
+                                      </div>
+                                  </div>
+                              </li>
+
+                              <li>
+                                  <div class="item-content">
+                                      <div class="item-inner">
+                                          <div class="item-title">
+                                              Projected Profit/Loss
+                                          </div>
+                                          <div class="item-after">
+                                              ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.profit.projectedTotal.total)}
+                                          </div>
+                                      </div>
+                                  </div>
+                              </li>
+
+                              <li>
+                                  <div class="item-content">
+
+                                      <div class="item-inner">
+                                          <div class="item-title">
+                                              Market Size
+                                          </div>
+                                          <div class="item-after">
+                                              <div class="skill-wrapper">
+                                                  <div class="skill-bar">
+                                                      <div class="red" style="flex-basis: ${teamComponentService.team.city.population.toLocaleString()}%;">
+                                                          ${teamComponentService.team.city.population.toLocaleString()}
+                                                      </div>
+                                                  </div>
+                                              </div>                                         
+                                          </div>
+                                      </div>
+
+                                  </div>
+                              </li>
+
+                              <li>
+                                  <div class="item-content">
+                                      <div class="item-inner">
+                                          <div class="item-title">
+                                              Fan Interest (Long Term)
+                                          </div>
+                                          <div class="item-after">
+                                              <div class="skill-wrapper">
+                                                  <div class="skill-bar">
+                                                      <div class="red" style="flex-basis: ${getAsPercent(teamComponentService.team.fanInterestLongTerm)}%;">${getAsPercent(teamComponentService.team.fanInterestLongTerm)}</div>
+                                                  </div>
+                                              </div>                                         
+                                          </div>
+                                      </div>
+                                  </div>
+                              </li>
+
+                              <li>
+                                  <div class="item-content">
+                                      <div class="item-inner">
+                                          <div class="item-title">
+                                              Fan Interest (Short Term)
+                                          </div>
+                                          <div class="item-after">
+                                              <div class="skill-wrapper">
+                                                  <div class="skill-bar">
+                                                      <div class="red" style="flex-basis: ${getAsPercent(teamComponentService.team.fanInterestShortTerm)}%;">${getAsPercent(teamComponentService.team.fanInterestShortTerm)}</div>
+                                                  </div>
+                                              </div>                                         
+                                          </div>
+                                      </div>
+                                  </div>
+                              </li>
+              
+                          </ul>
+                      </div>
+              
+                      </div>            
+                  </div>
+
+                  <div class="card card-outline card-header-divider">
+                      <div class="card-header">Revenue</div>
+              
+                      <div class="card-content card-content-padding">
+                          <div class="data-table">
+                              <table>
+                              <thead>
+                                  <tr>
+                                      <th class="label-cell">Type</th>
+                                      <th class="numeric-cell">Season To Date</th>
+                                      <th class="numeric-cell">Projected (Remaining)</th>
+                                      <th class="numeric-cell">Projected (Total)</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <tr>
+                                  <td class="label-cell">Season Tickets</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.seasonTickets)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.seasonTickets)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.seasonTickets)}</td>
+                                  </tr>
+                                  <tr>
+                                      <td class="label-cell">Gate Tickets</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.gate)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.gate)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.gate)}</td>
+                                  </tr>
+                                  <tr>
+                                      <td class="label-cell">Local Media Deal</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.localMedia)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.localMedia)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.localMedia)}</td>
+                                  </tr>
+                                  <tr>
+                                      <td class="label-cell">National Media Deal</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.nationalMedia)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.nationalMedia)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.nationalMedia)}</td>
+                                  </tr>
+
+                                  <tr class="total">
+                                      <td class="label-cell">Total</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.total)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}</td>
+                                  </tr>
+
+                              </tbody>
+                              </table>
+                          </div>
+                      </div>            
+                  </div>
+
+                  <div class="card card-outline card-header-divider">
+                      <div class="card-header">Expenses</div>
+              
+                      <div class="card-content card-content-padding">
+              
+                          <div class="data-table">
+                              <table>
+                              <thead>
+                                  <tr>
+                                      <th class="label-cell">Type</th>
+                                      <th class="numeric-cell">Season To Date</th>
+                                      <th class="numeric-cell">Projected (Remaining)</th>
+                                      <th class="numeric-cell">Projected (Total)</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <tr>
+                                      <td class="label-cell">Payroll</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.payroll)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.payroll)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.payroll)}</td>
+                                  </tr>
+                                  <tr>
+                                      <td class="label-cell">Stadium Lease</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.stadiumLease)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.stadiumLease)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.stadiumLease)}</td>
+                                  </tr>
+                                  <tr class="total">
+                                      <td class="label-cell">Total</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.total)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.total)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}</td>
+                                  </tr>
+
+
+                              </tbody>
+                              </table>
+                          </div>
+
+                      </div>            
+                  </div>
+
+                  <div class="card card-outline card-header-divider">
+                      <div class="card-header">Attendance</div>
+              
+                      <div class="card-content card-content-padding">
+              
+                          <div class="list list-strong list-dividers">
+                              <ul>
+                  
+                                  <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                              <div class="item-title">
+                                                  Stadium Capacity
+                                              </div>
+                                              <div class="item-after">
+                                                  ${teamComponentService.team.stadium.capacity.toLocaleString()}
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+
+
+                                  <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                              <div class="item-title">
+                                                  Season Tickets Sold
+                                              </div>
+                                              <div class="item-after">
+                                                  ${teamComponentService.team.financeSeason.attendance.seasonTicketsSold.toLocaleString()}
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+
+                                  <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                              <div class="item-title">
+                                                  Attendance Per Game
+                                              </div>
+                                              <div class="item-after">
+                                                  ${teamComponentService.team.financeSeason.homeGamesPlayed > 0 ? $h`
+                                                      ${Math.floor(teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance / teamComponentService.team.financeSeason.homeGamesPlayed).toLocaleString()}
+                                                  ` : $h`0`}
+                                                  
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+              
+                  
+                                  <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                              <div class="item-title">
+                                                  Ticket Price
+                                              </div>
+                                              <div class="item-after">
+                                                  ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.currentTicketPrice)}
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+
+
+                              </ul>
+                          </div>
+              
+              
+                          <br />
+
+                          <div class="data-table">
+                              <table>
+                              <thead>
+                                  <tr>
+                                  <th class="label-cell">Type</th>
+                                  <th class="numeric-cell">Season To Date</th>
+                                  <th class="numeric-cell">Projected (Remaining)</th>
+                                  <th class="numeric-cell">Projected (Total)</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <tr>
+                                  <td class="label-cell">Season Tickets</td>
+                                  <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.seasonTickets.toLocaleString()}</td>
+                                  <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedRemaining.seasonTickets.toLocaleString()}</td>
+                                  <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedTotal.seasonTickets.toLocaleString()}</td>
+
+                                  </tr>
+                                  <tr>
+                                      <td class="label-cell">Gate Tickets</td>
+                                      <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.gateTickets.toLocaleString()}</td>
+                                      <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedRemaining.gateTickets.toLocaleString()}</td>
+                                      <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedTotal.gateTickets.toLocaleString()}</td>
+
+                                  </tr>
+                                  <tr class="total">
+                                      <td class="label-cell">Total</td>
+                                      <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance.toLocaleString()}</td>
+                                      <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedRemaining.totalAttendance.toLocaleString()}</td>
+                                      <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedTotal.totalAttendance.toLocaleString()}</td>
+
+                                  </tr>
+                              </tbody>
+                              </table>
+                          </div>        
+                      </div>            
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      ` : $h` `}
+
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { CityWebService } from "../../service/city-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import { TeamComponentService } from "../../service/team-component-service.ts"
+
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { DiamondService } from "../../../service/diamond-service.ts"
+  import { DiamondWebService } from "../../service/diamond-web-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+
+  import StartDate from "../common/start-date.f7.html"
+  import InProgress from "../game/in-progress.f7.html"
+  import Scheduled from "../game/scheduled.f7.html"
+  import Result from "../game/result.f7.html"
+  import { ethers } from "ethers"
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let cityWebService = ContainerService.getInstance(CityWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let diamondService = ContainerService.getInstance(DiamondService)
+    let diamondWebService = ContainerService.getInstance(DiamondWebService)
+
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    let statService = ContainerService.getInstance(StatService)
+
+    const MAX_ROSTER_SIZE = 13
+
+    let loading
+    let tokenId
+    let startDate
+    let authInfo
+
+    let team
+
+    const isSigned = (mp) => {
+      return (mp?.r && mp.s && mp.v)
+    }
+
+    const mintPassClick = async (e) => {
+
+        try {
+
+            //Get signed mint pass
+            let mintPass = teamComponentService.team.diamondMintPasses.find(mp => mp._id == $(e.target).data('id'))
+
+            let result = await diamondWebService.withdraw(mintPass)
+
+            if (result.hash) {
+                $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+            }
+
+        } catch (ex) {
+            $f7.dialog.alert(ex.reason, "There was an error")
+            console.log(ex)
+        }
+
+
+    }
+
+    const withdrawClick = async (e) => {
+
+        try {
+
+                let confirmMessage = `
+
+        <div style="text-align: left;">
+
+        <p>Creates a mint pass for ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} and clears the team's diamond balance.</p>
+
+        <ul style="padding-left: 15px;">
+            <li>Redeemable on-chain only</li>
+            <li>Expires in 1 year</li>
+            <li>Non-reversible</li>
+        </ul>
+
+        Continue?
+
+        </div>
+
+                `
+
+                $f7.dialog.confirm(confirmMessage, "Withdraw", async () => {
+                
+                //Get signed mint pass
+                let mintPass = await diamondWebService.getWithdrawPass(tokenId)
+
+                await checkForMintPassProcessing()
+
+                })
+
+
+            } catch(ex) {
+                $f7.dialog.alert(ex.reason, "There was an error")
+                console.log(ex)
+            }
+
+
+
+
+
+        try {
+
+            // let mintInfo = await teamWebService.withdraw(teamComponentService.team.tokenId)
+
+
+
+            // let result = await diamondService.withdraw(mintInfo.to, mintInfo._id, mintInfo.amount, mintInfo.tokenId, mintInfo.expires, mintInfo.v, mintInfo.r, mintInfo.s)
+
+            // if (result.hash) {
+            //     $f7.popup.close('.front-office-popup')
+            //     $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+            // }
+
+        } catch (ex) {
+            $f7.dialog.alert(ex.reason, "There was an error")
+            console.log(ex)
+        }
+
+    }
+
+    const parseFloatWithException = (theStr) => {
+
+        let result = parseFloat(theStr)
+        if (isNaN(result)) throw new Error("Error parsing number.")
+        return result
+
+    }
+
+    const depositClick = async (e) => {
+
+
+        // const dialog = $f7.dialog.create({
+        //     title: 'Deposit',
+        //     text: `Click ok to begin a deposit<br /><br />Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.`,
+        //     content: `<div class="dialog-input-field item-input">
+        //                 <div class="item-input-wrap">
+        //                     <input class="dialog-input" type="tel" placeholder="Enter number" required validate pattern="[0-9]*" data-error-message="Only numbers please!">
+        //                 </div>
+        //             </div>`,
+        //     buttons: [
+        //         { 
+        //             text: 'Cancel',
+        //             onClick: () => {}
+        //         },
+        //                         { 
+        //         text: 'Continue',
+        //             onClick: () => {
+        //                 console.log(dialog.$el.find('.dialog-input').val())
+        //                 throw new Error("Bla")
+        //             }
+        //         }
+        //     ],
+        //     on: {
+        //         open: function () {
+
+        //         }
+        //     }
+        // }).open()
+
+
+        const dialog = $f7.dialog.prompt(`<span style="text-align: left;">Click ok to begin a deposit<br /><br /> 
+
+        Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.
+
+        `, "Deposit", async (value) => {
+
+            try {
+                
+                let v = ethers.parseUnits( value.toString()  , 'ether')
+
+                console.log(v)
+
+                // let diamondBalance = ethers.formatUnits(authInfo.diamondBalance)
+
+                // if (value < 0 ) throw new Error("Value must be positive")
+                // if (value > diamondBalance) throw new Error("🔷 exceeds balance")
+
+                let result = await diamondService.deposit(authInfo.address, v, tokenId)
+
+                if (result.hash) {
+                    $f7.popup.close('.front-office-popup')
+                    $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+                }
+                
+            } catch(ex) {
+                console.log(ex)
+                $f7.dialog.alert(ex.message, "Invalid value")
+            }
+            
+        }, ()=>{}, 0)
+
+        dialog.$el.find('input').attr('type', 'number')
+
+
+    }
+
+    const getAsPercent = (value) => {
+        return Math.floor(value * 100)
+    }
+
+
+
+    const PAGE_SIZE = 25
+
+    const autoFillClick = (e) => {
+
+        teamComponentService.autoFillLineup()
+
+        resetMoves()
+
+        $f7.emit('refresh')
+
+        $update()
+
+    }
+
+    const saveClick = async (e) => {
+
+        try {
+            await teamComponentService.save()
+
+            await teamComponentService.loadTeam(teamComponentService.team.tokenId, universeWebService.getStartDate())
+
+            resetMoves()
+
+            $f7.emit('refresh')
+
+            $update()
+
+            const toast = $f7.toast.create({
+                text: 'Roster saved',
+                closeTimeout: 5000,
+                position: 'bottom',
+                horizontalPosition: 'center',
+                on: {
+                    opened: function () { }
+                }
+            })
+
+            toast.open()
+
+        } catch (ex) {
+            $f7.dialog.alert(ex.response.data, "There was an error")
+        }
+
+    }
+
+    const getDisplayHitters = () => {
+        return teamComponentService.getDisplayHitters()
+    }
+
+    const getDisplayPitchers = () => {
+        return teamComponentService.getDisplayPitchers()
+    }
+
+    const getUnrosteredHitters = () => {
+        return teamComponentService.getUnrosteredHitters()
+    }
+
+    const getUnrosteredPitchers = () => {
+        return teamComponentService.getUnrosteredPitchers()
+    }
+
+    let rosterFilters = {
+        position: undefined,
+        name: undefined
+    }
+
+    let unrosteredFilters = {
+        position: undefined,
+        name: undefined
+    }
+
+    let moveFilter = {
+        moveTarget: undefined,
+        isMoveTarget: true,
+        position: undefined,
+        showEmpty: false
+    }
+
+    const moveActive = {}
+
+    const resetMoves = () => {
+
+        $('.button-move').addClass("button-outline")
+        $('.button-move').removeClass("button-fill")
+        $('.split-row-both a').show()
+        $('.stats-dropdown').show()
+
+
+        moveFilter.moveTarget = undefined
+        moveFilter.isMoveTarget = true
+        moveFilter.position = undefined
+        moveFilter.showEmpty = false
+        moveFilter.hidePitcherSlot = false
+
+    }
+
+    const moveRoster = (e) => {
+
+        let actionRow = $(e.srcElement).data('action-row')
+        let moveTarget = $(e.srcElement).data('move-target')
+
+        //Get if move is already active
+        let selectedId = moveActive[moveTarget]
+
+        //Reset all move buttons
+        resetMoves()
+
+        moveFilter.moveTarget = moveTarget
+
+        if (!selectedId) {
+
+            moveFilter.moveTarget = moveTarget
+            moveFilter.isMoveTarget = true
+            moveFilter.position = undefined
+            moveFilter.showEmpty = true
+            moveFilter.hidePitcherSlot = true
+
+            //Fill this one in.
+            fillButton($(e.srcElement))
+
+            $(`.action-row.${actionRow}`).show()
+
+            $('.stats-dropdown').hide()
+
+            moveActive[moveTarget] = $(e.srcElement).data('id')
+
+
+        } else {
+
+            let currentPlayerId = $(e.srcElement).data('id')
+            let spot = $(e.srcElement).data('spot')
+
+            if (currentPlayerId != selectedId) {
+                teamComponentService.moveToRoster(selectedId, currentPlayerId, parseInt(spot), 0)
+            }
+
+
+            resetMoves()
+
+            $('.stats-dropdown').show()
+
+            $(`.action-row.${actionRow}`).hide()
+
+            moveActive[moveTarget] = undefined
+
+        }
+
+        $f7.emit('refresh')
+
+
+        $update()
+
+    }
+
+    const moveUnrostered = (e) => {
+
+        let actionRow = $(e.srcElement).data('action-row')
+        let moveTarget = $(e.srcElement).data('move-target')
+
+        //Get if move is already active
+        let activeId = moveActive[moveTarget]
+
+        //Reset all move buttons
+        resetMoves()
+
+        if (!activeId) {
+
+            moveFilter.moveTarget = moveTarget
+            moveFilter.isMoveTarget = true
+            moveFilter.position = $(e.srcElement).data('position')
+            moveFilter.showEmpty = true
+
+            //Fill this one in.
+            fillButton($(e.srcElement))
+
+            //Disable previous/next
+            $('.split-row-both a').hide()
+            $('.stats-dropdown').hide()
+
+
+
+            moveActive[moveTarget] = $(e.srcElement).data('id')
+
+        } else {
+
+            resetMoves()
+
+            $('.split-row-both a').show()
+            $('.stats-dropdown').show()
+
+
+            moveActive[moveTarget] = undefined
+
+        }
+
+        $f7.emit('refresh')
+
+
+        $update()
+
+
+    }
+
+    const drop = (e) => {
+
+        let moveTarget = $(e.srcElement).data('move-target')
+        let actionRow = $(e.srcElement).data('action-row')
+
+        let dropId = moveActive[moveTarget]
+
+        //   teamComponentService.dropPlayer(dropId)
+
+        // console.log(teamComponentService.rosterPlayers.map(p => p._id))
+
+
+        moveActive[moveTarget] = undefined
+
+        // updateDisplayRoster()
+
+        $(`.action-row.${actionRow}`).hide()
+        resetMoves()
+
+        $update()
+
+        $f7.emit('refresh')
+
+
+    }
+
+    const showMoveRoster = (p, moveTarget) => {
+
+        if (moveFilter.hidePitcherSlot == true && p.fullName == "Pitcher Slot") return false
+        if (moveFilter.moveTarget && moveFilter.moveTarget != moveTarget) return false
+        if (moveFilter.showEmpty && p?._id == undefined) return true
+        if (!p) return false
+        if (p._id) return true
+        if (moveActive[moveTarget] && (p._id != undefined || p.primaryPosition == moveFilter.position)) return true
+        if (moveFilter.position && moveFilter.position == p.primaryPosition) return true
+
+        return false
+    }
+
+    const showMoveRosterText = (p, moveTarget) => {
+        if (moveActive[moveTarget]) return "Here"
+        return "Move"
+    }
+
+    const showMoveUnrostered = (p, moveTarget) => {
+        if (moveActive[moveTarget] == p._id) return true
+        if (moveActive[moveTarget]) return false
+        if (moveFilter.position && moveFilter.position != p.primaryPosition) return false
+        return true
+    }
+
+    const getActions = (type, isRostered) => {
+
+        return () => {
+
+            if (teamComponentService.isTeamOwner()) {
+
+                switch (type) {
+                    case "hitters":
+                        return isRostered ? rosterHittersActions : unrosteredHittersActions
+                    case "pitchers":
+                        return isRostered ? rosterPitchersActions : unrosteredPitchersActions
+                }
+
+            } else {
+                return undefined
+            }
+
+        }
+
+
+    }
+
+    let rosterHittersActions = {
+        drop: drop,
+        move: moveRoster,
+        moveTarget: "roster-hitters",
+        isMoveTarget: "true",
+        showMove: (p) => {
+            return showMoveRoster(p, "roster-hitters")
+        },
+        moveText: (p) => {
+            return showMoveRosterText(p, "roster-hitters")
+        }
+    }
+
+    let rosterPitchersActions = {
+        drop: drop,
+        move: moveRoster,
+        moveTarget: "roster-pitchers",
+        isMoveTarget: "true",
+        showMove: (p) => {
+            return showMoveRoster(p, "roster-pitchers")
+        },
+        moveText: (p) => {
+            return showMoveRosterText(p, "roster-pitchers")
+        }
+    }
+
+    let unrosteredHittersActions = {
+        move: moveUnrostered,
+        moveTarget: "roster-hitters",
+        isMoveTarget: "false",
+        showMove: (p) => {
+            return showMoveUnrostered(p, "roster-hitters")
+        },
+        moveText: (p) => {
+            return "Move"
+        }
+    }
+
+    let unrosteredPitchersActions = {
+        move: moveUnrostered,
+        moveTarget: "roster-pitchers",
+        isMoveTarget: "false",
+        showMove: (p) => {
+            return showMoveUnrostered(p, "roster-pitchers")
+        },
+        moveText: (p) => {
+            return "Move"
+        }
+    }
+
+    const statsChange = async (e) => {
+
+        teamComponentService.selected = $(e.srcElement).val()
+
+        $f7.emit('refresh')
+
+        await $update()
+
+    }
+
+    const positionClick = (e) => {
+
+        // currentPage = 0
+
+        $('.position a').removeClass("active")
+        $(e.srcElement).addClass("active")
+
+        $('#playerSearch').val("")
+
+        let value = $(e.srcElement).data('pos')
+
+        unrosteredFilters.position = value
+
+        // updateDisplayRoster()
+
+        // setCurrentPage()
+        $update()
+
+        $f7.emit('refresh')
+
+    }
+
+    const fillButton = (element) => {
+        element.removeClass("button-outline")
+        element.addClass("button-fill")
+    }
+
+
+    let todaysGames = []
+    let yesterdaysGames = []
+
+    const load = async () => {
+
+      $f7.preloader.show()
+
+      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
+      let currentTokenId = $f7.views.main.router.currentRoute?.params?.tokenId
+
+
+      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
+      universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
+
+      try {
+
+          tokenId = currentTokenId
+          startDate = currentStartDate
+
+          universeWebService.setStartDate(startDate, $f7.views.main.router.currentRoute)
+
+          team = await teamComponentService.loadTeam(tokenId, universeWebService.getStartDate(), { forceRefresh: true })
+
+          todaysGames.length = 0
+          yesterdaysGames.length = 0
+
+          todaysGames.push(...teamComponentService.todaysGames)
+          yesterdaysGames.push(...teamComponentService.yesterdaysGames)
+
+          universeWebService.setRank(team.leagueRank)
+
+          $f7.emit('team-loaded')
+          $f7.emit('refresh')
+
+          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: {
+              tabLink: "/l/", breadcrumbs: [
+                {
+                  text: "Leagues",
+                  path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
+                },
+                {
+                  text: "Standings",
+                  path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team?.leagueRank}`)
+                }, { text: teamWebService.getTeamName(teamComponentService.team) }]
+            }
+          }))
+
+
+        await $update()
+
+      } catch (ex) {
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+      $f7.preloader.hide()
+
+    }
+
+
+
+    const checkForMintPassProcessing = async () => {
+
+      await load()
+      
+      if (teamComponentService.team.diamondMintPasses?.length > 0 && teamComponentService.team.diamondMintPasses.find( mp => !mp.r && !mp.s && !mp.v)) {
+        setTimeout(async () => { await checkForMintPassProcessing() }, 5*1000)
+      }
+
+      await $update()
+      
+    }
+
+    $on('pageInit', async (e) => {
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeIn', async () => {
+
+        authInfo = await loginWebService.getAuthInfo()
+
+        await load()
+
+        universeWebService.setMetadata(
+            `${team.city.name} ${team.name} - Ethereum Baseball League`, 
+            window.location.href, 
+            `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
+            `${teamComponentService.team.city.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
+        ) 
+
+        await $update()
+
+    })
+
+
+    return $render
+
+  }
+</script>

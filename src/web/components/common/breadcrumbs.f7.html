@@ -1,0 +1,45 @@
+<template>
+
+  <div class="breadcrumbs ">
+
+    ${breadcrumbs.map( b => $h`
+      <div class="breadcrumbs-item">
+
+        ${b.path ? $h`
+          <a href="${b.path}" class="link">
+            ${b.text}
+          </a>
+        ` : $h`${b.text}`}
+
+
+      </div>  
+
+      ${b.path ? $h`
+        <div class="breadcrumbs-separator"></div>
+      ` : $h`<span />`}
+      
+    `)}
+
+  </div>
+
+
+</template>
+ 
+
+
+<script>
+
+    import { ContainerService } from "../../../service/container-service"
+
+    import logo from "../../html/images/logo.png"
+    import { ethers } from "ethers"
+
+    export default (props, { $on, $f7, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+
+        let breadcrumbs = props.breadcrumbs
+
+        return $render
+    }
+</script>

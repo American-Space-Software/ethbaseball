@@ -1,0 +1,285 @@
+<template>
+  <div class="page page-with-subnavbar" data-name="league-standings">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+          <div class="hidden-on-load">
+
+            <div class="block">
+
+                <${StartDate} />
+
+                <form class="list" id="change-standings">
+
+                    <strong>Season</strong> <br />
+                    <select name="startDate" class="rank-dropdown" @change="${startDateChange}" id="select-start-date">
+                        ${viewModel?.seasons?.map( (s, index) => $h`
+
+                            ${s.startDate == universeWebService.startDate ? $h`
+                                <option value="${s.startDate}" selected>${s.startDate}</option>
+                            ` : $h`
+                                <option value="${s.startDate}">${s.startDate}</option>
+                            `}
+
+                        `)}
+                    </select>
+
+                </form>
+
+                <strong>${viewModel?.leagueVm?.league?.name}</strong><br />
+
+                <div class="stat-table-wrapper">
+                    <table class="stat-table standings">
+
+                        ${viewModel?.leagueVm?.viewModels?.length > 0 ? $h`
+
+                            <tr>
+                                <th @click=${sortStandings} data-sort="rank" class="lock-rank"></th>
+                                <th @click=${sortStandings} class="name lock-name label-cell" data-sort="city.name">Name</th>
+                                <th @click=${sortStandings} data-sort="overallRecord.wins" class="numeric-cell">Wins</th>
+                                <th @click=${sortStandings} data-sort="overallRecord.losses" class="numeric-cell">Losses</th>
+                                <th @click=${sortStandings} data-sort="overallRecord.winPercent" class="numeric-cell">Win%</th>
+                                <th @click=${sortStandings} data-sort="overallRecord.gamesBack" class="numeric-cell">GB</th>
+
+                                <th @click=${sortStandings} data-sort="seasonRating.rating" class="numeric-cell">Rating</th>
+                                <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell">Cash</th>
+                                <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalRevenue" class="numeric-cell">Projected Revenue</th>
+                                <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalExpenses" class="numeric-cell">Projected Expenses</th>
+                                <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalProfit" class="numeric-cell">Projected Profit</th>
+                                <th @click=${sortStandings} data-sort="teamCost.ethCostDecimal" class="numeric-cell">Cost</th>
+
+
+
+                            </tr>
+
+                            ${viewModel?.leagueVm.viewModels?.map( (t, index) => $h`
+                                <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
+
+                                    <td class="lock-rank">
+                                        <strong>${teamWebService.getOverallRank(t.rank, viewModel.leagueVm.league.rank, viewModel.leagueVm.viewModels.length)}</strong>
+                                    </td>
+
+                                    <td class="name lock-name">
+                                        <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
+                                        <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
+                                    </td>
+                                    <td>${t.overallRecord.wins}</td>
+                                    <td>${t.overallRecord.losses}</td>
+                                    <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
+                                    <td>${t.overallRecord.gamesBack}</td>
+                                    <td class="numeric-cell">${t.seasonRating.rating.toFixed(0)}</td>
+                                    <td class="numeric-cell">
+                                        ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
+                                    <td class="numeric-cell">
+                                        ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.revenue.projectedTotal.total)}</td>
+                                    <td class="numeric-cell">
+                                        ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.expenses.projectedTotal.total)}</td>
+                                    <td class="numeric-cell">
+                                        ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.profit.projectedTotal.total)}</td>
+                                    <td class="numeric-cell">
+                                        ${BigInt(t.teamCost?.totalDiamonds || 0) > 0 ? $h`
+                                            <a href="/t/mint/${t.tokenId}" class="link">${universeWebService.displayDiamondsNoSymbol(t.teamCost?.totalDiamonds)}</a>    
+                                        ` : $h` `}
+                                    </td>
+
+                                </tr>
+                            `)}
+
+                            <tr class="total">
+                                <td class="numeric-cell" colspan="7"></td>
+                                <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.cash)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.revenue)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.expenses)}
+                                </td>
+                                <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.profit)}</td>
+                                <td class="numeric-cell">
+                                    ${viewModel.leagueVm.leagueFinance?.teamCostDiamonds ? $h`${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance?.teamCostDiamonds)}` : $h` `}
+                                </td>
+
+                            </tr>
+
+                        ` : $h` `}
+
+
+
+                    </table>
+                </div>
+
+            </div>
+
+          </div>
+
+          <div class="hide-on-pageinit">
+
+              <div class="card skeleton-text">
+                  <div class="card-header">Activity</div>
+                  <div class="card-content card-content-padding data-table">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+                      lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+                  </div>
+
+                </div>
+
+          </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import StartDate from "../common/start-date.f7.html"
+
+    import dayjs from "dayjs"
+    import { ethers, FixedNumber } from "ethers"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { Position } from "../../../service/enums.ts"
+    import { TeamComponentService } from "../../service/team-component-service.ts"
+    import { LeagueWebService } from "../../service/league-web-service.ts"
+
+    export default (props, { $on, $, $f7, $onMounted, $update }) => {
+
+        let env = ContainerService.getInstance("env")()
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
+        let teamComponentService = ContainerService.getInstance(TeamComponentService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let leagueWebService = ContainerService.getInstance(LeagueWebService)
+
+        let viewModel
+        let leagueVm
+
+        const isPromoted = (t) => {
+            if (!viewModel.season.promotionRelegationLog) return false
+            let log = viewModel.season.promotionRelegationLog.find(l => l._id == t._id)
+            if (!log) return false
+            if (log.previousRank > log.rank) return true
+            return false
+        }
+
+        const isRelegated = (t) => {
+            if (!viewModel.season.promotionRelegationLog) return false
+            let log = viewModel.season.promotionRelegationLog.find(l => l._id == t._id)
+            if (!log) return false
+            if (log.rank > log.previousRank) return true
+            return false
+        }
+
+        const startDateChange = (e) => {
+
+            universeWebService.startDate = $(e.target).val()
+
+            let url = `/l/standings/${leagueVm.league.rank}?leagueId=${leagueVm.league._id}&startDate=${universeWebService.getStartDate()}`
+
+            $f7.views.main.router.navigate(url, { reloadCurrent: true })
+
+        }
+
+
+        const sortStandings = (e) => {
+            playerWebService.sort($, e, '.standings', viewModel.leagueVm.viewModels)
+            $update()
+
+        }
+
+        const load = async () => {
+
+            viewModel = await leagueWebService.getStandings(universeWebService.getRank(), universeWebService.getStartDate())
+
+            await $update()
+
+        }
+
+
+        $on('pageBeforeIn', async (e) => {
+
+            let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
+
+            universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
+            universeWebService.setRank($f7.views.main.router.currentRoute?.params?.rank || 1)
+
+            await load()
+
+            eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                detail: {
+                    tabLink: "/l/", breadcrumbs: [{
+                        text: "Leagues",
+                        path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
+                    }, { text: 'Standings' }]
+                }
+            }))
+
+
+            universeWebService.setMetadata(
+                    `${viewModel.leagueVm.league.name} Standings - Ethereum Baseball League`, 
+                    window.location.href, 
+                    `${env.WEB}/logo.png`, 
+                    `View ${viewModel.leagueVm.league.name} standings in Ethereum Baseball League.`
+            ) 
+
+
+
+
+            $('.hide-on-pageinit').hide()
+            $('.hidden-on-load').show()
+
+        })
+    
+
+
+
+        // $f7.once('leagues-loaded', async () => {
+
+        //     viewModel = leagueComponentService.viewModel
+        //     leagueVm = viewModel.leagueVms.find( vm => vm.league.rank == universeWebService.getRank())
+
+        //     await $update()
+
+        //     $('.hide-on-pageinit').hide()
+        //     $('.hidden-on-load').removeClass('hidden-on-load')
+
+        // })
+
+        // $onMounted(async (e) => {
+
+        //     await $update()
+
+
+        // })
+
+        return $render
+
+    }
+</script>

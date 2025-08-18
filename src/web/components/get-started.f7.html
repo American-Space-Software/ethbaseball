@@ -1,0 +1,72 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="about">
+
+    <div class="page-content">
+
+
+      <div class="block-title block-title-large">To Play Ethereum Baseball League</div>
+      <div class="block">
+      
+        <div class="list simple-list">
+          <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+          </ul>
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "./common/navbar.f7.html"
+  import Toolbar from "./common/toolbar.f7.html"
+
+  import { ContainerService } from "../../service/container-service"
+  import { LoginWebService } from "../service/login-web-service"
+
+
+  export default (props, { $on, $f7, $update }) => {
+
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+
+
+
+    $on('pageBeforeIn', async (e) => {
+
+      await loadUser()
+
+
+      eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+        detail: {
+          tabLink: "/",
+          breadcrumbs: [{ text: "Home", path: "/" }, { text: "Get Started"}],
+        }
+      }))
+
+    })
+
+
+    $on('pageInit', async (e) => {
+
+    })
+
+
+    return $render
+  }
+</script>

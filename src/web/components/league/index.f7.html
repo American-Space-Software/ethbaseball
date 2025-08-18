@@ -1,0 +1,205 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="league-index">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+          <div class="hidden-on-load">
+
+              <div class="card">
+                  <div class="card-content card-content-padding">
+
+                      ${leagues?.length > 0 ? $h`
+
+
+                          <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                              <ul>
+
+                                  <li>
+                                      <div class="item-content">
+                                          <div class="item-inner">
+                                              <div class="item-title-row">
+                                                  <div class="item-title"><strong>Name</strong></div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+
+                              </ul>
+                          </div>
+
+                          <br />
+
+                          <div class="list list-outline-ios list-strong-ios list-dividers-ios media-list">
+                              <ul>
+
+                                  ${leagues?.map( (l, index) => $h`
+                                      <li>
+                                          <a href="/l/standings/${l.rank}">
+                                              <div class="item-content">
+                                                  <div class="item-inner">
+                                                      <div class="item-title-row">
+                                                          <div class="item-title"><strong>#${l.rank}</strong> ${l.name}</div>
+                                                      </div>
+                                                      <div class="item-subtitle"></div>
+                                                  </div>
+                                              </div>
+                                          </a>
+                                      </li>
+                                  `)}
+
+                              </ul>
+                          </div>
+
+                      ` : $h` `}
+
+                  </div>
+              </div>
+
+          </div>
+
+          <div class="hide-on-pageinit">
+
+              <div class="card skeleton-text">
+                  <div class="card-header">Activity</div>
+                  <div class="card-content card-content-padding data-table">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+                      lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+                  </div>
+
+                </div>
+
+          </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { CityWebService } from "../../service/city-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import { TeamComponentService } from "../../service/team-component-service.ts"
+  import { LeagueWebService } from "../../service/league-web-service.ts"
+
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+
+  import StartDate from "../common/start-date.f7.html"
+
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let cityWebService = ContainerService.getInstance(CityWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let leagueWebService = ContainerService.getInstance(LeagueWebService)
+
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    
+    let statService = ContainerService.getInstance(StatService)
+
+    let leagues
+
+
+    const load = async () => {
+
+      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
+
+      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
+      universeWebService.setRank($f7.views.main.router.currentRoute?.params?.rank || 1)
+
+      try {
+
+          leagues = await leagueWebService.getList()
+
+          // $f7.emit('leagues-loaded')
+          
+          await $update()
+
+      } catch(ex) {
+
+          $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+
+  } 
+
+
+
+    // $on('pageInit', async (e) => {
+    // })
+
+  $on('pageBeforeIn', async (e) => {
+
+    await load()
+
+    eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+        detail: { tabLink: "/l/", breadcrumbs:[{ text: 'Leagues' }] }
+    }))
+
+
+    universeWebService.setMetadata(
+            `Leagues - Ethereum Baseball League`, 
+            window.location.href, 
+            `${env.WEB}/logo.png`, 
+            `View league list in Ethereum Baseball League.`
+    ) 
+
+
+
+    $('.hide-on-pageinit').hide()
+    $('.hidden-on-load').show()
+
+  })
+    
+    // $on('pageReinit', async () => {
+    // })
+
+    
+    // $on('pageBeforeOut', async () => {
+    // })
+
+
+    return $render
+
+  }
+</script>
+

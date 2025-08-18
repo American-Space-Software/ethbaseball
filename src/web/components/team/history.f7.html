@@ -1,0 +1,126 @@
+<template>
+
+
+  <div>
+
+    ${teamComponentService?.team?.seasonHistory ? $h`
+
+    <div class="card card-outline card-header-divider">
+      <div class="card-header">History</div>
+
+      <div class="card-content card-content-padding">
+        <div class="stat-table-wrapper">
+          <table class="stat-table">
+            <thead>
+              <tr>
+                <th>Season</th>
+                <th>League</th>
+                <th>Rank</th>
+                <th>Record</th>
+                <th>Win%</th>
+                <th>Rating</th>
+                <th>Cash</th>
+                <th>Revenue</th>
+                <th>Expenses</th>
+                <th>Profit</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${teamComponentService.team.seasonHistory.map( (sh, index) => $h`
+              <tr>
+                <td>
+                  <a href="/t/?startDate=${sh.startDate}&tokenId=${teamComponentService.team.tokenId}">${sh.startDate}</a>
+                </td>
+                <td class="pos">${sh.leagueRank}</td>
+                <td class="num">${sh.overallRecord.rank}</td>
+                <td class="num">${sh.overallRecord.wins}-${sh.overallRecord.losses}</td>
+                <td class="num">${statService.formatRatio(sh.overallRecord.winPercent)}</td>
+                <td class="num">${sh.rating.rating.toFixed(0)}</td>
+                <td class="num">${universeWebService.displayDiamonds(sh.financeSeason.diamondBalance)}</td>
+                <td class="num">${universeWebService.displayDiamonds(sh.financeSeason.revenue.seasonToDate.total)}</td>
+                <td class="num">${universeWebService.displayDiamonds(sh.financeSeason.expenses.seasonToDate.total)}</td>
+                <td class="num">${universeWebService.displayDiamonds(sh.financeSeason.profit.seasonToDate.total)}</td>
+              </tr>
+              `)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    ` : $h` `}
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { PagingService } from "../../../service/paging-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { Position } from "../../../service/enums.ts"
+  import { TeamComponentService } from "../../service/team-component-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  export default (props, { $on, $, $f7, $update, $onMounted }) => {
+
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let statService = ContainerService.getInstance(StatService)
+    let pagingService = ContainerService.getInstance(PagingService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    const MAX_ROSTER_SIZE = 9
+
+    let id
+
+    let loading
+
+    let team
+    let seasonHistory
+
+    const PAGE_SIZE = 25
+
+
+    $f7.once('team-loaded', async (e) => {
+        $update()
+    })
+
+
+    // $onMounted(async (e) => {
+
+    //   universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
+
+    //   if (teamComponentService.team) {
+    //     seasonHistory = teamComponentService.team.seasonHistory
+    //   }
+
+    //   $update()
+    // })
+
+    return $render
+
+  }
+</script>

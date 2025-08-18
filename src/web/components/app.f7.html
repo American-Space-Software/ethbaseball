@@ -1,0 +1,99 @@
+<template>
+  <div id="app">
+
+    <!-- Status bar overlay for fullscreen mode-->
+    <div class="statusbar"></div>
+
+    <div class="view view-init view-main" data-browser-history="true" data-browser-history-tabs="push" data-allow-duplicate-urls="true" >
+
+      <${Navbar} />
+
+    </div>
+
+  </div>
+</template>
+
+<style>
+  .logo {
+    max-width: 50px;
+    margin-right: 10px;
+  }
+</style>
+
+<script>
+
+  import Navbar from "./common/navbar.f7.html"
+
+
+  import { ContainerService } from "../../service/container-service"
+  import { DiamondService } from "../../service/diamond-service"
+
+  import { WalletService } from "../../service/wallet-service"
+  import { UniverseWebService } from "../service/universe-web-service"
+  import { LoginWebService } from "../service/login-web-service"
+
+  import Logo from "../html/images/logo.png"
+
+
+  export default (props, { $on, $f7ready, $f7, $f7router, $update }) => {
+
+    let env
+    let walletService
+    let universeWebService
+    let loginWebService
+
+    let authInfo
+
+    $f7ready(async () => {
+
+      let eventTarget = ContainerService.getInstance("eventTarget")
+      env = ContainerService.getInstance("env")()
+      walletService = ContainerService.getInstance("WalletService")
+      universeWebService = ContainerService.getInstance(UniverseWebService)
+      loginWebService = ContainerService.getInstance(LoginWebService)
+
+      //Just need to load this
+      authInfo = await loginWebService.getAuthInfo()
+
+      if (!walletService.provider) {
+          await walletService.initProvider()
+      }
+
+      let walletAddress = await walletService.getAddress()
+
+      if (walletAddress) {
+
+        if (!walletService.wallet) {
+          await walletService.connect()
+        }
+
+      }
+
+
+      if (walletAddress && !walletService.correctNetwork) {
+
+          // Create notification
+          let switchNetworkNofication = $f7.notification.create({
+              icon: '<i class="icon f7-icons">xmark_circle</i>',
+              title: 'Wrong network',
+              titleRightText: 'now',
+              subtitle: `Connected to wrong network. Switch to '${env.PROVIDER_CHAIN_NAME}' in wallet.`,
+              closeOnClick: false,
+              closeButton: true
+          })
+
+          switchNetworkNofication.on('click', () => {
+            walletService.switchNetwork()
+          })
+
+          // Open it
+          switchNetworkNofication.open()
+
+      }
+
+    })
+
+    return $render
+  }
+
+</script>

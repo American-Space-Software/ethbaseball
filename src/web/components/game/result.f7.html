@@ -1,0 +1,73 @@
+<template>
+  
+
+  <li>
+    <a href="${universeWebService.startDateLink(`/g/${game._id}`)}" class="item-link">
+      <div class="item-content">
+
+        <div class="item-inner">
+          <table class="game-result">
+            <tr class="${game.score.away > game.score.home ? $h`winner` : $h` `}">
+              <td class="name">
+                
+                <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo" />
+                <span class="small">${game.away.cityName}</span><br />
+                ${game.away.name} <span class="small-gray">${game.away.overallRecord.after?.wins}-${game.away.overallRecord.after?.losses}</span>
+                
+              </td>
+              <td class="runs">${game.score.away}</td>
+            </tr>
+            <tr class="${game.score.home > game.score.away ? $h`winner` : $h` `}">
+              <td class="name">
+                
+                <img src="/image/thumbnail/${game.home.logoId}" class="profilePic" alt="${game.home.cityName} ${game.home.name} Logo" />
+                <span class="small">${game.home.cityName}</span><br />
+                ${game.home.name} <span class="small-gray">${game.home.overallRecord.after?.wins}-${game.home.overallRecord.after?.losses}</span>
+                
+              </td>
+              <td class="runs">${game.score.home}</td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+    </a>
+  </li>
+
+
+</template>
+
+
+<script>
+
+    import { ContainerService } from "../../../service/container-service"
+    import { WalletService } from "../../../service/wallet-service"
+    import { LoginWebService } from "../../service/login-web-service"
+    import { UniverseWebService } from "../../service/universe-web-service"
+    import { GameWebService } from "../../service/game-web-service"
+
+    import logo from "../../html/images/logo.png"
+    import { ethers } from "ethers"
+
+    export default (props, { $on, $f7, $update }) => {
+
+        let walletService = ContainerService.getInstance("WalletService")
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let gameWebService = ContainerService.getInstance(GameWebService)
+
+        const percentageFormatter = (num) => {
+            return new Intl.NumberFormat('default', {
+                style: 'percent',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(num)
+        }
+
+        let game = props.game
+
+
+        return $render
+    }
+</script>

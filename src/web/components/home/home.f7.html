@@ -1,0 +1,356 @@
+<template es>
+
+  <div class="page" data-name="home">
+
+
+    <div class="page-content">
+
+      <div class="hidden-on-load">
+
+        <!-- Slider container -->
+        <div class="swiper scoreboard">
+            <!-- Slides wrapper -->
+            <div class="swiper-wrapper">
+
+              ${vm.todaysGames?.inProgress?.map( game => $h`
+                <div class="swiper-slide">
+                    <${InProgress} game=${game} />
+                </div>
+              `)}
+
+              ${vm.todaysGames?.finished?.map( game => $h`
+                <div class="swiper-slide">
+                    <${Result} game=${game} />
+                </div>
+              `)}
+
+              ${vm.todaysGames?.scheduled?.map( game => $h`
+                <div class="swiper-slide">
+                    <${Scheduled} game=${game} />
+                </div>
+              `)}
+
+
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+
+        <div class="fixed-width-content center">
+          
+              ${!authInfo?._id ? $h`
+
+                <div class="block-title block-title-large">
+                  Step Into the Owner’s Box. The League Awaits.
+                </div>
+
+                <div class="block">
+                  <p class="lead">
+                    Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator.
+                    Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
+                    where teams and Diamonds are bought, sold, and earned. 
+                  </p>
+
+                  <a href="/about" class="button button-fill small-button">Learn More</a>
+
+                </div>
+
+              ` : $h` 
+              
+                ${authInfo?.address ? $h`
+                  <${UserDetails} vm=${vm} />
+                ` : $h` `}
+              
+              `}
+
+              ${vm.featuredPost ? $h`
+                <div class="card card-outline card-header-divider">
+                  <div class="card-header">News</div>
+                  <div class="card-content">
+                    <div class="block-title block-title-medium">
+                      <span class="publish-date">${dayjs(vm.featuredPost.publishDate).format("YYYY-MM-DD")}</span>
+                      <a href="/news?newsId=${vm.featuredPost._id}">${vm.featuredPost.title}</a>
+                    </div>
+                    <div class="block" innerHTML="${postWebService.translateShort(vm.featuredPost)}"></div>
+                  </div>
+                </div>
+              ` : $h` `}
+
+
+              ${vm?.topTeams?.length > 0 ? $h`
+
+                <div class="card card-outline card-header-divider">
+                  <div class="card-header">Apex League Standings</div>
+                  <div class="card-content card-content-padding">
+
+                    <div class="stat-table-wrapper">
+                        <table class="stat-table home-standings">
+                            <tr>
+                                <th class="name">Name</th>
+                                <th>Wins</th>
+                                <th>Losses</th>
+                                <th>Win%</th>
+                                <th>GB</th>
+                            </tr>
+
+                            ${vm?.topTeams?.map( (t, index) => $h`
+                                <tr>
+                                    <td class="name">
+                                        <img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" />
+                                        <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
+                                    </td>
+                                    <td>${t.overallRecord.wins}</td>
+                                    <td>${t.overallRecord.losses}</td>
+                                    <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
+                                    <td>${t.overallRecord.gamesBack}</td>
+                                </tr>
+                            `)}
+                        </table>
+                    </div>
+
+                    <br />
+
+                    <a href="${universeWebService.startDateLink(`/l/standings/1`)}" class="button button-outline small-button">Full Standings</a>
+
+                  </div>
+                </div>
+
+              ` : $h` `}
+
+              <!-- 1. Meet the Teams -->
+              <div class="card card-outline card-header-divider">
+                <div class="card-header">🧾 Meet the Teams</div>
+                <div class="card-content card-content-padding">
+                  <p class="micro-teaser"><em>Start here. See the ladder and pick a franchise.</em></p>
+                  <p>280 teams compete in a 10‑league ladder. Find your city, scout rivals, and size up the competition.</p>
+
+                  ${env.OPENSEA_SLUG ? $h`
+                    <div class="segmented">
+                      <a href="${universeWebService.startDateLink(`/l/`)}" class="button button-fill">Browse Teams</a>
+                      <a href="https://opensea.io/collection/${OPENSEA_SLUG}" class="button button-outline external">Buy a Team on OpenSea</a>
+                    </div>
+                    
+                  ` : $h`
+                    <a href="${universeWebService.startDateLink(`/l/`)}" class="button button-outline small-button">Browse Teams</a>
+                  
+                  `}
+
+
+                </div>
+              </div>
+
+              <!-- 2. Learn the Rules -->
+              <div class="card card-outline card-header-divider">
+                <div class="card-header">🧠 Learn the Rules of the Game</div>
+                <div class="card-content card-content-padding">
+                  <p class="micro-teaser"><em>Ownership, contracts, budgeting, and promotion.</em></p>
+                  <p>Master team ownership, contracts, and the business strategies needed to dominate the league.</p>
+                  <a href="/about" class="button button-outline small-button">Explore the Manual</a>
+                </div>
+              </div>
+
+              <!-- 3. See It in Action -->
+              <div class="card card-outline card-header-divider">
+                <div class="card-header">📺 See It in Action</div>
+                <div class="card-content card-content-padding">
+                  <p class="micro-teaser"><em>Daily games. Real opponents. Real results.</em></p>
+                  <p>Follow box scores, player stats, and highlights from today’s matchups across 10 leagues.</p>
+                  <a href="${universeWebService.startDateLink(`/games`)}" class="button button-outline small-button">View Games</a>
+                </div>
+              </div>
+
+              <!-- 4. Get Diamonds -->
+              <div class="card card-outline card-header-divider">
+                <div class="card-header">💎 Get Diamonds</div>
+                <div class="card-content card-content-padding">
+                  <p class="micro-teaser"><em>Fuel payroll, sign free agents, and cover operations.</em></p>
+                  <p>Buy Diamonds, deposit to your team, and manage your budget across a full season.</p>
+                  <a href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" class="button button-outline small-button external">Buy Diamonds on Uniswap</a>
+                </div>
+              </div>
+
+              <!-- 5. Run Your Own League -->
+              <div class="card card-outline card-header-divider">
+                <div class="card-header">💻 Run Your Own League</div>
+                <div class="card-content card-content-padding">
+                  <p class="micro-teaser"><em>Open source and forkable.</em></p>
+                  <p>Download the code, host your own universe, and create a custom version of the game with new teams, rules, or themes.</p>
+                  <a href="https://github.com/American-Space-Software/playebl" class="button button-outline small-button external">View on GitHub</a>
+                </div>
+              </div>
+
+              <div class="card card-outline card-header-divider">
+                <div class="card-header">Links</div>
+                <div class="card-content card-content-padding">
+                  <div class="list links-list list-outline">
+                    <ul>
+                      <li>
+                        <a href="/about" class="link">About</a>
+                      </li>
+                      <li>
+                        <a href="https://github.com/American-Space-Software/playebl" class="external">GitHub</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+        </div>
+
+      </div>
+
+      <div class="hide-on-pageinit">
+
+        <div class="card skeleton-text">
+          <div class="card-header">Home</div>
+          <div class="card-content card-content-padding data-table">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+            lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+</style>
+
+<script>
+
+  import main from "../../html/images/main.png"
+
+  import Navbar from "../common/navbar.f7.html"
+  import Breadcrumbs from "../common/breadcrumbs.f7.html"
+
+  import Toolbar from "../common/toolbar.f7.html"
+
+  import { ContainerService } from "../../../service/container-service"
+  import { LoginWebService } from "../../service/login-web-service"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { DiamondWebService } from "../../service/diamond-web-service.ts"
+  import { PostWebService } from "../../service/post-web-service.ts"
+
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { Position } from "../../../service/enums.ts"
+  import { DiamondService } from "../../../service/diamond-service.ts"
+
+  import dayjs from "dayjs"
+
+  import UserDetails from "../user/details.f7.html"
+
+  import InProgress from "./in-progress.f7.html"
+  import Scheduled from "./scheduled.f7.html"
+  import Result from "./result.f7.html"
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let statService = ContainerService.getInstance(StatService)
+    let diamondService = ContainerService.getInstance(DiamondService)
+    let diamondWebService = ContainerService.getInstance(DiamondWebService)
+    let postWebService = ContainerService.getInstance(PostWebService)
+
+    let authInfo
+    
+    let vm = {}
+
+    let contractBalance
+
+
+
+
+
+    const loadUser = async () => {
+
+      Object.assign(vm, await universeWebService.getHome(universeWebService.getStartDate()))
+
+      authInfo = await loginWebService.getAuthInfo()
+
+      let walletAddresses = await walletService.getAddress()
+      
+      if (walletService.provider && walletAddresses) {
+        contractBalance = await universeWebService.getContractBalance()
+      }
+
+
+    }
+
+    $on('pageBeforeIn', async (e) => {
+      
+      $f7.preloader.show()
+
+      universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
+
+      await loadUser()
+
+
+      let swiper = $f7.swiper.create('.swiper', {
+        slidesPerView: 2,
+        breakpoints: {
+          1024: {
+            slidesPerView: 6
+          }
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          type: "progressbar",
+        },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        }
+      })
+
+
+
+
+      eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+        detail: {
+          visible: false,
+          tabLink: "/",
+          breadcrumbs: [{ text: "Home", path: "/" }, { text: walletService.truncateEthAddress(vm?.authInfo?.address)}]
+        }
+      }))
+
+      universeWebService.setMetadata(
+              `Ethereum Baseball League - Step Into the Owner’s Box. The League Awaits.`, 
+              window.location.href, 
+              `${env.WEB}/logo.png`, 
+              "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. "
+      ) 
+
+
+      await $update()
+
+
+      $('.hide-on-pageinit').hide()
+      $('.hidden-on-load').show()
+
+      $f7.preloader.hide()
+
+
+    })
+
+
+    return $render
+  }
+</script>

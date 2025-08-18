@@ -1,0 +1,176 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="home">
+
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+
+        ${loading ? $h`
+
+        <div class="block-title block-title-large">Connect Discord to Wallet</div>
+        <div class="block">
+          Loading...
+        </div>
+
+        ` : $h`
+
+        ${errorMessage ? $h`
+
+        <div class="block-title block-title-large">Error</div>
+        <div class="block">
+          ${errorMessage}
+        </div>
+
+        ` : $h`
+
+        ${connectLink ? $h`
+
+        <div class="block-title block-title-large">Connect Discord to Wallet</div>
+
+        <div class="block">
+          ${success ? $h`
+          Successfully connected Discord to wallet. Return to Discord.
+          ` : $h`
+          <p>Sign a message with your wallet to link your Discord account to your EBL wallet.</p>
+          <p>This verifies your control of the wallet and does not submit a transaction.</p>
+          <a @click="${connectClick}" class="button button-fill connect">Begin Signing</a>
+          `}
+        </div>
+
+        ` : $h` `}
+
+        `}
+
+
+        `}
+
+
+
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+  h1 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-size: 55px;
+    line-height: 55px;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+
+
+  import dayjs from "dayjs"
+
+  import Navbar from "./common/navbar.f7.html"
+  import Toolbar from "./common/toolbar.f7.html"
+
+  import { WalletService } from "../../service/wallet-service"
+  import { ContainerService } from "../../service/container-service"
+
+
+  export default (props, { $on, $f7, $f7route, $update }) => {
+
+
+    let walletService = ContainerService.getInstance("WalletService")
+    let eventTarget = ContainerService.getInstance("eventTarget")
+
+
+
+    let connectLinkId = $f7route.query.id
+
+    let connectLink
+    let errorMessage
+    let success
+    let loading = true
+
+    $on('pageInit', async (e, page) => {
+
+    
+      //Look up connect link info.
+      let result = await fetch('/checkConnectLink', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: connectLinkId,
+        })
+      })
+
+      if (result.status == 500) {
+        errorMessage = await result.text()
+      } else {
+        connectLink = await result.json()
+      }
+
+      loading = false
+
+      await $update()
+
+    })
+
+    $on('pageBeforeIn', async (e) => {
+      eventTarget.dispatchEvent(new CustomEvent('breadcrumbs', {
+        detail: {
+          breadcrumbs: [{
+            text: "Home",
+            path: "/"
+          }, {
+            text: "Connect"
+          }]
+        }
+      }))
+    })
+    
+    const connectClick = async (e) => {
+
+      errorMessage = undefined
+      success = false
+
+      let wallet = await walletService.getWallet()
+
+      let message = `Confirm ownership of discord account: ${connectLink.discordUsername} @ ${dayjs().toString()}.`
+
+      const signature = await wallet.signMessage(message)
+
+      let result = await fetch('/discordConnect', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: connectLink._id,
+          message: message,
+          signature: signature
+        })
+      })
+
+      if (result.status == 500) {
+        errorMessage = await result.text()
+      } else {
+        success = true
+      }
+
+
+      await $update()
+
+    }
+
+    return $render
+  }
+</script>

@@ -1,0 +1,8 @@
+Dockerfile
+Dockerfile-discord
+Dockerfile-web
+README.md
+node_modules
+npm-debug.log
+test
+.tmp

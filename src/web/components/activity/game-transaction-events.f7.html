@@ -1,0 +1,94 @@
+<template>
+
+    <div class="card card-outline card-header-divider">
+
+        <div class="card-header">Player Transactions</div>
+        <div class="card-content">
+            
+            <div class="stat-table-wrapper">
+                <table class="data-table game-transactions">
+                    <thead>
+                    <th >Date</th>
+                    <th class="label-cell">Description</th>
+                    </thead>
+                    <tbody>
+
+                    ${gameTransactions?.transactions.map( t => $h`
+
+                        <tr>
+                            <td >${dayjs(t.date).format("ddd, MMM D, YYYY")}<div class="small-gray">${dayjs(t.dateCreated).format("h:mm A")}</div></td>
+                            <td class="label-cell">
+
+                                ${t.events.map( e => $h`
+                        
+                                ${e.signing ? $h`
+                                    <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> signed <a href="${universeWebService.startDateLink(`/p/${e.signing.playerId}`)}">${getPlayer(e.signing.playerId).name}</a> to a 
+                                    ${e.signing.contract.isRookie ? $h` rookie contract.` : $h` ${e.signing.contract.years.length}-year contract @ ${universeWebService.displayDiamonds(e.signing.contract.years[0].salary)}.`}
+                                    
+                                ` : $h` `}
+                        
+                                ${e.dropping ? $h`
+                                    <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> released <a href="${universeWebService.startDateLink(`/p/${e.dropping.playerId}`)}">${getPlayer(e.dropping.playerId).name}</a>.
+                                ` : $h` `}
+                        
+                                `)}
+
+                            </td>
+                        </tr>
+
+            
+                    `)}
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+
+</template>
+
+
+<script>
+
+    import { ContainerService } from "../../../service/container-service"
+    import { WalletService } from "../../../service/wallet-service"
+    import { LoginWebService } from "../../service/login-web-service"
+    import { UniverseWebService } from "../../service/universe-web-service"
+    import { GameWebService } from "../../service/game-web-service"
+
+    import logo from "../../html/images/logo.png"
+    import { ethers } from "ethers"
+    import dayjs from "dayjs"
+    import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
+
+    export default (props, { $on, $f7, $update }) => {
+
+        let env = ContainerService.getInstance("env")()
+        let walletService = ContainerService.getInstance("WalletService")
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let gameWebService = ContainerService.getInstance(GameWebService)
+        let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
+
+        const getTeam = (id) => {
+            return gameTransactions?.teams.find(t => t._id == id)
+        }
+
+        const getPlayer = (id) => {
+            return gameTransactions?.players.find(p => p._id == id)
+        }
+
+
+
+        let gameTransactions = props.transactions
+
+
+        let onChainEvents = props.events
+
+        return $render
+    }
+</script>

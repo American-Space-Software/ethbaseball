@@ -1,0 +1,63 @@
+# syntax=docker.io/docker/dockerfile:1.7-labs
+# Start from an official Ubuntu image
+FROM ubuntu:20.04
+
+# Set environment variables to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies and Nginx
+RUN apt-get update && \
+    apt-get install -y curl build-essential libssl-dev nginx && \
+    apt-get clean
+
+    
+    
+RUN apt install -y git
+RUN apt install python3 python3-pip -y
+RUN apt-get update && apt-get -y install cmake protobuf-compiler certbot python3-certbot-nginx cron
+
+
+# Install nvm (Node Version Manager)
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+
+# Set up nvm environment
+ENV NVM_DIR=/root/.nvm
+ENV NODE_VERSION=22.18.0
+RUN . "$NVM_DIR/nvm.sh" && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION
+
+# Ensure node and npm are available globally
+ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# Verify Node.js and npm installation
+RUN node -v && npm -v
+# Create and change to the web directory.
+WORKDIR /usr/src/web
+
+# Copy application dependency manifests to the container image.
+# A wildcard is used to ensure both package.json AND package-lock.json are copied.
+# Copying this separately prevents re-running npm install on every code change.
+COPY package*.json ./
+
+# Install production dependencies.
+RUN npm install
+
+# Copy local code to the container image. https://stackoverflow.com/a/62900696
+COPY --exclude=.env.* . ./
+
+RUN npm run build:web
+
+ARG NODE_ENV
+COPY .env.web.$NODE_ENV .env
+
+# Write Nginx configuration
+RUN echo 'worker_processes auto;' > /etc/nginx/nginx.conf && \
+    echo 'events { worker_connections 1024; }' >> /etc/nginx/nginx.conf && \
+    echo 'http { server { listen 80;' >> /etc/nginx/nginx.conf && \
+    echo 'location / { proxy_pass http://localhost:8080;' >> /etc/nginx/nginx.conf && \
+    echo 'proxy_set_header Host $host;' >> /etc/nginx/nginx.conf && \
+    echo 'proxy_set_header X-Real-IP $remote_addr;' >> /etc/nginx/nginx.conf && \
+    echo 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/nginx.conf && \
+    echo 'proxy_set_header X-Forwarded-Proto $scheme;' >> /etc/nginx/nginx.conf && \
+    echo '} } }' >> /etc/nginx/nginx.conf
+
+CMD ["sh", "-c", "service nginx start && node --env-file=.env --enable-source-maps dist/web-server.js"]

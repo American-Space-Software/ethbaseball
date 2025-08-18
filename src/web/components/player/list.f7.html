@@ -1,0 +1,351 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="players">
+
+
+    <div class="page-content">
+
+      <${StartDate} />
+
+      <div class="list">
+        <ul>
+
+          <li class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">League</div>
+              <div class="item-input-wrap">
+    
+                
+                <select name="rank" class="rank-dropdown" @change="${rankChange}">
+
+                    ${rank == 0 ? $h`
+                        <option value="0" selected>Free Agents</option>
+                    ` : $h`
+                        <option value="0">Free Agents</option>
+                    `}
+
+
+                    ${leagues.map( (l, index) => $h`
+        
+                        ${l.rank == rank ? $h`
+                            <option value="${l.rank}" selected >${l.name}</option>
+                        ` : $h` 
+                            <option value="${l.rank}">${l.name}</option>
+                        `}
+                    `)}
+                  
+                </select>
+              </div>
+            </div>
+          </li>
+    
+        </ul>
+      </div>
+
+
+      <div class="block">
+      
+          <div class="search">
+              <!-- <div class="searchbar searchbar-inline">
+                  <div class="searchbar-input-wrap">
+                      <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
+                      <i class="searchbar-icon"></i>
+                      <span class="input-clear-button"></span>
+                  </div>
+              </div> -->
+              <div class="position">
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link active">Batters</a> |
+                  <a href="#playerStatsPitchers" @click="${positionClick}" class="tab-link">Pitchers</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="C">C</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="1B">1B</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="2B">2B</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="3B">3B</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="SS">SS</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="LF">LF</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="CF">CF</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="RF">RF</a>
+              </div>
+          </div>
+
+          <div class="tabs-animated-wrap">
+              <div class="tabs">
+                  <div class="tab tab-active" id="playerStatsHitters">
+
+                      ${selected == "stats" ? $h`
+                      <hitter-stats hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                          actions="${getActions}" statprop="seasonStats">
+                          <select @change="${statsChange}" class="stats-dropdown">
+                              <option value="stats" selected>Season Stats</option>
+                              <option value="ratings">Ratings</option>
+                              <option value="contracts">Contracts</option>
+                          </select>
+                      </hitter-stats>
+                      ` : $h` `}
+
+                      ${selected == "ratings" ? $h`
+                      <hitter-ratings hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                          actions="${getActions}">
+                          <select @change="${statsChange}" class="stats-dropdown">
+                              <option value="stats">Season Stats</option>
+                              <option value="ratings" selected>Ratings</option>
+                              <option value="contracts">Contracts</option>
+                          </select>
+                      </hitter-ratings>
+                      ` : $h` `}
+
+                      ${selected == "contracts" ? $h`
+                      <hitter-contracts hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                          actions="${getActions}">
+                          <select @change="${statsChange}" class="stats-dropdown">
+                              <option value="stats">Season Stats</option>
+                              <option value="ratings">Ratings</option>
+                              <option value="contracts" selected>Contracts</option>
+                          </select>
+                      </hitter-contracts>
+                      ` : $h` `}
+
+                  </div>
+                  <div class="tab" id="playerStatsPitchers">
+
+                      ${selected == "stats" ? $h`
+                      <pitcher-stats pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                          actions="${getActions}" statprop="seasonStats">
+                          <select @change="${statsChange}" class="stats-dropdown">
+                              <option value="stats" selected>Season Stats</option>
+                              <option value="ratings">Ratings</option>
+                              <option value="contracts">Contracts</option>
+                          </select>
+                      </pitcher-stats>
+                      ` : $h` `}
+
+                      ${selected == "ratings" ? $h`
+                      <pitcher-ratings pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                          actions="${getActions}">
+                          <select @change="${statsChange}" class="stats-dropdown">
+                              <option value="stats">Season Stats</option>
+                              <option value="ratings" selected>Ratings</option>
+                              <option value="contracts">Contracts</option>
+                          </select>
+                      </pitcher-ratings>
+                      ` : $h` `}
+
+                      ${selected == "contracts" ? $h`
+                      <pitcher-contracts pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                          actions="${getActions}">
+                          <select @change="${statsChange}" class="stats-dropdown">
+                              <option value="stats">Season Stats</option>
+                              <option value="ratings" >Ratings</option>
+                              <option value="contracts" selected>Contracts</option>
+                          </select>
+                      </pitcher-contracts>
+                      ` : $h` `}
+
+                  </div>
+
+              </div>
+          </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+  import Toolbar from "../common/toolbar.f7.html"
+  import StartDate from "../common/start-date.f7.html"
+
+  import { ContainerService } from "../../../service/container-service"
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { OwnerPageWebService } from "../../service/owner-page-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { Position } from "../../../service/enums.ts"
+
+  import dayjs from "dayjs"
+
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let statService = ContainerService.getInstance(StatService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+
+    let leagues = universeWebService.getLeagues()
+    let rank
+
+
+
+    const getActions = () => { }
+
+
+    let selected = "stats"
+
+    const PAGE_SIZE = 25
+
+    let loading = false
+
+    let searchAutoComplete
+
+    let allPlayers = []
+
+    let filters = {
+        position: undefined,
+        name: undefined
+    }
+
+    const getAllHitters = () => {
+        return allPlayers.filter(p => p.primaryPosition != Position.PITCHER)
+    }
+
+    const getAllPitchers = () => {
+        return allPlayers.filter(p => p.primaryPosition == Position.PITCHER)
+    }
+
+    const link = (href) => {
+        return "/" + href
+    }
+
+    const statusChange = (e) => {
+        filters.status = $(e.srcElement).val()
+        $update()
+        $f7.emit('refresh')
+    }
+
+    const statsChange = async (e) => {
+        selected = $(e.srcElement).val()
+        await loadStats()
+        $update()
+    }
+
+    const searchChange = (e) => {
+        filters.name = $(e.srcElement).val()
+
+        //Reset position
+        $('.position a').removeClass("active")
+        $('.position a').eq(0).addClass("active")
+        filters.position = undefined
+
+        $update()
+        $f7.emit('refresh')
+    }
+
+    const positionClick = (e) => {
+
+        // currentPage = 0
+
+        $('.position a').removeClass("active")
+        $(e.srcElement).addClass("active")
+
+        $('#playerSearch').val("")
+
+        let value = $(e.srcElement).data('pos')
+
+        filters.position = value
+
+        // setCurrentPage()
+        $update()
+        $f7.emit('refresh')
+
+    }
+
+
+    const loadStats = async () => {
+
+            loading = true
+
+            $f7.preloader.show()
+
+            try {
+
+                let rank = $f7.views.main.router.currentRoute?.query?.rank || 0
+
+                allPlayers.length = 0
+                let result = await playerWebService.getPlayers(universeWebService.getStartDate(), rank)
+
+                allPlayers.push(...result)
+                $f7.emit('refresh')
+
+            } catch (ex) { console.log(ex) }
+
+            $f7.preloader.hide()
+
+
+            loading = false
+
+        }
+
+
+
+
+
+    const rankChange = (e) => {
+
+      let rank = $(e.target).val()
+
+      let url = `${$f7.views.main.router.currentRoute.path}?rank=${rank}&startDate=${universeWebService.getStartDate()}`
+
+      $f7.views.main.router.navigate(url, { reloadCurrent: true })
+
+    }
+
+
+    $on('pageBeforeIn', async (e) => {
+
+      try {
+
+        universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
+
+        rank = $f7.views.main.router.currentRoute?.query?.rank
+
+        if (rank > 0) {
+            universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank)
+        } 
+
+        await loadStats()
+
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: { tabLink: "/players/", breadcrumbs:[{ text: "Players" }] }
+        }))
+
+
+        universeWebService.setMetadata(
+                `Players - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/logo.png`,
+                `View players in Ethereum Baseball League.`
+        ) 
+
+
+        await $update()
+
+      } catch (ex) { 
+        $f7.dialog.alert(ex.message, "There was an error")
+      }
+
+
+    })
+
+    $on('pageInit', async () => {
+    })
+
+
+    return $render
+  }
+</script>

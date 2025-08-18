@@ -1,0 +1,277 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="player-index">
+
+    <div class="page-content">
+
+      ${gameDate != undefined ? $h`
+
+        <div class="fixed-width-content center">
+
+            <div class="card card-header-divider card-outline">
+              <div class="card-header">
+                <${LeagueRank} rankchange=${rankChange} />
+                <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
+              </div>
+            </div>
+
+      
+            ${games?.inProgress?.length > 0 ? $h`
+              <div class="block-title">Scoreboard</div>
+
+              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
+
+                    ${games?.inProgress?.map( game => $h`
+                      <${InProgress} game=${game} />
+
+                    `)}
+
+                  </ul>
+
+              </div>
+              
+            ` : $h` `}
+
+            ${games?.scheduled?.length > 0 ? $h`
+              <div class="block-title">Schedule</div>
+
+              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+
+                  <ul>
+
+                    ${games?.scheduled?.map( game => $h`
+                      <${Scheduled} game=${game} />
+                    `)}
+
+                  </ul>
+
+              </div>
+            ` : $h` `}
+
+            ${games?.finished?.length > 0 ? $h`
+              <div class="block-title">Results</div>
+
+              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
+
+                    ${games?.finished?.map( game => $h`
+                      <${Result} game=${game} />
+                    `)}
+
+                  </ul>
+              </div>
+              
+            ` : $h` `}
+
+            ${games?.inProgress?.length == 0 && games?.scheduled?.length == 0 && games?.finished?.length == 0 ? $h`
+              <div class="block">
+                No games scheduled for today.
+              </div>
+            ` : $h` `}  
+
+
+        </div>
+
+
+                  
+
+
+      ` : $h` `}
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+  import LeagueRank from "../common/league-rank.f7.html"
+  import InProgress from "../game/in-progress.f7.html"
+  import Scheduled from "../game/scheduled.f7.html"
+  import Result from "../game/result.f7.html"
+
+  import LineScore from "./linescore.f7.html"
+
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import dayjs from 'dayjs'
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let allLeagues = []
+
+    let lastGameUpdate
+    let linescores = []
+
+    let timeoutTime = 10*1000
+    let timeoutId
+
+    let gameDate = dayjs().toDate()
+    let totalGames
+
+    let games = {}
+
+    const rankChange = (e) => {
+
+      let rank = $(e.target).val()
+
+      universeWebService.setRank(rank)
+
+      let url = `/games?rank=${rank}&gameDate=${dayjs(gameDate).format("YYYY-MM-DD")}&startDate=${universeWebService.getStartDate()}` 
+
+      $f7.views.main.router.navigate(url, { reloadCurrent: true })
+
+    }
+
+
+    // let firstPageItems = []
+    let hasMoreItems = true
+
+    const gameDateChange = async (e) => {
+      $f7.views.main.router.navigate(`/games/?rank=${universeWebService.getRank()}&gameDate=${dayjs($(e.srcElement).val()).format('YYYY-MM-DD')}&startDate=${universeWebService.getStartDate()}`, { reloadCurrent: true })
+    }
+
+    const checkForUpdate = async () => {
+
+      //Clear existing timeout if exists
+      if (timeoutId) clearTimeout(timeoutId)
+
+      //Get latest
+      let latest = await gameWebService.getLatest()
+
+      if (dayjs(latest).toDate() > lastGameUpdate) {
+        await loadGames()
+      } else {
+        timeoutId = setTimeout(checkForUpdate, timeoutTime)
+      }
+
+      $update()
+
+    }
+
+    const link = (href) => {
+      return "/" + href
+    }
+
+    const percentageFormatter = (num) => {
+      return new Intl.NumberFormat('default', {
+        style: 'percent',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(num)
+    }
+
+
+    const loadGames = async () => {
+
+      $f7.preloader.show()
+
+        try  {
+            let gameResult = await gameWebService.getGames(gameDate, universeWebService.getRank())
+            Object.assign(games, gameResult)
+        } catch(ex) { 
+          $f7.dialog.alert(ex.message, "Error")
+          console.log(ex) 
+        }
+
+        lastGameUpdate = new Date(new Date().toUTCString())
+        timeoutId = setTimeout(checkForUpdate, timeoutTime)
+
+        await $update()
+
+        $f7.preloader.hide()
+
+
+    }
+
+    $on('pageInit', async (e) => {
+
+
+    })
+    
+    $on('pageBeforeIn', async (e) => {
+
+      try {
+
+        let env = ContainerService.getInstance("env")()
+
+        universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
+        universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
+
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: { tabLink: "/games", breadcrumbs:[{ text: "Scores" }] }
+        }))
+
+        gameDate = $f7.views.main.router.currentRoute?.query?.gameDate || env.CURRENT_DATE
+
+        if (!gameDate) {
+
+          if (universeWebService.isCurrentSeason) {
+            gameDate = dayjs(new Date(new Date().toUTCString())).format('YYYY-MM-DD')
+          } else {
+            gameDate = dayjs(universeWebService.getStartDate()).format('YYYY-MM-DD')
+          }
+          
+        }
+
+        await $update()
+
+        //Load game
+        await loadGames()
+
+
+        universeWebService.setMetadata(
+                `Scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/logo.png`, 
+                `View scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`
+        ) 
+
+
+        await $update()
+
+      } catch(ex) {
+
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+
+    })
+
+    $on('pageReinit', async () => {
+    })
+    
+    $on('pageBeforeOut', async () => {
+      clearTimeout(timeoutId)
+      timeoutId = undefined
+    })
+
+    return $render
+
+  }
+</script>
+
+

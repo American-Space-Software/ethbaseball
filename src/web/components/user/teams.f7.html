@@ -1,0 +1,153 @@
+<template>
+
+
+    <div class="card card-outline card-header-divider">
+        <div class="card-header">Teams</div>
+        <div class="card-content data-table">
+
+            <table>
+            <thead>
+                <tr>
+                    <th class="label-cell team-name">Team</th>
+                    <th class="numeric-cell" style="width:100px;">Record</th>
+                    <th class="numeric-cell" style="width:50px;">Win %</th>
+                    <th class="numeric-cell" style="width:30px;">Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                ${teams?.length > 0 ? $h`
+                    ${teams?.map(t => $h`
+                        <tr>
+                            <td class="label-cell team-name">${t.hasValidLineup ? $h`🟢` : $h`🔴`} <a href="/t/${t.tokenId}">${t.name}</a></td>
+                            <td class="numeric-cell">${t.overallRecord.wins}-${t.overallRecord.losses}</td>
+                            <td class="numeric-cell">${statService.formatRatio(t.winPercent)}</td>
+                            <td class="numeric-cell">${t.rating.rating.toFixed(0)}</td>
+                        </tr>
+                    `)}
+                ` : $h` 
+                        <tr>
+                            <td colspan="5"></td>
+                        </tr>
+                `}
+
+            </tbody>
+            </table>
+
+
+
+
+        </div>
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { DiamondService } from "../../../service/diamond-service.ts"
+
+    import { Position } from "../../../service/enums.ts"
+
+
+
+    export default (props, { $on, $, $f7, $update }) => {
+
+        
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let diamondService = ContainerService.getInstance(DiamondService)
+
+        let selected = "stats"
+
+        let authInfo
+        let address
+        let balance
+
+
+        let teams = []
+
+
+        const getActions = () => {}
+
+        const link = (href) => {
+            return "/" + href
+        }
+
+        const isLoggedInUser = () => {
+            if (authInfo?.address != undefined && authInfo.address == address) return true
+            return false
+        }
+
+
+        const loadUser = async () => {
+
+            $f7.preloader.show()
+
+            address = $f7.views.main.router.currentRoute?.query?.address
+
+            if (!address) return
+
+            try {
+
+                authInfo = await loginWebService.getAuthInfo()
+                teams = await teamWebService.getTeamsByOwner(address)
+
+            } catch (ex) {
+                console.log(ex)
+                $f7.dialog.alert(`There was a problem fetching user data.`, "Error")
+            }
+
+            try {
+                balance = await diamondService.getBalance(address)
+            } catch (ex) {
+                // console.log(ex)
+            }
+
+
+
+            await $update()
+
+            $f7.preloader.hide()
+
+        }
+
+
+        const load = async () => {
+
+            await loadUser()
+
+            $update()
+        }
+
+        load()
+
+    
+        return $render
+
+    }
+</script>

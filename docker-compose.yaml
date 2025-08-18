@@ -1,0 +1,46 @@
+services:
+
+  engine:
+    build:
+      dockerfile: Dockerfile-engine
+      args:
+        - NODE_ENV=$NODE_ENV
+    image: ebl-$NODE_ENV-engine
+    container_name: ebl-$NODE_ENV-engine
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+
+  web:
+    build:
+      dockerfile: Dockerfile-web
+      args:
+        - NODE_ENV=$NODE_ENV
+    image: ebl-$NODE_ENV-web
+    container_name: ebl-$NODE_ENV-web
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    ports: 
+      - 80:80
+
+
+
+
+  mysqldb:
+    build:
+      dockerfile: Dockerfile-mysql
+      args:
+        - NODE_ENV=$NODE_ENV
+    image: ebl-mysql
+    container_name: ebl-mysql
+    env_file: .env.engine.$NODE_ENV
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      retries: 10
+      interval: 3s
+      timeout: 30s
+    ports: 
+      - 3306:3306
+    # cap_add:
+    #   - SYS_NICE  # CAP_SYS_NICE

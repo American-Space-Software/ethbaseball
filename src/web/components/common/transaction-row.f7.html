@@ -1,0 +1,279 @@
+<template>
+  
+  <div class="card data-table">
+
+    <slot></slot>
+
+    <div class="card-content">
+      <table>
+        <thead>
+          <tr>
+            <th class="medium-only" colspan="2" style="width:175px;">Item</th>
+            <th>Event</th>
+            <th class="numeric-cell">Price</th>
+            <th class="numeric-cell medium-only">From/To</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${transactionsViewModel?.transactions.map( (transaction, index) => $h`
+  
+            ${transaction.events.slice(0,9)?.map(processedEvent => $h`
+  
+              ${processedEvent.event == "Approval" && (!tokenId || processedEvent?.tokenId == tokenId) ? $h`
+                <${Approval} transaction=${transaction.transaction} event=${processedEvent} base_uri=${baseURI} row_item_view_models=${rowItemViewModels} index="${index}" />
+              ` : $h` `}
+          
+              ${processedEvent.event == "Transfer" && (!tokenId || processedEvent?.tokenId == tokenId) ? $h`
+                <${Transfer} transaction=${transaction.transaction} event=${processedEvent} base_uri=${baseURI} row_item_view_models=${rowItemViewModels} index="${index}"/>
+              ` : $h` `}
+          
+              ${processedEvent.event == "ApprovalForAll" && (!tokenId || processedEvent?.tokenId == tokenId) ? $h`
+                <${ApprovalForAll} transaction=${transaction.transaction} event=${processedEvent} base_uri=${baseURI} index="${index}"/>
+              ` : $h` `}
+          
+            `)}
+
+            ${transaction.events?.length > 10 ? $h`
+              <tr>
+                <td colspan="5">...</td>
+              </tr>
+              ` : $h` `}
+  
+  
+          `)}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</template>
+
+
+<style>
+
+</style>
+
+<script>
+
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+
+  // create local component
+  const Transfer = (props, { $h }) => {
+
+    let dayjs = ContainerService.getInstance("dayjs")
+    let walletService = ContainerService.getInstance("WalletService")
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+
+    const link = (href) => {
+        return `/${href}`
+    } 
+
+    const imageLink = (rowItemViewModel) => {
+      if (!rowItemViewModel) return      
+      return link('p/images/' + rowItemViewModel.tokenId)
+    }
+
+    let transaction = props.transaction
+    let event = props.event
+    let baseURI = props.base_uri
+    let rowItemViewModels = props.row_item_view_models
+    let index = props.index
+
+
+    
+    return () => $h`
+    
+        <tr ${index % 2 == 0 ? 'class="alt-row"' : ''}>
+
+          <td class="image">
+            <a href="/p/?playerId=${rowItemViewModels[event.tokenId]._id}">
+              <img src="${imageLink(rowItemViewModels[event.tokenId])}" class="latest-img" alt="${rowItemViewModels[event.tokenId]?.title}" height="50" width="50" alt="Item cover image"/> 
+            </a>
+          </td>
+
+          <td class="label-cell medium-only">
+
+            <a href="/p/?playerId=${rowItemViewModels[event.tokenId]._id}" class="title">
+              ${rowItemViewModels[event.tokenId]?.title}            
+            </a>
+
+          </td>
+          <td>
+            ${event.isMint ? $h`
+              <a href="https://etherscan.io/tx/${transaction._id}" class="external" target="_blank">Mint</a>
+            ` : $h`
+
+              ${transaction?.transactionValue?.markets && Object.keys(transaction?.transactionValue?.markets).length > 0 ? $h`
+                <a href="https://etherscan.io/tx/${transaction._id}" class="external" target="_blank">Sold</a> on ${Array.from(Object.keys(transaction.transactionValue?.markets).map( k => k)).join(", ")} ${transaction.transactionValue?.aggregator ? ' / ' + transaction.transactionValue.aggregator : ''}
+
+              ` : $h`
+                <a href="https://etherscan.io/tx/${transaction._id}" class="external" target="_blank">${event.event}</a>
+              `}
+              
+            `}
+
+            <p class="date">${dayjs(transaction.timestamp * 1000).fromNow()}</p>
+          </td>
+
+          <td class="numeric-cell">
+            
+            <span class="eth-value">${transaction.transactionValue?.tokenPrice[event.tokenId]?.price.toFixed(5)} ${transaction.transactionValue?.tokenPrice[event.tokenId]?.currency}</span>
+            ${transaction.transactionValue?.tokenPrice[event.tokenId]?.usdValue ? $h`
+              <br />
+              <span class="dollar-value">${transactionWebService.abbreviateDollars(transaction.transactionValue?.tokenPrice[event.tokenId]?.usdValue, 2)}</span>
+            ` : $h` `}
+
+           </td>
+          <td class="numeric-cell medium-only">
+            <a href="/u/?address=${event.fromAddress}" class="${event.fromAddress == transaction.from ? 'is-from' : ''}">
+                  ${getDisplayAddress(event.fromAddress)}
+            </a> <span class="f7-icons">arrow_right</span>
+
+            <a href="/u/?address=${event.toAddress}" class="${event.toAddress == transaction.from ? 'is-from' : ''}">
+              ${getDisplayAddress(event.toAddress)}
+            </a>
+
+          </td>
+        </tr>
+    `;
+  }
+
+  const Approval = (props, { $h }) => {
+
+    let dayjs = ContainerService.getInstance("dayjs")
+    let walletService = ContainerService.getInstance("WalletService")
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+
+    const link = (href) => {
+        return `/${href}`
+    } 
+
+
+    const imageLink = (rowItemViewModel) => {
+      return link('p/images/' + rowItemViewModel._id)
+    }
+
+    let transaction = props.transaction
+    let event = props.event
+    let baseURI = props.base_uri
+    let rowItemViewModels = props.row_item_view_models
+    let index = props.index
+    
+    let owner = event?.namedArgs?.owner
+    let approved = event?.namedArgs?.approved
+    let from = transaction?.from
+    
+    return () => $h`
+      <tr class="${index % 2 == 0 ? "alt-row" : ''}">
+
+          <td class="image">
+            <a href="/p/?playerId=${rowItemViewModels[event.tokenId]._id}">
+              <img src="${imageLink(rowItemViewModels[event.tokenId])}" class="latest-img" alt="${rowItemViewModels[event.tokenId].title}" height="40" width="40" alt="Item cover image" /> 
+            </a>
+          </td>
+
+          <td class="label-cell medium-only">
+
+            <a href="/p/?playerId=${rowItemViewModels[event.tokenId]._id}" class="title">
+              ${rowItemViewModels[event.tokenId].title}            
+            </a>
+
+            
+          </td>
+          <td>
+            <a href="https://etherscan.io/tx/${transaction._id}" class="external" target="_blank">${event.event}</a> <br />
+            
+            <p class="date">${dayjs(transaction.timestamp * 1000).fromNow()}</p>
+          </td>
+
+          <td class="numeric-cell"></td>
+          <td class="medium-only numeric-cell">
+            <a href="#">${approved}</a>
+          </td>
+        </tr>
+    `;
+  }
+
+  const ApprovalForAll = (props, { $h }) => {
+
+    let dayjs = ContainerService.getInstance("dayjs")
+    let walletService = ContainerService.getInstance("WalletService")
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+
+    let transaction = props.transaction
+    let event = props.event
+    let baseURI = props.base_uri
+    let index = props.index
+
+    return () => $h`
+        <tr class="${index % 2 == 0 ? "alt-row" : ''}">
+
+          <td class="image">
+            ${event.namedArgs.approved ? $h`🟢` : $h`🔴`}
+          </td>
+
+          <td class="label-cell medium-only">
+            
+          </td>
+          <td>
+             <a href="https://etherscan.io/tx/${transaction._id}" class="external" target="_blank">${event.event}</a>  <br />
+
+             <p class="date">${dayjs(transaction.timestamp * 1000).fromNow()}</p>
+          </td>
+
+          <td class="numeric-cell"></td>
+          <td class="medium-only numeric-cell">
+            <a href="/u/?address=${event.namedArgs.owner}" class="${event.namedArgs.owner == transaction.from ? 'is-from' : ''}">${getDisplayAddress(event.namedArgs.owner)}</a> 
+            <span class="f7-icons">arrow_right</span>
+            <a href="/u/?address=${event.namedArgs.operator}" class="${event.namedArgs?.operator == transaction.from ? 'is-from' : ''}">${getDisplayAddress(event.namedArgs.operator)}</a>
+          </td>
+
+        </tr>
+    `;
+  }
+
+  const getDisplayAddress = (address) => {
+    let walletService = ContainerService.getInstance("WalletService")
+    if (transactionsViewModel?.ens && transactionsViewModel.ens[address]) return transactionsViewModel.ens[address]
+    return walletService.truncateEthAddress(address) 
+  }
+
+  let transactionsViewModel
+
+  let handlerBody 
+
+  let handler = async (e) => {
+      return handlerBody(e)
+  }
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let dayjs = ContainerService.getInstance("dayjs")
+
+    let walletService = ContainerService.getInstance("WalletService")
+
+    let baseURI = "/"
+
+    transactionsViewModel = props.transactions 
+
+
+    let rowItemViewModels = props.items
+    let tokenId = props.token
+
+
+    handlerBody = async (e) => {
+      transactionsViewModel = e.transactionsViewModel
+      await $update()
+    }
+
+    // handle event
+    document.removeEventListener('transactions-updated', handler)
+    document.addEventListener('transactions-updated', handler)
+
+
+    return $render
+  }
+
+</script>

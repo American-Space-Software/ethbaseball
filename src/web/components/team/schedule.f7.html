@@ -1,0 +1,330 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="team-schedule">
+
+    <div class="page-content">
+
+        <div class="card card-outline card-header-divider">
+
+            <div class="card-header">
+                <input type="text" placeholder="Month" readonly="readonly" id="picker-date" />
+            </div>
+
+            <div class="card-content card-content-padding">
+                <div class="stat-table-wrapper">
+                    <table class="stat-table">
+                        <thead>
+                            <th>Date</th>
+                            <th>Opp</th>
+                            <th>W/L</th>
+                            <th>R</th>
+                            <th>RA</th>
+                            <th>Record</th>
+                            <th>Win</th>
+                            <th>Loss</th>
+                            <th>Profit</th>
+                        </thead>
+                        <tbody>
+                            ${gameLogs?.length > 0 ? $h`
+                                ${gameLogs.map(gl => $h`
+                                    <tr>
+                                        <td class="game"><a href="${universeWebService.startDateLink(`/g/${gl._id}`)}">${dayjs(gl.startDate).format('LL')}</a></td>
+
+                                        <td><a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">${gl.isHome == true ? '' : '@ '}${gl.opp.cityName}</a> ${gl.opp.wins}-${gl.opp.losses}</td>
+
+                                        ${gl.isComplete ? $h`
+                                            <td>${gl.team.isWinner ? "W" : "L"}</td>
+                                        ` : $h`
+                                            <td></td>
+                                        `}
+
+                                        <td>${gl.team.runs}</td>
+                                        <td>${gl.opp.runs}</td>
+
+                                        ${gl.isComplete ? $h`
+                                            <td>${gl.team.wins}-${gl.team.losses}</td>
+                                        ` : $h`
+                                            <td></td>
+                                        `}
+
+                                        
+                                        <td>
+                                            ${gl.winningPitcher ? $h`
+                                            <a href="${universeWebService.startDateLink(`/p/${gl.winningPitcher._id}`)}">${gl.winningPitcher.name}</a>
+                                            ` : $h` `}
+                                        </td>
+
+                                        <td>
+                                            ${gl.losingPitcher ? $h`
+                                            <a href="${universeWebService.startDateLink(`/p/${gl.losingPitcher._id}`)}">${gl.losingPitcher.name}</a>
+                                            ` : $h` `}
+                                        </td>
+
+                                        <td>
+                                            ${gl.team.finances?.totalProfit ? $h`${universeWebService.displayDiamonds(gl.team.finances?.totalProfit)}` : $h` `}
+                                        </td>
+
+                                    </tr>
+                                `)}
+                            ` : $h`
+                            <td colspan="9">No games played.</td>
+                            `}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+     
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { CityWebService } from "../../service/city-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import { TeamComponentService } from "../../service/team-component-service.ts"
+
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let cityWebService = ContainerService.getInstance(CityWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    let statService = ContainerService.getInstance(StatService)
+
+   
+    let tokenId
+    let startDate
+
+    let date
+    let gameLogs
+    let picker
+
+    const PAGE_SIZE = 25
+
+
+    const showRating = (before, after) => {
+
+        if (!after) return before.toFixed(0)
+
+        let change = after - before
+
+        return `${after.toFixed(0)} (${change > 0 ? "+" : ""}${(change).toFixed(0)})`
+    }
+
+    const pickerChange = (picker, values, displayValues) => {
+
+        let date = dayjs(`${values[1]}-${values[0] + 1}-01`).toDate()
+
+        if (picker.cols?.length > 0) {
+            picker.cols[0].setValue(values[1])
+            picker.cols[1].setValue(values[0])
+        }
+
+    }
+
+    const pickerClose = (picker, values, displayValues) => {
+        console.log(tokenId)
+        let date = dayjs(`${picker.getValue()[1]}-${parseInt(picker.getValue()[0]) + 1}-01`).toDate()
+
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/schedule/${tokenId}?date=${dayjs(date).format('YYYY-MM-DD')}`), { reloadCurrent: true })
+
+    }
+
+
+
+    const load = async () => {
+
+      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
+      let currentTokenId = $f7.views.main.router.currentRoute?.params?.tokenId
+
+
+      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
+      universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
+
+      try {
+
+          tokenId = currentTokenId
+
+          startDate = currentStartDate
+
+          universeWebService.setStartDate(startDate, $f7.views.main.router.currentRoute)
+
+          let team = await teamComponentService.loadTeam(tokenId, universeWebService.getStartDate(), { forceRefresh: true })
+
+          universeWebService.setRank(team.leagueRank)
+
+          $f7.emit('team-loaded')
+          $f7.emit('refresh')
+
+          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: {
+              tabLink: "/l/", breadcrumbs: [
+                {
+                  text: "Leagues",
+                  path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
+                },
+                {
+                  text: "Standings",
+                  path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
+                }, 
+                { 
+                    text: teamWebService.getTeamName(team), 
+                    path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
+                }, { text: 'Schedule'}]
+            }
+          }))
+
+          universeWebService.setMetadata(
+                `${team.city.name} ${team.name} Schedule - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
+                `View the schedule for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
+         ) 
+
+
+          await $update()
+
+      } catch (ex) {
+
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+
+    }
+
+
+
+    const loadGameLogs = async () => {
+
+        tokenId = $f7.views.main.router.currentRoute?.params?.tokenId
+        date = $f7.views.main.router.currentRoute?.query?.date
+
+        //If we're showing an old season use the startDate as the date
+        if (!universeWebService.isCurrentSeason() && !date) {
+            date = universeWebService.startDate
+        }
+
+
+        $f7.preloader.show()
+
+        // Inline date-time
+        const d = dayjs(date).toDate()
+        picker = $f7.picker.create({
+            inputEl: '#picker-date',
+            value: [
+                d.getMonth(),
+                d.getFullYear()
+            ],
+            formatValue: function (values, displayValues) {
+                return displayValues[0] + ' ' + values[1];
+            },
+            cols: [
+                // Months
+                {
+                    values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                    displayValues: ('January February March April May June July August September October November December').split(' '),
+                    textAlign: 'left'
+                },
+                // Years
+                {
+                    values: (function () {
+                        var arr = [];
+                        for (var i = 1950; i <= 2030; i++) { arr.push(i); }
+                        return arr;
+                    })(),
+                }
+            ],
+            on: {
+                change: pickerChange,
+                close: pickerClose
+            }
+        })
+
+
+        if (tokenId) {                
+            gameLogs = await teamWebService.getGameLog(tokenId, date)
+            await $update()
+        }
+
+        $f7.preloader.hide()
+
+    }
+
+    $on('pageInit', async (e) => {
+
+        await load()
+
+        await loadGameLogs()
+
+        await $update()
+
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeOut', async () => {
+    })
+
+
+    return $render
+
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+

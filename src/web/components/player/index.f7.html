@@ -1,0 +1,1048 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="player-index">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+        <${StartDate} />
+
+        ${player ? $h`
+
+          <div class="list media-list list-strong-ios player-info">
+            <ul>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media"><img style="border-radius: 8px" src="/player/image/${player._id}" width="150" height="150" /></div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">${player.fullName}</div>
+                    </div>
+                    <div class="item-text">
+
+                      ${player.team?._id ? $h`
+                        <span><strong>Team:</strong> <a href="${universeWebService.startDateLink(`/t/${player.team.tokenId}`)}">${player.team.cityName} ${player.team.name}</a></span><br />
+                      ` : $h` `}
+
+                      <span><strong>Position:</strong> ${player.primaryPosition}</span><br />
+                      <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
+                      <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
+                      <span><strong>Overall Rating:</strong> ${player.displayRating.toFixed(1)}</span><br />     
+                      
+                      ${player.contractYear?.salary != undefined ? $h`
+                        <span><strong>Salary:</strong> ${universeWebService.displayDiamonds(player.contractYear?.salary)}</span> 
+                      ` : $h` `}
+
+                      ${authInfo?.address != undefined && authInfo.address == player.team?.ownerId ? $h`
+                        <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a>  
+                      ` : $h` `}
+                          
+                      <!-- ${player.askingPrice ? $h`
+                        <a data-popup=".sign-popup" class="button button-fill color-green sign-button popup-open">Sign Player</a>  
+                      ` : $h` `} -->
+
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">Career Stats</div>
+                    </div>
+                    <div class="item-text">
+
+                      <div class="stat-table-wrapper">
+                        ${player.primaryPosition != "P" ? $h`
+                          <table class="stat-table small">
+                            <tr>
+                              <th></th>
+                              <th>G</th>
+                              <th>AB</th>
+                              <th>H</th>
+                              <th>2B</th>
+                              <th>3B</th>
+                              <th>HR</th>
+                              <th>R</th>
+                              <th>RBI</th>
+                              <th>SB</th>
+                              <th>AVG</th>
+                              <th>OBP</th>
+                              <th>SLG</th>
+                              <th>OPS</th>
+                              <th>WPA</th>
+                            </tr>
+          
+                            ${player.careerHitterStats.pa > 0 ? $h`
+                            <tr>
+                              <td>Career</td>
+                              <td>${ player.careerHitterStats.games }</td>
+                              <td>${ player.careerHitterStats.atBats }</td>
+                              <td>${ player.careerHitterStats.hits }</td>
+                              <td>${ player.careerHitterStats.doubles }</td>
+                              <td>${ player.careerHitterStats.triples }</td>
+                              <td>${ player.careerHitterStats.homeRuns }</td>
+                              <td>${ player.careerHitterStats.runs }</td>
+                              <td>${ player.careerHitterStats.rbi }</td>
+                              <td>${ player.careerHitterStats.sb }</td>
+                              <td>${ statService.formatRatio(player.careerHitterStats?.avg) }</td>
+                              <td>${ statService.formatRatio(player.careerHitterStats?.obp) }</td>
+                              <td>${ statService.formatRatio(player.careerHitterStats?.slg) }</td>
+                              <td>${ statService.formatRatio(player.careerHitterStats?.ops) }</td>
+                              <td>${ player.careerHitterStats.wpa?.toFixed(2) }</td>
+                            </tr>
+                            ` : $h`
+                            <tr>
+                              <td style="text-align:center;" colspan="15">No games played.</td>
+                            </tr>
+                            `}
+          
+                          </table>
+                        ` : $h`
+                          <table class="stat-table small">
+                            <tr>
+                              <th>W</th>
+                              <th>L</th>
+                              <th>GS</th>
+                              <th>IP</th>
+                              <th>ERA</th>
+                              <th>AB</th>
+                              <th>PA</th>
+                              <th>R</th>
+                              <th>ER</th>
+                              <th>HR</th>
+                              <th>BB</th>
+                              <th>SO</th>
+                              <th>HBP</th>
+                              <th>WPA</th>
+                            </tr>  
+                            
+                              ${player.careerPitcherStats.battersFaced > 0 ? $h`
+                                <tr>
+                                  <td>${ player.careerPitcherStats?.wins }</td>
+                                  <td>${ player.careerPitcherStats?.losses }</td>
+                                  <td>${ player.careerPitcherStats?.starts }</td>
+                                  <td>${ player.careerPitcherStats?.ip }</td>
+                                  <td>${ player.careerPitcherStats?.era.toFixed(2) }</td>
+                                  <td>${ player.careerPitcherStats?.atBats }</td>
+                                  <td>${ player.careerPitcherStats?.battersFaced }</td>
+                                  <td>${ player.careerPitcherStats?.runs }</td>
+                                  <td>${ player.careerPitcherStats?.er }</td>
+                                  <td>${ player.careerPitcherStats?.homeRuns }</td>
+                                  <td>${ player.careerPitcherStats?.bb }</td>
+                                  <td>${ player.careerPitcherStats?.so }</td>
+                                  <td>${ player.careerPitcherStats?.hbp }</td>
+                                  <td>${ player.careerPitcherStats.wpa?.toFixed(2) }</td>
+              
+                                </tr>
+                            ` : $h`
+                              <tr>
+                                <td style="text-align:center;" colspan="13">No games played.</td>
+                              </tr>
+                            `}
+          
+                          </table>
+                        `} 
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">Season Stats</div>
+                    </div>
+                    <div class="item-text">
+                      <div class="stat-table-wrapper">
+
+                        ${player.primaryPosition != "P" ? $h`
+                        <table class="stat-table small">
+                          <thead>
+                            <tr>
+                              <th>Team</th>
+                              <th>OVR</th>
+                              <th>Age</th>
+                              <th>Year</th>
+                              <th>G</th>
+                              <th>PA</th>
+                              <th>AB</th>
+                              <th>R</th>
+                              <th>H</th>
+                              <th>2B</th>
+                              <th>3B</th>
+                              <th>HR</th>
+                              <th>RBI</th>
+                              <th>SB</th>
+                              <th>CS</th>
+                              <th>BB</th>
+                              <th>SO</th>
+                              <th>AVG</th>
+                              <th>OBP</th>
+                              <th>SLG</th>
+                              <th>OPS</th>
+                              <th>WPA</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+      
+                            ${player.careerSeasonsHitterStats?.length > 0 ? $h`
+      
+                            ${player.careerSeasonsHitterStats?.map( hitResult => $h`
+                              <tr>
+                                <td><a href="/t/${ hitResult.team.tokenId }?startDate=${dayjs(hitResult.season.startDate).format('YYYY-MM-DD')}" class="link">${ hitResult.team.abbrev }</a></td>
+                                <td>${ hitResult.displayRating.toFixed(1) }</td>
+                                <td>${ hitResult.age }</td>
+                                <td>${ dayjs(hitResult.season.startDate).format("YYYY-MM") }</td>
+                                <td>${ hitResult.games }</td>
+                                <td>${ hitResult.pa }</td>
+                                <td>${ hitResult.atBats }</td>
+                                <td>${ hitResult.runs }</td>
+                                <td>${ hitResult.hits }</td>
+                                <td>${ hitResult.doubles }</td>
+                                <td>${ hitResult.triples }</td>
+                                <td>${ hitResult.homeRuns }</td>
+                                <td>${ hitResult.rbi }</td>
+                                <td>${ hitResult.sb }</td>
+                                <td>${ hitResult.cs }</td>
+                                <td>${ hitResult.bb }</td>
+                                <td>${ hitResult.so }</td>
+                                <td>${ formatRatio(hitResult.avg) }</td>
+                                <td>${ formatRatio(hitResult.obp) }
+                                </td>
+                                <td>${ formatRatio(hitResult.slg) }</td>
+                                <td>${ formatRatio(hitResult.ops) }</td>
+                                <td>${ hitResult.wpa?.toFixed(2) }</td>
+                              </tr>
+      
+                            `)}
+      
+                            ` : $h`
+                            <tr>
+                              <td style="text-align:center;" colspan="20">No games played.</td>
+                            </tr>
+                            `}
+      
+      
+      
+      
+      
+                          </tbody>
+                        </table>
+                      ` : $h`
+                        <table class="stat-table small">
+                          <thead>
+                            <tr>
+                              <th>Team</th>
+                              <th>OVR</th>
+                              <th>Age</th>
+                              <th>Year</th>
+                              <th>GS</th>
+                              <th>W-L</th>
+                              <th>IP</th>
+                              <th>H</th>
+                              <th>R</th>
+                              <th>ER</th>
+                              <th>HR</th>
+                              <th>BB</th>
+                              <th>SO</th>
+                              <th>HBP</th>
+                              <th>BF</th>
+                              <th>ERA</th>
+                              <th>WPA</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+      
+      
+                            ${player.careerSeasonsPitcherStats?.length > 0 ? $h`
+      
+                            ${player.careerSeasonsPitcherStats?.map( pitchResult => $h`
+                              <tr>
+                                <td><a href="/t/${ pitchResult.team.tokenId }?startDate=${dayjs(pitchResult.season.startDate).format('YYYY-MM-DD')}">${ pitchResult.team.abbrev }</a></td>
+                                <td>${ pitchResult.displayRating.toFixed(1) }</td>
+                                <td>${ pitchResult.age }</td>
+                                <td>${ dayjs(pitchResult.season.startDate).format("YYYY-MM") }</td>
+
+                                <td>${ pitchResult.starts }</td>
+                                <td>${ pitchResult.wins }-${ pitchResult.losses }</td>
+                                <td>${ statService.getIP(pitchResult.outs) }</td>
+                                <td>${ pitchResult.hits }</td>
+                                <td>${ pitchResult.runs }</td>
+                                <td>${ pitchResult.er }</td>
+                                <td>${ pitchResult.homeRuns }</td>
+                                <td>${ pitchResult.bb }</td>
+                                <td>${ pitchResult.so }</td>
+                                <td>${ pitchResult.hbp }</td>
+                                <td>${ pitchResult.battersFaced }</td>
+                                <td>${ statService.getERA(pitchResult.er, pitchResult.outs) != undefined ? statService.getERA(pitchResult.er, pitchResult.outs).toFixed(2) : "∞" }</td>
+                                <td>${ pitchResult.wpa?.toFixed(2) }</td>
+                              </tr>
+                            `)}
+      
+                            ` : $h`
+                              <tr>
+                                <td style="text-align:center;" colspan="14">No games played.</td>
+                              </tr>
+                            `}
+      
+                          </tbody>
+                        </table>
+                      `}
+
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+              ${player.completeContracts?.length > 0 ? $h`
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title-row">
+                        <div class="item-title">Completed Contracts</div>
+                      </div>
+                      <div class="item-text">
+                          
+                          ${player.completeContracts.map( cc => $h`
+                            
+                            <div class="stat-table-wrapper">
+                              <table class="stat-table small">
+                                <thead>
+                                  <tr>
+                                    <th>Year</th>
+                                    <th>Season</th>
+                                    <th>Salary</th>
+                                    <th>Pre-Arbitration</th>
+                                    <th>Arbitration</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  ${cc.years.map( (y, index) => $h`
+                                    <tr>
+                                      <td>${index + 1}</td>
+                                      <td>${y.startDate}</td>
+                                      <td>${universeWebService.displayDiamonds(y.salary)}</td>
+                                      <td>${y.isPreArbitration ? $h`X` : $h` `}</td>
+                                      <td>${y.isArbitration ? $h`X` : $h` `}</td>
+                                    </tr>
+                                  `)}
+                                </tbody>
+                              </table>
+                            </div>
+
+                          `)}
+    
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+              ` : $h` `}
+
+              <li>
+                <div class="item-content">
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">Contract</div>
+                    </div>
+                    <div class="item-text">
+
+                      ${player.contract?.startDate ? $h`
+                        
+                        <div class="stat-table-wrapper">
+                          <table class="stat-table small">
+                            <thead>
+                              <tr>
+                                <th>Year</th>
+                                <th>Season</th>
+                                <th>Salary</th>
+                                <th>Pre-Arbitration</th>
+                                <th>Arbitration</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${player.contract.years.map( (y, index) => $h`
+                                <tr>
+                                  <td>${index + 1}</td>
+                                  <td>${y.startDate}</td>
+                                  <td>${universeWebService.displayDiamonds(y.salary)}</td>
+                                  <td>${y.isPreArbitration ? $h`X` : $h` `}</td>
+                                  <td>${y.isArbitration ? $h`X` : $h` `}</td>
+                                </tr>
+                              `)}
+                            </tbody>
+                          </table>
+                        </div>
+
+                      ` : $h` `}
+
+                    
+                      ${player.askingPrice && player.isRetired == false ? $h`
+
+                        <br />
+
+                        ${player.contract.isRookie ? $h`
+                          ${player.fullName} is seeking to continue their rookie contract.
+                        ` : $h`
+                          ${player.fullName} is seeking a ${player.contract.years.length}-year contract paying ${universeWebService.displayDiamonds(player.askingPrice)} per season.
+                        `}
+                        
+                      ` : $h` `}
+
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+
+
+            </ul>
+          </div>
+
+
+          ${player.primaryPosition == "P" ? $h`
+            
+            <div class="card">
+              <div class="card-header">Recent Games</div>
+              <div class="card-content">
+                  <table class="stat-table">
+                      <thead>
+                          <tr>
+                            <th class="game">Game</th>
+                            <th>Age</th>
+                            <th>W-L</th>
+                            <th class="numeric-cell">RAT</th>
+                            <th class="numeric-cell">IP</th>
+                            <th class="numeric-cell">H</th>
+                            <th class="numeric-cell">R</th>
+                            <th class="numeric-cell">ER</th>
+                            <th class="numeric-cell">HR</th>
+                            <th class="numeric-cell">BB</th>
+                            <th class="numeric-cell">SO</th>
+                            <th class="numeric-cell">HBP</th>
+                            <th class="numeric-cell">BF</th>
+                            <th class="numeric-cell">WPA</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${player.pitcherGameLog?.length > 0 ? $h`
+                          
+                              ${player.pitcherGameLog?.map(log => $h`
+                                  <tr>
+                                      <td class="game"><a href="${universeWebService.startDateLink(`/g/${log.gameId}`)}">${dayjs(log.dateCreated).format('LL')}</a></td>
+                                      <td>${log.age}</td>
+                                      <td>${showWL(log)}</td>
+                                      <td class="numeric-cell">${playerWebService.getPlayerDisplayRating(log.overallRatingAfter, log.age) }</td>
+                                      <td class="numeric-cell">${statService.getIP(log.outs)}</td>
+                                      <td class="numeric-cell">${log.hits}</td>
+                                      <td class="numeric-cell">${log.runs}</td>
+                                      <td class="numeric-cell">${log.er}</td>
+                                      <td class="numeric-cell">${log.homeRuns}</td>
+                                      <td class="numeric-cell">${log.bb}</td>
+                                      <td class="numeric-cell">${log.so}</td>
+                                      <td class="numeric-cell">${log.hbp}</td>
+                                      <td class="numeric-cell">${log.battersFaced}</td>
+                                      <td class="numeric-cell">${log.wpa?.toFixed(2)}</td>
+                                  </tr>
+                              `)}
+
+                          ` : $h`
+                                  <tr>
+                                      <td colspan="16">No data.</td>
+                                  </tr>
+                          
+                          `}
+                      </tbody>                            
+                  </table>
+              </div>
+            </div>
+          ` : $h`
+          
+            <div class="card">
+              <div class="card-header">Recent Games</div>
+              <div class="card-content">
+                  <table class="stat-table">
+                      <thead>
+                          <tr>
+                              <th class="game">Game</th>
+                              <th>Age</th>
+                              <th>W-L</th>
+                              <th class="numeric-cell">RAT</th>
+                              <th class="numeric-cell">PA</th>
+                              <th class="numeric-cell">AB</th>
+                              <th class="numeric-cell">R</th>
+                              <th class="numeric-cell">H</th>
+                              <th class="numeric-cell">2B</th>
+                              <th class="numeric-cell">3B</th>
+                              <th class="numeric-cell">HR</th>
+                              <th class="numeric-cell">RBI</th>
+                              <th class="numeric-cell">SB</th>
+                              <th class="numeric-cell">CS</th>
+                              <th class="numeric-cell">BB</th>
+                              <th class="numeric-cell">SO</th>
+                              <th class="numeric-cell">WPA</th>
+
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${player.hitterGameLog?.length > 0 ? $h`
+                          
+                              ${player.hitterGameLog?.map(log => $h`
+                                  <tr>
+                                      <td class="game"><a href="${universeWebService.startDateLink(`/g/${log.gameId}`)}">${dayjs(log.startDate).format('LL')}</a></td>
+                                      <td>${log.age}</td>
+                                      <td>${showTeamWL(log)}</td>
+                                      <td class="numeric-cell">${playerWebService.getPlayerDisplayRating(log.overallRatingAfter, log.age) }</td>
+                                      <td class="numeric-cell">${log.pa}</td>
+                                      <td class="numeric-cell">${log.atBats}</td>
+                                      <td class="numeric-cell">${log.runs}</td>
+                                      <td class="numeric-cell">${log.hits}</td>
+                                      <td class="numeric-cell">${log.doubles}</td>
+                                      <td class="numeric-cell">${log.triples}</td>
+                                      <td class="numeric-cell">${log.homeRuns}</td>
+                                      <td class="numeric-cell">${log.rbi}</td>
+                                      <td class="numeric-cell">${log.sb}</td>
+                                      <td class="numeric-cell">${log.cs}</td>
+                                      <td class="numeric-cell">${log.bb}</td>
+                                      <td class="numeric-cell">${log.so}</td>
+                                      <td class="numeric-cell">${log.wpa?.toFixed(2)}</td>
+
+                                  </tr>
+                              `)}
+
+                          ` : $h`
+                                  <tr>
+                                      <td colspan="22">No data.</td>
+                                  </tr>
+                          
+                          `}
+                      </tbody>                            
+                  </table>
+              </div>
+            </div>
+          
+          `}
+
+
+
+          <div class="grid medium-grid-cols-2">
+          
+            ${player.pitchRatings ? $h`
+
+              <div class="card card-header-divider card-outline">
+                <div class="card-header">Pitching Ratings</div>
+                <div class="card-content card-content-padding">
+
+                  <div class="rating-table">
+
+                    <div class="skill-wrapper">
+                      <div class="label">Power</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${player.pitchRatings.power }%;">${ player.pitchRatings.power }</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Control</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.pitchRatings.vsL.control}%;"><strong>L</strong> ${ player.pitchRatings.vsL.control }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.control }%;"> <strong>R</strong> ${ player.pitchRatings.vsR.control }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Movement</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.pitchRatings.vsL.movement }%;"> <strong>L</strong> ${ player.pitchRatings.vsL.movement }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.movement}%;"> <strong>R</strong> ${ player.pitchRatings.vsR.movement }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+
+                      <div class="label">Contact Profile</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.pitchRatings.contactProfile.groundball / 10 }%;"><strong>GB</strong> ${player.pitchRatings.contactProfile.groundball / 10 }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="blue" style="flex-basis:${ player.pitchRatings.contactProfile.flyBall / 10 }%;"> <strong>FB</strong> ${player.pitchRatings.contactProfile.flyBall / 10 }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="green" style="flex-basis:${ player.pitchRatings.contactProfile.lineDrive  / 10 }%;"><strong>LD</strong> ${player.pitchRatings.contactProfile.lineDrive / 10 }</div>
+                      </div>
+
+                    </div>
+                    
+                    <h4>Pitches</h4>
+
+                    ${player.pitchRatings.pitches?.map(p => $h`
+                      <div class="skill-wrapper">
+                        <div class="label">${ p.type }</div>
+                        <div class="skill-bar">
+                          <div class="red" style="flex-basis:${ p.rating }%;">${ p.rating }</div>
+                        </div>
+                      </div>
+                    `)}
+
+                  </div>
+
+                </div>
+              </div>
+
+            ` : $h` `}
+
+
+            <div class="card card-header-divider card-outline">
+              <div class="card-header">Hitting Ratings</div>
+              <div class="card-content card-content-padding">
+
+                <div class="rating-table">
+                  <div class="left">
+
+                    <div class="skill-wrapper">
+                      <div class="label">Speed</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${player.hittingRatings.speed }%;">${player.hittingRatings.speed}</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Steals</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${ player.hittingRatings.steals }%;">${player.hittingRatings.steals}</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Defense</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${ player.hittingRatings.defense }%;">${player.hittingRatings.defense}</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Arm</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${player.hittingRatings.arm }%;">${player.hittingRatings.arm }</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+
+                      <div class="label">Contact Profile</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.contactProfile.groundball / 10 }%;"><strong>GB</strong> ${player.hittingRatings.contactProfile.groundball / 10}</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="blue" style="flex-basis:${ player.hittingRatings.contactProfile.flyBall / 10 }%;"><strong>FB</strong> ${player.hittingRatings.contactProfile.flyBall / 10 }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="green" style="flex-basis:${ player.hittingRatings.contactProfile.lineDrive / 10 }%;"><strong>LD</strong> ${player.hittingRatings.contactProfile.lineDrive / 10 }</div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  <div class="right">
+
+                    <div class="skill-wrapper">
+                      <div class="label">Contact</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis: ${player.hittingRatings.vsL.contact}%;"><strong>L</strong> ${player.hittingRatings.vsL.contact}</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis: ${player.hittingRatings.vsR.contact }%;"><strong>R</strong> ${ player.hittingRatings.vsR.contact }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Gap Power</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.gapPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.gapPower }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.gapPower }%;"><strong>R</strong> ${player.hittingRatings.vsR.gapPower }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Home Run</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.homerunPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.homerunPower }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.homerunPower }%;"><strong>R</strong> ${ player.hittingRatings.vsR.homerunPower }</div>
+                      </div>
+
+                    </div>
+
+
+                    <div class="skill-wrapper">
+                      <div class="label">Plate Discipline</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.plateDiscipline }%;"><strong>L</strong> ${player.hittingRatings.vsL.plateDiscipline }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.plateDiscipline }%;"><strong>R</strong> ${player.hittingRatings.vsR.plateDiscipline }</div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+
+          </div>
+
+          ${player.team ? $h`
+            <div class="popup drop-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Drop Player</div>
+                      <div class="right">
+                        <!-- Link to close popup -->
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                      ${BigInt(player.dropCost) > BigInt(player.team.diamondBalance) ? $h`
+
+                        <div class="block">
+
+                          <p>
+                            <strong>Cost To Drop:</strong><br />
+                            ${universeWebService.displayDiamonds(player.dropCost)}
+                          </p>
+
+                          <p>
+                            <strong>Balance:</strong><br />
+                            ${universeWebService.displayDiamonds(player.team.diamondBalance)}
+                          </p>
+
+                          <p>
+                            <strong>Team does not have enough cash to buy out the contract.</strong>
+                          </p>
+
+                        </div>                  
+
+                      ` : $h`
+
+                        <div class="block">
+
+                          ${player.contract.isRookie ? $h`
+                            <p>${player.fullName} is signed to a rookie contract. You must pay the rest of their salary for the current season in order to drop them.</p>
+                          ` : $h`
+                            <p>To drop ${player.fullName} you must pay their full contract.</p>
+                          `}
+
+
+                          <p>
+                            <strong>Cost To Drop:</strong><br />
+                            ${universeWebService.displayDiamonds(player.dropCost)}
+                          </p>
+
+                          <p>
+                            <strong>Balance:</strong><br />
+                            ${universeWebService.displayDiamonds(player.team.diamondBalance)}
+                          </p>
+
+
+                          <p>
+                            Are you sure you want to drop ${player.fullName}? They will become a free agent that can be signed by any team.
+                          </p>
+                          
+
+                          <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
+
+                        </div>
+
+                      `}
+
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          ` : $h` `}
+
+          ${player.askingPrice ? $h`
+            <div class="popup sign-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Sign Player</div>
+                      <div class="right">
+                        <!-- Link to close popup -->
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+
+                      
+
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          ` : $h` `}
+
+
+
+        ` : $h` `}
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import {ethers } from "ethers"
+
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+  import StartDate from "../common/start-date.f7.html"
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    let statService = ContainerService.getInstance(StatService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+
+    let authInfo
+
+    let playerId
+    let player
+    // let activeContractYear
+
+    let itemViewModel
+
+    let contractAddress = universeContractService.universeAddress()
+
+    let loading
+    let latest
+
+    let animationContentHTML
+
+    const dropButtonClick = async (e) => {
+
+      try {
+        await playerWebService.getDropPlayerToken(player)
+        $f7.popup.close('.drop-popup')
+        $f7.views.main.router.refreshPage()
+      } catch(ex) {
+        $f7.dialog.alert(ex.message, "There was an error")
+      }
+    }
+
+    const showWL = (log) => {
+      if (log.wins == 1) return "W"
+      if (log.losses == 1) return "L"
+      return ""
+    }
+
+    const showTeamWL = (log) => {
+      if (log.teamWins == 1) return "W"
+      if (log.teamLosses == 1) return "L"
+      return ""
+    }
+
+    const showRating = (before, after) => {
+      if (!after) return before.rating.toFixed(0)
+
+      let change = after.rating - before.rating
+
+      return `${after.rating.toFixed(0)} (${change > 0 ? "+" : ""}${(change).toFixed(0)})`
+    }
+
+    const formatRatio = (num) => {
+
+      // Special case for 0 to format as .000
+      if (num === 0) {
+        return ".000";
+      }
+
+      // Format the number to always have 3 decimal places
+      let numStr = num.toFixed(3)
+
+      // Check if the number is less than 1 and greater than -1 but not 0
+      if (num < 1 && num > -1 && num !== 0) {
+        // Remove the leading 0
+        numStr = numStr.replace(/^0/, '')
+      }
+      // Return the formatted string
+      return numStr
+
+    }
+
+
+    const iframeLoad = (e) => {
+      let iframe = e.currentTarget
+      iframe.height = iframe.contentWindow.document.body.scrollHeight + 40
+
+      // $f7.preloader.hide()
+    }
+
+
+    const loadPlayer = async () => {
+
+      if (!playerId) return
+
+      player = await playerWebService.get(playerId, universeWebService.getStartDate())
+      authInfo = await loginWebService.getAuthInfo()
+
+      await $update()
+
+    }
+
+
+    $on('pageInit', async (e) => {
+
+    })
+
+
+    $on('pageBeforeIn', async (e) => {
+
+      try {
+
+        $f7.preloader.show()
+
+        universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
+        universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
+
+        playerId = $f7.views.main.router.currentRoute?.params?.id
+
+        await loadPlayer()
+
+        let breadcrumbs = [{ text: 'Players', path: universeWebService.startDateLink("/players/") }]
+
+        if (player.team?._id) {
+          breadcrumbs.push({ text: `${player.team.cityName} ${player.team.name}`, path: universeWebService.startDateLink(`/t/${player.team.tokenId}`) })
+        }
+
+        breadcrumbs.push({ text: player.fullName })
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: { tabLink: "/players/", breadcrumbs: breadcrumbs }
+        }))
+
+
+        universeWebService.setMetadata(
+                `${player.fullName} - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/player/image/${player._id}`, 
+                `View ${player.fullName} in Ethereum Baseball League.`
+        ) 
+
+
+        await $update()
+
+        $f7.preloader.hide()
+
+
+      } catch (ex) {
+
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeOut', async () => {
+    })
+
+
+
+    return $render
+
+  }
+</script>

@@ -1,0 +1,508 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="player-index">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+        <div class="hidden-on-load">
+
+          ${team?._id ? $h`
+
+          ${!team.ownerId ? $h`
+
+          <div class="card">
+            <div class="card-header">Mint Team</div>
+            <div class="card-content card-content-padding">
+
+              <div class="team-info">
+
+                <div class="left">
+                  <img src="/image/thumbnail/100/${team.logoId}" width="100" height="100" class="image" />
+                </div>
+
+                <div class="right">
+
+                  <a
+                    href="${universeWebService.startDateLink(`/t/${team?.tokenId}`)}">${teamWebService.getTeamName(team)}</a>
+                  <span class="tokenId"> #${ team.tokenId }</span>
+
+                  <div class="team-record">
+                    ${team.overallRecord.wins}-${team.overallRecord.losses} |
+                    ${statService.formatRatio(team.overallRecord.winPercent)} | ${team.overallRecord.gamesBack} GB
+                  </div>
+
+                </div>
+
+
+              </div>
+
+            </div>
+          </div>
+
+          ${mintInfo ? $h`
+
+            ${!mintInfo.error ? $h`
+              <div class="card">
+                <div class="card-header">Franchise Details</div>
+                <div class="card-content card-content-padding data-table">
+
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td class="label-cell">🔷 Diamond Balance:</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(team.financeSeason.diamondBalance)}
+                        </td>
+
+                      </tr>
+                      <tr>
+                        <td class="label-cell">🔷 Franchise Fee:</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds( mintInfo.diamonds.revenueWithMultiplier )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <br /><br />
+
+                  ${walletService.correctNetwork ? $h`
+
+                    <strong>Cost</strong>
+
+                    <table>
+                      <tbody>
+
+                        <tr class="total">
+                          <td class="label-cell">Mint With Diamonds:</td>
+                          <td class="numeric-cell">
+
+                            ${BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds) ? $h`
+                              ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
+                            ` : $h`
+                              ${universeWebService.displayDiamonds(authInfo.diamondBalance)} / ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
+                            `}
+
+                          </td>
+                        </tr>
+  
+                        ${mintInfo.eth?.ethCost ? $h`
+
+                          <tr>
+                            <td colspan="2" style="text-align: center;">- or -</td>
+                          </tr>
+
+                          <tr class="total">
+                            <td class="label-cell">Mint With ETH</td>
+                            <td class="numeric-cell">
+                              ${ethers.formatUnits(mintInfo.eth.ethCost, 'ether')} ETH
+                            </td>
+                          </tr>
+                        ` : $h` `}
+
+                        ${showStartMintButton ? $h`
+                          <tr>
+                              <td colspan="2" class="label-cell">
+                                <a class="button button-fill small-button center" @click="${mintTeamClick}">Start Mint Process</a>
+                              </td>
+                          </tr>
+                        ` : $h` `}
+
+                        ${teamMintPasses?.eth || teamMintPasses?.diamond ? $h`
+                          
+                            <tr>
+                                <td colspan="2" class="label-cell">
+
+                                  ${ isSigned(teamMintPasses?.eth) || isSigned(teamMintPasses?.diamond) ? $h`
+                                    
+                                    ${showMintWithDiamonds && isSigned(teamMintPasses.diamond) ? $h`
+                                      <br />
+                                      <a class="button button-fill small-button center" @click="${mintDiamondsTeamClick}">Mint with Diamonds 🔷</a>
+                                    ` : $h` `}
+
+                                    ${isSigned(teamMintPasses.eth) ? $h`
+                                      <br />
+                                      <a class="button button-outline small-button center" @click="${mintETHTeamClick}">Mint with ETH</a>
+                                    ` : $h` `}
+
+
+                                  ` : $h`
+
+                                    Processing request. Please wait... <div class="preloader"></div>
+                                  
+                                  ` }
+
+                                </td>
+                            </tr>
+
+                        ` : $h` `}
+
+  
+                      </tbody>
+                    </table>
+
+                  
+                  ` : $h`
+                    <br />
+                    <div class="block">
+                      Connect wallet to correct network to mint.
+                    </div>
+  
+                  `}
+  
+
+  
+  
+  
+                </div>
+              </div>              
+              ` : $h`
+
+              <div class="card">
+                <div class="card-header">Mint Key</div>
+                <div class="card-content card-content-padding">
+
+
+                  <form @submit="${mintKeySubmit}" id="mint-key-form">
+                    <div class="list">
+                      <ul>
+    
+                        <li class="item-content item-input" style="margin-top: 25px;">
+                          <div class="item-inner">
+                            <div class="item-title item-label">Enter Mint Key</div>
+                            <div class="item-input-wrap">
+                              <input type="text" placeholder="Mint Key" name="mintkey" required validate />
+                              <span class="input-clear-button"></span>
+                            </div>
+                          </div>
+                        </li>
+    
+                        <li class="item-content" style="display: block;">
+                          <button type="submit" class="button button-fill small-button save-button color-greeen">Enter</button>
+                        </li>
+                      </ul>
+                    </div>
+                  </form>
+    
+
+
+
+                </div>
+
+              </div>
+
+            `}
+
+
+
+          ` : $h`
+
+          <div class="block block-outline">
+            ${authInfo._id ? $h`<a href="/">Link a wallet</a> to mint team.` : $h`Login and link a wallet to mint
+            team.`}
+          </div>
+          `}
+
+          ` : $h`
+          <div class="block">
+            Team is already owned.
+          </div>
+          `}
+
+          ` : $h`
+          <div class="block">
+            Error loading team
+          </div>
+
+          `}
+
+        </div>
+
+        <div class="hide-on-pageinit">
+
+          <div class="card skeleton-text">
+            <div class="card-header">Mint Team</div>
+            <div class="card-content card-content-padding data-table">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+              lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ethers } from "ethers"
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { CityWebService } from "../../service/city-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { QueueService } from "../../../service/queue-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let cityWebService = ContainerService.getInstance(CityWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let queueService = ContainerService.getInstance(QueueService)
+
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    let statService = ContainerService.getInstance(StatService)
+
+    let team
+    let mintInfo
+    let authInfo
+
+    let cities
+
+    let formData
+    let selectedCity
+
+    let mintKey
+
+    let formValid = false
+    let showStartMintButton = true
+    let showMintWithDiamonds = true
+
+    let revenueWithMultiplier
+    let totalDiamonds
+
+    let teamMintPasses
+
+    const isSigned = (mp) => {
+      return (mp?.r && mp.s && mp.v)
+    }
+
+    const mintKeySubmit = async (e) => {
+
+      e.preventDefault()
+
+      let formData = $f7.form.convertToData('#mint-key-form')
+
+      mintKey = formData.mintkey
+      let tokenId = $f7.views.main.router.currentRoute?.params?.tokenId
+      let result = await teamWebService.getMintInfo(tokenId, mintKey)
+
+      team = result.team
+      mintInfo = result.mintInfo
+
+      if (mintInfo.error) {
+        $f7.dialog.alert('Incorrect Mint Key', 'Error')
+      }
+
+      await $update()
+
+    }
+
+    const mintTeamClick = async (e) => {
+
+      if (mintInfo.diamonds) {
+
+        try {
+
+          showStartMintButton = false
+
+          teamMintPasses = await teamWebService.getMint(mintInfo.diamonds.tokenId, mintKey)
+
+          await checkForMintPassProcessing()
+
+          $f7.emit('refresh-team')
+
+        } catch (ex) {
+          $f7.dialog.alert(ex.message, "There was an error")
+        }
+
+      }
+
+    }
+
+
+    const mintETHTeamClick = async (e) => {
+
+            try {
+
+              let result = await universeContractService.mint(teamMintPasses.eth.to, teamMintPasses.eth.tokenId, teamMintPasses.eth.ethCost, teamMintPasses.eth.expires, teamMintPasses.eth.v, teamMintPasses.eth.r, teamMintPasses.eth.s, {
+                  value: mintInfo.eth.ethCost
+              })
+
+              $f7.emit('refresh-team')
+
+            } catch (ex) {
+              $f7.dialog.alert(ex.message, "There was an error")
+            }
+
+    }
+
+    const mintDiamondsTeamClick = async (e) => {
+
+
+        try {
+
+          let response = await universeContractService.mintWithDiamonds(teamMintPasses.diamond.to, teamMintPasses.diamond.tokenId, teamMintPasses.diamond.totalDiamonds, teamMintPasses.diamond.expires, teamMintPasses.diamond.v, teamMintPasses.diamond.r, teamMintPasses.diamond.s)
+
+          $f7.emit('refresh-team')
+          // const toast = $f7.toast.create({
+          //     text: `<a href="${response.hash}">${response.hash}</a>`,
+          //     closeButton: true,
+          //     position: 'bottom',
+          //     horizontalPosition: 'center',
+          //     on: {
+          //         opened: function () {}
+          //     }
+          // })
+
+        } catch (ex) {
+          $f7.dialog.alert(ex.message, "There was an error")
+        }
+
+    }
+
+
+    const load = async () => {
+
+      let tokenId = $f7.views.main.router.currentRoute?.params?.tokenId
+
+      let result = await teamWebService.getMintInfo(tokenId)
+
+      team = result.team
+      mintInfo = result.mintInfo
+      authInfo = await loginWebService.getAuthInfo()
+
+      if (mintInfo) {
+        showMintWithDiamonds = BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds)
+        showStartMintButton = mintInfo.eth?.ethCost || showMintWithDiamonds
+      }
+
+      await $update()
+
+    }
+
+    const checkForMintPassProcessing = async () => {
+
+      let keepGoing = false
+
+      let hasDiamond = teamMintPasses.diamond != undefined
+      let hasEth = teamMintPasses.eth != undefined
+
+      teamMintPasses = await teamWebService.getTeamMintPass(team.tokenId)
+
+      if ( (hasEth && !isSigned(teamMintPasses.eth) ) || (hasDiamond && !isSigned(teamMintPasses.diamond)) ) {
+        keepGoing = true
+      }
+
+      await $update()
+      
+      if (keepGoing) {
+        setTimeout(async () => { await checkForMintPassProcessing() }, 5*1000)
+      }
+
+      
+      
+    }
+
+
+
+    $on('pageInit', async (e) => {
+
+    })
+
+
+    $on('pageBeforeIn', async (e) => {
+
+      try {
+
+        $f7.preloader.show()
+
+        await load()
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: {
+            tabLink: "/l/", breadcrumbs: [
+              {
+                text: "Leagues",
+                path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
+              },
+              {
+                text: "Standings",
+                path: universeWebService.startDateLink(`/l/standings/${team?.leagueRank}`)
+              },
+              { text: teamWebService.getTeamName(team), path: universeWebService.startDateLink(`/t/${team?.tokenId}`) }]
+          }
+        }))
+
+
+        universeWebService.setMetadata(
+              `Mint ${team.city.name} ${team.name} - Ethereum Baseball League`, 
+              window.location.href, 
+              `${env.WEB}/image/thumbnail/1024/${team.logoId}`, 
+              `Mint the ${team.city.name} ${team.name} in Ethereum Baseball League.`
+        ) 
+
+
+        $('.hide-on-pageinit').hide()
+        $('.hidden-on-load').removeClass('hidden-on-load')
+
+        await $update()
+
+        $f7.preloader.hide()
+
+
+      } catch (ex) {
+
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeOut', async () => {
+    })
+
+
+
+    return $render
+
+  }
+</script>

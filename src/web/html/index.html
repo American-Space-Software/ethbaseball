@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="utf-8">
+  <!--
+    Customize this policy to fit your own app's needs. For more guidance, see:
+        https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+    Some notes:
+        * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+        * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+        * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+            * Enable inline JS: add 'unsafe-inline' to default-src
+    -->
+  <!-- Required meta tags-->
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, minimum-scale=1, minimal-ui, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Language" content="en">
+
+  <!-- Color theme for statusbar -->
+  <title><%= htmlWebpackPlugin.options.title %></title>
+
+  <%= htmlWebpackPlugin.tags.headTags %>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚾️</text></svg>">
+
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@ethbaseball" />
+  <meta name="twitter:title" content="Ethereum Baseball League" />
+  <meta name="twitter:description" content="Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned." />
+  <meta name="twitter:image" content="https://playebl.com/0d299685eba4689d3185.png" />
+
+
+
+  <link rel="manifest" href="/app.webmanifest">
+  <link rel="icon" href="/ebl-app-icon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a3161">
+
+
+</head>
+
+<body>
+
+  <div id="app"></div>
+
+
+  <%= htmlWebpackPlugin.tags.bodyTags %>
+
+  <script type="module">
+    ebl.default()
+  </script>
+
+</body>
+
+
+
+</html>

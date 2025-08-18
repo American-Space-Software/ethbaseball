@@ -1,0 +1,173 @@
+<template>
+
+    <div class="block">
+
+        ${model?.transactions?.length > 0 ? $h`
+                    
+            <div class="stat-table-wrapper">
+                <table class="stat-table game-transactions">
+                    <thead>
+                    <th >Date</th>
+                    <th class="label-cell">Description</th>
+                    </thead>
+                    <tbody>
+
+                    ${model.transactions.map( t => $h`
+
+                        <tr>
+                        <td >${dayjs(t.date).format("ddd, MMM D, YYYY")}<div class="small-gray">${dayjs(t.dateCreated).format("h:mm A")}</div></td>
+                        <td class="label-cell">
+
+                            ${t.events.map( e => $h`
+                    
+                            ${e.signing ? $h`
+                                <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> signed <a href="${universeWebService.startDateLink(`/p/${e.signing.playerId}`)}">${getPlayer(e.signing.playerId).name}</a> to a 
+                                ${e.signing.contract.isRookie ? $h` rookie contract.` : $h` ${e.signing.contract.years.length}-year contract @ ${universeWebService.displayDiamonds(e.signing.contract.years[0].salary)}.`}
+                                
+                            ` : $h` `}
+                    
+                            ${e.dropping ? $h`
+                                <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> released <a href="${universeWebService.startDateLink(`/p/${e.dropping.playerId}`)}">${getPlayer(e.dropping.playerId).name}</a>.
+                            ` : $h` `}
+                    
+                            `)}
+
+                        </td>
+                        </tr>
+
+            
+                    `)}
+
+                    </tbody>
+                </table>
+            </div>
+
+        ` : $h`
+
+            <div class="block">
+                No activity.
+            </div>
+
+        `}
+
+
+        <div class="block split-row-both">
+            <div>
+                ${previousPage ? $h`
+                <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/activity/?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
+                ` : $h` `}
+            </div>
+            <div>
+                ${nextPage ? $h`
+                <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/activity/?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
+                ` : $h` `}
+            </div>
+      
+        </div>
+
+
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+    import { ethers } from "ethers"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { Position } from "../../../service/enums.ts"
+    import { TeamComponentService } from "../../service/team-component-service.ts"
+    import { GameTransactionWebService } from "../../service/game-transaction-web-service.ts"
+
+    export default (props, { $on, $, $f7, $onMounted, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
+
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+
+        let model = {}
+        let page = 1
+
+        let previousPage 
+        let nextPage
+
+        const getTeam = (id) => {
+            return model?.teams.find( t => t._id == id)
+        }
+
+        const getPlayer = (id) => {
+            return model?.players.find( p => p._id == id)
+        }
+
+        const load = async () => {
+
+            $f7.preloader.show()
+
+            try {
+
+                let rank = $f7.views.main.router.currentRoute?.query?.rank
+                let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
+
+                let result 
+                if (rank && parseInt(rank) > 0) {
+                    Object.assign(model, await gameTransactionWebService.getByLeagueSeason(universeWebService.getRank(), universeWebService.getStartDate(), page))
+                } else {
+                    Object.assign(model, await gameTransactionWebService.latest(1))
+                }
+
+                if (page > 1) {
+                    previousPage = page - 1
+                }
+
+                if (model.transactions?.length == 25) {
+                    nextPage = page + 1
+                }
+
+            } catch (ex) { console.log(ex) }
+
+            $f7.preloader.hide()
+
+        }
+
+
+
+        $onMounted(async (e) => {
+
+            await load()
+
+            eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                detail: { tabLink: "/players/", breadcrumbs:[{ text: "Players" }] }
+            }))
+
+            $update()
+        })
+
+        return $render
+
+    }
+</script>

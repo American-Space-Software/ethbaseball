@@ -1,0 +1,207 @@
+<template>
+
+    <div class="page page-with-subnavbar" data-name="user-profile">
+
+
+        <div class="page-content">
+
+            <div class="hidden-on-load">
+                <${UserDetails} vm=${vm} />
+            </div>
+
+            <div class="hide-on-pageinit">
+
+                <div class="card skeleton-text">
+                    <div class="card-header">User Info</div>
+                    <div class="card-content card-content-padding data-table">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+                        lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { DiamondService } from "../../../service/diamond-service.ts"
+
+    import { Position } from "../../../service/enums.ts"
+    import UserDetails from "./details.f7.html"
+
+
+
+    export default (props, { $on, $, $f7, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let diamondService = ContainerService.getInstance(DiamondService)
+
+        let selected = "stats"
+
+        let address
+        // let balance
+        // let teams = []
+
+        let searchAutoComplete
+
+        const PAGE_SIZE = 25
+
+        // let allPlayers = []
+        let vm = {}
+
+        let filters = {
+            position: undefined,
+            name: undefined
+        }
+
+        const getActions = () => {}
+
+        const getAllHitters = () => {
+            return vm.players.filter(p => p.primaryPosition != Position.PITCHER)
+        }
+
+        const getAllPitchers = () => {
+            return vm.players.filter(p => p.primaryPosition == Position.PITCHER)
+        }
+
+        const link = (href) => {
+            return "/" + href
+        }
+
+        const statsChange = async (e) => {
+            selected = $(e.srcElement).val()
+            await loadUser()
+            $update()
+        }
+
+        const searchChange = (e) => {
+
+            filters.name = $(e.srcElement).val()
+
+            //Reset position
+            $('.position a').removeClass("active")
+            $('.position a').eq(0).addClass("active")
+            filters.position = undefined
+
+            $update()
+            $f7.emit('refresh')
+        }
+
+        const positionClick = (e) => {
+
+            // currentPage = 0
+
+            $('.position a').removeClass("active")
+            $(e.srcElement).addClass("active")
+
+            $('#playerSearch').val("")
+
+            let value = $(e.srcElement).data('pos')
+            
+            filters.position = value
+
+            $update()
+            $f7.emit('refresh')
+
+        }
+
+        const loadUser = async () => {
+
+            address = $f7.views.main.router.currentRoute?.query?.address
+
+            if (address) {
+
+                try {
+
+                    Object.assign(vm, await ownerWebService.getOwnerViewModel(address))
+                    $f7.emit('refresh')
+
+                } catch (ex) {
+                    console.log(ex)
+                    $f7.dialog.alert(`There was a problem fetching user data.`, "Error")
+                }
+
+
+            }
+
+
+            await $update()
+
+        }
+
+
+        $on('pageBeforeIn', async (e) => {
+
+            $f7.preloader.show()
+
+
+            try {
+                
+                await loadUser()
+
+                eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                    detail: {
+                        tabLink: "/standings",
+                        breadcrumbs: [{ text: 'Owners', path: '/owners' }, { text: walletService.truncateEthAddress(address)}]
+                    }
+                }))
+
+                $('.hide-on-pageinit').hide()
+                $('.hidden-on-load').show()
+
+                await $update()
+
+            } catch(ex) {
+                console.log(ex)
+                $f7.dialog.alert(ex.message, "There was an error")
+            }
+
+            $f7.preloader.hide()
+
+
+        })
+
+
+        $on('pageBeforeOut', async () => {
+
+        })
+
+
+
+        return $render
+
+    }
+</script>

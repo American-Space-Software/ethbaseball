@@ -1,0 +1,59 @@
+<template>
+
+
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+    import { ethers } from "ethers"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { Position } from "../../../service/enums.ts"
+    import { TeamComponentService } from "../../service/team-component-service.ts"
+
+    export default (props, { $on, $, $f7, $onMounted, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+
+        
+
+        $onMounted(async (e) => {
+
+            await loadStats()
+
+
+
+            $update()
+        })
+
+        return $render
+
+    }
+</script>

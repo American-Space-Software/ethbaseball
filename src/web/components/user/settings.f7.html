@@ -1,0 +1,153 @@
+<template>
+
+    <div class="page page-with-subnavbar" data-name="settings">
+
+
+        <div class="page-content">
+
+            <div class="block">
+
+                ${authInfo?.address ? $h`
+
+                    <div class="block">
+                        Linked wallet: <a href="/u/?address=${authInfo.address}">${authInfo.address}</a>
+                    </div>
+                    
+                    <div class="list links-list list-outline">
+                        <ul>
+                            ${authInfo.discordId ? $h`
+                                <li>
+                                    <a @click="${linkUserClicked}" class="link">Link Different Wallet</a>
+                                </li>
+                                <li>
+                                    <a @click="${unlinkUserClicked}" class="link">Unlink Wallet</a>
+                                </li>
+                            ` : $h` `}
+                            <li>
+                                <a href="/auth/logout" class="link external">Logout</a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                ` : $h` `}
+            </div>
+
+
+        </div>
+
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { DiamondService } from "../../../service/diamond-service.ts"
+
+
+    export default (props, { $on, $, $f7, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let diamondService = ContainerService.getInstance(DiamondService)
+
+
+
+        let balance
+        let authInfo
+
+        let loading
+
+        const linkUserClicked = async (e) => {
+
+            let result = await loginWebService.confirmOwnership(authInfo)
+
+
+            if (result.status == 500) {
+                $f7.dialog.alert(undefined, "There was an error")
+            } else {
+                $f7.dialog.alert(undefined, "Success!")
+                window.location.reload()
+            }
+
+
+        }
+
+        const unlinkUserClicked = async (e) => {
+
+            $f7.dialog.confirm("Are you sure?", "Unlink Wallet", async () => {
+
+                let result = await fetch('/auth/unlink', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+
+                if (result.status == 500) {
+                    $f7.dialog.alert(undefined, "There was an error")
+                } else {
+                    $f7.dialog.alert(undefined, "Success!")
+                    window.location.reload()
+                }
+
+
+            }, () => { })
+
+        }
+
+
+        const loadUser = async () => {
+            authInfo = await loginWebService.getAuthInfo()
+            await $update()
+        }
+
+        $on('pageBeforeIn', async (e) => {
+
+            try {
+
+                await loadUser()
+
+                eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                    detail: {
+                        tabLink: "/",
+                        breadcrumbs: [{ text: "Home", path: "/" }, { text: "Settings" }]
+                    }
+                }))
+
+            } catch (ex) {
+                $f7.dialog.alert(ex.message, "There was an error")
+            }
+
+
+            await $update()
+
+        })
+
+        return $render
+
+    }
+</script>

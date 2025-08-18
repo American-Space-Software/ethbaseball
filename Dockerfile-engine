@@ -1,0 +1,53 @@
+# Start from an official Ubuntu image
+FROM ubuntu:20.04
+
+# Set environment variables to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl build-essential libssl-dev && \
+    apt-get clean
+
+RUN apt install -y git
+RUN apt install python3 python3-pip -y
+RUN apt-get update && apt-get -y install cmake protobuf-compiler
+
+
+
+# Install nvm (Node Version Manager)
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+
+# Set up nvm environment
+ENV NVM_DIR=/root/.nvm
+ENV NODE_VERSION=22.18.0
+RUN . "$NVM_DIR/nvm.sh" && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION
+
+# Ensure node and npm are available globally
+ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# Verify Node.js and npm installation
+RUN node -v && npm -v
+
+
+# Create and change to the web directory.
+WORKDIR /usr/src/engine
+
+# Copy application dependency manifests to the container image.
+# A wildcard is used to ensure both package.json AND package-lock.json are copied.
+# Copying this separately prevents re-running npm install on every code change.
+COPY package*.json ./
+
+# Install production dependencies.
+RUN npm install
+
+# Copy local code to the container image. https://stackoverflow.com/a/62900696
+COPY . ./
+
+RUN npm run build:engine
+
+ARG NODE_ENV
+COPY .env.engine.$NODE_ENV .env
+
+
+CMD ["sh", "-c", "node --env-file=.env --enable-source-maps dist/engine.js"]

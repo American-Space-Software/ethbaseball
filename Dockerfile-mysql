@@ -1,0 +1,4 @@
+FROM ubuntu/mysql:latest
+
+# Create a config file inside the container to disable binary logging
+RUN echo "[mysqld]\nskip-log-bin" > /etc/mysql/conf.d/no-binlog.cnf

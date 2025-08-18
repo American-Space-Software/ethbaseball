@@ -1,0 +1,555 @@
+<template>
+
+    <div class="fixed-width-content">
+
+        ${teamComponentService.team && teamComponentService.team.financeSeason ? $h`
+
+            <div class="block-title block-title-large">Front Office</div>
+
+            <div class="card card-outline card-header-divider">
+                <div class="card-header">Cash</div>
+                <div class="card-content card-content-padding">
+
+                    <div class="list list-strong list-dividers">
+                        <ul>
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title">
+                                            Cash
+                                        </div>
+                                        <div class="item-after">
+                                            ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} 
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                            ${authInfo?.address && authInfo?.address == teamComponentService.team.ownerId && teamComponentService.team.diamondBalance && BigInt(teamComponentService.team.diamondBalance) > 0 ? $h`
+
+                                <div class="item-inner">
+                                    <div class="item-title-row">
+                                      <div class="item-title">
+
+                                        <div style="padding: 10px;">
+                                            <a @click="${withdrawClick}" class="button button-fill withdraw-button color-red">Withdraw</a>
+                                            <!-- <a @click="${depositClick}" class="button button-fill withdraw-button color-green">Deposit</a> -->
+                                        </div>
+
+                                      </div>
+                                    </div>
+                                </div>
+
+                            ` : $h` `}
+
+                        </ul>
+                    </div>
+
+
+                    ${teamComponentService.team.diamondMintPasses?.length > 0 ? $h`
+
+                        <br /><br />
+    
+                        <strong>Mint Pass History</strong>
+                        <br /><br />
+                        <div class="list media-list">
+                          <ul>
+    
+                            ${teamComponentService.team.diamondMintPasses.map( mp => $h`
+                              <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                      <div class="item-title-row">
+                                        <div class="item-title">Mint Pass</div>
+                                        <div class="item-after"><a class="link" @click="${mintPassClick}" data-id="${mp._id}">Retry</a></div>
+                                      </div>
+                                      <div class="item-subtitle">${universeWebService.displayDiamonds(mp.amount)}</div>
+                                      <div class="item-text">Expires ${dayjs(mp.expires * 1000 ).fromNow()}</div>
+                                    </div>
+          
+                                </div>
+                              </li>
+                            `)}
+    
+                          </ul>
+                        </div>
+    
+    
+                      
+                      ` : $h` `}
+
+
+                </div>
+            </div>
+
+            <div class="card card-outline card-header-divider">
+                <div class="card-header">Financial Summary</div>
+        
+                <div class="card-content card-content-padding">
+        
+                <div class="list list-strong list-dividers">
+                    <ul>
+        
+
+
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        Projected Revenue
+                                    </div>
+                                    <div class="item-after">
+                                        ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+    
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        Projected Expenses
+                                    </div>
+                                    <div class="item-after">
+                                        ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+    
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        Projected Profit/Loss
+                                    </div>
+                                    <div class="item-after">
+                                        ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.profit.projectedTotal.total)}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li>
+                            <div class="item-content">
+
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        Market Size
+                                    </div>
+                                    <div class="item-after">
+                                        <div class="skill-wrapper">
+                                            <div class="skill-bar">
+                                                <div class="red" style="flex-basis: ${teamComponentService.team.city.population.toLocaleString()}%;">
+                                                    ${teamComponentService.team.city.population.toLocaleString()}
+                                                </div>
+                                            </div>
+                                        </div>                                         
+                                    </div>
+                                </div>
+
+                            </div>
+                        </li>
+    
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        Fan Interest (Long Term)
+                                    </div>
+                                    <div class="item-after">
+                                        <div class="skill-wrapper">
+                                            <div class="skill-bar">
+                                                <div class="red" style="flex-basis: ${getAsPercent(teamComponentService.team.fanInterestLongTerm)}%;">${getAsPercent(teamComponentService.team.fanInterestLongTerm)}</div>
+                                            </div>
+                                        </div>                                         
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        Fan Interest (Short Term)
+                                    </div>
+                                    <div class="item-after">
+                                        <div class="skill-wrapper">
+                                            <div class="skill-bar">
+                                                <div class="red" style="flex-basis: ${getAsPercent(teamComponentService.team.fanInterestShortTerm)}%;">${getAsPercent(teamComponentService.team.fanInterestShortTerm)}</div>
+                                            </div>
+                                        </div>                                         
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+        
+                    </ul>
+                </div>
+        
+                </div>            
+            </div>
+
+            <div class="card card-outline card-header-divider">
+                <div class="card-header">Revenue</div>
+        
+                <div class="card-content card-content-padding">
+                    <div class="data-table">
+                        <table>
+                        <thead>
+                            <tr>
+                                <th class="label-cell">Type</th>
+                                <th class="numeric-cell">Season To Date</th>
+                                <th class="numeric-cell">Projected (Remaining)</th>
+                                <th class="numeric-cell">Projected (Total)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td class="label-cell">Season Tickets</td>
+                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.seasonTickets)}</td>
+                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.seasonTickets)}</td>
+                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.seasonTickets)}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Gate Tickets</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.gate)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.gate)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.gate)}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Local Media Deal</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.localMedia)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.localMedia)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.localMedia)}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">National Media Deal</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.nationalMedia)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.nationalMedia)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.nationalMedia)}</td>
+                            </tr>
+
+                            <tr class="total">
+                                <td class="label-cell">Total</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.total)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}</td>
+                            </tr>
+
+                        </tbody>
+                        </table>
+                    </div>
+                </div>            
+            </div>
+
+            <div class="card card-outline card-header-divider">
+                <div class="card-header">Expenses</div>
+        
+                <div class="card-content card-content-padding">
+        
+                    <div class="data-table">
+                        <table>
+                        <thead>
+                            <tr>
+                                <th class="label-cell">Type</th>
+                                <th class="numeric-cell">Season To Date</th>
+                                <th class="numeric-cell">Projected (Remaining)</th>
+                                <th class="numeric-cell">Projected (Total)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="label-cell">Payroll</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.payroll)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.payroll)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.payroll)}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Stadium Lease</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.stadiumLease)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.stadiumLease)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.stadiumLease)}</td>
+                            </tr>
+                            <tr class="total">
+                                <td class="label-cell">Total</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.total)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.total)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}</td>
+                            </tr>
+
+
+                        </tbody>
+                        </table>
+                    </div>
+
+                </div>            
+            </div>
+
+            <div class="card card-outline card-header-divider">
+                <div class="card-header">Attendance</div>
+        
+                <div class="card-content card-content-padding">
+        
+                    <div class="list list-strong list-dividers">
+                        <ul>
+            
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title">
+                                            Stadium Capacity
+                                        </div>
+                                        <div class="item-after">
+                                            ${teamComponentService.team.stadium.capacity.toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title">
+                                            Season Tickets Sold
+                                        </div>
+                                        <div class="item-after">
+                                            ${teamComponentService.team.financeSeason.attendance.seasonTicketsSold.toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title">
+                                            Attendance Per Game
+                                        </div>
+                                        <div class="item-after">
+                                            ${teamComponentService.team.financeSeason.homeGamesPlayed > 0 ? $h`
+                                                ${Math.floor(teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance / teamComponentService.team.financeSeason.homeGamesPlayed).toLocaleString()}
+                                            ` : $h`0`}
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+        
+            
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title">
+                                            Ticket Price
+                                        </div>
+                                        <div class="item-after">
+                                            ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.currentTicketPrice)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+
+                        </ul>
+                    </div>
+        
+        
+                    <br />
+    
+                    <div class="data-table">
+                        <table>
+                        <thead>
+                            <tr>
+                            <th class="label-cell">Type</th>
+                            <th class="numeric-cell">Season To Date</th>
+                            <th class="numeric-cell">Projected (Remaining)</th>
+                            <th class="numeric-cell">Projected (Total)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td class="label-cell">Season Tickets</td>
+                            <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.seasonTickets.toLocaleString()}</td>
+                            <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedRemaining.seasonTickets.toLocaleString()}</td>
+                            <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedTotal.seasonTickets.toLocaleString()}</td>
+
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Gate Tickets</td>
+                                <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.gateTickets.toLocaleString()}</td>
+                                <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedRemaining.gateTickets.toLocaleString()}</td>
+                                <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedTotal.gateTickets.toLocaleString()}</td>
+
+                            </tr>
+                            <tr class="total">
+                                <td class="label-cell">Total</td>
+                                <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance.toLocaleString()}</td>
+                                <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedRemaining.totalAttendance.toLocaleString()}</td>
+                                <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.projectedTotal.totalAttendance.toLocaleString()}</td>
+
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>        
+                </div>            
+            </div>
+
+        ` : $h` `}
+
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+    import { ethers } from "ethers"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { UniverseWebService } from "../../service/universe-web-service.ts"
+    import { DiamondWebService } from "../../service/diamond-web-service.ts"
+
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { LoginWebService } from "../../service/login-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
+    import { Position } from "../../../service/enums.ts"
+    import { TeamComponentService } from "../../service/team-component-service.ts"
+    import { DiamondService } from "../../../service/diamond-service.ts"
+    import { QueueService } from "../../../service/queue-service.ts"
+
+    export default (props, { $on, $, $f7, $onMounted, $update }) => {
+
+        let env = ContainerService.getInstance("env")()
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+        let loginWebService = ContainerService.getInstance(LoginWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
+        let teamComponentService = ContainerService.getInstance(TeamComponentService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let diamondWebService = ContainerService.getInstance(DiamondWebService)
+
+        let diamondService = ContainerService.getInstance(DiamondService)
+        let queueService = ContainerService.getInstance(QueueService)
+
+        
+        let id
+        let authInfo
+
+        const mintPassClick = async (e) => {
+         
+            try {
+
+                //Get signed mint pass
+                let mintPass = teamComponentService.team.diamondMintPasses.find( mp => mp._id == $(e.target).data('id') )
+
+                let result = await diamondWebService.withdraw(mintPass)
+
+                if (result.hash) {
+                    $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+                }
+
+            } catch(ex) {
+                $f7.dialog.alert(ex.reason, "There was an error")
+                console.log(ex)
+            }
+
+
+        }
+
+        const withdrawClick = async (e) => {
+
+            try {
+
+                let mintInfo = await teamWebService.withdraw(teamComponentService.team.tokenId)
+            
+                let result = await diamondService.withdraw(mintInfo.to, mintInfo._id, mintInfo.amount, mintInfo.tokenId, mintInfo.expires, mintInfo.v, mintInfo.r, mintInfo.s)
+
+                if (result.hash) {
+                    $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+                }
+
+            } catch(ex) {
+                $f7.dialog.alert(ex.reason, "There was an error")
+                console.log(ex)
+            }
+
+        }
+
+        const depositClick = async (e) => {
+
+            let mintInfo = await teamWebService.withdraw(teamComponentService.team.tokenId)
+
+            $f7.dialog.confirm(`<span style="text-align: left;">Click ok to begin a deposit<br /><br /> 
+
+            <table>
+                <tr>
+                    <td><strong>Amount:</strong></td>
+                    <td>${universeWebService.displayDiamonds(mintInfo.amount)}</td>
+                </tr>
+                <tr>
+                    <td><strong>Address:</strong></td>
+                    <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${mintInfo.to}" class="external" target="_blank">${walletService.truncateEthAddress(teamComponentService.team.ownerId)}</a></td>
+                </tr>
+            </table>
+
+            <br />
+
+            Your wallet will open to confirm a transaction.
+
+            `, "Confirm", async () => {
+
+                // await queueService.queuePromiseView({
+                //     title: `Withdraw diamonds. Approve transaction and wait for it to be mined.`,
+                //     promise: diamondService.mint(mintInfo.to, mintInfo._id, mintInfo.amount, mintInfo.tokenId, mintInfo.expires, mintInfo.v, mintInfo.r, mintInfo.s)
+                // })
+
+            }, () => {})
+
+        }
+
+        const getAsPercent = (value) => {
+            return Math.floor(value * 100)
+        }
+
+        $f7.on('smartSelectClose', async (e) => {
+
+            let formData = $f7.form.convertToData('#change-season')
+            $update()
+
+        })
+
+
+        $f7.once('team-loaded', async (e) => {
+            await $update()
+        })
+
+        $onMounted(async (e) => {
+            authInfo = await loginWebService.getAuthInfo()
+            $update()
+        })
+
+        return $render
+
+    }
+</script>

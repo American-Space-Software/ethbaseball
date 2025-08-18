@@ -1,0 +1,189 @@
+<template>
+
+    <div class="block">
+        
+        ${globalStats?.hitting ? $h`
+            <div class="card card-header-divider card-outline" style="overflow-y: scroll;">
+                <div class="card-header">League Averages</div>
+                <div class="card-content card-content-padding">
+
+                    <table class="stat-table">
+                        <thead>
+                            <tr>
+                                <th class="numeric-cell">AVG</th>
+                                <th class="numeric-cell">OBP</th>
+                                <th class="numeric-cell">SLG</th>
+                                <th class="numeric-cell">OPS</th>
+
+                                <th class="numeric-cell">Runs/G</th>
+                                <th class="numeric-cell">SB/G</th>
+                                <th class="numeric-cell">SBA/G</th>
+                                <th class="numeric-cell">BABIP</th>
+                                <th class="numeric-cell">HBP%</th>
+                                <th class="numeric-cell">BB%</th>
+                                <th class="numeric-cell">SO%</th>
+                                <th class="numeric-cell">1B%</th>
+                                <th class="numeric-cell">2B%</th>
+                                <th class="numeric-cell">3B%</th>
+                                <th class="numeric-cell">HR%</th>
+                                <th class="numeric-cell">GB%</th>
+                                <th class="numeric-cell">LD%</th>
+                                <th class="numeric-cell">FB%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="numeric-cell">${statService.formatRatio(globalStats?.hitting.avg)}</td>
+                                <td class="numeric-cell">${statService.formatRatio(globalStats?.hitting.obp)}</td>
+                                <td class="numeric-cell">${statService.formatRatio(globalStats?.hitting.slg)}</td>
+                                <td class="numeric-cell">${statService.formatRatio(globalStats?.hitting.ops)}</td>
+                                <td class="numeric-cell">${(globalStats?.hitting.runsPerGame / 2).toFixed(2)}</td>
+                                <td class="numeric-cell">${(globalStats?.hitting.sbPerGame / 2).toFixed(2)}</td>
+                                <td class="numeric-cell">${(globalStats?.hitting.sbAttemptsPerGame / 2).toFixed(2)}</td>
+
+                                <td class="numeric-cell">${statService.formatRatio(globalStats?.hitting.babip)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.hbpPercent)}</td>
+
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.bbPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.soPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.singlePercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.doublePercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.triplePercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.homeRunPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.groundBallPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.ldPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.hitting.flyBallPercent)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="stat-table">
+                        <thead>
+                            <tr>
+                                <th class="numeric-cell">Pitches/G</th>
+                                <th class="numeric-cell">Pitches/PA</th>
+                                <th class="numeric-cell">Zone%</th>
+                                <th class="numeric-cell">Zone Swing%</th>
+                                <th class="numeric-cell">Zone Contact%</th>
+                                <th class="numeric-cell">Chase%</th>
+                                <th class="numeric-cell">Chase Contact%</th>
+                                <th class="numeric-cell">Swing%</th>
+                                <th class="numeric-cell">Strike%</th>
+                                <th class="numeric-cell">Ball%</th>
+                                <th class="numeric-cell">Foul%</th>
+                                <th class="numeric-cell">InPlay%</th>
+                                <th class="numeric-cell">Wild%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="numeric-cell">${(globalStats?.pitching.pitchesPerGame / 2).toFixed(2)}</td>
+                                <td class="numeric-cell">${globalStats?.pitching.pitchesPerPA.toFixed(2)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.inZonePercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.swingAtStrikesPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.inZoneContactPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.swingAtBallsPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.outZoneContactPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.swingPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.strikePercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.ballPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.foulPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.inPlayPercent)}</td>
+                                <td class="numeric-cell">${statService.displayPercent(globalStats?.pitching.wildPitchPercent)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        ` : $h` `}
+
+    </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+    import Navbar from "../common/navbar.f7.html"
+
+    import dayjs from "dayjs"
+
+    import { ContainerService } from "../../../service/container-service.ts"
+    import { OwnerWebService } from "../../service/owner-web-service.ts"
+    import { PlayerWebService } from "../../service/player-web-service.ts"
+    import { PagingService } from "../../../service/paging-service.ts"
+    import { TransactionWebService } from "../../service/transaction-web-service.ts"
+    import { StatService } from "../../../service/stat-service.ts"
+    import { Position } from "../../../service/enums.ts"
+
+    export default async (props, { $on, $, $f7, $update }) => {
+
+        let eventTarget = ContainerService.getInstance("eventTarget")
+        let ownerWebService = ContainerService.getInstance(OwnerWebService)
+        let walletService = ContainerService.getInstance("WalletService")
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let transactionWebService = ContainerService.getInstance(TransactionWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let pagingService = ContainerService.getInstance(PagingService)
+
+        let globalStats
+
+        const link = (href) => {
+            return "/" + href
+        }
+
+        const loadStats = async () => {
+
+            if (globalStats) return
+
+            $f7.preloader.show()
+
+            try  {
+                globalStats = await playerWebService.getGlobalStats()
+                console.log(globalStats)
+            } catch(ex) { console.log(ex) }
+
+            $('.hidden-on-load').removeClass('hidden-on-load')
+
+            await $update()
+
+            $f7.preloader.hide()
+
+        }
+        
+        $on('pageBeforeIn', async (e) => {
+
+            try {
+
+                await loadStats()
+
+                eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                    detail: { tabLink: "/players", breadcrumbs: [{ text: 'League Stats', path: "/players" }] }
+                }))
+
+                $('.hidden-on-load').removeClass('hidden-on-load')
+                $('.hide-on-pageinit').hide()
+
+                await $update()
+
+                $f7.preloader.hide()
+
+            } catch (ex) {
+                $f7.dialog.alert(ex.message, "There was an error")
+            }
+
+        })
+
+        $on('pageInit', async () => {
+        })
+
+        return $render
+
+    }
+</script>

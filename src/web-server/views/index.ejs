@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="utf-8">
+
+  <!-- Required meta tags-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, minimal-ui, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Language" content="en">
+
+  <!-- Color theme for statusbar -->
+  <title>Ethereum Baseball League</title>
+
+  <script defer src="/js/runtime-<%= it.VERSION %>.ebl.js"></script>
+  <script defer src="/js/vendors-<%= it.VERSION %>.ebl.js"></script>
+  <script defer src="/js/main-<%= it.VERSION %>.ebl.js"></script>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚾️</text></svg>">
+
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="<%= it.title %>" />
+  <meta property="og:description" content="<%= it.description %>" />
+  <meta property="og:url" content="<%= it.url %>" />
+  <meta property="og:image" content="<%= it.image %>" />
+
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="<%= it.twitter %>" />
+  <meta name="twitter:title" content="<%= it.title %>" />
+  <meta name="twitter:description" content="<%= it.description %>" />
+  <meta name="twitter:image" content="<%= it.image %>" />
+
+
+
+  <link rel="manifest" href="/app.webmanifest">
+  <link rel="icon" href="/ebl-app-icon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a3161">
+
+
+</head>
+
+<body>
+
+  <div id="app"></div>
+
+
+  
+
+  <script type="module">
+    ebl.default()
+  </script>
+
+</body>
+
+
+
+</html>

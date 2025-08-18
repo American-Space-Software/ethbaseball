@@ -1,0 +1,207 @@
+<template>
+
+  <div>
+
+    <div class="paging">
+        Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, effectivePitchers.length)} of ${effectivePitchers.length} pitchers.
+    
+        <slot></slot>
+
+    </div>
+
+    <div class="stat-table-wrapper">
+        <table class="data-table players ${actions ? $h`actions`: $h` `}">
+            <thead>
+                <tr>
+                    ${actions ? $h`<th class="action"></th>` : $h` `} 
+                    <th @click=${sortPitchers} class="name" data-sort="fullName">Name</th>
+                              
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="age">Age</th>
+                    <th @click=${sortPitchers} data-sort="throws">Throws</th>
+                    <th @click=${sortPitchers} data-sort="hits">Bats</th>
+
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[0]?.salaryDecimal">Current</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[1]?.salaryDecimal">Year 2</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[2]?.salaryDecimal">Year 3</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[3]?.salaryDecimal">Year 4</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[4]?.salaryDecimal">Year 5</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[5]?.salaryDecimal">Year 6</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="futureContractYears[6]?.salaryDecimal">Year 7</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                ${displayPitchers?.length > 0 ? $h`
+                
+                    ${displayPitchers?.map( (p,index) => $h`
+                        <tr>
+
+                            ${actions? $h`
+                                <td class="action">
+                                    ${actions.showMove(p) ? $h`
+                                        <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="pitcher-ratings" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>  
+                                    ` : $h``}
+                                </td>
+                            ` : $h` `}
+                            
+                            <td class="name ${p.isNextStarter ? $h`next-starter` : $h` `}">
+
+                                ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" class="player-image" />` : $h`<span />`}
+
+                                ${p?._id ? $h`
+                                    <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
+                                    ${p.team?.abbrev ? $h`<a href="${universeWebService.startDateLink(`/t/${p.team?.tokenId}`)}" class="position">${p.team?.cityName} (${p.team?.abbrev})</a> - ` : $h`<span />`}<span class="position">${p.primaryPosition}</span> <span class="rest">${playerWebService.displayRestDays(p, universeWebService.getCurrentDate())}</span>
+                                ` : $h` `}
+                            </td>
+
+
+
+                            <td class="numeric-cell">${p?.displayRating?.toFixed(1)}</td>
+
+                            <td class="numeric-cell">${p?.age}</td>
+                            <td>${p?.throws}</td>
+                            <td>${p?.hits}</td>
+
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 0) }</td>
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 1) }</td>
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 2) }</td>
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 3) }</td>
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 4) }</td>
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 5) }</td>
+                            <td class="numeric-cell">${ playerWebService.getFutureContractValue(p.futureContractYears, 6) }</td>
+            
+
+
+                        </tr>
+                    `)}
+
+                ` : $h`
+                        <tr>
+                            <td colspan="22">No pitchers on roster.</td>
+                        </tr>
+                
+                `}
+            </tbody>                            
+        </table>
+    </div>
+
+    <div class="block split-row-both">
+        <div>
+            ${pagingService.hasPreviousPage(PAGE_SIZE, currentPage, effectivePitchers) ? $h`
+                <a @click="${previousClick}" class="button button-outline color-gray">Previous</a>
+            ` : $h` `}
+        </div>
+        <div>
+            ${pagingService.hasNextPage(PAGE_SIZE, currentPage, effectivePitchers) ? $h`
+                <a @click="${nextClick}" class="button button-fill">Next</a>
+            ` : $h` `}
+        </div>
+
+    </div>
+
+  </div>
+
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import { ContainerService } from "../../../service/container-service"
+  import { StatService } from "../../../service/stat-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { PagingService } from "../../../service/paging-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let statService = ContainerService.getInstance(StatService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let pagingService = ContainerService.getInstance(PagingService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let currentPage = 0
+
+    let actions
+
+    if (props.actions) {
+      actions = props.actions()
+    }
+
+    const moveFilter = props.movefilter
+    const sortable = props.sortable == "true"
+
+    const PAGE_SIZE = props.pagesize
+
+    let effectivePitchers = []
+    let displayPitchers = []
+
+
+    const sortPitchers = (e) => {
+
+        if (sortable) {
+            playerWebService.sort($, e, '.pitchers', effectivePitchers)
+  
+            currentPage = 0
+            setCurrentPage()
+            $update()
+        }
+
+    }
+
+    const nextClick = (e) => {
+        currentPage++
+        setCurrentPage()
+        $update()
+    }
+
+    const previousClick = (e) => {
+        currentPage--
+        setCurrentPage()
+        $update()
+    }
+
+    const setCurrentPage = (pitchers) => {
+
+      if (pitchers) {
+        effectivePitchers = pitchers
+      }
+
+      let start = pagingService.startIndex(PAGE_SIZE, currentPage)
+      let end = pagingService.endIndex(PAGE_SIZE, currentPage)
+
+      displayPitchers.length = 0
+
+      if (props?.filters?.name) {
+        effectivePitchers = effectivePitchers.filter(p => p.fullName.toLowerCase().indexOf(props.filters.name.toLowerCase()) > 0)
+      } 
+
+
+      displayPitchers.push(...effectivePitchers.slice(start, end))
+
+    }
+
+    setCurrentPage(props.pitchers())
+
+
+    $f7.on('refresh', (cb) => {
+
+      if (props.actions) {
+        actions = props.actions()
+      }
+
+      setCurrentPage(props.pitchers())
+      $update()
+      if (cb) cb()
+    })
+
+
+    return $render
+  }
+</script>

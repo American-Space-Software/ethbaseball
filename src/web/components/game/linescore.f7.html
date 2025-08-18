@@ -1,0 +1,77 @@
+<template>
+
+  ${vm ? $h`
+
+    <table class="linescore">
+      <thead>
+        <tr>
+          <th></th>
+          ${Array.from({length: Math.max(9, vm.currentInning)}, (_, i) => i + 1).map( num => $h`
+            <th>${num}</th>                          
+          `)}
+  
+          <th>R</th>
+          <th>H</th>
+          <th>E</th>        
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${vm.isTopInning && !vm.isComplete ? $h`<strong>${vm.awayName}</strong>` : $h`${vm.awayName}`} ${ vm.wpa ? percentageFormatter(1 - vm.wpa?.expectancyAfter) : ''}</td>
+  
+          ${Array.from({length: Math.max(9, vm.currentInning)}, (_, i) => i + 1).map( num => $h`
+            <td class="align-center ${vm.currentInning == num && vm.isTopInning ? $h`current` : ` `}">${vm.linescore.away[num]}</td>                        
+          `)}
+  
+          <td class="align-center">${vm.linescore.away[vm.linescore.away.length - 3]}</td>
+          <td class="align-center">${vm.linescore.away[vm.linescore.away.length - 2]}</td>
+          <td class="align-center">${vm.linescore.away[vm.linescore.away.length - 1]}</td>
+        </tr>
+        <tr>
+      
+          <td>${!vm.isTopInning && !vm.isComplete ? $h`<strong>${vm.homeName}</strong>` : $h`${vm.homeName}`} ${ vm.wpa ? percentageFormatter(vm.wpa?.expectancyAfter) : ''}</td>
+      
+          ${Array.from({length: Math.max(9, vm.currentInning)}, (_, i) => i + 1).map( num => $h`
+            <td class="align-center ${vm.currentInning == num && !vm.isTopInning ? $h`current` : ` `}">${vm.linescore.home[num]}</td>                        
+          `)}
+  
+          <td class="align-center">${vm.linescore.home[vm.linescore.home.length - 3]}</td>
+          <td class="align-center">${vm.linescore.home[vm.linescore.home.length - 2]}</td>
+          <td class="align-center">${vm.linescore.home[vm.linescore.home.length - 1]}</td>
+        </tr>
+      </tbody>	
+    </table>
+    
+  ` : $h`<span />`}
+
+</template>
+
+<style>
+
+
+</style>
+  
+<script>
+
+function percentageFormatter(num) {
+  return new Intl.NumberFormat('default', {
+    style: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num)
+}
+
+export default (props, { $on, $, $f7, $update }) => {
+
+    let vm = props.vm
+
+    $f7.on('gameUpdate', (gameViewModel) => {
+      $update()
+    })
+
+    return $render
+}
+</script>
+
+  
+  

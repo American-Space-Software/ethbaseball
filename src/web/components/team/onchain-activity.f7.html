@@ -1,0 +1,284 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="team-activity">
+
+    <div class="page-content">
+
+        <div class="hidden-on-load">
+
+          <div class="fixed-width-content center">
+
+            <div class="block">
+                <p class="segmented">
+                    <a href="${universeWebService.fullLink(`/t/activity/${tokenId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/off/${tokenId}`)}" class="button button-outline tab-link ">Off-chain</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/game/${tokenId}`)}" class="button button-outline tab-link ">Player Moves</a>
+                </p>
+            </div>
+
+
+            ${onChainEvents?.length > 0 ? $h`
+                <${OnChainEvents} events="${onChainEvents}" />
+            ` : $h` 
+              <div class="block">No activity</div>            
+            `}
+
+
+            <div class="block split-row-both">
+              <div>
+                  ${previousPage ? $h`
+                  <a data-reload-current="true" data-force="true" data-browser-history="true" href="/t/activity/on/${tokenId}?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
+                  ` : $h` `}
+              </div>
+              <div>
+                  ${nextPage ? $h`
+                  <a data-reload-current="true" data-force="true" data-browser-history="true" href="/t/activity/on/${tokenId}?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
+                  ` : $h` `}
+              </div>
+            </div>
+
+
+          </div>
+
+        </div>
+
+        <div class="hide-on-pageinit">
+
+          <div class="card skeleton-text">
+            <div class="card-header">Home</div>
+            <div class="card-content card-content-padding data-table">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+              lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        
+     
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { OwnerWebService } from "../../service/owner-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+
+  import { TransactionWebService } from "../../service/transaction-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { CityWebService } from "../../service/city-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  import { TeamComponentService } from "../../service/team-component-service.ts"
+
+  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
+  import { StatService } from "../../../service/stat-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+  import { GameTransactionWebService } from "../../service/game-transaction-web-service.ts"
+
+  // import OffChainEvents from "../activity/offchain-events.f7.html"
+  import OnChainEvents from "../activity/onchain-events.f7.html"
+  // import GameTransactions from "../activity/game-transaction-events.f7.html"
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let ownerWebService = ContainerService.getInstance(OwnerWebService)
+    let walletService = ContainerService.getInstance("WalletService")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let cityWebService = ContainerService.getInstance(CityWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let transactionWebService = ContainerService.getInstance(TransactionWebService)
+    let universeContractService = ContainerService.getInstance(UniverseContractService)
+    let statService = ContainerService.getInstance(StatService)
+    let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
+
+    let team
+    let tokenId 
+    let startDate
+
+
+    let onChainEvents = []
+    let page = 1
+
+    let previousPage 
+    let nextPage
+
+
+    const load = async () => {
+
+      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
+      let currentTokenId = $f7.views.main.router.currentRoute?.params?.tokenId
+
+
+      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
+      universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
+
+      try {
+
+          tokenId = currentTokenId
+          startDate = currentStartDate
+
+          universeWebService.setStartDate(startDate, $f7.views.main.router.currentRoute)
+
+          team = await teamComponentService.loadTeam(tokenId, universeWebService.getStartDate(), { forceRefresh: true })
+
+          universeWebService.setRank(team.leagueRank)
+
+          $f7.emit('team-loaded')
+          $f7.emit('refresh')
+
+          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: {
+              tabLink: "/l/", breadcrumbs: [
+                {
+                  text: "Leagues",
+                  path: universeWebService.startDateLink(`/l/list/${universeWebService.getRank()}`)
+                },
+                {
+                  text: "Standings",
+                  path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
+                }, 
+                { 
+                    text: teamWebService.getTeamName(team), 
+                    path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
+                }, { text: 'Activity'}]
+            }
+          }))
+
+        await $update()
+
+      } catch (ex) {
+
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+
+    }
+
+
+    const loadActivity = async () => {
+
+        $f7.preloader.show()
+
+        try {
+
+            await load()
+
+            let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
+            let tokenId = parseInt($f7.views.main.router.currentRoute?.params?.tokenId)
+
+            onChainEvents.length = 0
+            onChainEvents.push(...await gameTransactionWebService.getOnChainByTeam(tokenId, page))
+
+            if (page > 1) {
+                previousPage = page - 1
+            }
+
+            if (model?.transactions?.length == 25 ) {
+                nextPage = page + 1
+            }
+
+
+            await $update()
+
+        } catch (ex) { console.log(ex) }
+
+        $f7.preloader.hide()
+
+    }
+
+
+
+    $on('pageInit', async (e) => {
+        await $update()
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeIn', async () => {
+
+      try {
+
+          await loadActivity()
+
+          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+              detail: {
+                  visible: true,
+                  tabLink: "/",
+                  breadcrumbs: [
+                    { text: "Home", path: "/" }, { 
+                        text: teamWebService.getTeamName(team), 
+                        path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
+                    }, { 
+                      text: 'Activity',
+                    }
+                  ]
+              }
+          }))
+
+
+          universeWebService.setMetadata(
+                `${team.city.name} ${team.name} Activity - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
+                `View the activity for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
+         ) 
+
+
+          $('.hide-on-pageinit').hide()
+          $('.hidden-on-load').show()
+
+
+      } catch(ex) {
+          $f7.dialog.alert(ex.message, "There was an error")
+      }
+
+
+    })
+
+
+    return $render
+
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+

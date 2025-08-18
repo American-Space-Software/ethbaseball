@@ -1,0 +1,84 @@
+<template>
+
+  <table class="stat-table small-font">
+    <thead>
+      <tr style="background: ${vm.teamInfo.color1};">
+        <th class="num order">#</th>
+        <th>Batting</th>
+        <th>POS</th>
+        <th>RAT</th>
+        <th>AB</th>
+        <th>R</th>
+        <th>H</th>
+        <th>2B</th>
+        <th>3B</th>
+        <th>HR</th>
+        <th>RBI</th>
+        <th>BB</th>
+        <th>HBP</th>
+        <th>SO</th>       
+        <!-- <th>WPA</th>   -->
+      </tr>                
+    </thead>
+    <tbody>
+      ${players.map( (p, index) => $h`
+        <tr class="${vm.teamInfo.currentHitterIndex == index && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=="AWAY" || !vm.isTopInning && vm.homeaway=="HOME" ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
+          <td class="num order">${index + 1}</td>
+          <td class="name"><img src="/player/image/${p.playerId}" width="25" height="25" style="float:left; margin-right: 3px; vertical-align: middle;"/> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+          <td class="pos">${p.currentPosition}</td>
+          <td class="num">${ playerWebService.getPlayerDisplayRating(p.overallRating.before, p.age)}</td>
+          <td class="num">${p.hitResult.atBats}</td>
+          <td class="num">${p.hitResult.runs}</td>
+          <td class="num">${p.hitResult.hits}</td>
+          <td class="num">${p.hitResult.doubles}</td>
+          <td class="num">${p.hitResult.triples}</td>
+          <td class="num">${p.hitResult.homeRuns}</td>
+          <td class="num">${p.hitResult.rbi}</td>
+          <td class="num">${p.hitResult.bb}</td>
+          <td class="num">${p.hitResult.hbp}</td>
+          <td class="num">${p.hitResult.so}</td>
+        </tr>
+      `)}
+
+      <!-- <tr>
+        <td colspan="14" style="text-align: right; font-weight: bold;">Total</td>
+        <td>${vm.teamInfo.players.map(p => p.hitResult.wpa).reduce((b, a) => b + a, 0).toFixed(3)}</td>
+      </tr> -->
+
+    </tbody>                            
+  </table>
+
+
+</template>
+
+<style>
+
+
+</style>
+  
+<script>
+
+import { StatService } from "../../../service/stat-service.ts"
+import { ContainerService } from "../../../service/container-service.ts"
+import { UniverseWebService } from "../../service/universe-web-service.ts"
+import { PlayerWebService } from "../../service/player-web-service.ts"
+
+export default (props, { $on, $, $f7, $update }) => {
+
+    let statService = ContainerService.getInstance(StatService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
+
+    let vm = props.vm
+
+    let lineup = vm.teamInfo.lineupIds
+
+    let players = lineup.map( id => vm.teamInfo.players.find( p => p._id == id))
+
+
+    return $render
+}
+</script>
+
+  
+  

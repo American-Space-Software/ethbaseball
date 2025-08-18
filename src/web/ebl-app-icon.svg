@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="EBL App Icon">
+  <title>EBL App Icon</title>
+  <defs>
+    <style>
+      .bg { fill: #0b2f57; }
+      .plate { fill: #ffffff; stroke: #c3273c; stroke-width: 28; stroke-linejoin: round; }
+      .word { fill: #0b2f57; font-weight: 1000; font-size: 320px; text-anchor: middle; letter-spacing: 8; font-family: "Times New Roman","Georgia","Garamond",serif; }
+      .emoji { font-size: 280px; text-anchor: middle; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+    </style>
+  </defs>
+
+  <!-- Rounded navy background -->
+  <rect class="bg" x="0" y="0" width="1024" height="1024" rx="140" ry="140"/>
+
+  <!-- Home plate: square down to y=512 (50%), then triangle -->
+  <polygon class="plate" points="140,150 884,150 884,512 512,920 140,512" />
+
+  <!-- EBL text (serif) -->
+  <text class="word" x="512" y="420">EBL</text>
+
+  <!-- Baseball emoji -->
+  <text class="emoji" x="512" y="740">⚾</text>
+</svg>
