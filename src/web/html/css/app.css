@@ -2419,3 +2419,20 @@ td.action, th.action {
 
 
 }
+
+
+.footer {
+  text-align: center;
+}
+
+.footer ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.footer li {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 14px;
+}

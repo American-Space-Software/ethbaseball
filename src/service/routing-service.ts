@@ -3,6 +3,7 @@ import { injectable, inject, Container } from "inversify";
 import { Router } from "framework7";
 import { UiService } from "./ui-service.js";
 import { container } from "../web/inversify.config.js"
+import FooterContentTemplate from "../web/components/common/footer-content.f7.html"
 
 
 @injectable()
@@ -130,6 +131,37 @@ class RoutingService {
 
     }
 
+    public getFooterRoutes(footerRoutes) {
+
+        let routes = []
+
+        for (let r of footerRoutes.filter( r => r.link.startsWith("/"))) {
+
+            routes.push({
+                path: r.link,
+                name: r.link,
+                async: async (ctx) => {
+                    try {
+
+                        ctx.resolve(
+                            {
+                            component: FooterContentTemplate
+                            },
+                            {
+                                // transition: "fade",
+                                props:  r,
+                                history: true,
+                                browserHistory: true
+                            }
+                        )  
+
+                    } catch (ex) {}
+                }
+            })
+        }
+
+        return routes
+    }
 
 }
 

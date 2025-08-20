@@ -84,8 +84,6 @@
 
                 </div>
 
-
-
               ` : $h` 
               
                 ${authInfo?.address ? $h`
@@ -93,6 +91,22 @@
                 ` : $h` `}
               
               `}
+
+
+              <div class="block">
+                <div class="list links-list list-inset list-outline-ios list-dividers-ios">
+                    <ul>
+                      <li><a class="link" href="/l/standings/1">Standings</a></li>
+                      <li><a class="link" href="/games">Scores</a></li>
+                      <li><a class="link" href="/players/">Players</a></li>
+                      <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}">Buy Diamonds</a></li>
+                      <li><a class="link" href="/about">About</a></li>
+
+                    </ul>
+                </div>
+              </div>
+
+
 
 
               ${vm?.topTeams?.length > 0 ? $h`
@@ -144,53 +158,6 @@
 
               ` : $h` `}
 
-              <!-- 2. Learn the Rules -->
-              <div class="card card-outline card-header-divider">
-                <div class="card-header">🧠 Learn the Rules of the Game</div>
-                <div class="card-content card-content-padding">
-                  <p class="micro-teaser"><em>Ownership, contracts, budgeting, and promotion.</em></p>
-                  <p>Master team ownership, contracts, and the business strategies needed to dominate the league.</p>
-                  <a href="/about" class="button button-outline small-button">Explore the Manual</a>
-                </div>
-              </div>
-
-              <!-- 3. See It in Action -->
-              <div class="card card-outline card-header-divider">
-                <div class="card-header">📺 See It in Action</div>
-                <div class="card-content card-content-padding">
-                  <p class="micro-teaser"><em>Daily games. Real opponents. Real results.</em></p>
-                  <p>Follow box scores, player stats, and highlights from today’s matchups across 10 leagues.</p>
-                  <a href="${universeWebService.startDateLink(`/games`)}" class="button button-outline small-button">View Games</a>
-                </div>
-              </div>
-
-              <!-- 4. Get Diamonds -->
-              <div class="card card-outline card-header-divider">
-                <div class="card-header">💎 Get Diamonds</div>
-                <div class="card-content card-content-padding">
-                  <p class="micro-teaser"><em>Fuel payroll, sign free agents, and cover operations.</em></p>
-                  <p>Buy Diamonds, deposit to your team, and manage your budget across a full season.</p>
-                  <a href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" class="button button-outline small-button external">Buy Diamonds on Uniswap</a>
-                </div>
-              </div>
-
-
-              <div class="card card-outline card-header-divider">
-                <div class="card-header">Links</div>
-                <div class="card-content card-content-padding">
-                  <div class="list links-list list-outline">
-                    <ul>
-                      <li>
-                        <a href="/about" class="link">About</a>
-                      </li>
-                      <li>
-                        <a href="https://github.com/American-Space-Software/ethbaseball" class="external">GitHub</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
         </div>
 
       </div>
@@ -208,6 +175,9 @@
 
       </div>
 
+
+      <${Footer} />
+
     </div>
 
   </div>
@@ -224,6 +194,7 @@
 
   import Navbar from "../common/navbar.f7.html"
   import Breadcrumbs from "../common/breadcrumbs.f7.html"
+  import Footer from "../common/footer.f7.html"
 
   import Toolbar from "../common/toolbar.f7.html"
 

@@ -141,6 +141,8 @@ let browserConfig = {
           }
 
           fs.copyFileSync(`src/web/ebl-app-icon.svg`, `public/ebl-app-icon.svg`)
+          fs.copyFileSync(`src/web/ebl-192.png`, `public/ebl-192.png`)
+          fs.copyFileSync(`src/web/ebl-512.png`, `public/ebl-512.png`)
 
           fs.copyFileSync(`src/web/html/images/logo.png`, `public/logo.png`)
           fs.copyFileSync(`src/web/html/images/screenshots/game.png`, `public/game.png`)

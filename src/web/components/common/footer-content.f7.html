@@ -1,0 +1,47 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="player-index">
+
+    <div class="page-content">
+      <div class="block">
+        ${content}
+      </div>
+
+      <${Footer} />
+
+
+    </div>
+
+  </div>
+
+</template>
+ 
+
+
+<script>
+
+    import Footer from "./footer.f7.html"
+
+
+    import { ContainerService } from "../../../service/container-service"
+    import { UniverseWebService } from "../../service/universe-web-service"
+
+    export default (props, { $on, $f7, $update }) => {
+
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let eventTarget = ContainerService.getInstance("eventTarget")
+
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: {
+            visible: false,
+            tabLink: "/",
+            breadcrumbs: [{ text: "Home", path: "/" }, { text: props.linkText}]
+          }
+        }))
+
+        let content= props.content
+
+        return $render
+    }
+</script>

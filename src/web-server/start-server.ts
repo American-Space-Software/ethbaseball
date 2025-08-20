@@ -81,7 +81,7 @@ let startWebServer = async () => {
   const PROVIDER_CHAIN_NAME = process.env.PROVIDER_CHAIN_NAME ? process.env.PROVIDER_CHAIN_NAME : "localhost"
   const PROVIDER_CHAIN_RPC_URL = process.env.PROVIDER_CHAIN_RPC_URL ? process.env.PROVIDER_CHAIN_RPC_URL : "http://127.0.0.1:8545/"
   const PROVIDER_CHAIN_BLOCK_EXPLORER = process.env.PROVIDER_CHAIN_BLOCK_EXPLORER
-
+  const FOOTER_ROUTES:{ link:string, content:string, linkText:string}[] = process.env.FOOTER_ROUTES ? JSON.parse(process.env.FOOTER_ROUTES) : []
 
 
 
@@ -219,7 +219,8 @@ let startWebServer = async () => {
         image: props.image ? props.image : '',
         url: `${process.env.WEB}${props.url}`,
         twitter: TWITTER,
-        VERSION: version
+        VERSION: version,
+        FOOTER_ROUTES: FOOTER_ROUTES
       })
 
       res.status(200).send(renderedTemplate)
@@ -258,6 +259,32 @@ let startWebServer = async () => {
    * a link it reads those.
    *  
   */
+
+  for (let footerRoute of FOOTER_ROUTES.filter( r => r.link.startsWith("/"))) {
+
+      app.get(`${footerRoute.link}`, async function (req, res) {
+
+          try {
+
+            renderIndex(res,{ 
+              twitter: TWITTER,
+              title: footerRoute.linkText,
+              VERSION: version,
+              image: `${process.env.WEB}/logo.png`,
+              url: req.originalUrl
+            })
+
+          } catch (ex) {
+            res.sendStatus(500)
+          }
+
+      })
+
+  }
+
+
+
+
   app.get("/", async function (req, res) {
 
       try {

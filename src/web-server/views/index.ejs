@@ -51,7 +51,10 @@
   
 
   <script type="module">
-    ebl.default()
+
+    let footerRoutes = JSON.parse(`<%~ JSON.stringify(it.FOOTER_ROUTES) %>`)
+
+    ebl.default(footerRoutes)
   </script>
 
 </body>

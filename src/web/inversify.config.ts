@@ -128,7 +128,7 @@ class GlobalEventTarget extends EventTarget {}
 
 const eventTarget:GlobalEventTarget = new GlobalEventTarget()
 
-async function getContainer() {
+async function getContainer(footerRoutes) {
 
     if (container) return container 
 
@@ -141,6 +141,10 @@ async function getContainer() {
 
     container  = new Container()
     
+    container.bind("footerRoutes").toConstantValue(footerRoutes)
+
+
+
     function framework7() {
         
         return new Framework7({

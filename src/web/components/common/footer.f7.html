@@ -1,0 +1,33 @@
+<template>
+
+  <div class="block footer">
+
+      <ul>
+        ${footerRoutes?.map( l => $h`
+          ${l.link.startsWith("/") ? $h`
+            <li><a href="${l.link}">${l.linkText}</a></li>
+          ` : $h`
+            <li><a href="${l.link}" class="external">${l.linkText}</a></li>
+          `}
+        `)}
+      </ul>
+
+  </div>
+
+
+</template>
+ 
+
+
+<script>
+
+    import { ContainerService } from "../../../service/container-service"
+    import { UniverseWebService } from "../../service/universe-web-service"
+
+    export default (props, { $on, $f7, $update }) => {
+
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let footerRoutes = ContainerService.getInstance("footerRoutes")
+        return $render
+    }
+</script>
