@@ -46,11 +46,13 @@
             ${!mintInfo.error ? $h`
               <div class="card">
                 <div class="card-header">Franchise Details</div>
-                <div class="card-content card-content-padding data-table">
+                <div class="card-content data-table">
 
-                  <p>
-                    When you receieve the team it will include the team's 🔷 Diamond balance. Those diamonds are added with the franchise fee to give a final total in Diamonds. Teams can be minted with Diamonds or ETH directly.
-                  </p>
+                  <ul class="mint-help">
+                    <li>When you receieve the team it will include the team's 🔷 Diamond balance.</li>
+                    <li>Those diamonds are added with the franchise fee to give a final total in Diamonds.</li>
+                    <li>Teams can be minted with Diamonds or ETH directly.</li>
+                  </ul>
 
                   <table>
                     <tbody>
@@ -60,11 +62,16 @@
                         </td>
 
                       </tr>
-                      <tr>
-                        <td class="label-cell">🔷 Franchise Fee:</td>
-                        <td class="numeric-cell">${universeWebService.displayDiamonds( mintInfo.diamonds.revenueWithMultiplier )}
-                        </td>
-                      </tr>
+                      ${mintInfo?.diamonds ? $h`
+                        <tr>
+                          <td class="label-cell">🔷 Franchise Fee:</td>
+                          <td class="numeric-cell">${universeWebService.displayDiamonds( mintInfo.diamonds.revenueWithMultiplier )}
+                          </td>
+                        </tr>
+                      ` : $h`
+                        
+                      `}
+
                     </tbody>
                   </table>
 
@@ -77,18 +84,23 @@
                     <table>
                       <tbody>
 
-                        <tr class="total">
-                          <td class="label-cell">Mint With Diamonds:</td>
-                          <td class="numeric-cell">
+                        ${mintInfo?.diamonds != undefined ? $h`
+                          
+                          <tr class="total">
+                            <td class="label-cell">Mint With Diamonds:</td>
+                            <td class="numeric-cell">
 
-                            ${BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds) ? $h`
-                              ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
-                            ` : $h`
-                              ${universeWebService.displayDiamonds(authInfo.diamondBalance)} / ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
-                            `}
+                              ${BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds) ? $h`
+                                ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
+                              ` : $h`
+                                ${universeWebService.displayDiamonds(authInfo.diamondBalance)} / ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
+                              `}
 
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+
+                        ` : $h` `}
+
   
                         ${mintInfo.eth?.ethCost ? $h`
 
@@ -153,9 +165,6 @@
                     </div>
   
                   `}
-  
-
-  
   
   
                 </div>
@@ -337,7 +346,7 @@
 
     const mintTeamClick = async (e) => {
 
-      if (mintInfo.diamonds) {
+      if (mintInfo?.diamonds) {
 
         try {
 
@@ -409,7 +418,7 @@
       mintInfo = result.mintInfo
       authInfo = await loginWebService.getAuthInfo()
 
-      if (mintInfo) {
+      if (mintInfo?.diamonds) {
         showMintWithDiamonds = BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds)
         showStartMintButton = mintInfo.eth?.ethCost || showMintWithDiamonds
       }
