@@ -207,7 +207,7 @@ h1 {
   object-fit: cover;
 }
 
-.stat-table .profilePic {
+.stat-table .profilePic, .data-table .profilePic {
   height: 45px;
   width: 45px;
   float: left;
@@ -283,7 +283,7 @@ h1 {
 
 
 
-.stat-table .name {
+.stat-table .name, .data-table .name {
   position: sticky;
   left: 0;
   z-index: 2; /* Stay on top of scrolling columns */
@@ -298,17 +298,17 @@ h1 {
 
 
 
-.stat-table .name .position {
+.stat-table .name .position, .data-table .name .position {
   font-weight: bold;
 }
 
-.stat-table .name .position, .stat-table .name .teamAbbrev, .stat-table .name .small {
+.stat-table .name .position, .stat-table .name .teamAbbrev, .stat-table .name .small, .data-table .name .position, .data-table .name .teamAbbrev, .data-table .name .small {
   font-size: .75em;
   color: darkslategray;
 }
 
 
-.stat-table .name .rest {
+.stat-table .name .rest, .data-table .name .rest{
   font-size: .75em;
   color: darkslategray;
 }
@@ -1695,63 +1695,6 @@ h1 {
 
 
 
-.skill-wrapper {
-  width: 100%;
-  min-width: 100px;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-
-.skill-wrapper .left, .wrapper .right {
-  padding: 0px;
-}
-
-.skill-wrapper .label {
-  flex: 0 0 100%;
-  text-align: left;
-  font-weight: bold;
-}
-
-.skill-bar {
-  width: 100%;
-  display: flex;
-  font-size: 17px;
-  color: white;
-  background: #cccccc;
-  margin-bottom: 3px;
-  white-space: nowrap;
-}
-
-.skill-bar .green  {
-  background: #007a06;
-  padding: 2px;
-}
-
-.skill-bar .dark-green  {
-  background: #043b00;
-  padding: 2px;
-}
-
-.skill-bar .red {
-  background: #7a1d00;
-  padding: 2px;
-}
-
-.skill-bar .light-red {
-  background: #c62f00;
-  padding: 2px;
-}
-
-.skill-bar .blue  {
-  background: #02007a;
-  padding: 2px;
-}
-
-.skill-bar.handedness {
-  margin-bottom: 0px;
-}
-
 
 
 .profilePic {
@@ -1842,9 +1785,71 @@ text-align: center;
   padding: 2px;
 }
 
+
 .rating-table {
   margin-top: 10px;
+  font-size: .65em;
 }
+
+
+
+.skill-wrapper {
+  width: 100%;
+  min-width: 100px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+
+.skill-wrapper .left, .wrapper .right {
+  padding: 0px;
+}
+
+.skill-wrapper .label {
+  flex: 0 0 100%;
+  text-align: left;
+  font-weight: bold;
+}
+
+.skill-bar {
+  width: 100%;
+  display: flex;
+  font-size: .85em;
+  color: white;
+  background: #cccccc;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.skill-bar .green  {
+  background: #007a06;
+  padding: 2px;
+}
+
+.skill-bar .dark-green  {
+  background: #043b00;
+  padding: 2px;
+}
+
+.skill-bar .red {
+  background: #7a1d00;
+  padding: 2px;
+}
+
+.skill-bar .light-red {
+  background: #c62f00;
+  padding: 2px;
+}
+
+.skill-bar .blue  {
+  background: #02007a;
+  padding: 2px;
+}
+
+.skill-bar.handedness {
+  margin-bottom: 0px;
+}
+
 
 
 .block-title .image {
@@ -1992,18 +1997,19 @@ td.diamonds {
   font-size: .85em;
 }
 
-.standings th.name, .home-standings th.name {
-  background: #cccccc;
-}
+
 
 .standings .name, .linescore .name {
   width: 240px;
   min-width: 175px;
 }
 
-.home-standings .name {
+
+
+.home-standings td.name {
   width: 240px;
   min-width: 175px;
+  font-size: 1.2em;
 }
 
 .teams .name {

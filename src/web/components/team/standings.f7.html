@@ -39,7 +39,7 @@
           <div class="card card-outline">
             <div class="card-content card-content-padding">
               <div class="stat-table-wrapper">
-                <table class="stat-table standings">
+                <table class="data-table standings">
 
                     ${viewModel?.leagueVms?.length > 0 ? $h`
                       
@@ -47,61 +47,67 @@
                         
                         ${l.viewModels?.length > 0 ? $h`
               
-                          <tr>
-                            <th @click=${sortStandings} data-sort="rank"><a id="league-${l.league.rank}" style="scroll-margin: 100px;"/>Overall Rank</th>
-                            <th @click=${sortStandings} class="name label-cell" data-sort="city.name">Name</th>
-                            <th @click=${sortStandings} data-sort="overallRecord.wins">Wins</th>
-                            <th @click=${sortStandings} data-sort="overallRecord.losses">Losses</th>
-                            <th @click=${sortStandings} data-sort="overallRecord.winPercent">Win%</th>
-                            <th @click=${sortStandings} data-sort="overallRecord.gamesBack">GB</th>
-          
-                            <th @click=${sortStandings} data-sort="seasonRating.rating">Rating</th>
-                            <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance">Cash</th>
-                            <th @click=${sortStandings} data-sort="financeSeasonDecimal.revenue">Revenue</th>
-                            <th @click=${sortStandings} data-sort="financeSeasonDecimal.expenses">Expenses</th>
-                            <th @click=${sortStandings} data-sort="financeSeasonDecimal.profit">Profit</th>
-                            <th @click=${sortStandings} data-sort="teamCost.ethCostDecimal">Cost</th>
+                          <thead>
+                            <tr>
+                              <th @click=${sortStandings} data-sort="rank"><a id="league-${l.league.rank}" style="scroll-margin: 100px;"/>Overall Rank</th>
+                              <th @click=${sortStandings} class="name label-cell" data-sort="city.name">Name</th>
+                              <th @click=${sortStandings} data-sort="overallRecord.wins">Wins</th>
+                              <th @click=${sortStandings} data-sort="overallRecord.losses">Losses</th>
+                              <th @click=${sortStandings} data-sort="overallRecord.winPercent">Win%</th>
+                              <th @click=${sortStandings} data-sort="overallRecord.gamesBack">GB</th>
+            
+                              <th @click=${sortStandings} data-sort="seasonRating.rating">Rating</th>
+                              <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance">Cash</th>
+                              <th @click=${sortStandings} data-sort="financeSeasonDecimal.revenue">Revenue</th>
+                              <th @click=${sortStandings} data-sort="financeSeasonDecimal.expenses">Expenses</th>
+                              <th @click=${sortStandings} data-sort="financeSeasonDecimal.profit">Profit</th>
+                              <th @click=${sortStandings} data-sort="teamCost.ethCostDecimal">Cost</th>
 
-          
-          
-                          </tr>
+            
+            
+                            </tr>
+                          </thead>
 
-                          ${l.viewModels?.map( (t, index) => $h`
-                            
-                            <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
-                            
-                              <td>${teamWebService.getOverallRank(t.rank, l.league.rank, l.viewModels.length)}</td>
-        
-                              <td class="name label-cell image" >
-                                
-                                <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }">
-                                  <img src="/image/thumbnail/${t.logoId}" width="25" height="25" style="margin-right: 5px; margin-left: 5px;"/> 
-                                  ${t.city.name} ${t.name}
-                                </a>
-                              </td>
-                              <td>${t.overallRecord.wins}</td>
-                              <td>${t.overallRecord.losses}</td>
-                              <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                              <td>${t.overallRecord.gamesBack}</td>
-                              <td class="numeric-cell">${t.seasonRating.rating.toFixed(0)}</td>
-                              <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.diamondBalance)}</td>
-                              <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.revenue.seasonToDate.total)}</td>
-                              <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.expenses.seasonToDate.total)}</td>
-                              <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.profit.seasonToDate.total)}</td>
-                              <td class="numeric-cell">${t.teamCost?.ethCost ? $h`${FixedNumber.fromString(ethers.formatUnits(t.teamCost.ethCost, 'ether')).round(3).toString()} ETH` : $h` `}</td>  
+                          <tbody>
+                            ${l.viewModels?.map( (t, index) => $h`
+                              
+                              <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
+                              
+                                <td>${teamWebService.getOverallRank(t.rank, l.league.rank, l.viewModels.length)}</td>
+          
+                                <td class="name label-cell image" >
+                                  
+                                  <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }">
+                                    <img src="/image/thumbnail/${t.logoId}" width="25" height="25" style="margin-right: 5px; margin-left: 5px;"/> 
+                                    ${t.city.name} ${t.name}
+                                  </a>
+                                </td>
+                                <td>${t.overallRecord.wins}</td>
+                                <td>${t.overallRecord.losses}</td>
+                                <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
+                                <td>${t.overallRecord.gamesBack}</td>
+                                <td class="numeric-cell">${t.seasonRating.rating.toFixed(0)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.diamondBalance)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.revenue.seasonToDate.total)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.expenses.seasonToDate.total)}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(t.financeSeason.profit.seasonToDate.total)}</td>
+                                <td class="numeric-cell">${t.teamCost?.ethCost ? $h`${FixedNumber.fromString(ethers.formatUnits(t.teamCost.ethCost, 'ether')).round(3).toString()} ETH` : $h` `}</td>  
+
+                              </tr>
+                            `)}
+          
+                            <tr class="total">
+                              <td class="numeric-cell" colspan="7"></td>
+                              <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.cash)}</td>
+                              <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.revenue)}</td>
+                              <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.expenses)}</td>
+                              <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.profit)}</td>
+                              <td class="numeric-cell">${FixedNumber.fromString(ethers.formatUnits(l.leagueFinance.teamCost, 'ether')).round(3).toString()} ETH</td>
 
                             </tr>
-                          `)}
-        
-                          <tr class="total">
-                            <td class="numeric-cell" colspan="7"></td>
-                            <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.cash)}</td>
-                            <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.revenue)}</td>
-                            <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.expenses)}</td>
-                            <td class="numeric-cell">${universeWebService.displayDiamonds(l.leagueFinance.profit)}</td>
-                            <td class="numeric-cell">${FixedNumber.fromString(ethers.formatUnits(l.leagueFinance.teamCost, 'ether')).round(3).toString()} ETH</td>
+                          </tbody>
 
-                          </tr>
+
                   
                         ` : $h` `}
 

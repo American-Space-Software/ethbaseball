@@ -58,92 +58,103 @@
 
                       <div class="stat-table-wrapper">
                         ${player.primaryPosition != "P" ? $h`
-                          <table class="stat-table small">
-                            <tr>
-                              <th></th>
-                              <th>G</th>
-                              <th>AB</th>
-                              <th>H</th>
-                              <th>2B</th>
-                              <th>3B</th>
-                              <th>HR</th>
-                              <th>R</th>
-                              <th>RBI</th>
-                              <th>SB</th>
-                              <th>AVG</th>
-                              <th>OBP</th>
-                              <th>SLG</th>
-                              <th>OPS</th>
-                              <th>WPA</th>
-                            </tr>
-          
-                            ${player.careerHitterStats.pa > 0 ? $h`
-                            <tr>
-                              <td>Career</td>
-                              <td>${ player.careerHitterStats.games }</td>
-                              <td>${ player.careerHitterStats.atBats }</td>
-                              <td>${ player.careerHitterStats.hits }</td>
-                              <td>${ player.careerHitterStats.doubles }</td>
-                              <td>${ player.careerHitterStats.triples }</td>
-                              <td>${ player.careerHitterStats.homeRuns }</td>
-                              <td>${ player.careerHitterStats.runs }</td>
-                              <td>${ player.careerHitterStats.rbi }</td>
-                              <td>${ player.careerHitterStats.sb }</td>
-                              <td>${ statService.formatRatio(player.careerHitterStats?.avg) }</td>
-                              <td>${ statService.formatRatio(player.careerHitterStats?.obp) }</td>
-                              <td>${ statService.formatRatio(player.careerHitterStats?.slg) }</td>
-                              <td>${ statService.formatRatio(player.careerHitterStats?.ops) }</td>
-                              <td>${ player.careerHitterStats.wpa?.toFixed(2) }</td>
-                            </tr>
-                            ` : $h`
-                            <tr>
-                              <td style="text-align:center;" colspan="15">No games played.</td>
-                            </tr>
-                            `}
+                          <table class="data-table small">
+                            <thead>
+                              <tr>
+                                <th></th>
+                                <th>G</th>
+                                <th>AB</th>
+                                <th>H</th>
+                                <th>2B</th>
+                                <th>3B</th>
+                                <th>HR</th>
+                                <th>R</th>
+                                <th>RBI</th>
+                                <th>SB</th>
+                                <th>AVG</th>
+                                <th>OBP</th>
+                                <th>SLG</th>
+                                <th>OPS</th>
+                                <th>WPA</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${player.careerHitterStats.pa > 0 ? $h`
+                                <tr>
+                                  <td>Career</td>
+                                  <td>${ player.careerHitterStats.games }</td>
+                                  <td>${ player.careerHitterStats.atBats }</td>
+                                  <td>${ player.careerHitterStats.hits }</td>
+                                  <td>${ player.careerHitterStats.doubles }</td>
+                                  <td>${ player.careerHitterStats.triples }</td>
+                                  <td>${ player.careerHitterStats.homeRuns }</td>
+                                  <td>${ player.careerHitterStats.runs }</td>
+                                  <td>${ player.careerHitterStats.rbi }</td>
+                                  <td>${ player.careerHitterStats.sb }</td>
+                                  <td>${ statService.formatRatio(player.careerHitterStats?.avg) }</td>
+                                  <td>${ statService.formatRatio(player.careerHitterStats?.obp) }</td>
+                                  <td>${ statService.formatRatio(player.careerHitterStats?.slg) }</td>
+                                  <td>${ statService.formatRatio(player.careerHitterStats?.ops) }</td>
+                                  <td>${ player.careerHitterStats.wpa?.toFixed(2) }</td>
+                                </tr>
+                              ` : $h`
+                              <tr>
+                                <td style="text-align:center;" colspan="15">No games played.</td>
+                              </tr>
+                              `}
+                            </tbody>
           
                           </table>
                         ` : $h`
-                          <table class="stat-table small">
-                            <tr>
-                              <th>W</th>
-                              <th>L</th>
-                              <th>GS</th>
-                              <th>IP</th>
-                              <th>ERA</th>
-                              <th>AB</th>
-                              <th>PA</th>
-                              <th>R</th>
-                              <th>ER</th>
-                              <th>HR</th>
-                              <th>BB</th>
-                              <th>SO</th>
-                              <th>HBP</th>
-                              <th>WPA</th>
-                            </tr>  
-                            
-                              ${player.careerPitcherStats.battersFaced > 0 ? $h`
-                                <tr>
-                                  <td>${ player.careerPitcherStats?.wins }</td>
-                                  <td>${ player.careerPitcherStats?.losses }</td>
-                                  <td>${ player.careerPitcherStats?.starts }</td>
-                                  <td>${ player.careerPitcherStats?.ip }</td>
-                                  <td>${ player.careerPitcherStats?.era.toFixed(2) }</td>
-                                  <td>${ player.careerPitcherStats?.atBats }</td>
-                                  <td>${ player.careerPitcherStats?.battersFaced }</td>
-                                  <td>${ player.careerPitcherStats?.runs }</td>
-                                  <td>${ player.careerPitcherStats?.er }</td>
-                                  <td>${ player.careerPitcherStats?.homeRuns }</td>
-                                  <td>${ player.careerPitcherStats?.bb }</td>
-                                  <td>${ player.careerPitcherStats?.so }</td>
-                                  <td>${ player.careerPitcherStats?.hbp }</td>
-                                  <td>${ player.careerPitcherStats.wpa?.toFixed(2) }</td>
-              
-                                </tr>
-                            ` : $h`
+                          <table class="data-table small">
+                            <thead>
                               <tr>
-                                <td style="text-align:center;" colspan="13">No games played.</td>
-                              </tr>
-                            `}
+                                <th>W</th>
+                                <th>L</th>
+                                <th>GS</th>
+                                <th>IP</th>
+                                <th>ERA</th>
+                                <th>AB</th>
+                                <th>PA</th>
+                                <th>R</th>
+                                <th>ER</th>
+                                <th>HR</th>
+                                <th>BB</th>
+                                <th>SO</th>
+                                <th>HBP</th>
+                                <th>WPA</th>
+                              </tr> 
+                            </thead>
+                            
+                            <tbody>
+
+                              ${player.careerPitcherStats.battersFaced > 0 ? $h`
+                                  <tr>
+                                    <td>${ player.careerPitcherStats?.wins }</td>
+                                    <td>${ player.careerPitcherStats?.losses }</td>
+                                    <td>${ player.careerPitcherStats?.starts }</td>
+                                    <td>${ player.careerPitcherStats?.ip }</td>
+                                    <td>${ player.careerPitcherStats?.era.toFixed(2) }</td>
+                                    <td>${ player.careerPitcherStats?.atBats }</td>
+                                    <td>${ player.careerPitcherStats?.battersFaced }</td>
+                                    <td>${ player.careerPitcherStats?.runs }</td>
+                                    <td>${ player.careerPitcherStats?.er }</td>
+                                    <td>${ player.careerPitcherStats?.homeRuns }</td>
+                                    <td>${ player.careerPitcherStats?.bb }</td>
+                                    <td>${ player.careerPitcherStats?.so }</td>
+                                    <td>${ player.careerPitcherStats?.hbp }</td>
+                                    <td>${ player.careerPitcherStats.wpa?.toFixed(2) }</td>
+                
+                                  </tr>
+                              ` : $h`
+                                <tr>
+                                  <td style="text-align:center;" colspan="13">No games played.</td>
+                                </tr>
+                              `}
+
+                            </tbody>
+                            
+
           
                           </table>
                         `} 
@@ -164,7 +175,7 @@
                       <div class="stat-table-wrapper">
 
                         ${player.primaryPosition != "P" ? $h`
-                        <table class="stat-table small">
+                        <table class="data-table small">
                           <thead>
                             <tr>
                               <th>Team</th>
@@ -237,7 +248,7 @@
                           </tbody>
                         </table>
                       ` : $h`
-                        <table class="stat-table small">
+                        <table class="data-table small">
                           <thead>
                             <tr>
                               <th>Team</th>
@@ -317,7 +328,7 @@
                           ${player.completeContracts.map( cc => $h`
                             
                             <div class="stat-table-wrapper">
-                              <table class="stat-table small">
+                              <table class="data-table small">
                                 <thead>
                                   <tr>
                                     <th>Year</th>
@@ -361,7 +372,7 @@
                       ${player.contract?.startDate ? $h`
                         
                         <div class="stat-table-wrapper">
-                          <table class="stat-table small">
+                          <table class="data-table small">
                             <thead>
                               <tr>
                                 <th>Year</th>
@@ -416,55 +427,58 @@
             <div class="card">
               <div class="card-header">Recent Games</div>
               <div class="card-content">
-                  <table class="stat-table">
-                      <thead>
-                          <tr>
-                            <th class="game">Game</th>
-                            <th>Age</th>
-                            <th>W-L</th>
-                            <th class="numeric-cell">RAT</th>
-                            <th class="numeric-cell">IP</th>
-                            <th class="numeric-cell">H</th>
-                            <th class="numeric-cell">R</th>
-                            <th class="numeric-cell">ER</th>
-                            <th class="numeric-cell">HR</th>
-                            <th class="numeric-cell">BB</th>
-                            <th class="numeric-cell">SO</th>
-                            <th class="numeric-cell">HBP</th>
-                            <th class="numeric-cell">BF</th>
-                            <th class="numeric-cell">WPA</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          ${player.pitcherGameLog?.length > 0 ? $h`
-                          
-                              ${player.pitcherGameLog?.map(log => $h`
-                                  <tr>
-                                      <td class="game"><a href="${universeWebService.startDateLink(`/g/${log.gameId}`)}">${dayjs(log.dateCreated).format('LL')}</a></td>
-                                      <td>${log.age}</td>
-                                      <td>${showWL(log)}</td>
-                                      <td class="numeric-cell">${playerWebService.getPlayerDisplayRating(log.overallRatingAfter, log.age) }</td>
-                                      <td class="numeric-cell">${statService.getIP(log.outs)}</td>
-                                      <td class="numeric-cell">${log.hits}</td>
-                                      <td class="numeric-cell">${log.runs}</td>
-                                      <td class="numeric-cell">${log.er}</td>
-                                      <td class="numeric-cell">${log.homeRuns}</td>
-                                      <td class="numeric-cell">${log.bb}</td>
-                                      <td class="numeric-cell">${log.so}</td>
-                                      <td class="numeric-cell">${log.hbp}</td>
-                                      <td class="numeric-cell">${log.battersFaced}</td>
-                                      <td class="numeric-cell">${log.wpa?.toFixed(2)}</td>
-                                  </tr>
-                              `)}
+                  <div class="stat-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                              <th class="game">Game</th>
+                              <th>Age</th>
+                              <th>W-L</th>
+                              <th class="numeric-cell">RAT</th>
+                              <th class="numeric-cell">IP</th>
+                              <th class="numeric-cell">H</th>
+                              <th class="numeric-cell">R</th>
+                              <th class="numeric-cell">ER</th>
+                              <th class="numeric-cell">HR</th>
+                              <th class="numeric-cell">BB</th>
+                              <th class="numeric-cell">SO</th>
+                              <th class="numeric-cell">HBP</th>
+                              <th class="numeric-cell">BF</th>
+                              <th class="numeric-cell">WPA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${player.pitcherGameLog?.length > 0 ? $h`
+                            
+                                ${player.pitcherGameLog?.map(log => $h`
+                                    <tr>
+                                        <td class="game"><a href="${universeWebService.startDateLink(`/g/${log.gameId}`)}">${dayjs(log.dateCreated).format('LL')}</a></td>
+                                        <td>${log.age}</td>
+                                        <td>${showWL(log)}</td>
+                                        <td class="numeric-cell">${playerWebService.getPlayerDisplayRating(log.overallRatingAfter, log.age) }</td>
+                                        <td class="numeric-cell">${statService.getIP(log.outs)}</td>
+                                        <td class="numeric-cell">${log.hits}</td>
+                                        <td class="numeric-cell">${log.runs}</td>
+                                        <td class="numeric-cell">${log.er}</td>
+                                        <td class="numeric-cell">${log.homeRuns}</td>
+                                        <td class="numeric-cell">${log.bb}</td>
+                                        <td class="numeric-cell">${log.so}</td>
+                                        <td class="numeric-cell">${log.hbp}</td>
+                                        <td class="numeric-cell">${log.battersFaced}</td>
+                                        <td class="numeric-cell">${log.wpa?.toFixed(2)}</td>
+                                    </tr>
+                                `)}
 
-                          ` : $h`
-                                  <tr>
-                                      <td colspan="16">No data.</td>
-                                  </tr>
-                          
-                          `}
-                      </tbody>                            
-                  </table>
+                            ` : $h`
+                                    <tr>
+                                        <td colspan="16">No data.</td>
+                                    </tr>
+                            
+                            `}
+                        </tbody>                            
+                    </table>
+                  </div>
+
               </div>
             </div>
           ` : $h`
@@ -472,63 +486,65 @@
             <div class="card">
               <div class="card-header">Recent Games</div>
               <div class="card-content">
-                  <table class="stat-table">
-                      <thead>
-                          <tr>
-                              <th class="game">Game</th>
-                              <th>Age</th>
-                              <th>W-L</th>
-                              <th class="numeric-cell">RAT</th>
-                              <th class="numeric-cell">PA</th>
-                              <th class="numeric-cell">AB</th>
-                              <th class="numeric-cell">R</th>
-                              <th class="numeric-cell">H</th>
-                              <th class="numeric-cell">2B</th>
-                              <th class="numeric-cell">3B</th>
-                              <th class="numeric-cell">HR</th>
-                              <th class="numeric-cell">RBI</th>
-                              <th class="numeric-cell">SB</th>
-                              <th class="numeric-cell">CS</th>
-                              <th class="numeric-cell">BB</th>
-                              <th class="numeric-cell">SO</th>
-                              <th class="numeric-cell">WPA</th>
+                  <div class="stat-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="game">Game</th>
+                                <th>Age</th>
+                                <th>W-L</th>
+                                <th class="numeric-cell">RAT</th>
+                                <th class="numeric-cell">PA</th>
+                                <th class="numeric-cell">AB</th>
+                                <th class="numeric-cell">R</th>
+                                <th class="numeric-cell">H</th>
+                                <th class="numeric-cell">2B</th>
+                                <th class="numeric-cell">3B</th>
+                                <th class="numeric-cell">HR</th>
+                                <th class="numeric-cell">RBI</th>
+                                <th class="numeric-cell">SB</th>
+                                <th class="numeric-cell">CS</th>
+                                <th class="numeric-cell">BB</th>
+                                <th class="numeric-cell">SO</th>
+                                <th class="numeric-cell">WPA</th>
 
-                          </tr>
-                      </thead>
-                      <tbody>
-                          ${player.hitterGameLog?.length > 0 ? $h`
-                          
-                              ${player.hitterGameLog?.map(log => $h`
-                                  <tr>
-                                      <td class="game"><a href="${universeWebService.startDateLink(`/g/${log.gameId}`)}">${dayjs(log.startDate).format('LL')}</a></td>
-                                      <td>${log.age}</td>
-                                      <td>${showTeamWL(log)}</td>
-                                      <td class="numeric-cell">${playerWebService.getPlayerDisplayRating(log.overallRatingAfter, log.age) }</td>
-                                      <td class="numeric-cell">${log.pa}</td>
-                                      <td class="numeric-cell">${log.atBats}</td>
-                                      <td class="numeric-cell">${log.runs}</td>
-                                      <td class="numeric-cell">${log.hits}</td>
-                                      <td class="numeric-cell">${log.doubles}</td>
-                                      <td class="numeric-cell">${log.triples}</td>
-                                      <td class="numeric-cell">${log.homeRuns}</td>
-                                      <td class="numeric-cell">${log.rbi}</td>
-                                      <td class="numeric-cell">${log.sb}</td>
-                                      <td class="numeric-cell">${log.cs}</td>
-                                      <td class="numeric-cell">${log.bb}</td>
-                                      <td class="numeric-cell">${log.so}</td>
-                                      <td class="numeric-cell">${log.wpa?.toFixed(2)}</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${player.hitterGameLog?.length > 0 ? $h`
+                            
+                                ${player.hitterGameLog?.map(log => $h`
+                                    <tr>
+                                        <td class="game"><a href="${universeWebService.startDateLink(`/g/${log.gameId}`)}">${dayjs(log.startDate).format('LL')}</a></td>
+                                        <td>${log.age}</td>
+                                        <td>${showTeamWL(log)}</td>
+                                        <td class="numeric-cell">${playerWebService.getPlayerDisplayRating(log.overallRatingAfter, log.age) }</td>
+                                        <td class="numeric-cell">${log.pa}</td>
+                                        <td class="numeric-cell">${log.atBats}</td>
+                                        <td class="numeric-cell">${log.runs}</td>
+                                        <td class="numeric-cell">${log.hits}</td>
+                                        <td class="numeric-cell">${log.doubles}</td>
+                                        <td class="numeric-cell">${log.triples}</td>
+                                        <td class="numeric-cell">${log.homeRuns}</td>
+                                        <td class="numeric-cell">${log.rbi}</td>
+                                        <td class="numeric-cell">${log.sb}</td>
+                                        <td class="numeric-cell">${log.cs}</td>
+                                        <td class="numeric-cell">${log.bb}</td>
+                                        <td class="numeric-cell">${log.so}</td>
+                                        <td class="numeric-cell">${log.wpa?.toFixed(2)}</td>
 
-                                  </tr>
-                              `)}
+                                    </tr>
+                                `)}
 
-                          ` : $h`
-                                  <tr>
-                                      <td colspan="22">No data.</td>
-                                  </tr>
-                          
-                          `}
-                      </tbody>                            
-                  </table>
+                            ` : $h`
+                                    <tr>
+                                        <td colspan="22">No data.</td>
+                                    </tr>
+                            
+                            `}
+                        </tbody>                            
+                    </table>
+                  </div>
               </div>
             </div>
           

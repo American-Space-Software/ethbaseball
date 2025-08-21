@@ -82,7 +82,7 @@ let startWebServer = async () => {
   const PROVIDER_CHAIN_RPC_URL = process.env.PROVIDER_CHAIN_RPC_URL ? process.env.PROVIDER_CHAIN_RPC_URL : "http://127.0.0.1:8545/"
   const PROVIDER_CHAIN_BLOCK_EXPLORER = process.env.PROVIDER_CHAIN_BLOCK_EXPLORER
   const FOOTER_ROUTES:{ link:string, content:string, linkText:string}[] = process.env.FOOTER_ROUTES ? JSON.parse(process.env.FOOTER_ROUTES) : []
-
+  const OPENSEA_COLLECTION_URL = process.env.OPENSEA_COLLECTION_URL
 
 
 
@@ -247,7 +247,8 @@ let startWebServer = async () => {
       'DIAMONDS_ADDRESS': universe.diamondAddress,
       'UNIVERSE_ADDRESS': universe.contractAddress,
       'ADMIN_ADDRESS': universe.adminAddress,
-      'IPFS_CID': universe.ipfsCid
+      'IPFS_CID': universe.ipfsCid,
+      'OPENSEA_COLLECTION_URL': OPENSEA_COLLECTION_URL
     })
 
   })

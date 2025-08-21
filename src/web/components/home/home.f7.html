@@ -93,17 +93,18 @@
               `}
 
 
-              <div class="block">
-                <div class="list links-list list-inset list-outline-ios list-dividers-ios">
-                    <ul>
-                      <li><a class="link" href="/l/standings/1">Standings</a></li>
-                      <li><a class="link" href="/games">Scores</a></li>
-                      <li><a class="link" href="/players/">Players</a></li>
-                      <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}">Buy Diamonds</a></li>
-                      <li><a class="link" href="/about">About</a></li>
+              <div class="list links-list list-inset list-outline-ios list-dividers-ios">
+                  <ul>
+                    <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
+                    <li><a class="link" href="/games">⚾ Scores</a></li>
+                    <li><a class="link" href="/players/">🧢 Players</a></li>
+                    <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}">🔷 Buy Diamonds (Uniswap)</a></li>
+                    ${env.OPENSEA_COLLECTION_URL ? $h`
+                      <li><a class="link external" href="${env.OPENSEA_COLLECTION_URL}">🌊 Buy a Team (OpenSea)</a></li>
+                      ` : $h` `}
+                    <li><a class="link" href="/about">📘 About</a></li>
 
-                    </ul>
-                </div>
+                  </ul>
               </div>
 
 
@@ -111,12 +112,10 @@
 
               ${vm?.topTeams?.length > 0 ? $h`
 
-                <div class="card card-outline card-header-divider">
-                  <div class="card-header">Top Teams</div>
-                  <div class="card-content card-content-padding">
-
-                    <div class="stat-table-wrapper">
-                        <table class="stat-table home-standings">
+                  <div class="block-title block-title-large">Top Teams</div>
+                  <div class="stat-table-wrapper">
+                      <table class="data-table home-standings">
+                          <thead>
                             <tr>
                                 <th class="name">Name</th>
                                 <th>Wins</th>
@@ -128,7 +127,8 @@
                                 <th class="numeric-cell">Projected Expenses</th>
                                 <th class="numeric-cell">Projected Profit</th>
                             </tr>
-
+                          </thead>
+                          <tbody>
                             ${vm?.topTeams?.map( (t, index) => $h`
                                 <tr>
                                     <td class="name">
@@ -146,15 +146,13 @@
 
                                 </tr>
                             `)}
-                        </table>
-                    </div>
-
-                    <br />
-
-                    <a href="${universeWebService.startDateLink(`/l/standings/1`)}" class="button button-outline small-button">Full Standings</a>
-
+                          </tbody>
+                      </table>
                   </div>
-                </div>
+
+                  <br />
+
+                  <a href="${universeWebService.startDateLink(`/l/standings/1`)}" class="button button-outline small-button">Full Standings</a>
 
               ` : $h` `}
 

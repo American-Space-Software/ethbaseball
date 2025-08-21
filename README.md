@@ -169,6 +169,9 @@ This keeps the **minter private key off the web server** entirely (nice for secu
     PROVIDER_CHAIN_NAME=
     PROVIDER_CHAIN_RPC_URL=
     PROVIDER_CHAIN_BLOCK_EXPLORER=
+
+    # --- If collection is on opensea specify the URL
+    OPENSEA_COLLECTION_URL=
 ```
 ---
 
