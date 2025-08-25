@@ -62,7 +62,7 @@ class UserService {
         if (user.address) {
 
           let owner:Owner = await this.ownerService.get(user.address)
-          authInfo.diamondBalance = owner?.diamondBalance || 0
+          authInfo.diamondBalance = owner?.diamondBalance || "0"
 
           let teams:Team[] = []
 

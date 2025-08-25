@@ -2,6 +2,17 @@
 
   <div class="page page-with-subnavbar" data-name="team-index">
 
+    ${teamComponentService.isTeamOwner() && teamComponentService.hasChanges ? $h`
+
+        <div class="fab fab-extended fab-right-bottom color-orange">
+            <a href="#" @click="${saveClick}">
+                <div class="fab-text">Save Roster</div>
+            </a>
+        </div>
+
+    ` : $h` `}
+
+
     <div class="page-content">
 
       <${StartDate} />
@@ -23,7 +34,7 @@
             </div>
           </div>
 
-          <div class="block-title block-title-large team-info">
+          <div class="block-title block-title-large">
 
             <div class="left">
               <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" class="profilePic" />
@@ -46,14 +57,12 @@
 
           </div>
 
-          <div class="block">
-            <div class="list links-list list-inset list-outline-ios list-dividers-ios">
-                <ul>
+          <div class="list links-list list-inset list-outline-ios list-dividers-ios">
+            <ul>
                 <li><a class="link" href="${universeWebService.startDateLink(`/t/schedule/${teamComponentService.team.tokenId}`)}">📅 Full Schedule</a></li>
                 <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/${teamComponentService.team.tokenId}`)}">📝 Activity</a></li>
                 <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>        
-                </ul>
-            </div>
+            </ul>
           </div>
 
 
@@ -136,19 +145,11 @@
 
           </div>
 
-          <div class="card card-outline card-header-divider ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
-              <div class="card-header">Lineup <span class="flex">
-                      <!-- ${teamComponentService.isTeamOwner() && teamComponentService.hasEmptySpots ? $h`<button
-                  style="margin-right: 10px;" class="button button-outline inline"
-                  @click="${autoFillClick}">Auto-fill</button>` : $h` `} -->
+          <div class="block-title block-title-medium " >
+            Lineup 
+          </div>
 
-                      ${teamComponentService.isTeamOwner() && teamComponentService.hasChanges ? $h`<button
-                          class="button button-fill inline" @click="${saveClick}">Save Roster</button>` : $h` `}
-                  </span>
-              </div>
-
-              <div class="card-content">
-
+          <div class="block block-outline ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
                   ${teamComponentService.selected == "stats" ? $h`
                   <hitter-stats hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
                       filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}"
@@ -182,49 +183,49 @@
                       </select>
                   </hitter-contracts>
                   ` : $h` `}
-
-
-              </div>
-
           </div>
 
-          <div class="card card-outline card-header-divider ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
-              <div class="card-header">Pitching Rotation</div>
 
-              <div class="card-content">
 
-                  ${teamComponentService.selected == "stats" ? $h`
-                  <pitcher-stats pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
-                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}"
-                      statprop="seasonStats">
-                      <span />
-                  </pitcher-stats>
-                  ` : $h` `}
+          <div class="block-title block-title-medium " >
+            Pitching Rotation 
+          </div>
 
-                  ${teamComponentService.selected == "ratings" ? $h`
-                  <pitcher-ratings pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
-                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
-                      <span />
-                  </pitcher-ratings>
-                  ` : $h` `}
+        
+          <div class="block block-outline ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
 
-                  ${teamComponentService.selected == "contracts" ? $h`
-                  <pitcher-contracts pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
-                      filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
-                      <span />
-                  </pitcher-contracts>
-                  ` : $h` `}
+                ${teamComponentService.selected == "stats" ? $h`
+                <pitcher-stats pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                    filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}"
+                    statprop="seasonStats">
+                    <span />
+                </pitcher-stats>
+                ` : $h` `}
 
-              </div>
+                ${teamComponentService.selected == "ratings" ? $h`
+                <pitcher-ratings pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                    filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
+                    <span />
+                </pitcher-ratings>
+                ` : $h` `}
+
+                ${teamComponentService.selected == "contracts" ? $h`
+                <pitcher-contracts pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                    filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
+                    <span />
+                </pitcher-contracts>
+                ` : $h` `}
 
           </div>
 
 
           ${teamComponentService?.team?.seasonHistory ? $h`
 
-            <div class="card card-outline card-header-divider">
-              <div class="card-header">History</div>
-              <div class="card-content">
+              <div class="block-title block-title-medium " >
+                History
+              </div>
+
+              <div class="block  block-outline">
                 <div class="stat-table-wrapper">
                   <table class="data-table">
                     <thead>
@@ -262,10 +263,11 @@
                   </table>
                 </div>
               </div>
-            </div>
 
 
           ` : $h` `}
+
+
 
 
 

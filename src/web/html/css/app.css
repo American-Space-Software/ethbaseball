@@ -650,6 +650,9 @@ h1 {
 } */
 
 
+.data-table {
+  white-space: nowrap;
+}
 
 .data-table .date {
   font-size:11px;

@@ -96,7 +96,7 @@ class TeamComponentService {
     }
 
     isTeamOwner() {
-        return (this.authInfo.address == this.team.ownerId && this.team.ownerId != undefined)
+        return (this.authInfo?.address == this.team?.ownerId && this.team?.ownerId != undefined)
     }
 
     async loadTeam(tokenId:number, startDate:string, options?:any) {

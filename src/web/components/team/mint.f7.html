@@ -418,6 +418,9 @@
       mintInfo = result.mintInfo
       authInfo = await loginWebService.getAuthInfo()
 
+      console.log(authInfo)
+      console.log(mintInfo)
+
       if (mintInfo?.diamonds) {
         showMintWithDiamonds = BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds)
         showStartMintButton = mintInfo.eth?.ethCost || showMintWithDiamonds

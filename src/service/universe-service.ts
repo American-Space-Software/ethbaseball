@@ -163,7 +163,7 @@ class UniverseService {
     //     await this.exportIfChanged(`${ipfsDirectory}/images/${image.cid}.html`, image.cid, image.svg)
     // }
     
-    async exportToIPFS(ipfsDirectory:string) : Promise<string> {
+    async exportToIPFS(ipfsDirectory:string, options?:any) : Promise<string> {
 
         try {
             let stat = await this.ipfsService.heliaStat(ipfsDirectory)
@@ -178,14 +178,14 @@ class UniverseService {
 
         //Write the logo to IPFS
         let logoBuffer = fs.readFileSync(`src/web/html/images/logo.png`)
-        let logo:Image = await this.imageService.createImageFromContent(logoBuffer, undefined, undefined, undefined)
+        let logo:Image = await this.imageService.createImageFromContent(logoBuffer, undefined, undefined, undefined, options)
 
         await this.exportBufferIfChanged(`${ipfsDirectory}/images/${logo.cid}.png`, logo.cid, logo.dataFull)
 
 
         //Write the OpenSea banner to IPFS
         let openSeaBuffer = fs.readFileSync(`src/web/html/images/opensea_banner.png`)
-        let openSeaBanner:Image = await this.imageService.createImageFromContent(openSeaBuffer, undefined, undefined, undefined)
+        let openSeaBanner:Image = await this.imageService.createImageFromContent(openSeaBuffer, undefined, undefined, undefined, options)
 
         await this.exportBufferIfChanged(`${ipfsDirectory}/images/${openSeaBanner.cid}.png`, openSeaBanner.cid, openSeaBanner.dataFull)
 
@@ -273,7 +273,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
         await this.clearIPFSDirectory(`${ipfsDirectory}/animation`)
 
 
-        await this.exportToIPFS(ipfsDirectory)
+        await this.exportToIPFS(ipfsDirectory, options)
 
         for (let tls of tlss) {
 
