@@ -29,6 +29,10 @@
     "start:dev": "node --env-file=.env.start.development --max-old-space-size=4096 dist/index.js",
     "start:sepolia": "node --env-file=.env.start.sepolia --max-old-space-size=4096 dist/index.js",
     
+    "create-car": "node --env-file=.env.start.production  dist/create-car.js",
+    "create-car:dev": "node --env-file=.env.start.development  dist/create-car.js",
+
+
     "deploy-commands": "node --env-file=.env.production dist/deploy-commands.js",
     
 

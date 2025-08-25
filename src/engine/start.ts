@@ -237,6 +237,31 @@ let startEngine = async () => {
 
 }
 
+
+let createCar = async () => {
+
+  let config = await ProcessConfig.getConfig()
+
+  let container = await getContainer()
+
+  
+  let universeService: UniverseService = container.get(UniverseService)
+  let schemaService: SchemaService = container.get(SchemaService)
+  let ipfsService:IPFSService = container.get(IPFSService)
+
+  await schemaService.load()
+  await ipfsService.init()
+
+
+  let universe:Universe = await universeService.get(config.universe)
+
+  let cid = await universeService.syncMetadata(universe, config)
+
+  console.log(cid)
+
+}
+
+
 export {
-    startEngine
+    startEngine, createCar
 }

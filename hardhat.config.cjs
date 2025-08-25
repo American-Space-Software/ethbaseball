@@ -8,13 +8,13 @@ require("hardhat-gas-reporter")
 const dotenv = require('dotenv');
 const path = require('path');
 
-let envPath = path.resolve(process.env.INIT_CWD ? process.env.INIT_CWD : "./", `.env.discord.${process.env.NODE_ENV}`);
+let envPath = path.resolve(process.env.INIT_CWD ? process.env.INIT_CWD : "./", `.env.engine.${process.env.NODE_ENV}`);
 dotenv.config({ path: envPath });
 
 const { API_URL, PRIVATE_KEY } = process.env
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
-
+const PROVIDER_LINK = process.env.PROVIDER_LINK
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -58,6 +58,10 @@ const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
         auto: false,
         interval: 5000
       }
-    }
+    },
+
+    // mainnet: {
+    //   url: PROVIDER_LINK
+    // },
   }
 }

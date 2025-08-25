@@ -29,10 +29,8 @@ import { LeagueService } from "./league-service.js";
 import { RollService } from "./roll-service.js";
 import { StatService } from "./stat-service.js";
 import { GameTransaction } from "../dto/game-transaction.js";
-import { OffchainEvent } from "../dto/offchain-event.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
-import { CacheService, PLAYERS } from "./cache-service.js";
 import { GameService } from "./game-service.js";
 
 const MAX_ROSTER_SIZE = 13
@@ -1338,15 +1336,15 @@ class TeamService {
 
         result.attributes = [
             {
-                traitType: "ID",
+                trait_type: "Token ID",
                 value: team.tokenId.toString()
             },
             {
-                traitType: "City",
+                trait_type: "City",
                 value: city.name
             },
             {
-                traitType: "Name",
+                trait_type: "Name",
                 value: team.name
             }
             

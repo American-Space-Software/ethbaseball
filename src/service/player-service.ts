@@ -891,134 +891,134 @@ class PlayerService {
 
         result.attributes = [
             {
-                traitType: "ID",
+                trait_type: "ID",
                 value: player._id.toString()
             },
             {
-                traitType: "Name",
+                trait_type: "Name",
                 value: player.fullName
             },
             {
-                traitType: "Age",
+                trait_type: "Age",
                 value: player.age.toString()
             },
             {
-                traitType: "Zodiac",
+                trait_type: "Zodiac",
                 value: player.zodiacSign
             },
             {
-                traitType: "Position",
+                trait_type: "Position",
                 value: this.getPositionFull(player.primaryPosition)
             },
             {
-                traitType: "Bats",
+                trait_type: "Bats",
                 value: player.hits
             },
             {
-                traitType: "Throws",
+                trait_type: "Throws",
                 value: player.throws
             },
             {
-                traitType: "Overall Rating",
+                trait_type: "Overall Rating",
                 value: player.overallRating.toFixed(2)
             },
             {
-                traitType: "Speed",
+                trait_type: "Speed",
                 value: player.hittingRatings.speed.toString()
             },
             {
-                traitType: "Steals",
+                trait_type: "Steals",
                 value: player.hittingRatings.steals.toString()
             },
             {
-                traitType: "Defense",
+                trait_type: "Defense",
                 value: player.hittingRatings.defense.toString()
             },
             {
-                traitType: "Arm",
+                trait_type: "Arm",
                 value: player.hittingRatings.arm.toString()
             },
             {
-                traitType: "Ground Ball",
+                trait_type: "Ground Ball",
                 value: (player.hittingRatings.contactProfile.groundball * .1).toFixed(1).toString()
             },
             {
-                traitType: "Fly Ball",
+                trait_type: "Fly Ball",
                 value: (player.hittingRatings.contactProfile.flyBall * .1).toFixed(1).toString()
             },
             {
-                traitType: "Line Drive",
+                trait_type: "Line Drive",
                 value: (player.hittingRatings.contactProfile.lineDrive * .1).toFixed(1).toString()
             },
             {
-                traitType: "Contact vs L",
+                trait_type: "Contact vs L",
                 value: player.hittingRatings.vsL.contact.toString()
             },
             {
-                traitType: "Contact vs R",
+                trait_type: "Contact vs R",
                 value: player.hittingRatings.vsR.contact.toString()
             },
             {
-                traitType: "Gap Power vs L",
+                trait_type: "Gap Power vs L",
                 value: player.hittingRatings.vsL.gapPower.toString()
             },
             {
-                traitType: "Gap Power vs R",
+                trait_type: "Gap Power vs R",
                 value: player.hittingRatings.vsR.gapPower.toString()
             },
             {
-                traitType: "Home Run Power vs L",
+                trait_type: "Home Run Power vs L",
                 value: player.hittingRatings.vsL.homerunPower.toString()
             },
             {
-                traitType: "Home Run Power vs R",
+                trait_type: "Home Run Power vs R",
                 value: player.hittingRatings.vsR.homerunPower.toString()
             },
             {
-                traitType: "Plate Discipline vs L",
+                trait_type: "Plate Discipline vs L",
                 value: player.hittingRatings.vsL.plateDiscipline.toString()
             },
             {
-                traitType: "Plate Discipline vs R",
+                trait_type: "Plate Discipline vs R",
                 value: player.hittingRatings.vsR.plateDiscipline.toString()
             },
             {
-                traitType: "Power (Pitch)",
+                trait_type: "Power (Pitch)",
                 value: player.pitchRatings.power.toString()
             },
             {
-                traitType: "Control vs L (Pitch)",
+                trait_type: "Control vs L (Pitch)",
                 value: player.pitchRatings.vsL.control.toString()
             },
             {
-                traitType: "Control vs R (Pitch)",
+                trait_type: "Control vs R (Pitch)",
                 value: player.pitchRatings.vsR.control.toString()
             },
             {
-                traitType: "Movement vs L (Pitch)",
+                trait_type: "Movement vs L (Pitch)",
                 value: player.pitchRatings.vsL.movement.toString()
             },
             {
-                traitType: "Movement vs R (Pitch)",
+                trait_type: "Movement vs R (Pitch)",
                 value: player.pitchRatings.vsR.movement.toString()
             },
             {
-                traitType: "Ground Ball (Pitch)",
+                trait_type: "Ground Ball (Pitch)",
                 value: (player.pitchRatings.contactProfile.groundball * .1).toFixed(1).toString()
             },
             {
-                traitType: "Fly Ball (Pitch)",
+                trait_type: "Fly Ball (Pitch)",
                 value: (player.pitchRatings.contactProfile.flyBall * .1).toFixed(1).toString()
             },
             {
-                traitType: "Line Drive (Pitch)",
+                trait_type: "Line Drive (Pitch)",
                 value: (player.pitchRatings.contactProfile.lineDrive * .1).toFixed(1).toString()
             }
         ]
 
         for (let p of player.pitchRatings.pitches) {
             result.attributes.push(            {
-                traitType: p.type,
+                trait_type: p.type,
                 value: p.rating.toString()
             })
         }
@@ -2072,7 +2072,7 @@ interface NFTMetadata {
 
 interface AttributeSelection {
     id?: string
-    traitType?: string
+    trait_type?: string
     value?: string
 }
 
