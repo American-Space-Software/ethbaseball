@@ -109,7 +109,7 @@ class TeamComponentService {
 
             this.authInfo = await this.loginWebService.getAuthInfo()
             let teamViewModel = await this.teamWebService.getByDate(tokenId, startDate)
-            
+
             this.team = teamViewModel.team
             this.startDate = startDate
            

@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, AllowNull, Is, Length, ForeignKey, BelongsTo } from 'sequelize-typescript'
 import { Owner } from './owner.js'
-import { Handedness, HittingProfile, HittingRatings, PersonalityType, PitchRatings, PitchType, PitcherStatLine, PitchingProfile, PlayerContract, PlayerLevel, PlayerStatLines, Position, Rating } from '../service/enums.js'
+import { Handedness, HittingProfile, HittingRatings, PersonalityType, PitchRatings, PitchType, PitcherStatLine, PitchingProfile, PlayerContract, PlayerLevel, PlayerPercentileRatings, PlayerStatLines, Position, Rating } from '../service/enums.js'
 
 @Table({
     tableName: 'player',
@@ -109,6 +109,11 @@ class Player extends Model {
     @Is('CompleteHittingRatings', validateHittingRatings)
     @Column(DataType.JSON)
     declare hittingRatings:HittingRatings
+
+    @AllowNull(true)
+    @Column(DataType.JSON)
+    declare percentileRatings:PlayerPercentileRatings
+
 
     @AllowNull(false)
     @Column(DataType.INTEGER)

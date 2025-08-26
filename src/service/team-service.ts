@@ -224,10 +224,10 @@ class TeamService {
                     lastGamePlayed: p.player.lastGamePlayed,
                     lastGamePitched: p.player.lastGamePitched,
 
-                    displayRating: this.playerService.getDisplayRating(p.player),
-
                     pitchRatings: p.pitchRatings,
                     hittingRatings: p.hittingRatings,
+
+                    percentileRatings: p.percentileRatings,
 
                     careerStats: p.player.careerStats,
                     seasonStats: p.stats,

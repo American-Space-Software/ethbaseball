@@ -430,6 +430,16 @@ interface HittingHandednessRatings {
 }
 
 
+interface PlayerPercentileRatings {
+
+  _id: string
+
+  overallRating_pct: number | null
+
+  hittingRatings:HittingRatings
+
+  pitchRatings: PitchRatings
+}
 
 
 
@@ -1261,7 +1271,7 @@ interface TeamCost {
     ethCostDecimal: string
 }
 
-export  { TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+export  { PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, PlayerContract, ContractYear, WPAReward, WPA, MatchupHandedness, SimMatchupCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, PlayerLevel, GameLevel, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

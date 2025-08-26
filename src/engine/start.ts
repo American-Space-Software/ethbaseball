@@ -18,6 +18,12 @@ import { ProcessedEvent, ProcessedTransaction, ProcessedTransactionToken, Proces
 import { Owner } from "../dto/owner.js"
 import { MintPassIndexerService } from "../service/mint-pass-indexer-service.js"
 import { SchemaService } from "../service/schema-service.js"
+import { PlayerService } from "../service/player-service.js"
+import { Player } from "../dto/player.js"
+import { SeasonService } from "../service/season-service.js"
+import { Season } from "../dto/season.js"
+import { PlayerLeagueSeason } from "../dto/player-league-season.js"
+import { PlayerLeagueSeasonService } from "../service/player-league-season-service.js"
 
 
 
@@ -49,14 +55,17 @@ let startEngine = async () => {
   let universeContractService: UniverseContractService = container.get(UniverseContractService)
   let huggingFaceService: HuggingFaceService = container.get(HuggingFaceService)
   let mintPassIndexerService: MintPassIndexerService = container.get(MintPassIndexerService)
-
+  let playerService:PlayerService = container.get(PlayerService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
   let ladderService: LadderService = container.get(LadderService)
+  let seasonService: SeasonService = container.get(SeasonService)
+  let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
 
   let ipfsService: IPFSService = container.get(IPFSService)
 
   let minterWalletAddress: string = container.get("minterWalletAddress")
   let adminWalletAddress:string = container.get("adminWalletAddress")
+  let sequelize = container.get("sequelize")
 
   // //Start and load schema
   // let discordService = container.get(DiscordService)
@@ -224,7 +233,49 @@ let startEngine = async () => {
     setTimeout(async () => { await gameLoop() }, SECONDS_BETWEEN_SIMS*1000)
   }
 
-  
+  const startupTasks = async () => {
+
+    //Make sure that players have percentile ratings
+    let s = await sequelize()
+
+    await s.transaction(async (t1) => {
+
+        let options = { transaction: t1 }
+
+        let playerPercentileRatings = await playerService.getPlayerPercentileRatings(options)
+
+        let season:Season = await seasonService.getMostRecent(options)
+
+        for (let pRating of playerPercentileRatings) {
+        
+          //Update player
+          let player:Player = await playerService.get(pRating._id, options)
+
+          player.percentileRatings = pRating
+          player.changed("percentileRatings", true)
+
+          await playerService.put(player, options)
+
+
+          //Update pls
+          let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getByPlayerSeason(player, season, options)
+
+          pls.percentileRatings = pRating
+          pls.changed("percentileRatings", true)
+
+          await playerLeagueSeasonService.put(pls, options)
+
+
+        }
+
+    })
+
+
+
+  }
+
+
+  await startupTasks()
   await indexerLoop()
   await gameLoop()
 

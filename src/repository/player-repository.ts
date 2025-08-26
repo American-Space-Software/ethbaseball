@@ -3,7 +3,7 @@ import { Owner } from "../dto/owner.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
 import { Team } from "../dto/team.js"
-import { GameLevel, HittingRatings, PitchRatings, PlayerFinalContract, PlayerReport, Position } from "../service/enums.js"
+import { GameLevel, HittingRatings, PitchRatings, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../service/enums.js"
 
 interface PlayerRepository {
     get(id:string, options?:any): Promise<Player>
@@ -60,6 +60,7 @@ interface PlayerRepository {
     getFreeAgentsAfterSeason(season:Season, options?:any) : Promise<PlayerFinalContract[]>
 
     getPurgeable(options?: any) : Promise<Player[]>
+    getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]>
 }
 
 export {

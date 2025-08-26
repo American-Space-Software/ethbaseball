@@ -496,6 +496,26 @@ class LadderService {
             await this.gameHitResultRepository.updateGameHitResults(ghr, options)
             await this.gamePitchResultRepository.updateGamePitchResults(gpr, options)
 
+            //update player projectile ratings
+            let playerPercentileRatings = await this.playerService.getPlayerPercentileRatings(options)
+
+            for (let pRating of playerPercentileRatings) {
+    
+                //Update player
+                let player:Player = allPlayers.find( p => p._id == pRating._id)
+
+                player.percentileRatings = pRating
+                player.changed("percentileRatings", true)
+
+                //Update pls
+                let pls:PlayerLeagueSeason = allPLS.find( p => p.playerId == pRating._id)
+
+                pls.percentileRatings = pRating
+                pls.changed("percentileRatings", true)
+
+            }
+
+
             dayComplete = true 
         }
 

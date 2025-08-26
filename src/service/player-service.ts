@@ -22,7 +22,7 @@ import { Animation } from "../dto/animation.js"
 import { ImageService } from "./image-service.js"
 import { Client } from "discord.js"
 import { StatService } from "./stat-service.js"
-import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, ContractYear, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType } from "./enums.js"
+import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, ContractYear, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings } from "./enums.js"
 import dayjs from "dayjs"
 
 
@@ -148,6 +148,10 @@ class PlayerService {
 
     async getLeagueAveragePitcherRatings(league:League,season:Season, options?:any) : Promise<PitchRatings>  {
         return this.playerRepository.getLeagueAveragePitcherRatings(league, season, options)
+    }
+
+    async getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]> {
+        return this.playerRepository.getPlayerPercentileRatings(options)
     }
     
     async scoutPlayer(command: ScoutPlayerCommand) {
@@ -1549,12 +1553,13 @@ class PlayerService {
                 hits: p.player.hits,
                 lastGamePlayed: p.player.lastGamePlayed,
                 // overallRating: p.overallRating,
-                displayRating: this.getDisplayRating(p.player),
 
                 salary: salaryDecimal ? ethers.parseUnits(salaryDecimal.toString(), "ether").toString() : undefined,
                 salaryDecimal: salaryDecimal,
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
+
+                percentileRatings: p.percentileRatings,
 
                 careerStats: p.player.careerStats,
                 seasonStats: p.stats,

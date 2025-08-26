@@ -16,7 +16,7 @@
                     ${actions ? $h`<th class="action"></th>` : $h` `}
                     <th @click=${sortPitchers} data-sort="fullName" class="name">Name</th>
                                 
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.overallRating_pct">OVR</th>
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="age">Age</th>
                     <th @click=${sortPitchers} data-sort="throws">Throws</th>
                     <th @click=${sortPitchers} data-sort="hits">Bats</th>
@@ -24,27 +24,27 @@
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.power">POW</th>
 
 
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Fastball')?.rating" title="Fastball">FF</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Curveball')?.rating" title="Curveball">CU</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Changeup')?.rating" title="Changeup">CH</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Cutter')?.rating" title="Cutter">FC</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Forkball')?.rating" title="Forkball">FO</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Knuckleball')?.rating" title="Knuckleball">KN</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Knuckle-curve')?.rating" title="Knuckle-curve">KC</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Screwball')?.rating" title="Screwball">SC</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Sinker')?.rating" title="Sinker">SI</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Slider')?.rating" title="Slider">SL</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Slurve')?.rating" title="Slurve">SV</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Splitter')?.rating" title="Splitter">FS</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.pitches.find( pi => pi.type == 'Sweeper')?.rating" title="Sweeper">ST</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'FF')?.rating" title="Fastball">FF</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'CU')?.rating" title="Curveball">CU</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'CH')?.rating" title="Changeup">CH</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'FC')?.rating" title="Cutter">FC</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'FO')?.rating" title="Forkball">FO</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'KN')?.rating" title="Knuckleball">KN</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'KC')?.rating" title="Knuckle-curve">KC</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'SC')?.rating" title="Screwball">SC</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'SI')?.rating" title="Sinker">SI</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'SL')?.rating" title="Slider">SL</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'SV')?.rating" title="Slurve">SV</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'FS')?.rating" title="Splitter">FS</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.pitches.find( pi => pi.type == 'ST')?.rating" title="Sweeper">ST</th>
 
                     <th class="handed-label">vsR</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.vsR.control">CON</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.vsR.movement">MOV</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.vsR.control">CON</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.vsR.movement">MOV</th>
 
                     <th class="handed-label">vsL</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.vsL.control">CON</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="pitchRatings.vsL.movement">MOV</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.vsL.control">CON</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.pitchRatings.vsL.movement">MOV</th>
 
                 </tr>
             </thead>
@@ -72,34 +72,34 @@
                                 ` : $h` `}
                             </td>
 
-                            <td class="numeric-cell">${p?.displayRating?.toFixed(1)}</td>
+                            <td class="numeric-cell">${p?.percentileRatings?.overallRating_pct?.toFixed(1)}</td>
 
                             <td class="numeric-cell">${p?.age}</td>
                             <td>${p?.throws}</td>
                             <td>${p?.hits}</td>
                             <td class="numeric-cell">${p?.pitchRatings?.power}</td>
 
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Fastball")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Curveball")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Changeup")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Cutter")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Forkball")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Knuckleball")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Knuckle-curve")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Screwball")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Sinker")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Slider")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Slurve")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Splitter")?.rating}</td>
-                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "Sweeper")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FF")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "CU")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "CH")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FC")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FO")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "KN")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "KC")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SC")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SI")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SL")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SV")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FS")?.rating}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "ST")?.rating}</td>
 
                             <td class="handed-label" ></td>
-                            <td class="numeric-cell">${p?.pitchRatings?.vsR?.control}</td>
-                            <td class="numeric-cell">${p?.pitchRatings?.vsR?.movement}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsR?.control}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsR?.movement}</td>
 
                             <td class="handed-label" ></td>
-                            <td class="numeric-cell">${p?.pitchRatings?.vsL?.control}</td>
-                            <td class="numeric-cell">${p?.pitchRatings?.vsL?.movement}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsL?.control}</td>
+                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsL?.movement}</td>
 
                         </tr>
                     `)}
@@ -222,7 +222,7 @@
 
 
       displayPitchers.push(...effectivePitchers.slice(start, end))
-
+      console.log(displayPitchers)
     }
 
     setCurrentPage(props.pitchers())

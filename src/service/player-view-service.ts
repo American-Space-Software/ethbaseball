@@ -4,7 +4,7 @@ import { Player } from "../dto/player.js"
 import { ProcessedTransactionService, TransactionsViewModel } from "./processed-transaction-service.js"
 import { PlayerService } from "./player-service.js"
 
-import { ContractType, ContractYear, Handedness, HitResultGame, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, PitchResultGame, PlayerContract, Position } from "./enums.js"
+import { ContractType, ContractYear, Handedness, HitResultGame, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, PitchResultGame, PlayerContract, PlayerPercentileRatings, Position } from "./enums.js"
 import { Team } from "../dto/team.js"
 import { TeamService } from "./team-service.js"
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js"
@@ -71,7 +71,6 @@ class PlayerViewService {
             hits: player.hits,
             age: player.age,
             throws: player.throws,
-            displayRating: this.playerService.getDisplayRating(player),
             zodiacSign: player.zodiacSign,
             primaryPosition: player.primaryPosition,
             fullName: `${player.firstName} ${player.lastName}`,
@@ -80,6 +79,7 @@ class PlayerViewService {
             ownerId: player.ownerId,
             hittingRatings: player.hittingRatings,
             pitchRatings: player.pitchRatings,
+            percentileRatings: player.percentileRatings,
             careerHitterStats: player.careerStats.hitting,
             careerPitcherStats: player.careerStats.pitching,
             careerSeasonsHitterStats: plsList.filter( p => p.teamId != undefined).map( p => {
@@ -153,7 +153,6 @@ interface PlayerViewModel {
     hits:Handedness
     throws:Handedness
     zodiacSign:string
-    displayRating:number
     primaryPosition:Position
     isRetired:boolean
     fullName: string
@@ -161,6 +160,7 @@ interface PlayerViewModel {
     ownerId:string
     hittingRatings:HittingRatings
     pitchRatings:PitchRatings
+    percentileRatings:PlayerPercentileRatings
     contract:PlayerContract
     contractYear:ContractYear
     completeContracts: PlayerContract[]

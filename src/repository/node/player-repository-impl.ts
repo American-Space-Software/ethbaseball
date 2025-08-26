@@ -1,4 +1,4 @@
-import {  inject, injectable } from "inversify"
+import { inject, injectable } from "inversify"
 import { PlayerRepository } from "../player-repository.js"
 import { Player } from "../../dto/player.js"
 
@@ -6,7 +6,7 @@ import { Owner } from "../../dto/owner.js"
 import { Op, QueryTypes } from "sequelize"
 
 import dayjs from "dayjs"
-import { HittingRatings, PitchRatings, PlayerFinalContract, PlayerReport, Position } from "../../service/enums.js"
+import { HittingRatings, PitchRating, PitchRatings, PitchType, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../../service/enums.js"
 import { Team } from "../../dto/team.js"
 
 import { League } from "../../dto/league.js"
@@ -137,11 +137,11 @@ const PITCH_SUM_QUERY_FIELDS = `
 class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     @inject("sequelize")
-    private sequelize:Function
+    private sequelize: Function
 
-    async get(id:string, options?:any): Promise<Player> {
+    async get(id: string, options?: any): Promise<Player> {
 
-        let player:Player = await Player.findByPk(id, options)
+        let player: Player = await Player.findByPk(id, options)
 
         //Some way to make sequelize do this?
         if (player?.lastGamePlayed) {
@@ -151,57 +151,58 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
         return player
     }
 
-    async put(player:Player, options?:any): Promise<Player> {
+    async put(player: Player, options?: any): Promise<Player> {
 
         await player.save(options)
         return player
 
     }
 
-    async putAll(players:Player[], options?:any) : Promise<void> {
+    async putAll(players: Player[], options?: any): Promise<void> {
         for (let player of players) {
             await this.put(player, options)
         }
     }
 
-    async delete(player:Player, options?:any) {
+    async delete(player: Player, options?: any) {
         return player.destroy(options)
     }
 
-    async updateGameFields(players:Player[], options?:any) {
+    async updateGameFields(players: Player[], options?: any) {
 
-            let queryOptions = Object.assign({ 
-                fields: ["_id","overallRating", "hittingRatings", "pitchRatings","careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "contract", "age", "personalityType"], 
-                updateOnDuplicate: ["_id", "overallRating", "hittingRatings", "pitchRatings","careerStats","lastGamePlayed", "lastGamePitched", "lastGameUpdate", "contract", "age"],
-            }, options)
+        let queryOptions = Object.assign({
+            fields: ["_id", "overallRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "contract", "age", "personalityType"],
+            updateOnDuplicate: ["_id", "overallRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "contract", "age"],
+        }, options)
 
-            let updatePlayers = players.map( p => {
-                return {
-                    _id: p._id,
-                    overallRating: p.overallRating,
-                    hittingRatings: p.hittingRatings,
-                    pitchRatings: p.pitchRatings,
-                    careerStats: p.careerStats,
-                    lastGameUpdate: p.lastGameUpdate,
-                    firstName: p.firstName,
-                    lastName: p.lastName,
-                    primaryPosition: p.primaryPosition,
-                    zodiacSign: p.zodiacSign,
-                    personalityType: p.personalityType,
-                    pitchingProfile: p.pitchingProfile,
-                    hittingProfile: p.hittingProfile,
-                    throws: p.throws,
-                    hits: p.hits,
-                    isRetired: p.isRetired,
-                    lastGamePitched: p.lastGamePitched,
-                    lastGamePlayed: p.lastGamePlayed,
-                    contract: p.contract,
-                    age: p.age
-                }
-            })
+        let updatePlayers = players.map(p => {
+            return {
+                _id: p._id,
+                overallRating: p.overallRating,
+                hittingRatings: p.hittingRatings,
+                pitchRatings: p.pitchRatings,
+                careerStats: p.careerStats,
+                lastGameUpdate: p.lastGameUpdate,
+                firstName: p.firstName,
+                lastName: p.lastName,
+                primaryPosition: p.primaryPosition,
+                zodiacSign: p.zodiacSign,
+                personalityType: p.personalityType,
+                pitchingProfile: p.pitchingProfile,
+                hittingProfile: p.hittingProfile,
+                throws: p.throws,
+                hits: p.hits,
+                isRetired: p.isRetired,
+                lastGamePitched: p.lastGamePitched,
+                lastGamePlayed: p.lastGamePlayed,
+                contract: p.contract,
+                percentileRatings: p.percentileRatings,
+                age: p.age
+            }
+        })
 
 
-            await Player.bulkCreate(updatePlayers, queryOptions)
+        await Player.bulkCreate(updatePlayers, queryOptions)
     }
 
     // async setLastGameUpdate(playerIds: string[], options?: any) {
@@ -242,7 +243,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     // }
 
-    async getByOwner(owner:Owner, options?:any): Promise<Player[]> {
+    async getByOwner(owner: Owner, options?: any): Promise<Player[]> {
 
         let queryOptions = {
             where: {
@@ -255,16 +256,16 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getMaxTokenId(options?:any): Promise<number> {
+    async getMaxTokenId(options?: any): Promise<number> {
 
-        let maxTokenId:number = await Player.max("_id", options)
+        let maxTokenId: number = await Player.max("_id", options)
         if (!maxTokenId) maxTokenId = 0
 
         return maxTokenId
 
     }
 
-    async countByOwner(owner:Owner, options?:any): Promise<number> {
+    async countByOwner(owner: Owner, options?: any): Promise<number> {
 
         let queryOptions = Object.assign({
             where: {
@@ -280,7 +281,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async count(options?:any): Promise<number> {
+    async count(options?: any): Promise<number> {
 
         let queryOptions = Object.assign({
             where: {}
@@ -293,7 +294,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async countActive(options?:any): Promise<number> {
+    async countActive(options?: any): Promise<number> {
 
         let queryOptions = Object.assign({
             where: {
@@ -423,14 +424,15 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getPitcherIds(options?:any): Promise<string[]> {
+    async getPitcherIds(options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
         let queryOptions = {
             type: QueryTypes.RAW,
             plain: false,
-            mapToModel: false        }
+            mapToModel: false
+        }
 
         const [queryResults, metadata] = await s.query(`
             SELECT  
@@ -439,18 +441,19 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             ORDER BY p.overallRating DESC
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getHitterIds(options?:any): Promise<string[]> {
+    async getHitterIds(options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
         let queryOptions = {
             type: QueryTypes.RAW,
             plain: false,
-            mapToModel: false        }
+            mapToModel: false
+        }
 
         const [queryResults, metadata] = await s.query(`
             SELECT  
@@ -459,11 +462,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             ORDER BY p.overallRating DESC
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getPitcherIdsByOwner(owner:Owner, options?:any): Promise<string[]> {
+    async getPitcherIdsByOwner(owner: Owner, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -482,11 +485,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             WHERE p.primaryPosition = "P" and p.ownerId = :ownerId
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getHitterIdsByOwner(owner:Owner, options?:any): Promise<string[]> {
+    async getHitterIdsByOwner(owner: Owner, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -505,11 +508,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             WHERE p.primaryPosition != "P" and p.ownerId = :ownerId
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getFreeAgentPitcherIds(date:Date, options?:any): Promise<string[]> {
+    async getFreeAgentPitcherIds(date: Date, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -537,11 +540,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             ${options.offset ? `OFFSET ${options.offset}` : ''}
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getFreeAgentHitterIds(date:Date, options?:any): Promise<string[]> {
+    async getFreeAgentHitterIds(date: Date, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -568,11 +571,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             ${options.offset ? `OFFSET ${options.offset}` : ''}
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getFreeAgentIdsByPositionAndSalary(position:Position, salary:bigint, date:Date, limit:number, offset:number, options?:any): Promise<string[]> {
+    async getFreeAgentIdsByPositionAndSalary(position: Position, salary: bigint, date: Date, limit: number, offset: number, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -600,11 +603,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async list(options?: any) : Promise<Player[]> {
+    async list(options?: any): Promise<Player[]> {
 
 
         let queryOptions = {
@@ -617,7 +620,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async listWithTeams(options?: any) : Promise<any[]> {
+    async listWithTeams(options?: any): Promise<any[]> {
 
         let s = await this.sequelize()
 
@@ -640,7 +643,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async listByOwnerWithTeams(owner:Owner, options?: any) : Promise<any[]> {
+    async listByOwnerWithTeams(owner: Owner, options?: any): Promise<any[]> {
 
         let s = await this.sequelize()
 
@@ -667,7 +670,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getIds(options?:any): Promise<string[]> {
+    async getIds(options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -683,11 +686,11 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             ORDER BY p.overallRating DESC
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( i => i._id)
+        return queryResults.map(i => i._id)
 
     }
 
-    async getPlayerReport(options?:any) : Promise<PlayerReport> {
+    async getPlayerReport(options?: any): Promise<PlayerReport> {
 
         let s = await this.sequelize()
 
@@ -721,32 +724,32 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getLatest(options?:any): Promise<Player> {
+    async getLatest(options?: any): Promise<Player> {
 
         let s = await this.sequelize()
 
         const maxIdToken = await Player.findOne({
             attributes: [[s.fn('max', s.col('_id')), 'max_id']],
-        //@ts-ignore
+            //@ts-ignore
         }, options)
-          
+
         //@ts-ignore
         return this.get(maxIdToken?.get('max_id', options))
     }
 
-    async clearAllTransactions( options?:any ): Promise<void> {
-        
-        await Player.update({ 
-            transactionsViewModel:  {transactions: [],rowItemViewModels: {}}
+    async clearAllTransactions(options?: any): Promise<void> {
 
-        }, Object.assign({  where: {} }, options) )
+        await Player.update({
+            transactionsViewModel: { transactions: [], rowItemViewModels: {} }
+
+        }, Object.assign({ where: {} }, options))
 
     }
 
-    async getUpdatedLastGameSince(lastUpdated:Date, options?: any) : Promise<Player[]> {
+    async getUpdatedLastGameSince(lastUpdated: Date, options?: any): Promise<Player[]> {
 
         let queryOptions = {
-            where: { 
+            where: {
                 lastGameUpdate: {
                     [Op.gte]: lastUpdated
                 }
@@ -760,7 +763,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getDisplayPlayersById(playerIds:string[], options?:any) {
+    async getDisplayPlayersById(playerIds: string[], options?: any) {
 
         let s = await this.sequelize()
 
@@ -920,14 +923,14 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getLeagueAverageHitterRatings(league:League, season:Season, options?:any) : Promise<HittingRatings> {
+    async getLeagueAverageHitterRatings(league: League, season: Season, options?: any): Promise<HittingRatings> {
 
         let s = await this.sequelize()
 
         let queryOptions = {
             type: s.QueryTypes.RAW,
             plain: true,
-            mapToModel: false, 
+            mapToModel: false,
             replacements: {
                 leagueId: league._id,
                 seasonId: season._id
@@ -968,14 +971,14 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
                 plateDiscipline: qr.r_plateDiscipline,
                 contact: qr.r_contact,
                 gapPower: qr.r_gapPower,
-                homerunPower: qr.r_homerunPower 
+                homerunPower: qr.r_homerunPower
             },
 
             vsL: {
                 plateDiscipline: qr.l_plateDiscipline,
                 contact: qr.l_contact,
                 gapPower: qr.l_gapPower,
-                homerunPower: qr.l_homerunPower 
+                homerunPower: qr.l_homerunPower
             }
         }
 
@@ -983,14 +986,14 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getLeagueAveragePitcherRatings(league:League, season:Season, options?:any) : Promise<PitchRatings> {
+    async getLeagueAveragePitcherRatings(league: League, season: Season, options?: any): Promise<PitchRatings> {
 
         let s = await this.sequelize()
 
         let queryOptions = {
             type: s.QueryTypes.RAW,
             plain: true,
-            mapToModel: false, 
+            mapToModel: false,
             replacements: {
                 leagueId: league._id,
                 seasonId: season._id
@@ -1032,8 +1035,8 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getFreeAgentsAfterSeason(season:Season, options?:any) : Promise<PlayerFinalContract[]> {
-        
+    async getFreeAgentsAfterSeason(season: Season, options?: any): Promise<PlayerFinalContract[]> {
+
         let s = await this.sequelize()
 
         let queryOptions = {
@@ -1060,7 +1063,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getPurgeable(options?: any) : Promise<Player[]> {
+    async getPurgeable(options?: any): Promise<Player[]> {
 
         let s = await this.sequelize()
 
@@ -1078,8 +1081,220 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
             WHERE p.overallRating = 40 AND p.age > 20
         `, Object.assign(queryOptions, options))
 
-        return this.getByIds(queryResults.map( qr => qr._id), options)
+        return this.getByIds(queryResults.map(qr => qr._id), options)
 
+
+    }
+
+
+    async getPlayerPercentileRatings(options?: any): Promise<PlayerPercentileRatings[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.RAW,
+            plain: false,
+            mapToModel: false,
+            replacment: {}
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            WITH RECURSIVE seq(n) AS (
+                SELECT 0
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n < 64   -- supports up to 65 pitches per player; raise if needed
+                ),
+                base AS (
+                SELECT
+                    p._id AS player_id,
+                    p.overallRating AS overall_n,
+
+                    /* hitting (player.hittingRatings) */
+                    CAST(p.hittingRatings->>"$.arm"                 AS DECIMAL(10,4)) AS arm_n,
+                    CAST(p.hittingRatings->>"$.defense"             AS DECIMAL(10,4)) AS defense_n,
+                    CAST(p.hittingRatings->>"$.speed"               AS DECIMAL(10,4)) AS speed_n,
+                    CAST(p.hittingRatings->>"$.steals"              AS DECIMAL(10,4)) AS steals_n,
+
+                    CAST(p.hittingRatings->>"$.vsR.plateDiscipline" AS DECIMAL(10,4)) AS r_plateDiscipline_n,
+                    CAST(p.hittingRatings->>"$.vsR.contact"         AS DECIMAL(10,4)) AS r_contact_n,
+                    CAST(p.hittingRatings->>"$.vsR.gapPower"        AS DECIMAL(10,4)) AS r_gapPower_n,
+                    CAST(p.hittingRatings->>"$.vsR.homerunPower"    AS DECIMAL(10,4)) AS r_homerunPower_n,
+
+                    CAST(p.hittingRatings->>"$.vsL.plateDiscipline" AS DECIMAL(10,4)) AS l_plateDiscipline_n,
+                    CAST(p.hittingRatings->>"$.vsL.contact"         AS DECIMAL(10,4)) AS l_contact_n,
+                    CAST(p.hittingRatings->>"$.vsL.gapPower"        AS DECIMAL(10,4)) AS l_gapPower_n,
+                    CAST(p.hittingRatings->>"$.vsL.homerunPower"    AS DECIMAL(10,4)) AS l_homerunPower_n,
+
+                    /* pitching (player_league_season.pitchRatings) */
+                    CAST(pls.pitchRatings->>"$.power"               AS DECIMAL(10,4)) AS power_n,
+                    CAST(pls.pitchRatings->>"$.vsR.control"         AS DECIMAL(10,4)) AS r_control_n,
+                    CAST(pls.pitchRatings->>"$.vsR.movement"        AS DECIMAL(10,4)) AS r_movement_n,
+                    CAST(pls.pitchRatings->>"$.vsL.control"         AS DECIMAL(10,4)) AS l_control_n,
+                    CAST(pls.pitchRatings->>"$.vsL.movement"        AS DECIMAL(10,4)) AS l_movement_n,
+
+                    /* keep full JSON for pitch array extraction */
+                    pls.pitchRatings AS pitch_json
+                FROM player p
+                JOIN player_league_season pls
+                    ON pls.playerId = p._id
+                /* WHERE pls.seasonId = ? -- add filters if needed */
+                ),
+
+                /* explode pitchRatings.pitches -> one row per (player, pitchType) */
+                pitches AS (
+                SELECT
+                    b.player_id,
+                    JSON_UNQUOTE(JSON_EXTRACT(b.pitch_json, CONCAT('$.pitches[', s.n, '].type')))     AS pitchType,
+                    CAST(JSON_UNQUOTE(JSON_EXTRACT(b.pitch_json, CONCAT('$.pitches[', s.n, '].rating'))) AS DECIMAL(10,4)) AS rating_n
+                FROM base b
+                JOIN seq s
+                    ON s.n < JSON_LENGTH(b.pitch_json, '$.pitches')
+                ),
+
+                /* compute percentile per pitchType among non-NULL ratings */
+                pitch_pct AS (
+                SELECT
+                    player_id,
+                    pitchType,
+                    ROUND(100 * CUME_DIST() OVER (
+                    PARTITION BY pitchType, (rating_n IS NOT NULL)
+                    ORDER BY rating_n
+                    ), 1) AS rating_pct
+                FROM pitches
+                ),
+
+                /* roll per-player pitch percentiles into a JSON map: {"FF": 82.1, "SC": 67.9, ...} */
+                pitch_by_player AS (
+                SELECT
+                    player_id,
+                    JSON_OBJECTAGG(pitchType, rating_pct) AS pitches_pct
+                FROM pitch_pct
+                GROUP BY player_id
+                )
+
+                SELECT
+                b.player_id,
+
+                /* overall */
+                ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.overall_n IS NOT NULL) ORDER BY b.overall_n), 1) AS overallRating_pct,
+
+                /* hitting percentiles */
+                CASE WHEN b.arm_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.arm_n IS NOT NULL) ORDER BY b.arm_n), 1) END AS arm_pct,
+                CASE WHEN b.defense_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.defense_n IS NOT NULL) ORDER BY b.defense_n), 1) END AS defense_pct,
+                CASE WHEN b.speed_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.speed_n IS NOT NULL) ORDER BY b.speed_n), 1) END AS speed_pct,
+                CASE WHEN b.steals_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.steals_n IS NOT NULL) ORDER BY b.steals_n), 1) END AS steals_pct,
+
+                CASE WHEN b.r_plateDiscipline_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.r_plateDiscipline_n IS NOT NULL) ORDER BY b.r_plateDiscipline_n), 1) END AS r_plateDiscipline_pct,
+                CASE WHEN b.r_contact_n          IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.r_contact_n          IS NOT NULL) ORDER BY b.r_contact_n),          1) END AS r_contact_pct,
+                CASE WHEN b.r_gapPower_n         IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.r_gapPower_n         IS NOT NULL) ORDER BY b.r_gapPower_n),         1) END AS r_gapPower_pct,
+                CASE WHEN b.r_homerunPower_n     IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.r_homerunPower_n     IS NOT NULL) ORDER BY b.r_homerunPower_n),     1) END AS r_homerunPower_pct,
+
+                CASE WHEN b.l_plateDiscipline_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.l_plateDiscipline_n IS NOT NULL) ORDER BY b.l_plateDiscipline_n), 1) END AS l_plateDiscipline_pct,
+                CASE WHEN b.l_contact_n          IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.l_contact_n          IS NOT NULL) ORDER BY b.l_contact_n),          1) END AS l_contact_pct,
+                CASE WHEN b.l_gapPower_n         IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.l_gapPower_n         IS NOT NULL) ORDER BY b.l_gapPower_n),         1) END AS l_gapPower_pct,
+                CASE WHEN b.l_homerunPower_n     IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.l_homerunPower_n     IS NOT NULL) ORDER BY b.l_homerunPower_n),     1) END AS l_homerunPower_pct,
+
+                /* pitching percentiles */
+                CASE WHEN b.power_n      IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.power_n      IS NOT NULL) ORDER BY b.power_n),      1) END AS power_pct,
+                CASE WHEN b.r_control_n  IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.r_control_n  IS NOT NULL) ORDER BY b.r_control_n),  1) END AS r_control_pct,
+                CASE WHEN b.r_movement_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.r_movement_n IS NOT NULL) ORDER BY b.r_movement_n), 1) END AS r_movement_pct,
+                CASE WHEN b.l_control_n  IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.l_control_n  IS NOT NULL) ORDER BY b.l_control_n),  1) END AS l_control_pct,
+                CASE WHEN b.l_movement_n IS NULL THEN NULL ELSE ROUND(100 * CUME_DIST() OVER (PARTITION BY (b.l_movement_n IS NOT NULL) ORDER BY b.l_movement_n), 1) END AS l_movement_pct,
+
+                /* dynamic per-pitch percentile map */
+                pbp.pitches_pct
+
+                FROM base b
+                LEFT JOIN pitch_by_player pbp USING (player_id);
+
+
+
+        `, Object.assign(queryOptions, options))
+
+        // Build a set of valid enum values (works for string enums; filters out numeric reverse-maps)
+        const pitchTypeValues = new Set<string>(
+            (Object.values(PitchType) as string[]).filter(v => typeof v === 'string')
+        )
+
+        // If your DB codes match enum values exactly, this is enough:
+        const toPitchType = (code: string): PitchType | undefined =>
+            pitchTypeValues.has(code) ? (code as PitchType) : undefined
+
+        // If your DB codes differ from enum values, add a mapping here:
+        // const codeToPitchType: Record<string, PitchType> = { FF: PitchType.FourSeam, SC: PitchType.Screwball, ... }
+        // const toPitchType = (code: string): PitchType | undefined => codeToPitchType[code]
+
+        // helpers
+        const parseJsonObject = <T = Record<string, number> | null>(v: unknown): T | null => {
+            if (v == null) return null
+            if (typeof v === 'object') return v as T
+            if (typeof v === 'string' && v.trim()) { try { return JSON.parse(v) as T } catch { return null } }
+            return null
+        }
+        const num = (v: any): number | undefined => (v == null ? undefined : Number(v))
+        const nonEmpty = <T extends object>(o: T): T | undefined => Object.values(o as any).some(v => v !== undefined) ? o : undefined
+
+        // Convert {"FF": 82.1, "SC": 67.9} -> PitchRating[]
+        const mapPitches = (m: Record<string, number> | null | undefined): PitchRating[] | undefined => {
+            if (!m) return undefined
+            const arr: PitchRating[] = []
+            for (const [code, rating] of Object.entries(m)) {
+                if (rating == null) continue
+                const pt = toPitchType(code)
+                if (pt) arr.push({ type: pt, rating: Number(rating) })
+            }
+            return arr.length ? arr : undefined
+        }
+
+        const mapRowToPlayerRatingPercentiles = (row: any): PlayerPercentileRatings => {
+            const pitchesMap = parseJsonObject<Record<string, number>>(row.pitches_pct)
+
+            const hittingVsR = nonEmpty({
+                plateDiscipline: num(row.r_plateDiscipline_pct),
+                contact: num(row.r_contact_pct),
+                gapPower: num(row.r_gapPower_pct),
+                homerunPower: num(row.r_homerunPower_pct),
+            })
+            const hittingVsL = nonEmpty({
+                plateDiscipline: num(row.l_plateDiscipline_pct),
+                contact: num(row.l_contact_pct),
+                gapPower: num(row.l_gapPower_pct),
+                homerunPower: num(row.l_homerunPower_pct),
+            })
+            const pitchVsR = nonEmpty({
+                control: num(row.r_control_pct),
+                movement: num(row.r_movement_pct),
+            })
+            const pitchVsL = nonEmpty({
+                control: num(row.l_control_pct),
+                movement: num(row.l_movement_pct),
+            })
+
+            const hittingRatings: HittingRatings = {
+                defense: num(row.defense_pct),
+                arm: num(row.arm_pct),
+                speed: num(row.speed_pct),
+                steals: num(row.steals_pct),
+                ...(hittingVsR ? { vsR: hittingVsR } : {}),
+                ...(hittingVsL ? { vsL: hittingVsL } : {}),
+            }
+
+            const pitchRatings: PitchRatings = {
+                power: num(row.power_pct),
+                ...(pitchVsR ? { vsR: pitchVsR } : {}),
+                ...(pitchVsL ? { vsL: pitchVsL } : {}),
+                pitches: mapPitches(pitchesMap),
+            }
+
+            return {
+                _id: String(row.player_id),
+                overallRating_pct: row.overallRating_pct ?? null,
+                hittingRatings,
+                pitchRatings,
+            }
+        }
+
+        return queryResults.map(mapRowToPlayerRatingPercentiles)
 
     }
 
