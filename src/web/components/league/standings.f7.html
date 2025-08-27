@@ -3,8 +3,6 @@
 
     <div class="page-content">
 
-      <div class="fixed-width-content center">
-
           <div class="hidden-on-load">
 
             <div class="block">
@@ -12,6 +10,21 @@
                 <${StartDate} />
 
                 <form class="list" id="change-standings">
+
+                    <strong>League</strong> <br />
+                    <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
+                        ${viewModel?.leagues?.map( (l, index) => $h`
+
+                            ${l.rank == universeWebService.rank ? $h`
+                                <option value="${l.rank}" selected>${l.name}</option>
+                            ` : $h`
+                                <option value="${l.rank}">${l.name}</option>
+                            `}
+
+                        `)}
+                    </select>
+
+                    <br />
 
                     <strong>Season</strong> <br />
                     <select name="startDate" class="rank-dropdown" @change="${startDateChange}" id="select-start-date">
@@ -26,20 +39,7 @@
                         `)}
                     </select>
 
-                    <br />
 
-                    <strong>League</strong> <br />
-                    <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
-                        ${viewModel?.leagues?.map( (l, index) => $h`
-
-                            ${l.rank == universeWebService.rank ? $h`
-                                <option value="${l.rank}" selected>${l.name}</option>
-                            ` : $h`
-                                <option value="${l.rank}">${l.name}</option>
-                            `}
-
-                        `)}
-                    </select>
 
 
                 </form>
@@ -84,10 +84,10 @@
                                             <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
                                             <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
                                         </td>
-                                        <td>${t.overallRecord.wins}</td>
-                                        <td>${t.overallRecord.losses}</td>
+                                        <td class="numeric-cell">${t.overallRecord.wins}</td>
+                                        <td class="numeric-cell">${t.overallRecord.losses}</td>
                                         <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                                        <td>${t.overallRecord.gamesBack}</td>
+                                        <td class="numeric-cell">${t.overallRecord.gamesBack}</td>
                                         <td class="numeric-cell">${t.seasonRating.rating.toFixed(0)}</td>
                                         <td class="numeric-cell">
                                             ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
@@ -143,9 +143,6 @@
               </div>
 
           </div>
-
-      </div>
-
     </div>
 
   </div>

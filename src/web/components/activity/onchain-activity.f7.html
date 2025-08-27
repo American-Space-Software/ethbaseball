@@ -6,38 +6,34 @@
 
             <div class="hidden-on-load">
 
-                <div class="fixed-width-content center">
+                <div class="block">
+                    <p class="segmented">
+                        <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
+                        <a href="${universeWebService.fullLink(`/activity/off`)}" class="button button-outline tab-link">Off-chain</a>
+                    <a href="${universeWebService.fullLink(`/activity/game`)}" class="button button-outline tab-link">Player Moves</a>
+                    </p>
+                </div>
 
-                    <div class="block">
-                        <p class="segmented">
-                            <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
-                            <a href="${universeWebService.fullLink(`/activity/off`)}" class="button button-outline tab-link">Off-chain</a>
-                        <a href="${universeWebService.fullLink(`/activity/game`)}" class="button button-outline tab-link">Player Moves</a>
-                        </p>
+
+                ${onChainEvents?.length > 0 ? $h`
+                    <${OnChainEvents} events="${onChainEvents}" />
+                ` : $h` `}
+
+                <div class="block split-row-both">
+                    <div>
+                        ${previousPage ? $h`
+                        <a data-reload-current="true" data-force="true" data-browser-history="true"
+                            href="/activity/?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
+                            class="button button-outline color-gray">Previous</a>
+                        ` : $h` `}
                     </div>
-
-
-                    ${onChainEvents?.length > 0 ? $h`
-                        <${OnChainEvents} events="${onChainEvents}" />
-                    ` : $h` `}
-
-                    <div class="block split-row-both">
-                        <div>
-                            ${previousPage ? $h`
-                            <a data-reload-current="true" data-force="true" data-browser-history="true"
-                                href="/activity/?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
-                                class="button button-outline color-gray">Previous</a>
-                            ` : $h` `}
-                        </div>
-                        <div>
-                            ${nextPage ? $h`
-                            <a data-reload-current="true" data-force="true" data-browser-history="true"
-                                href="/activity/?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
-                                class="button button-fill">Next</a>
-                            ` : $h` `}
-                        </div>
+                    <div>
+                        ${nextPage ? $h`
+                        <a data-reload-current="true" data-force="true" data-browser-history="true"
+                            href="/activity/?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
+                            class="button button-fill">Next</a>
+                        ` : $h` `}
                     </div>
-
                 </div>
 
 

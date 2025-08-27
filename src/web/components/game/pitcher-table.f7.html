@@ -1,53 +1,55 @@
 <template>
 
-  <table class="stat-table small-font">
-    <thead>
-      <tr style="background: ${vm.teamInfo.color1};">
-        <th class="num order">#</th>
-        <th>Pitching</th>
-        <th class="pos">POS</th>
-        <th class="num">RAT</th>
-        <th class="num">W</th>
-        <th class="num">L</th>
-        <th class="num">IP</th>
-        <th class="num">H</th>
-        <th class="num">R</th>
-        <th class="num">ER</th>
-        <th class="num">HR</th>
-        <th class="num">BB</th>
-        <th class="num">SO</th>
-        <th class="num">HBP</th>
-        <th class="num">BF</th>     
-        <th class="num">PIT</th>                  
-        <th class="num">STR</th>                  
-        <!-- <th class="num">WPA</th> -->
-      </tr>
-    </thead>
-    <tbody>
-      ${players.map( (p, index) => $h`
-        <tr class="${vm.teamInfo.currentPitcherId == p._id && (vm.isTopInning && vm.homeaway=="HOME" || !vm.isTopInning && vm.homeaway=="AWAY") && !vm.isComplete ? $h`pitching` : $h``}">
-          <td class="num order">${index + 1}</td>
-          <td class="name"><img src="/player/image/${p.playerId}" width="25" height="25" style="float:left; margin-right: 3px; vertical-align: middle;" /> ${p.throws} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
-          <td class="pos">${p.currentPosition}</td>
-          <td class="num">${ playerWebService.getPlayerDisplayRating(p.overallRating.before, p.age)}</td>
-          <td class="num">${p.pitchResult.wins}</td>
-          <td class="num">${p.pitchResult.losses}</td>
-          <td class="num">${p.pitchResult.ip}</td>
-          <td class="num">${p.pitchResult.hits}</td>
-          <td class="num">${p.pitchResult.runs}</td>
-          <td class="num">${p.pitchResult.er}</td>
-          <td class="num">${p.pitchResult.homeRuns}</td>
-          <td class="num">${p.pitchResult.bb}</td>
-          <td class="num">${p.pitchResult.so}</td>
-          <td class="num">${p.pitchResult.hbp}</td>
-          <td class="num">${p.pitchResult.battersFaced}</td>
-          <td class="num">${p.pitchResult.pitches}</td>
-          <td class="num">${p.pitchResult.strikes}</td>
+  <div class="stat-table-wrapper">
+    <table class="data-table small-font">
+      <thead>
+        <tr>
+          <th class="numeric-cell order">#</th>
+          <th>Pitching</th>
+          <th class="pos">POS</th>
+          <th class="numeric-cell">W</th>
+          <th class="numeric-cell">L</th>
+          <th class="numeric-cell">IP</th>
+          <th class="numeric-cell">H</th>
+          <th class="numeric-cell">R</th>
+          <th class="numeric-cell">ER</th>
+          <th class="numeric-cell">HR</th>
+          <th class="numeric-cell">BB</th>
+          <th class="numeric-cell">SO</th>
+          <th class="numeric-cell">HBP</th>
+          <th class="numeric-cell">BF</th>     
+          <th class="numeric-cell">PIT</th>                  
+          <th class="numeric-cell">STR</th>                  
+          <!-- <th class="num">WPA</th> -->
         </tr>
-      `)}
+      </thead>
+      <tbody>
+        ${players.map( (p, index) => $h`
+          <tr class="${vm.teamInfo.currentPitcherId == p._id && (vm.isTopInning && vm.homeaway=="HOME" || !vm.isTopInning && vm.homeaway=="AWAY") && !vm.isComplete ? $h`pitching` : $h``}">
+            <td class="numeric-cell order">${index + 1}</td>
+            <td class="name"><img src="/player/image/${p.playerId}" width="25" height="25" style="float:left; margin-right: 3px; vertical-align: middle;" /> ${p.throws} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+            <td class="pos">${p.currentPosition}</td>
+            <td class="numeric-cell">${p.pitchResult.wins}</td>
+            <td class="numeric-cell">${p.pitchResult.losses}</td>
+            <td class="numeric-cell">${p.pitchResult.ip}</td>
+            <td class="numeric-cell">${p.pitchResult.hits}</td>
+            <td class="numeric-cell">${p.pitchResult.runs}</td>
+            <td class="numeric-cell">${p.pitchResult.er}</td>
+            <td class="numeric-cell">${p.pitchResult.homeRuns}</td>
+            <td class="numeric-cell">${p.pitchResult.bb}</td>
+            <td class="numeric-cell">${p.pitchResult.so}</td>
+            <td class="numeric-cell">${p.pitchResult.hbp}</td>
+            <td class="numeric-cell">${p.pitchResult.battersFaced}</td>
+            <td class="numeric-cell">${p.pitchResult.pitches}</td>
+            <td class="numeric-cell">${p.pitchResult.strikes}</td>
+          </tr>
+        `)}
 
-    </tbody>                            
-  </table>
+      </tbody>                            
+    </table>
+  </div>
+
+
 
 
 </template>

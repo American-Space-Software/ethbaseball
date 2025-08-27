@@ -7,44 +7,33 @@
 
       <${StartDate} />
 
-      <div class="list">
-        <ul>
-
-          <li class="item-content item-input">
-            <div class="item-inner">
-              <div class="item-title item-label">League</div>
-              <div class="item-input-wrap">
-    
-                
-                <select name="rank" class="rank-dropdown" @change="${rankChange}">
-
-                    ${rank == 0 ? $h`
-                        <option value="0" selected>Free Agents</option>
-                    ` : $h`
-                        <option value="0">Free Agents</option>
-                    `}
-
-
-                    ${leagues.map( (l, index) => $h`
-        
-                        ${l.rank == rank ? $h`
-                            <option value="${l.rank}" selected >${l.name}</option>
-                        ` : $h` 
-                            <option value="${l.rank}">${l.name}</option>
-                        `}
-                    `)}
-                  
-                </select>
-              </div>
-            </div>
-          </li>
-    
-        </ul>
-      </div>
-
-
       <div class="block">
-      
+
+          <div class="list">
+
+            <strong>League</strong><br />
+            <select name="rank" class="rank-dropdown" @change="${rankChange}">
+
+                ${rank == 0 ? $h`
+                    <option value="0" selected>Free Agents</option>
+                ` : $h`
+                    <option value="0">Free Agents</option>
+                `}
+
+
+                ${leagues.map( (l, index) => $h`
+
+                    ${l.rank == rank ? $h`
+                        <option value="${l.rank}" selected >${l.name}</option>
+                    ` : $h` 
+                        <option value="${l.rank}">${l.name}</option>
+                    `}
+                `)}
+                
+            </select>
+
+          </div>
+
           <div class="search">
               <!-- <div class="searchbar searchbar-inline">
                   <div class="searchbar-input-wrap">
@@ -54,15 +43,15 @@
                   </div>
               </div> -->
               <div class="position">
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link active">Batters</a> |
-                  <a href="#playerStatsPitchers" @click="${positionClick}" class="tab-link">Pitchers</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="C">C</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="1B">1B</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="2B">2B</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="3B">3B</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="SS">SS</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="LF">LF</a> |
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="CF">CF</a> |
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link active">Batters</a>
+                  <a href="#playerStatsPitchers" @click="${positionClick}" class="tab-link">Pitchers</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="C">C</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="1B">1B</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="2B">2B</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="3B">3B</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="SS">SS</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="LF">LF</a>
+                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="CF">CF</a>
                   <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="RF">RF</a>
               </div>
           </div>

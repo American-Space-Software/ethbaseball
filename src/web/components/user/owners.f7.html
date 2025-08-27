@@ -6,40 +6,44 @@
 
       <div class="hidden-on-load">
 
-        <div class="data-table card" id="owner-data-table">
+        <div class="card card-outline card-header-divider" id="owner-data-table">
           <div class="card-header">
-            <div class="data-table-title">Owners</div>
+            Owners
           </div>
           <div class="card-content">
 
             ${tokenOwners?.length > 0 ? $h`
 
-              <table>
-                <thead>
-                  <tr>
-                    <th class="address-cell">Address</th>
-                    <th class="numeric-cell"> <a href="/u/owners?page=${page}&sort=team">Owned</a></th>
-                    <th class="numeric-cell"><a href="/u/owners?page=${page}&sort=diamonds">Diamonds</a></th>
-                    <th class="numeric-cell"><a href="/u/owners?page=${page}&sort=rewards">Rewards</a></th>
-                  </tr>
-                </thead>
-
-
-                <tbody>
-
-                  ${tokenOwners?.map( owner => $h`
+              <div class="stat-table-wrapper">
+                <table class="data-table">
+                  <thead>
                     <tr>
-                      <td class="address-cell"><a href="/u/activity?address=${owner._id}">${owner._id}</a></td>
-                      <td class="numeric-cell">${owner.count}</td>
-                      <td class="numeric-cell">${universeWebService.displayDiamonds(owner.diamondBalance)}</td>
-                      <td class="numeric-cell">${universeWebService.displayDiamonds(owner.offChainDiamondBalance)}</td>
+                      <th class="address-cell">Address</th>
+                      <th class="numeric-cell"> <a href="/u/owners?page=${page}&sort=team">Owned</a></th>
+                      <th class="numeric-cell"><a href="/u/owners?page=${page}&sort=diamonds">Diamonds</a></th>
+                      <th class="numeric-cell"><a href="/u/owners?page=${page}&sort=rewards">Rewards</a></th>
                     </tr>
-                    
-                  `)}
+                  </thead>
 
-                </tbody>
 
-              </table>
+                  <tbody>
+
+                    ${tokenOwners?.map( owner => $h`
+                      <tr>
+                        <td class="address-cell"><a href="/u/activity?address=${owner._id}">${owner._id}</a></td>
+                        <td class="numeric-cell">${owner.count}</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(owner.diamondBalance)}</td>
+                        <td class="numeric-cell">${universeWebService.displayDiamonds(owner.offChainDiamondBalance)}</td>
+                      </tr>
+                      
+                    `)}
+
+                  </tbody>
+
+                </table>
+              </div>
+
+
 
             ` : $h`<span />`}
 

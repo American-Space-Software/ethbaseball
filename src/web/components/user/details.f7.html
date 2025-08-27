@@ -3,26 +3,27 @@
     <div>
         ${vm.teams?.length > 0 ? $h`
 
-            <div class="card card-outline card-header-divider">
-                <div class="card-header">Team(s)</div>
-                <div class="card-content data-table teams">
-                    <table>
+            <div class="block-title block-title-large">Team(s)</div>
+            <div class="block block-outline teams">
+
+                <div class="stat-table-wrapper">
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="name lock-name">Name</th>
+                                <th class="label-cell  lock-name">Name</th>
                                 <th class="numeric-cell">Wins</th>
                                 <th class="numeric-cell">Losses</th>
                                 <th class="numeric-cell">Win%</th>
                                 <th class="numeric-cell">GB</th>
-              
+                
                                 <th class="numeric-cell">Rating</th>
                                 <th class="numeric-cell">Cash</th>
                             </tr>
                         </thead>
                         <tbody>
-    
+
                             ${vm.teams?.map(t => $h`
-    
+
                                 <tr>
 
                                     <td class="name lock-name">
@@ -37,48 +38,47 @@
                                     <td class="numeric-cell diamonds">${t.seasonRating.rating.toFixed(0)}</td>
                                     <td class="numeric-cell diamonds" >${universeWebService.displayDiamonds(t.financeSeason.diamondBalance)}</td>         
                                 </tr>
-    
-    
+
+
                             `)}
-    
+
                         </tbody>
                     </table>
                 </div>
+
             </div>
+
+
     
             ${vm.games?.length > 0 ? $h`
 
-                <div class="card card-outline card-header-divider">
-                    <div class="card-header">Today's Games</div>
-
-                    <div class="card-content card-content-padding">
-                        <div class="list list-dividers-ios">
-                            <ul>
-              
-                                ${vm.games.map( game => $h`
+                <div class="block-title block-title-large">Today's Games</div>
+                <div class="block block-outline">
+                    <div class="list list-dividers-ios">
+                        <ul>
+            
+                            ${vm.games.map( game => $h`
+                        
+                                ${!game.isStarted ? $h`
+                                    <${Scheduled} game=${game} /> 
+                                ` : $h` `}
+    
+                                ${game.isStarted && !game.isFinished ? $h`
+                                    <${InProgress} game=${game} />
+                                ` : $h` `}
+    
+                                ${game.isStarted && game.isFinished ? $h`
+                                    <${Result} game=${game} />
+                                ` : $h` `}
+    
                             
-                                    ${!game.isStarted ? $h`
-                                        <${Scheduled} game=${game} /> 
-                                    ` : $h` `}
-        
-                                    ${game.isStarted && !game.isFinished ? $h`
-                                        <${InProgress} game=${game} />
-                                    ` : $h` `}
-        
-                                    ${game.isStarted && game.isFinished ? $h`
-                                        <${Result} game=${game} />
-                                    ` : $h` `}
-        
-                                
-                                `)}
-              
-                            </ul>
-              
-                        </div>
-
+                            `)}
+            
+                        </ul>
+            
                     </div>
-
                 </div>
+
 
             ` : $h` `}
     

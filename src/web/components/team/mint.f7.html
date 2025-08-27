@@ -79,7 +79,9 @@
 
                   ${walletService.correctNetwork ? $h`
 
-                    <strong>Cost</strong>
+                    <div class="block-title block-title-small">Cost
+
+                    </div>
 
                     <table>
                       <tbody>
@@ -418,8 +420,6 @@
       mintInfo = result.mintInfo
       authInfo = await loginWebService.getAuthInfo()
 
-      console.log(authInfo)
-      console.log(mintInfo)
 
       if (mintInfo?.diamonds) {
         showMintWithDiamonds = BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds)

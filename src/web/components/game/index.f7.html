@@ -261,6 +261,7 @@
               <div class="boxscores grid medium-grid-cols-2">
                 
                 <div class="card">
+                  <div class="card-header">${gameViewModel?.game.away.cityName} ${gameViewModel?.game.away.name}</div>
                   <div class="card-content">
 
                     <${BatterTable} vm=${awayBoxscoreViewModel} />
@@ -328,6 +329,7 @@
                 </div>
 
                 <div class="card">
+                  <div class="card-header">${gameViewModel?.game.home.cityName} ${gameViewModel?.game.home.name}</div>
                   <div class="card-content">
 
                     <${BatterTable} vm=${homeBoxscoreViewModel} />
@@ -513,11 +515,11 @@
 
             `}
 
-        ` : $h`
-          <div class="block">
-            No game found.
-          </div>
-        `}
+          ` : $h`
+            <div class="block">
+              No game found.
+            </div>
+          `}
 
 
         </div>

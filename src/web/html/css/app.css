@@ -3,12 +3,14 @@
   
   --f7-navbar-bg-color: #0A3161; 
   --f7-navbar-link-color: #FFFFFF;
-  --f7-navbar-height: 75px;
+  --f7-navbar-font-size: 15px;
 
+  --f7-navbar-height: 75px;
+/* 
   --f7-theme-color: #315c15;
   --f7-theme-color-rgb: 49, 92, 21;
   --f7-theme-color-shade: #1f3b0d;
-  --f7-theme-color-tint: #437d1d; 
+  --f7-theme-color-tint: #437d1d;  */
 
   --f7-page-navbar-offset: 0px;
   --f7-page-toolbar-top-offset: 0px;
@@ -34,6 +36,10 @@
 
 }
 
+.dark {
+  --f7-navbar-bg-color: unset; 
+  --f7-navbar-link-color: unset;
+}
 
 
 .hidden-on-load {
@@ -56,7 +62,7 @@
 
 
 .page-content {
-  background: #FFFFFF;
+  /* background: #FFFFFF; */
   /* padding-top: 0px; */
 }
 
@@ -257,7 +263,6 @@ h1 {
   text-overflow: ellipsis;
   line-height: 18px;
   padding-top: 4px;
-  background-color: #f1f1f1;
 
 }
 
@@ -281,6 +286,13 @@ h1 {
 
 
 
+.dark .players .name .position, .dark .players .name .teamAbbrev, .dark .players .name .small, .dark .players .name .rest {
+  color: white;
+}
+
+
+
+
 
 
 .stat-table .name, .data-table .name {
@@ -294,6 +306,10 @@ h1 {
   line-height: 18px;
   padding-top: 4px;
   background-color: #f1f1f1;
+}
+
+.dark .stat-table .name, .dark .data-table .name {
+  background: black;
 }
 
 
@@ -312,6 +328,15 @@ h1 {
   font-size: .75em;
   color: darkslategray;
 }
+
+
+
+.dark .stat-table .name .position, .dark .stat-table .name .teamAbbrev, .dark .stat-table .name .small, .dark .data-table .name .position, .dark .data-table .name .teamAbbrev, .dark .data-table .name .small, .dark .stat-table .name .rest, .dark .data-table .name .rest{
+  color: white;
+}
+
+
+
 
 
 .stat-table .numeric-cell {
@@ -504,9 +529,12 @@ h1 {
   padding: 5px;
 }
 
+.dark .paging {
+  color: white;
+}
+
 .paging .stats-dropdown {
   float: right;
-  color: #000000;
   font-size: 13px;
   border: 1px solid #cccccc;
   appearance: auto;
@@ -725,6 +753,9 @@ h1 {
   text-align: center;
   background: #cccccc;
 }
+
+
+
 .linescore td {
   padding: 2px;
 }
@@ -751,6 +782,14 @@ h1 {
   text-align: center;
   background: #cccccc;
 }
+
+.dark .wrap-up .linescore th {
+  background: black;
+}
+
+
+
+
 
 .wrap-up .linescore td {
   padding: 2px;
@@ -789,10 +828,15 @@ h1 {
 .game-state .middle {
   flex: 0 0 650px;
 }
+
 .game-state .right {
   flex: 0 0 450px;
   max-width: 450px;
   background: #dddddd;
+}
+
+.dark .game-state .right {
+  background: black;
 }
 
 
@@ -834,6 +878,11 @@ h1 {
   height: 22px;
   background: #FFFFFF;
   border: 1px solid #cccccc;
+}
+
+.dark .game-state .game-info .runner img, .dark .game-state .game-info .defender img {
+  background: black;
+  border: 1px solid black;
 }
 
 .game-state .game-info .defender .text, .game-state .game-info .runner .text {
@@ -1068,6 +1117,12 @@ h1 {
   display: inline-block;
 }
 
+.dark .score .info-wrapper {
+  color: white;
+}
+
+
+
 .score .inning-wrapper {
   width: 15px;
   color: #000000;
@@ -1082,7 +1137,9 @@ h1 {
   background: #f1f1f1;
 }
 
-
+.dark .score .diamond-wrapper {
+  background: black;
+}
 
 .game-state .play-wrapper {
   overflow-y: scroll;
@@ -1384,6 +1441,10 @@ h1 {
   margin-top: 10px;
 }
 
+.dark .recap .info-wrapper {
+  color: white;
+}
+
 .recap .info-wrapper .label {
   width: 45px;
   display: inline-block;
@@ -1454,10 +1515,27 @@ h1 {
   background: #f1f1f1;
   white-space: nowrap;
   padding: 3px;
+  font-size: .65em;
+  max-width: 100%;
 }
 
+.dark .search {
+  background: black;
+}
+
+
+.search .position a:not(:first-child):before {
+  content: "|";
+  padding: 0 5px 0 5px;
+  color: #cccccc;
+}
+
+.dark .search .position a:not(:first-child):before {
+  color: white;
+}
+
+
 .search .position {
-  font-size: 12px;
   color: #cccccc;
   display: inline-block;
 }
@@ -1502,6 +1580,11 @@ h1 {
   background : lightyellow;
 }
 
+.dark .card-unsaved {
+  background: rgb(48, 48, 0);
+}
+
+
 .inline {
   flex: 0 0 100px;
 }
@@ -1521,6 +1604,10 @@ h1 {
 .small-gray {
   font-size: 11px;
   color: darkslategray;
+}
+
+.dark .small-gray {
+  color: white;
 }
 
 .schedule-card a .teams a {
@@ -1679,23 +1766,29 @@ h1 {
 
 .team-record {
   font-size: 15px;
-  color: darkslategray;
 }
 
 .team-owner {
   font-size: 15px;
   background: #f1f1f1;
   border: 1px solid #cccccc;
-  padding: 3px;
+  padding: 5px;
+}
+
+.dark .team-owner {
+  background: black;
+  color: white;
 }
 
 
 
 .player-info .item-text {
   color: black;
-
 }
 
+.dark .player-info .item-text {
+  color: white;
+}
 
 
 
@@ -1977,6 +2070,8 @@ td.diamonds {
 
 .separator {
   color: #cccccc;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 
@@ -2002,9 +2097,11 @@ td.diamonds {
 
 
 
+
 .standings .name, .linescore .name {
   width: 240px;
   min-width: 175px;
+  font-size: 1.2em;
 }
 
 
@@ -2021,8 +2118,8 @@ td.diamonds {
 }
 
 .boxscores .name {
-  width: 150px;
-  min-width: 150px;
+  width: 200px;
+  min-width: 200px;
 }
 
 
@@ -2042,10 +2139,9 @@ td.action, th.action {
 
 .button-move {
   width: 40px;
-  height: 20px;
   font-size: .75em;
   margin-left: -10px;
-  margin-top: 13px;
+  margin-top: 9px;
 }
 
 .swiper .game-result {
@@ -2161,6 +2257,15 @@ td.action, th.action {
   background: #f1f1f1;
 }
 
+.dark .game-banner .winner {
+  background: #6b6b6b;
+}
+
+.dark .game-banner .name a {
+  color: white;
+}
+
+
 
 @media only screen and (max-width: 1024px) {
   .game-banner .profilePic {
@@ -2258,6 +2363,10 @@ td.action, th.action {
   font-size: .75em;
   background-color: #f1f1f1;
   border-bottom: 1px solid #cccccc;
+}
+
+.dark .scoreboard {
+  background-color: black;
 }
 
 .scoreboard li {

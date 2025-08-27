@@ -8,11 +8,26 @@
 
         <div class="fixed-width-content center">
 
-            <div class="card card-header-divider card-outline">
-              <div class="card-header">
-                <${LeagueRank} rankchange=${rankChange} />
-                <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
-              </div>
+            <div class="block">
+                <div class="list">
+                    <strong>League</strong><br />
+                    <select name="rank" class="rank-dropdown" @change="${rankChange}">
+                      ${leagues.map( (l, index) => $h`
+
+                          ${l.rank == universeWebService.getRank() ? $h`
+                            <option value="${l.rank}" selected >${l.name}</option>
+                          ` : $h` 
+                            <option value="${l.rank}">${l.name}</option>
+                          `}
+                      `)}
+                      
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="block">
+              <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
             </div>
 
       
@@ -119,7 +134,7 @@
     let universeContractService = ContainerService.getInstance(UniverseContractService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
-    let allLeagues = []
+    let leagues = []
 
     let lastGameUpdate
     let linescores = []
@@ -215,6 +230,8 @@
       try {
 
         let env = ContainerService.getInstance("env")()
+
+        leagues = universeWebService.getLeagues()
 
         universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
         universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)

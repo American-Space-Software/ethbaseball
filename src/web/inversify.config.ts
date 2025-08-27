@@ -157,9 +157,10 @@ async function getContainer(footerRoutes) {
             smartSelect: {
                 openIn: 'popup',
             },
-            colors: {
-                primary: "#0A3161"
-            },
+            darkMode: "auto",
+            // colors: {
+            //     primary: "#0A3161"
+            // },
 
             view: {
                 browserHistory: true,
