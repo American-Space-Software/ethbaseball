@@ -45,7 +45,7 @@
 
                   <div class="left">
 
-                    <div class="block-title block-title-large">
+                    <div class="block-title block-title-medium">
                       Step Into the Owner’s Box. The League Awaits.
                     </div>
                     
@@ -67,8 +67,8 @@
                       </ul>
 
                       <div class="segmented">
-                        <a class="button button-small button-fill" href="/about">Learn More</a>
-                        <a class="button button-small button-outline popup-open" data-popup=".login-popup" href="#">Login</a>
+                        <a class="button button-small button-outline" href="/about">Learn More</a>
+                        <a class="button button-small button-fill popup-open" data-popup=".login-popup" href="#">Login</a>
                       </div>
 
                     </div>
@@ -114,9 +114,10 @@
 
                   <div class="block-title block-title-large">Top Teams</div>
                   <div class="stat-table-wrapper">
-                      <table class="data-table home-standings">
+                      <table class="data-table home-standings standings">
                           <thead>
                             <tr>
+                                <th class="image"></th>
                                 <th class="name">Name</th>
                                 <th>Wins</th>
                                 <th>Losses</th>
@@ -131,8 +132,9 @@
                           <tbody>
                             ${vm?.topTeams?.map( (t, index) => $h`
                                 <tr>
+                                    <td class="image"><img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" /></td>
                                     <td class="name">
-                                        <img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" />
+                                        
                                         <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
                                     </td>
                                     <td>${t.overallRecord.wins}</td>

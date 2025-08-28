@@ -14,6 +14,7 @@
             <thead>
                 <tr>
                     ${actions ? $h`<th class="action"></th>` : $h` `} 
+                    <th class="image"></th>
                     <th @click=${sortPitchers} class="name" data-sort="fullName">Name</th>
                               
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.overallRating_pct">OVR</th>
@@ -45,9 +46,11 @@
                                 </td>
                             ` : $h` `}
                             
-                            <td class="name ${p.isNextStarter ? $h`next-starter` : $h` `}">
+                            <td class="image">
+                            ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" />` : $h`<span />`}
+                            </td>
 
-                                ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" class="player-image" />` : $h`<span />`}
+                            <td class="name ${p.isNextStarter ? $h`next-starter` : $h` `}">
 
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />

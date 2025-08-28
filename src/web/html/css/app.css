@@ -249,14 +249,23 @@ h1 {
 }
 
 
-.players .name {
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
-
+.players .image {
   position: sticky;
   left: 0;
-  z-index: 2; /* Stay on top of scrolling columns */
+  z-index: 200;
+  background-color: #efeff4;
+  padding: 0px;
+  text-align: left;
+}
+
+.dark .players .image {
+  background-color: black;
+}
+
+.players .name {
+  width: 175px;
+  min-width: 175px;
+  max-width: 175px;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -296,21 +305,22 @@ h1 {
 
 
 .stat-table .name, .data-table .name {
-  position: sticky;
-  left: 0;
-  z-index: 2; /* Stay on top of scrolling columns */
+  /* position: sticky; */
+  /* left: 0;
+  z-index: 2;  */
+  /* Stay on top of scrolling columns */
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 18px;
   padding-top: 4px;
-  background-color: #f1f1f1;
+  background-color: unset;
 }
 
-.dark .stat-table .name, .dark .data-table .name {
-  background: black;
-}
+/* .dark .stat-table .name, .dark .data-table .name {
+  background: unset;
+} */
 
 
 
@@ -1790,6 +1800,11 @@ h1 {
   color: white;
 }
 
+.player-info .name {
+  font-size: 23px;
+  font-weight: bold;
+  margin-bottom: 3px;
+}
 
 
 
@@ -2095,12 +2110,25 @@ td.diamonds {
   font-size: .85em;
 }
 
+.standings .image {
+  position: sticky;
+  left: 0;
+  z-index: 200;
+  background-color: #efeff4;
+  padding: 0px;
+  text-align: left;
+  max-width: 60px;
+  width: 60px;
+}
 
+.dark .standings .image {
+  background-color: black;
+}
 
 
 .standings .name, .linescore .name {
-  width: 240px;
-  min-width: 175px;
+  width: 150px;
+  min-width: 150px;
   font-size: 1.2em;
 }
 
@@ -2297,10 +2325,6 @@ td.action, th.action {
 
 
 
-.player-image {
-  float: left;
-  margin-right: 5px;
-}
 
 .linescore-strong {
   font-weight: bold;
@@ -2360,13 +2384,17 @@ td.action, th.action {
 }
 
 .scoreboard {
-  font-size: .75em;
+  font-size: .65em;
   background-color: #f1f1f1;
   border-bottom: 1px solid #cccccc;
 }
 
 .dark .scoreboard {
   background-color: black;
+}
+
+.dark .scoreboard a {
+  color: white;
 }
 
 .scoreboard li {

@@ -198,19 +198,6 @@ async function getContainer(command?:GetContainerCommand) {
 
     container  = new Container()
 
-
-    // const chatGPTAPI = new ChatGPTAPI({
-    //     apiKey: process.env.OPENAI_API_KEY || ""
-    // })
-
-    // const openai = new OpenAI({
-    //     apiKey: process.env.OPENAI_API_KEY
-    // })
-
-    // const alchemy = new Alchemy({
-    //     apiKey: process.env.ALCHEMY_API_KEY
-    // })
-
     
     container.bind("alchemy").toConstantValue({})
 

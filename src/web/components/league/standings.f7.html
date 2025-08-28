@@ -53,7 +53,7 @@
 
                             <thead>
                                 <tr>
-                                    <th @click=${sortStandings} data-sort="rank" class="lock-rank"></th>
+                                    <th class="image"></th>
                                     <th @click=${sortStandings} class="name lock-name label-cell" data-sort="city.name">Name</th>
                                     <th @click=${sortStandings} data-sort="overallRecord.wins" class="numeric-cell">Wins</th>
                                     <th @click=${sortStandings} data-sort="overallRecord.losses" class="numeric-cell">Losses</th>
@@ -76,12 +76,12 @@
                                 ${viewModel?.leagueVm.viewModels?.map( (t, index) => $h`
                                     <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
 
-                                        <td class="lock-rank">
-                                            <strong>${teamWebService.getOverallRank(t.rank, viewModel.leagueVm.league.rank, viewModel.leagueVm.viewModels.length)}</strong>
+                                        <td class="image">
+                                             <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
                                         </td>
 
                                         <td class="name lock-name">
-                                            <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
+                                           
                                             <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
                                         </td>
                                         <td class="numeric-cell">${t.overallRecord.wins}</td>

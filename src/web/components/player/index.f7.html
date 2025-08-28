@@ -17,13 +17,13 @@
                 <div class="item-content">
                   <div class="item-media"><img style="border-radius: 8px" src="/player/image/${player._id}" width="150" height="150" /></div>
                   <div class="item-inner">
-                    <div class="item-title-row">
-                      <div class="item-title">${player.fullName}</div>
-                    </div>
+
                     <div class="item-text">
 
+                      <div class="name">${player.fullName}</div>
+
                       ${player.team?._id ? $h`
-                        <span><strong>Team:</strong> <a href="${universeWebService.startDateLink(`/t/${player.team.tokenId}`)}">${player.team.cityName} ${player.team.name}</a></span><br />
+                        <span><a href="${universeWebService.startDateLink(`/t/${player.team.tokenId}`)}">${player.team.cityName} ${player.team.name}</a></span><br />
                       ` : $h` `}
 
                       <span><strong>Position:</strong> ${player.primaryPosition}</span><br />
@@ -167,7 +167,6 @@
                   <thead>
                     <tr>
                       <th>Team</th>
-                      <th>OVR</th>
                       <th>Age</th>
                       <th>Year</th>
                       <th>G</th>
@@ -197,7 +196,6 @@
                     ${player.careerSeasonsHitterStats?.map( hitResult => $h`
                       <tr>
                         <td><a href="/t/${ hitResult.team.tokenId }?startDate=${dayjs(hitResult.season.startDate).format('YYYY-MM-DD')}" class="link">${ hitResult.team.abbrev }</a></td>
-                        <td>${ hitResult.displayRating.toFixed(1) }</td>
                         <td>${ hitResult.age }</td>
                         <td>${ dayjs(hitResult.season.startDate).format("YYYY-MM") }</td>
                         <td>${ hitResult.games }</td>
@@ -240,7 +238,6 @@
                   <thead>
                     <tr>
                       <th>Team</th>
-                      <th>OVR</th>
                       <th>Age</th>
                       <th>Year</th>
                       <th>GS</th>
@@ -266,7 +263,6 @@
                     ${player.careerSeasonsPitcherStats?.map( pitchResult => $h`
                       <tr>
                         <td><a href="/t/${ pitchResult.team.tokenId }?startDate=${dayjs(pitchResult.season.startDate).format('YYYY-MM-DD')}">${ pitchResult.team.abbrev }</a></td>
-                        <td>${ pitchResult.displayRating.toFixed(1) }</td>
                         <td>${ pitchResult.age }</td>
                         <td>${ dayjs(pitchResult.season.startDate).format("YYYY-MM") }</td>
 

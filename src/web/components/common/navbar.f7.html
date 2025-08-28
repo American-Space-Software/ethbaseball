@@ -136,10 +136,10 @@
             <div class="list links-list list-outline list-strong">
               <ul>
                 <li>
-                  <a @click="${loginWithWallet}" class="button button-fill color-white popover-close">Login with Wallet</a>
+                  <a @click="${loginWithWallet}" class="list-button popover-close">Wallet</a>
                 </li>
                 <li>
-                  <a href="/auth/discord" class="button button-fill color-white popover-close external">Login with Discord</a>
+                  <a href="/auth/discord" class="list-button popover-close external">Discord</a>
                 </li>
               </ul>
             </div>
@@ -532,6 +532,14 @@
           $f7.popup.close('.login-popup')
           $f7.views.main.router.refreshPage()
     }
+
+    // const loginWithCoinbaseWallet = async (e) => {
+    //       await loginWebService.loginWithWallet()
+    //       $f7.popup.close('.login-popup')
+    //       $f7.views.main.router.refreshPage()
+    // }
+
+
 
     eventTarget.addEventListener('connect', async (e) => {
       walletAddress = e.detail.address
