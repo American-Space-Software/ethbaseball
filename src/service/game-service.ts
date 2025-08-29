@@ -287,6 +287,7 @@ class GameService {
         }
 
         //Home
+        game.gameFinances.home.ticketPrice = homeTLS.financeSeason.currentTicketPrice
         game.gameFinances.home.payroll = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
         game.gameFinances.home.stadiumLease = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
         game.gameFinances.home.totalExpenses = (BigInt(game.gameFinances.home.payroll) + BigInt(game.gameFinances.home.stadiumLease)).toString()

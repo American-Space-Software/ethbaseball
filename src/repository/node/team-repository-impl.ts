@@ -70,6 +70,29 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
+    async getByTokenIds(_ids:number[], options?:any): Promise<Team[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.SELECT,
+            mapToModel: true,
+            model: Team,
+            replacements: {
+                ids: _ids
+            }
+        }
+
+        const queryResults = await s.query(`
+            select t.*
+            FROM team t
+            WHERE t.tokenId IN (:ids)
+        `, Object.assign(queryOptions, options))
+
+        return queryResults
+
+    }
+
     async getWithCityAndStadium(_id:string, options?:any): Promise<Team> {
 
         let query = {

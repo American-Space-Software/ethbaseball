@@ -9,6 +9,7 @@ interface TeamRepository {
     getByTokenId(tokenId: number, options?: any): Promise<Team> 
     getHighestTokenId(options?: any): Promise<Team>
     getByIds(_ids:string[], options?:any): Promise<Team[]>
+    getByTokenIds(_ids:number[], options?:any): Promise<Team[]>
     getWithCityAndStadium(_id:string, options?:any): Promise<Team>
     put(team:Team, options?:any) : Promise<Team>
     getByOwner(owner:Owner, options?: any): Promise<Team[]>

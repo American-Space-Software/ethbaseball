@@ -15,8 +15,8 @@
                 </div>
 
 
-                ${offChainEvents?.length > 0 ? $h`
-                    <${OffChainEvents} events="${offChainEvents}" />
+                ${eventsViewModel.events?.length > 0 ? $h`
+                    <${OffChainEvents} model="${eventsViewModel}" />
                 ` : $h` `}
 
                 <div class="block split-row-both">
@@ -93,7 +93,7 @@
         let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
         let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
 
-        let offChainEvents = []
+        let eventsViewModel = {}
         let page = 1
 
         let previousPage 
@@ -115,14 +115,13 @@
 
                 let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
 
-                offChainEvents.length = 0 
-                offChainEvents.push(...await gameTransactionWebService.getOffChain(page))
+                Object.assign(eventsViewModel, await gameTransactionWebService.getOffChain(page))
 
                 if (page > 1) {
                     previousPage = page - 1
                 }
 
-                if (offChainEvents?.length == 25 ) {
+                if (eventsViewModel.events?.length == 25 ) {
                     nextPage = page + 1
                 }
 

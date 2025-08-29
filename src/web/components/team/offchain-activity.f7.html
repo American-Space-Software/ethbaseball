@@ -15,8 +15,8 @@
             </div>
 
 
-            ${offChainEvents?.length > 0 ? $h`
-                <${OffChainEvents} events="${offChainEvents}" />
+            ${eventsViewModel.events?.length > 0 ? $h`
+                <${OffChainEvents} model="${eventsViewModel}" />
             ` : $h`
               <div class="block">No activity</div>            
             `}
@@ -116,7 +116,7 @@
     let startDate
 
 
-    let offChainEvents = []
+    let eventsViewModel = {}
     let page = 1
 
     let previousPage 
@@ -171,14 +171,16 @@
             let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
             let tokenId = parseInt($f7.views.main.router.currentRoute?.params?.tokenId)
 
-            offChainEvents.length = 0
-            offChainEvents.push(...await gameTransactionWebService.getOffChainByTeam(tokenId, page))
+
+            Object.assign(eventsViewModel, await gameTransactionWebService.getOffChainByTeam(tokenId, page))
+
+
 
             if (page > 1) {
                 previousPage = page - 1
             }
 
-            if (model?.transactions?.length == 25 ) {
+            if (eventsViewModel?.events?.length == 25 ) {
                 nextPage = page + 1
             }
 

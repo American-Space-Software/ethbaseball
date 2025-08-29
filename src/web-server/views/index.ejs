@@ -53,8 +53,9 @@
   <script type="module">
 
     let footerRoutes = JSON.parse(`<%~ JSON.stringify(it.FOOTER_ROUTES) %>`)
+    let env = JSON.parse(`<%~ JSON.stringify(it.ENV) %>`)
 
-    ebl.default(footerRoutes)
+    ebl.default(env, footerRoutes)
   </script>
 
 </body>

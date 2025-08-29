@@ -14,18 +14,38 @@ import './html/css/app.css'
 
 
 import { RoutingService } from "../service/routing-service.js"
+import {Workbox} from 'workbox-window'
 
 export class GlobalEventTarget extends EventTarget {}
 
-export default async (footerRoutes) => {
+export default async (env, footerRoutes) => {
 
-    let container = await getContainer(footerRoutes)
-    
+    let container = await getContainer(env, footerRoutes)
+
+    let baseURI = '/'
+
+    const wb = new Workbox(`${env.WEB}${baseURI}sw-${env.VERSION}.js?baseURI=${baseURI}`, {
+        scope: `${env.WEB}${baseURI}`
+    })
+
+
     let app:any = container.get("framework7")
     let routingService:RoutingService = container.get(RoutingService)
 
     //Initialize routing
     app.routes = routingService.getFooterRoutes(footerRoutes)
     app.routes = app.routes.concat(routingService.buildRoutesForContainer(container))
-   
+
+    
+    // if (navigator.serviceWorker.controller) {
+    //     app.init()
+    // } else {
+    //     wb.addEventListener('controlling', e => {
+    //         app.init()
+    //     })
+    // }
+
+    wb.register()
+
+
 }

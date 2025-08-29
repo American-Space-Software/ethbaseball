@@ -186,6 +186,7 @@ class GamePlayer extends Model {
 
 
 interface GameTeamFinance {
+    ticketPrice?:string
     seasonTickets?: number
     gateTickets?: number
     totalAttendance?: number

@@ -342,6 +342,37 @@
                         <thead>
                             <tr>
                                 <th></th>
+                                <th>Attendance</th>
+                            </tr>
+                        </thead>
+        
+                        <tbody>
+                            <tr>
+                                <td>Ticket Price</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.ticketPrice)}</td>
+                            </tr>
+                            <tr>
+                                <td>Season Tickets</td>
+                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.seasonTickets}</td>
+                            </tr>
+                            <tr>
+                                <td>Gate Tickets</td>
+                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.gateTickets}</td>
+                            </tr>
+                            <tr class="total">
+                                <td>Total Attendance</td>
+                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.totalAttendance}</td>
+                            </tr>
+        
+        
+                        </tbody>
+                      </table>
+
+
+                      <table>
+                        <thead>
+                            <tr>
+                                <th></th>
                                 <th>Revenue</th>
                             </tr>
                         </thead>
@@ -658,7 +689,7 @@
 
             Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
             Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
-
+            console.log(gameViewModel)
             $update()
 
             $f7.emit('gameUpdate', gameViewModel)

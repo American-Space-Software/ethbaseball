@@ -299,7 +299,7 @@
                                                         Cash
                                                     </div>
                                                     <div class="item-after">
-                                                        ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} 
+                                                        ${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.diamondBalance)} 
                                                     </div>
                                                 </div>
                                             </div>
@@ -390,7 +390,7 @@
                                                     Projected Revenue
                                                 </div>
                                                 <div class="item-after">
-                                                    ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}
+                                                    ${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}
                                                 </div>
                                             </div>
                                         </div>
@@ -403,7 +403,7 @@
                                                     Projected Expenses
                                                 </div>
                                                 <div class="item-after">
-                                                    ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}
+                                                    ${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}
                                                 </div>
                                             </div>
                                         </div>
@@ -416,7 +416,7 @@
                                                     Projected Profit/Loss
                                                 </div>
                                                 <div class="item-after">
-                                                    ${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.profit.projectedTotal.total)}
+                                                    ${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.profit.projectedTotal.total)}
                                                 </div>
                                             </div>
                                         </div>
@@ -500,34 +500,34 @@
                                     <tbody>
                                         <tr>
                                         <td class="label-cell">Season Tickets</td>
-                                        <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.seasonTickets)}</td>
-                                        <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.seasonTickets)}</td>
-                                        <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.seasonTickets)}</td>
+                                        <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.seasonToDate.seasonTickets)}</td>
+                                        <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedRemaining.seasonTickets)}</td>
+                                        <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedTotal.seasonTickets)}</td>
                                         </tr>
                                         <tr>
                                             <td class="label-cell">Gate Tickets</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.gate)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.gate)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.gate)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.seasonToDate.gate)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedRemaining.gate)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedTotal.gate)}</td>
                                         </tr>
                                         <tr>
                                             <td class="label-cell">Local Media Deal</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.localMedia)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.localMedia)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.localMedia)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.seasonToDate.localMedia)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedRemaining.localMedia)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedTotal.localMedia)}</td>
                                         </tr>
                                         <tr>
                                             <td class="label-cell">National Media Deal</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.nationalMedia)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.nationalMedia)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.nationalMedia)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.seasonToDate.nationalMedia)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedRemaining.nationalMedia)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedTotal.nationalMedia)}</td>
                                         </tr>
 
                                         <tr class="total">
                                             <td class="label-cell">Total</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.total)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedRemaining.total)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}</td>
                                         </tr>
 
                                     </tbody>
@@ -554,21 +554,21 @@
                                     <tbody>
                                         <tr>
                                             <td class="label-cell">Payroll</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.payroll)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.payroll)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.payroll)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.seasonToDate.payroll)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedRemaining.payroll)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedTotal.payroll)}</td>
                                         </tr>
                                         <tr>
                                             <td class="label-cell">Stadium Lease</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.stadiumLease)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.stadiumLease)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.stadiumLease)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.seasonToDate.stadiumLease)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedRemaining.stadiumLease)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedTotal.stadiumLease)}</td>
                                         </tr>
                                         <tr class="total">
                                             <td class="label-cell">Total</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.seasonToDate.total)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedRemaining.total)}</td>
-                                            <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.seasonToDate.total)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedRemaining.total)}</td>
+                                            <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(teamComponentService.team.financeSeason.expenses.projectedTotal.total)}</td>
                                         </tr>
 
 

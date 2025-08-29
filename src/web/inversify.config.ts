@@ -128,12 +128,12 @@ class GlobalEventTarget extends EventTarget {}
 
 const eventTarget:GlobalEventTarget = new GlobalEventTarget()
 
-async function getContainer(footerRoutes) {
+async function getContainer(env, footerRoutes) {
 
     if (container) return container 
 
-    let result = await axios.get(`/env`)
-    let env = result.data
+    // let result = await axios.get(`/env`)
+    // let env = result.data
 
     setEnv(env)
     setDiamondsAddress(env.DIAMONDS_ADDRESS)
@@ -148,6 +148,7 @@ async function getContainer(footerRoutes) {
     function framework7() {
         
         return new Framework7({
+            // init: false,
             el: '#app', // App root element
             id: 'ebl', // App bundle ID
             name: 'Ethereum Baseball League', // App name
@@ -158,15 +159,20 @@ async function getContainer(footerRoutes) {
                 openIn: 'popup',
             },
             darkMode: "auto",
-            // colors: {
-            //     primary: "#0A3161"
-            // },
 
             view: {
                 browserHistory: true,
                 browserHistorySeparator: "",
                 browserHistoryOnLoad: false,
                 browserHistoryInitialMatch: false
+            },
+
+            navbar: {
+                hideOnPageScroll: true
+            },
+
+            toolbar: {
+                hideOnPageScroll: true
             },
 
         })

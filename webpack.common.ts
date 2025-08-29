@@ -18,6 +18,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const HTMLInlineCSSWebpackPlugin = require("html-inline-css-webpack-plugin").default
+const TerserPlugin = require("terser-webpack-plugin")
 
 
 const configPath = join(
@@ -244,6 +245,55 @@ let browserConfig = {
   },
 
 }
+
+let serviceWorkerConfig = {
+  entry: './src/web/sw.ts',
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: '/node_modules/',
+        loader: 'ts-loader',
+      }
+    ],
+  },
+
+  output: {
+    filename: `sw-${VERSION.replace('"', '').replace('"', '')}.js`,
+    path: path.resolve(__dirname, 'public'),
+  },
+
+  plugins: [
+
+    new CleanWebpackPlugin({
+      dry: false,
+      dangerouslyAllowCleanPatternsOutsideProject: true,
+      cleanOnceBeforeBuildPatterns: [
+        resolve('public/sw*')
+      ],
+
+    }),
+
+    new webpack.ProvidePlugin({
+      process: 'process/browser.js',
+    }),
+
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+
+
+
+    new webpack.DefinePlugin({
+      VERSION: VERSION
+    })
+  ],
+
+  optimization: {
+    minimizer: [new TerserPlugin()],
+  }
+}
+
 
 let engineConfig = {
   entry: "./src/engine/index.ts",
@@ -566,6 +616,11 @@ let deployCommandsConfig = {
   ]
 }
 
+
+
+
+
+
 function createContractFromTruffle(truffleJson)  {
 
   return {
@@ -578,7 +633,7 @@ function createContractFromTruffle(truffleJson)  {
 }
 
 
-let web = () => { return [browserConfig, webServerConfig] }
+let web = () => { return [browserConfig, webServerConfig, serviceWorkerConfig] }
 let discord = () => { return [engineConfig] }
 
 export {
@@ -586,6 +641,6 @@ export {
 }
 
 export default () => {
-  return [deployCommandsConfig, browserConfig, webServerConfig, engineConfig, indexConfig, createCarConfig]
+  return [deployCommandsConfig, browserConfig, webServerConfig, engineConfig, indexConfig, createCarConfig, serviceWorkerConfig]
 }
 

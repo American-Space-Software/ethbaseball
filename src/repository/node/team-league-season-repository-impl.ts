@@ -8,7 +8,7 @@ import { League } from "../../dto/league.js"
 import { Stadium } from "../../dto/stadium.js"
 import { City } from "../../dto/city.js"
 import { Owner } from "../../dto/owner.js"
-import { TeamSeasonId } from "../../service/enums.js"
+import { TeamSeasonId, TokenSeasonId } from "../../service/enums.js"
 import { Op } from "sequelize"
 
 
@@ -139,7 +139,6 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
 
 
     }
-
 
     async getMostRecent(team: Team, options?: any): Promise<TeamLeagueSeason> {
 

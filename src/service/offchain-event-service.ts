@@ -4,7 +4,13 @@ import { Owner } from "../dto/owner.js";
 import { OffchainEvent } from "../dto/offchain-event.js";
 import { OffchainEventRepository } from "../repository/offchain-event-repository.js";
 import { v4 as uuidv4 } from 'uuid';
-import { ContractType } from "./enums.js";
+import { ContractType, TeamSeasonId } from "./enums.js";
+import { Season } from "../dto/season.js";
+import { TeamLeagueSeason } from "../dto/team-league-season.js";
+import { TeamLeagueSeasonService } from "./team-league-season-service.js";
+import { TeamService } from "./team-service.js";
+import { Team } from "../dto/team.js";
+import { TeamRepository } from "../repository/team-repository.js";
 
 
 
@@ -14,7 +20,11 @@ class OffchainEventService {
     @inject("OffchainEventRepository")
     private offchainEventRepository:OffchainEventRepository
 
+    @inject("TeamRepository")
+    private teamRepository:TeamRepository
+
     constructor(
+        private teamLeagueSeasonService:TeamLeagueSeasonService,
     ) {}
 
     async createMintEvent(toAddress:string, amount:string, options?:any) {
@@ -148,6 +158,32 @@ class OffchainEventService {
 
     async list(contractType:string, options?:any) : Promise<OffchainEvent[]> {
         return this.offchainEventRepository.list(contractType, options)
+    }
+
+
+    async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {
+
+        let teamIds = oce.flatMap( e => [e.fromTokenId, e.toTokenId])
+        let uniqueTokenIds = Array.from(new Set(teamIds.filter( i => i != null)))
+
+        let tlssPlain:TeamLeagueSeason[] = []
+
+        if (uniqueTokenIds?.length > 0) {
+
+            let teams:Team[] = await this.teamRepository.getByTokenIds(uniqueTokenIds, options)
+
+            let teamSeasonIds:TeamSeasonId[] = teams.map( t => { return { teamId: t._id, seasonId: season._id } })
+
+            let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
+            tlssPlain = tlss?.map( tls => tls.get({ plain: true}))
+        }
+
+
+
+        return {
+            events:oce,
+            teams: tlssPlain.map( tls => { return { tokenId: tls.team.tokenId, name: tls.team.name, cityName: tls.city.name } })
+        }
     }
 
 

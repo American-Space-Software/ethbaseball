@@ -205,35 +205,12 @@ let startWebServer = async () => {
 
   }
 
-
-  //Passport middleware
-  app.use(passport.initialize())
-  app.use(passport.session() as RequestHandler)
-
-  const renderIndex = (res, props) => {
-
-      const renderedTemplate = eta.render("index.ejs", { 
-        route: props.route,
-        title: props.title,
-        description: props.description,
-        image: props.image ? props.image : '',
-        url: `${process.env.WEB}${props.url}`,
-        twitter: TWITTER,
-        VERSION: version,
-        FOOTER_ROUTES: FOOTER_ROUTES
-      })
-
-      res.status(200).send(renderedTemplate)
-
-  }
-
-
-  app.get('/env', cacheService.cacheResponse({ tag: ENV_TAG }), async function (req, res) {
+  const getEnv = async () => {
 
     let season = await seasonService.getMostRecent()
     await refreshUniverse()
 
-    return res.json({
+    return {
       'WEB': process.env.WEB,
       'LEAGUES': leagues,
       'CURRENT_DATE': universe.currentDate,
@@ -249,7 +226,39 @@ let startWebServer = async () => {
       'ADMIN_ADDRESS': universe.adminAddress,
       'IPFS_CID': universe.ipfsCid,
       'OPENSEA_COLLECTION_URL': OPENSEA_COLLECTION_URL
-    })
+    }
+
+  }
+
+
+  //Passport middleware
+  app.use(passport.initialize())
+  app.use(passport.session() as RequestHandler)
+
+  const renderIndex = async (res, props) => {
+
+      const renderedTemplate = eta.render("index.ejs", { 
+        route: props.route,
+        title: props.title,
+        description: props.description,
+        image: props.image ? props.image : '',
+        url: `${process.env.WEB}${props.url}`,
+        twitter: TWITTER,
+        VERSION: version,
+        FOOTER_ROUTES: FOOTER_ROUTES,
+        ENV: await getEnv()
+      })
+
+      res.status(200).send(renderedTemplate)
+
+  }
+
+
+
+
+
+  app.get('/env', cacheService.cacheResponse({ tag: ENV_TAG }), async function (req, res) {
+    return res.json(getEnv())
 
   })
 
@@ -267,7 +276,7 @@ let startWebServer = async () => {
 
           try {
 
-            renderIndex(res,{ 
+            await renderIndex(res,{ 
               twitter: TWITTER,
               title: footerRoute.linkText,
               VERSION: version,
@@ -290,7 +299,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: "Ethereum Baseball League - Step Into the Owner’s Box. The League Awaits.",
           description: "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. ",
@@ -316,7 +325,7 @@ let startWebServer = async () => {
         let tlsPlain = tls.get({ plain: true })
 
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${tlsPlain.city.name} ${tlsPlain.team.name} - Ethereum Baseball League`,
           description: `${tlsPlain.city.name} ${tlsPlain.team.name} is a franchise in Ethereum Baseball League.`,
@@ -343,7 +352,7 @@ let startWebServer = async () => {
         let tlsPlain = tls.get({ plain: true })
 
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${tlsPlain.city.name} ${tlsPlain.team.name} Schedule - Ethereum Baseball League`,
           description: `View the schedule for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
@@ -369,7 +378,7 @@ let startWebServer = async () => {
 
         let tlsPlain = tls.get({ plain: true })
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${tlsPlain.city.name} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
           description: `View the activity for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
@@ -395,7 +404,7 @@ let startWebServer = async () => {
 
         let tlsPlain = tls.get({ plain: true })
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${tlsPlain.city.name} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
           description: `View the activity for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
@@ -421,7 +430,7 @@ let startWebServer = async () => {
 
         let tlsPlain = tls.get({ plain: true })
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${tlsPlain.city.name} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
           description: `View the activity for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
@@ -437,8 +446,6 @@ let startWebServer = async () => {
 
   })
 
-
-
   app.get("/t/mint/:tokenId", async function (req, res) {
 
       try {
@@ -449,7 +456,7 @@ let startWebServer = async () => {
 
         let tlsPlain = tls.get({ plain: true })
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Mint ${tlsPlain.city.name} ${tlsPlain.team.name} - Ethereum Baseball League`,
           description: `Mint the ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
@@ -470,7 +477,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Leagues - Ethereum Baseball League`,
           description: `View league list in Ethereum Baseball League.`,
@@ -493,7 +500,7 @@ let startWebServer = async () => {
 
         let league: League = await leagueService.getByRank(rank)
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${league.name} Standings - Ethereum Baseball League`,
           description: `View ${league.name} standings in Ethereum Baseball League.`,
@@ -515,7 +522,7 @@ let startWebServer = async () => {
 
         let gameDate = req.query.gameDate ? dayjs(req.query.gameDate?.toString()) : universe.currentDate
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`,
           description: `View scores for ${dayjs(gameDate).format("YYYY-MM-DD")} in Ethereum Baseball League.`,
@@ -540,7 +547,7 @@ let startWebServer = async () => {
 
 
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${game.away.cityName} ${game.away.name} @ ${game.home.cityName} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`,
           description: `${game.away.cityName} ${game.away.name} @ ${game.home.cityName} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}`,
@@ -559,7 +566,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Players - Ethereum Baseball League`,
           description: `View players in Ethereum Baseball League.`,
@@ -582,9 +589,7 @@ let startWebServer = async () => {
 
         let player = await playerService.get(playerId)
 
-
-
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `${player.fullName} - Ethereum Baseball League`,
           description: `View ${player.fullName} in Ethereum Baseball League.`,
@@ -604,7 +609,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Activity - Ethereum Baseball League`,
           description: `Activity in Ethereum Baseball League.`,
@@ -623,7 +628,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Activity (Off-chain) - Ethereum Baseball League`,
           description: `Activity (Off-chain) in Ethereum Baseball League.`,
@@ -642,7 +647,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Activity (Player Moves) - Ethereum Baseball League`,
           description: `Activity (Player Moves) in Ethereum Baseball League.`,
@@ -662,7 +667,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Owners - Ethereum Baseball League`,
           description: `Owners in Ethereum Baseball League.`,
@@ -681,7 +686,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `About - Ethereum Baseball League`,
           description: `About Ethereum Baseball League.`,
@@ -700,7 +705,7 @@ let startWebServer = async () => {
 
       try {
 
-        renderIndex(res,{ 
+        await renderIndex(res,{ 
           twitter: TWITTER,
           title: `Activity - Ethereum Baseball League`,
           description: `Activity in Ethereum Baseball League.`,
@@ -1128,7 +1133,11 @@ let startWebServer = async () => {
       let page = parseIntWithException(req.params.page)
       let options = { limit: perPage, offset: (page - 1) * perPage }
 
-      return res.json(await offchainEventService.list(ContractType.DIAMONDS, options))
+      let season:Season = await seasonService.getMostRecent()
+
+      let events = await offchainEventService.list(ContractType.DIAMONDS, options)
+
+      return res.json(await offchainEventService.getOffChainEventViewModels(events, season))
 
     } catch (ex) {
       console.log(ex)
@@ -1190,7 +1199,10 @@ let startWebServer = async () => {
       let options = { limit: perPage, offset: (page - 1) * perPage }
       let tokenId = parseIntWithException(req.params.teamTokenId)
 
-      return res.json(await offchainEventService.getByTokenId(ContractType.DIAMONDS, tokenId, options))
+      let season:Season = await seasonService.getMostRecent()
+      let events = await offchainEventService.getByTokenId(ContractType.DIAMONDS, tokenId, options)
+
+      return res.json(await offchainEventService.getOffChainEventViewModels(events, season))
 
     } catch (ex) {
       console.log(ex)

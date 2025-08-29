@@ -67,7 +67,14 @@
       </div> -->
 
       <div class="right">
-        <a data-popup="${authInfo ? $h`.logged-in-popup` : $h`.login-popup`}" href="#" class="popup-open icon-only"><i class="f7-icons text-color-white">person_circle</i></a>
+
+        ${authInfo ? $h`
+          <a data-popup=".logged-in-popup" href="#" class="popup-open icon-only"><i class="f7-icons text-color-white">person_circle</i></a>
+        ` : $h`
+          <a data-popup=".login-popup" href="#" class="popup-open icon-only">Login</a>
+        `}
+
+        
       </div>
 
       ${subnavVisible ? $h`
@@ -507,7 +514,7 @@
     }
 
     const loadUser = async (force) => {
-      
+    
       authInfo = await loginWebService.getAuthInfo(force)
       isAdmin = universeWebService.isAdmin(authInfo?.address)
 
@@ -516,6 +523,7 @@
       if (walletService.provider && walletAddresses) {
         contractBalance = await universeWebService.getContractBalance()
       }
+
     }
 
 
@@ -606,8 +614,8 @@
     $onMounted(() => {
       
       $('.logged-in-popup').on('popup:open', async (e) => {
-            authInfo = undefined
-            await $update()
+            // authInfo = undefined
+            // await $update()
 
       })
 

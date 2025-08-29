@@ -103,6 +103,10 @@ class TeamService {
         return this.teamRepository.getByTokenId(tokenId, options)
     }
 
+    async getByTokenIds(_ids:number[], options?:any): Promise<Team[]> {
+        return this.teamRepository.getByTokenIds(_ids, options)
+    }
+
     async listByLeagueAndSeason(league: League, season: Season, options?: any) {
         return this.teamRepository.listByLeagueAndSeason(league, season, options)
     }

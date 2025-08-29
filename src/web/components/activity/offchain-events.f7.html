@@ -9,34 +9,39 @@
 
                         <th class="date">Date</th>
                         <th>Description</th>
-                        <th>From Team</th>
-                        <th>To Team</th>
-                        <th>From Address</th>
-                        <th>To Address</th>
+                        <th>From/To</th>
                         <th class="numeric-cell">Amount</th>
                         <th>Game</th>
                     </thead>
                     <tbody>
 
-                        ${offChainEvents.map( oce => $h`
+                        ${eventsViewModel.events.map( oce => $h`
                             <tr>
                                 <td>
                                     ${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}<br />
                                     <span class="id">${oce._id}</span>
                                 </td>
                                 <td>${getOffChainDescription(oce)}</td>
-                                <td>${oce.fromTokenId}</td>
-                                <td>${oce.toTokenId}</td>
                                 <td>
+
+                                    ${oce.fromTokenId ? $h`
+                                        <a href="${universeWebService.startDateLink(`/t/${oce.fromTokenId}`)}">${getTeamName(oce.fromTokenId)}</a>
+                                    ` : $h``}
+
                                     ${oce.fromAddress ? $h`
                                         <a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
                                     ` : $h` `}
+
+                                    <span class="event-arrow">➡️</span>
                                     
-                                </td>
-                                <td>
+                                    ${oce.toTokenId ? $h`
+                                        <a href="${universeWebService.startDateLink(`/t/${oce.toTokenId}`)}">${getTeamName(oce.toTokenId)}</a>
+                                    ` : $h` `} 
+
                                     ${oce.toAddress ? $h`
                                         <a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
                                     ` : $h` `}
+
                                 </td>
                                 <td class="numeric-cell">${getOffChainAmount(oce)}</td>
                                 <td>${oce.gameId ? $h`<a
@@ -87,9 +92,23 @@
                 if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return universeWebService.displayDiamonds(oce.amount)
             }
         }
+        
 
 
-        let offChainEvents = props.events
+        let eventsViewModel = props.model
+
+        const getTeam = (tokenId) => {
+            return eventsViewModel.teams?.find( t => t.tokenId == tokenId)
+        }
+
+        const getTeamName = (tokenId) => {
+            
+            let team = getTeam(tokenId)
+
+            return `${team.cityName} ${team.name}`
+
+        }
+
 
         return $render
     }
