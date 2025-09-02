@@ -91,7 +91,7 @@ class FinanceService {
                                                    BigInt(financeSeason.revenue.seasonToDate.localMedia) + 
                                                    BigInt(financeSeason.revenue.seasonToDate.nationalMedia) + 
                                                    BigInt(financeSeason.revenue.seasonToDate.seasonTickets)).toString()
-        financeSeason.revenue.seasonToDate.perGame = (BigInt(financeSeason.revenue.seasonToDate.total) / BigInt(financeSeason.totalGamesPlayed)).toString()
+        financeSeason.revenue.seasonToDate.perGame = BigInt(financeSeason.totalGamesPlayed) > 0 ? (BigInt(financeSeason.revenue.seasonToDate.total) / BigInt(financeSeason.totalGamesPlayed)).toString() : BigInt(0).toString()
 
         financeSeason.profit.seasonToDate.total = (BigInt(financeSeason.revenue.seasonToDate.total) - BigInt(financeSeason.expenses.seasonToDate.total)).toString()
 

@@ -82,6 +82,8 @@ let startWebServer = async () => {
   const PROVIDER_CHAIN_RPC_URL = process.env.PROVIDER_CHAIN_RPC_URL ? process.env.PROVIDER_CHAIN_RPC_URL : "http://127.0.0.1:8545/"
   const PROVIDER_CHAIN_BLOCK_EXPLORER = process.env.PROVIDER_CHAIN_BLOCK_EXPLORER
   const FOOTER_ROUTES:{ link:string, content:string, linkText:string}[] = process.env.FOOTER_ROUTES ? JSON.parse(process.env.FOOTER_ROUTES) : []
+  const FOOTER_SCRIPT:string = process.env.FOOTER_SCRIPT
+
   const OPENSEA_COLLECTION_URL = process.env.OPENSEA_COLLECTION_URL
 
 
@@ -246,6 +248,7 @@ let startWebServer = async () => {
         twitter: TWITTER,
         VERSION: version,
         FOOTER_ROUTES: FOOTER_ROUTES,
+        FOOTER_SCRIPT: FOOTER_SCRIPT,
         ENV: await getEnv()
       })
 
@@ -302,7 +305,7 @@ let startWebServer = async () => {
         await renderIndex(res,{ 
           twitter: TWITTER,
           title: "Ethereum Baseball League - Step Into the Owner’s Box. The League Awaits.",
-          description: "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. ",
+          description: "Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. ",
           VERSION: version,
           image: `${process.env.WEB}/logo.png`,
           url: req.originalUrl
