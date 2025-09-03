@@ -7,11 +7,11 @@
   <!-- Required meta tags-->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, minimal-ui, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta http-equiv="Content-Language" content="en">
 
   <!-- Color theme for statusbar -->
-  <title>Ethereum Baseball League</title>
+  <title><%= it.title %></title>
 
   <script defer src="/js/runtime-<%= it.VERSION %>.ebl.js"></script>
   <script defer src="/js/vendors-<%= it.VERSION %>.ebl.js"></script>
@@ -55,8 +55,9 @@
     ebl.default(env, footerRoutes)
   </script>
 
+  <% if (it.FOOTER_SCRIPT) { %>
   <%~ it.FOOTER_SCRIPT %>
-  
+  <% } %>
 
 </body>
 

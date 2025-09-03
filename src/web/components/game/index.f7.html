@@ -273,23 +273,23 @@
                       <table>
                         <thead>
                             <tr>
-                                <th></th>
+                                <th class="label"></th>
                                 <th>Revenue</th>
                             </tr>
                         </thead>
         
                         <tbody>
                             <tr>
-                                <td>Local Media Deal</td>
+                                <td class="label">Local Media Deal</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.localTvRevenue)}</td>
                             </tr>
                             <tr>
-                                <td>National Media Deal</td>
+                                <td class="label">National Media Deal</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.nationalTvRevenue)}</td>
                             </tr>
         
                             <tr class="total">
-                                <td>Total</td>
+                                <td class="label">Total</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalRevenue)}</td>
                             </tr>
         
@@ -299,28 +299,45 @@
                       <table>
                         <thead>
                             <tr>
-                                <th></th>
+                                <th class="label"></th>
                                 <th>Expense</th>
                             </tr>
                         </thead>
         
                         <tbody>
                             <tr>
-                                <td>Payroll</td>
+                                <td class="label">Payroll</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.payroll)}</td>
                             </tr>
                             <tr>
-                                <td>Stadium Lease</td>
+                                <td class="label">Stadium Lease</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.stadiumLease)}</td>
                             </tr>
                             <tr class="total">
-                                <td>Total</td>
+                                <td class="label">Total</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalExpenses)}</td>
                             </tr>
         
         
                         </tbody>
                       </table>
+
+                      <table>
+                        <thead>
+                            <tr>
+                                <th class="label"></th>
+                                <th>Profit</th>
+                            </tr>
+                        </thead>
+        
+                        <tbody>
+                            <tr class="total">
+                                <td class="label">Total</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalProfit)}</td>
+                            </tr>        
+                        </tbody>
+                      </table>
+
 
                     </div>
 
@@ -338,96 +355,98 @@
       
                     <div class="game-finances">
 
+                      <div class="ticket-price">
+                        <strong>Ticket Price:</strong> ${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.ticketPrice)}
+                      </div>
+
+
                       <table>
                         <thead>
                             <tr>
-                                <th></th>
+                                <th class="label"></th>
                                 <th>Attendance</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr>
-                                <td>Ticket Price</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.ticketPrice)}</td>
-                            </tr>
-                            <tr>
-                                <td>Season Tickets</td>
-                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.seasonTickets}</td>
-                            </tr>
-                            <tr>
-                                <td>Gate Tickets</td>
-                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.gateTickets}</td>
-                            </tr>
-                            <tr class="total">
-                                <td>Total Attendance</td>
-                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.totalAttendance}</td>
-                            </tr>
-        
-        
-                        </tbody>
-                      </table>
-
-
-                      <table>
-                        <thead>
-                            <tr>
-                                <th></th>
                                 <th>Revenue</th>
                             </tr>
                         </thead>
         
                         <tbody>
                             <tr>
-                            <td>Season Tickets</td>
-                            <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.seasonTicketRevenue)}</td>
+                                <td class="label">Season Tickets</td>
+                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.seasonTickets}</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.seasonTicketRevenue)}</td>
                             </tr>
                             <tr>
-                                <td>Gate Tickets</td>
+                                <td class="label">Gate Tickets</td>
+                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.gateTickets}</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.gateTicketRevenue)}</td>
                             </tr>
+
+
                             <tr>
-                                <td>Local Media Deal</td>
+                                <td class="label">Local Media Deal</td>
+                                <td></td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.localTvRevenue)}</td>
                             </tr>
                             <tr>
-                                <td>National Media Deal</td>
+                                <td class="label">National Media Deal</td>
+                                <td></td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.nationalTvRevenue)}</td>
                             </tr>
-        
+
                             <tr class="total">
-                                <td>Total</td>
+                                <td class="label">Total</td>
+                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.totalAttendance}</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalRevenue)}</td>
                             </tr>
         
+        
                         </tbody>
                       </table>
+
         
                       <table>
                         <thead>
                             <tr>
-                                <th></th>
-                                <th>Expense</th>
+                                <th class="label"></th>
+                                <th>Expenses</th>
                             </tr>
                         </thead>
         
                         <tbody>
                             <tr>
-                                <td>Payroll</td>
+                                <td class="label">Payroll</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.payroll)}</td>
                             </tr>
                             <tr>
-                                <td>Stadium Lease</td>
+                                <td class="label">Stadium Lease</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.stadiumLease)}</td>
                             </tr>
                             <tr class="total">
-                                <td>Total</td>
+                                <td class="label">Total</td>
                                 <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalExpenses)}</td>
                             </tr>
         
         
                         </tbody>
                       </table>
+
+                      <table>
+                        <thead>
+                            <tr>
+                                <th class="label"></th>
+                                <th>Profit</th>
+                            </tr>
+                        </thead>
+        
+                        <tbody>
+                            <tr class="total">
+                                <td class="label">Total</td>
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalProfit)}</td>
+                            </tr>        
+                        </tbody>
+                      </table>
+
+
 
                     </div>
 

@@ -1,10 +1,10 @@
 <template>
 
   <div class="stat-table-wrapper">
-    <table class="data-table small-font">
+    <table class="data-table small-font game-table">
       <thead>
         <tr>
-          <th class="numeric-cell order">#</th>
+          <th class="image"></th>
           <th>Pitching</th>
           <th class="pos">POS</th>
           <th class="numeric-cell">W</th>
@@ -26,8 +26,8 @@
       <tbody>
         ${players.map( (p, index) => $h`
           <tr class="${vm.teamInfo.currentPitcherId == p._id && (vm.isTopInning && vm.homeaway=="HOME" || !vm.isTopInning && vm.homeaway=="AWAY") && !vm.isComplete ? $h`pitching` : $h``}">
-            <td class="numeric-cell order">${index + 1}</td>
-            <td class="name"><img src="/player/image/${p.playerId}" width="25" height="25" style="float:left; margin-right: 3px; vertical-align: middle;" /> ${p.throws} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+            <td class="image"><img src="/player/image/${p.playerId}" width="25" height="25" /></td>
+            <td class="name">${p.throws} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
             <td class="pos">${p.currentPosition}</td>
             <td class="numeric-cell">${p.pitchResult.wins}</td>
             <td class="numeric-cell">${p.pitchResult.losses}</td>

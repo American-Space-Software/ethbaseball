@@ -32,6 +32,7 @@ let startEngine = async () => {
   const SIM_DATE = process.env.SIM_DATE ? dayjs(process.env.SIM_DATE).toDate() : new Date(new Date().toUTCString())
   const SECONDS_BETWEEN_SIMS = process.env.SECONDS_BETWEEN_SIMS ?  parseInt(process.env.SECONDS_BETWEEN_SIMS) : 60
   const SECONDS_BETWEEN_INDEXES = process.env.SECONDS_BETWEEN_INDEXES ?  parseInt(process.env.SECONDS_BETWEEN_INDEXES) : 30
+  const SECONDS_BETWEEN_MINT_PASS_SIGNINGS = process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS  ? parseInt(process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS) : 5
 
   const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY
   
@@ -209,14 +210,22 @@ let startEngine = async () => {
   //Start a sync process. 
   await universeIndexerService.init(universeContractService.universeContract, diamondService.diamondsContract)
   
+
+  const mintPassLoop = async () => {
+
+    //Sign mint passes
+    await mintPassIndexerService.processUnsignedMintPasses()
+
+    console.log(`Mint pass loop complete...waiting...`)
+
+    setTimeout(async () => { await mintPassLoop() }, SECONDS_BETWEEN_MINT_PASS_SIGNINGS*1000)
+
+  }
   
   const indexerLoop = async () => {
 
     //Process on-chain transactions
     await universeIndexerService.runUniverseIndexer()
-
-    //Sign mint passes
-    await mintPassIndexerService.processUnsignedMintPasses()
 
     console.log(`Indexer loop complete...waiting...`)
 
@@ -235,7 +244,7 @@ let startEngine = async () => {
 
   const startupTasks = async () => {
 
-    //Make sure that players have percentile ratings
+    //Make sure that players have percentile ratings. probably move this to a service method and call it
     let s = await sequelize()
 
     await s.transaction(async (t1) => {
@@ -270,14 +279,13 @@ let startEngine = async () => {
 
     })
 
-
-
   }
 
 
   await startupTasks()
   await indexerLoop()
   await gameLoop()
+  await mintPassLoop()
 
 
 

@@ -1,10 +1,10 @@
 <template>
 
   <div class="stat-table-wrapper">
-    <table class="data-table small-font">
+    <table class="data-table small-font game-table">
       <thead>
         <tr>
-          <th class="num order">#</th>
+          <th class="image"></th>
           <th>Batting</th>
           <th>POS</th>
           <th>AB</th>
@@ -23,8 +23,8 @@
       <tbody>
         ${players.map( (p, index) => $h`
           <tr class="${vm.teamInfo.currentHitterIndex == index && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=="AWAY" || !vm.isTopInning && vm.homeaway=="HOME" ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
-            <td class="num order">${index + 1}</td>
-            <td class="name"><img src="/player/image/${p.playerId}" width="25" height="25" style="float:left; margin-right: 3px; vertical-align: middle;"/> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+            <td class="image"><img src="/player/image/${p.playerId}" width="25" height="25" /></td>
+            <td class="name"> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
             <td class="pos">${p.currentPosition}</td>
             <td class="num">${p.hitResult.atBats}</td>
             <td class="num">${p.hitResult.runs}</td>

@@ -98,12 +98,13 @@ class UniverseIndexerService {
 
         this.isIndexing = true
 
+        console.time(`Indexing universe...`)
+
         try {
   
             let s = await this.sequelize()
             
             
-
 
             await s.transaction(async (t1) => {
     
@@ -124,9 +125,8 @@ class UniverseIndexerService {
                 // } else {
 
                 //Index universe contract
-                console.time(`Indexing universe...`)
+
                 await this.indexUniverse(this.universeIndexResult, options)
-                console.timeEnd(`Indexing universe...`)
                     
                 // }
 
@@ -152,6 +152,8 @@ class UniverseIndexerService {
         } catch (ex) {
           console.log(ex)
         }
+
+        console.timeEnd(`Indexing universe...`)
 
         this.isIndexing = false
   

@@ -283,7 +283,7 @@ let startWebServer = async () => {
               twitter: TWITTER,
               title: footerRoute.linkText,
               VERSION: version,
-              image: `${process.env.WEB}/logo.png`,
+              image: `${process.env.WEB}/ebl-512.png`,
               url: req.originalUrl
             })
 
@@ -307,7 +307,7 @@ let startWebServer = async () => {
           title: "Ethereum Baseball League - Step Into the Owner’s Box. The League Awaits.",
           description: "Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. ",
           VERSION: version,
-          image: `${process.env.WEB}/logo.png`,
+          image: `${process.env.WEB}/ebl-512.png`,
           url: req.originalUrl
         })
 
@@ -486,7 +486,7 @@ let startWebServer = async () => {
           description: `View league list in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -509,7 +509,7 @@ let startWebServer = async () => {
           description: `View ${league.name} standings in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
 
         })
 
@@ -531,7 +531,7 @@ let startWebServer = async () => {
           description: `View scores for ${dayjs(gameDate).format("YYYY-MM-DD")} in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -556,7 +556,7 @@ let startWebServer = async () => {
           description: `${game.away.cityName} ${game.away.name} @ ${game.home.cityName} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -575,7 +575,7 @@ let startWebServer = async () => {
           description: `View players in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -618,7 +618,7 @@ let startWebServer = async () => {
           description: `Activity in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -637,7 +637,7 @@ let startWebServer = async () => {
           description: `Activity (Off-chain) in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -656,7 +656,7 @@ let startWebServer = async () => {
           description: `Activity (Player Moves) in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -676,7 +676,7 @@ let startWebServer = async () => {
           description: `Owners in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -695,7 +695,7 @@ let startWebServer = async () => {
           description: `About Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {
@@ -714,7 +714,7 @@ let startWebServer = async () => {
           description: `Activity in Ethereum Baseball League.`,
           VERSION: version,
           url: req.originalUrl,
-          image: `${process.env.WEB}/logo.png`
+          image: `${process.env.WEB}/ebl-512.png`
         })
 
       } catch (ex) {

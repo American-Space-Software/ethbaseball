@@ -36,9 +36,14 @@
 
 }
 
+html {
+  color-scheme: light;
+}
+
 .dark {
   --f7-navbar-bg-color: unset; 
   --f7-navbar-link-color: unset;
+  color-scheme: dark;
 }
 
 /* a {
@@ -311,6 +316,14 @@ h1 {
 }
 
 
+.game-table.data-table .image  {
+  width: 50px;
+  max-width: 50px;
+  position: sticky;
+  left: 0;
+  z-index: 200;
+  background: var(--f7-card-bg-color);
+}
 
 
 
@@ -2352,6 +2365,15 @@ td.action, th.action {
   margin-top: 15px;
 }
 
+.game-finances .label {
+  width: 200px;
+}
+
+.game-finances .ticket-price {
+  padding: 5px;
+  font-size: 1.4em;
+}
+
 .game-finances .total {
   font-weight: bold;
 }
@@ -2602,4 +2624,8 @@ td.action, th.action {
 .event-arrow {
   margin-left: 10px;
   margin-right: 10px;
+}
+
+.dark .block.date-picker {
+  color: white;
 }

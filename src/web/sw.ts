@@ -34,15 +34,15 @@ self.addEventListener('activate', event => {
 
 
 //@ts-ignore
-const baseURI = new URL(location).searchParams.get('baseURI')
+// const baseURI = new URL(location).searchParams.get('baseURI')
 
 
-registerRoute(/\.(?:js.*|css.*|webmanifest|eot|ttf|woff|woff2)$/, new StaleWhileRevalidate({ cacheName: 'static-resources' }))
+// registerRoute(/\.(?:js.*|css.*|webmanifest|eot|ttf|woff|woff2)$/, new StaleWhileRevalidate({ cacheName: 'static-resources' }))
 
 
-//HTML and Large should serve stale but revalidate for next request
-registerRoute( ({event}) => event.request.destination === 'image', new StaleWhileRevalidate() )
-registerRoute( ({event}) => event.request.destination === 'document', new StaleWhileRevalidate() )
+// //HTML and Large should serve stale but revalidate for next request
+// registerRoute( ({event}) => event.request.destination === 'image', new StaleWhileRevalidate() )
+// registerRoute( ({event}) => event.request.destination === 'document', new StaleWhileRevalidate() )
 
 // registerRoute( ({ url }) => url.pathname.endsWith(`.html`), new StaleWhileRevalidate() )
 
