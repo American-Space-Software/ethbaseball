@@ -136,7 +136,7 @@ class UniverseService {
 
     }
 
-    async exportTeamIPFS(ipfsDirectory:string, team:Team, image:Image, metadata:NFTMetadata) {
+    async exportTeamIPFS(ipfsDirectory:string, team:Team, metadata:NFTMetadata) {
 
         //Write to IPFS
         let metadataContent = JSON.stringify(metadata)
@@ -144,13 +144,31 @@ class UniverseService {
 
         await this.exportSVGIfChanged(`${ipfsDirectory}/metadata/${team.tokenId}.json`, metadataCid, metadataContent)
 
-        if (image.svg) {
-            await this.exportSVGIfChanged(`${ipfsDirectory}/images/${image.cid}.svg`, image.cid, image.svg)
-        } else {
-            await this.exportBufferIfChanged(`${ipfsDirectory}/images/${image.cid}.png`, image.cid, image.data1024x1024)
-        }
+        // if (image.svg) {
+        //     await this.exportSVGIfChanged(`${ipfsDirectory}/images/${image.cid}.svg`, image.cid, image.svg)
+        // } else {
+        //     await this.exportBufferIfChanged(`${ipfsDirectory}/images/${image.cid}.png`, image.cid, image.data1024x1024)
+        // }
 
     }
+
+
+    async exportImageIPFS(ipfsDirectory:string, image:Image) : Promise<string> {
+
+        let imagePath
+
+        if (image.svg) {
+            imagePath = `${image.cid}.svg`
+            await this.exportSVGIfChanged(`${ipfsDirectory}/images/${imagePath}`, image.cid, image.svg)
+        } else {
+            imagePath = `${image.cid}.png`
+            await this.exportBufferIfChanged(`${ipfsDirectory}/images/${imagePath}`, image.cid, image.data1024x1024)
+        }
+
+        return imagePath
+
+    }
+
 
     // async exportGeneratingPlayerIPFS(ipfsDirectory:string, animation:Animation, image:Image, metadata:NFTMetadata) {
 
@@ -163,37 +181,12 @@ class UniverseService {
     //     await this.exportIfChanged(`${ipfsDirectory}/images/${image.cid}.html`, image.cid, image.svg)
     // }
     
-    async exportToIPFS(ipfsDirectory:string, options?:any) : Promise<string> {
-
-        try {
-            let stat = await this.ipfsService.heliaStat(ipfsDirectory)
-            await this.ipfsService.heliaRm(ipfsDirectory)
-        } catch(ex) {}
-
-        await this.ipfsService.heliaMkDir(`${ipfsDirectory}`, { force: true })
-        await this.ipfsService.heliaMkDir(`${ipfsDirectory}/animations`, { force: true })
-        await this.ipfsService.heliaMkDir(`${ipfsDirectory}/images`, { force: true })
-        await this.ipfsService.heliaMkDir(`${ipfsDirectory}/metadata`, { force: true })
-
-
-        //Write the logo to IPFS
-        let logoBuffer = fs.readFileSync(`src/web/html/images/logo.png`)
-        let logo:Image = await this.imageService.createImageFromContent(logoBuffer, undefined, undefined, undefined, options)
-
-        await this.exportBufferIfChanged(`${ipfsDirectory}/images/${logo.cid}.png`, logo.cid, logo.dataFull)
-
-
-        //Write the OpenSea banner to IPFS
-        let openSeaBuffer = fs.readFileSync(`src/web/html/images/opensea_banner.png`)
-        let openSeaBanner:Image = await this.imageService.createImageFromContent(openSeaBuffer, undefined, undefined, undefined, options)
-
-        await this.exportBufferIfChanged(`${ipfsDirectory}/images/${openSeaBanner.cid}.png`, openSeaBanner.cid, openSeaBanner.dataFull)
-
+    async exportToIPFS(ipfsDirectory:string, logoPath:string, bannerPath:string, options?:any) : Promise<string> {
 
 
         //Save act metadata
         let contractMetadataPath = `${ipfsDirectory}/contractMetadata.json`
-        let contractMetadata:ContractMetadata = await this.exportContractMetadata(logo, openSeaBanner)
+        let contractMetadata:ContractMetadata = await this.exportContractMetadata(logoPath, bannerPath)
 
         await this.ipfsService.heliaAdd(  new TextEncoder().encode(JSON.stringify(contractMetadata)), contractMetadataPath  )
 
@@ -215,7 +208,7 @@ class UniverseService {
 
     }
 
-    async exportContractMetadata(logo:Image, banner:Image) : Promise<ContractMetadata> {
+    async exportContractMetadata(logoPath:string, bannerPath:string) : Promise<ContractMetadata> {
 
         let result:ContractMetadata = {
           name: "Ethereum Baseball League",
@@ -230,8 +223,8 @@ class UniverseService {
 
 Join us at [https://playebl.com](https://playebl.com)`,
           external_link: "https://playebl.com",
-          image: `ipfs://${logo.cid}`,
-          banner_image: `ipfs://${banner.cid}`,
+          image: `ipfs://${logoPath}`,
+          banner_image: `ipfs://${bannerPath}`,
           seller_fee_basis_points: 0, //TODO: Setting this to anything other than zero ruins OpenSea. Investigate.
         }
     
@@ -273,27 +266,77 @@ Join us at [https://playebl.com](https://playebl.com)`,
         await this.clearIPFSDirectory(`${ipfsDirectory}/animation`)
 
 
-        await this.exportToIPFS(ipfsDirectory, options)
 
+        try {
+            let stat = await this.ipfsService.heliaStat(ipfsDirectory)
+            await this.ipfsService.heliaRm(ipfsDirectory)
+        } catch(ex) {}
+
+        await this.ipfsService.heliaMkDir(`${ipfsDirectory}`, { force: true })
+        await this.ipfsService.heliaMkDir(`${ipfsDirectory}/animations`, { force: true })
+        await this.ipfsService.heliaMkDir(`${ipfsDirectory}/images`, { force: true })
+        await this.ipfsService.heliaMkDir(`${ipfsDirectory}/metadata`, { force: true })
+
+
+
+        let pathMap = {}
+
+        //Write the logo to IPFS
+        let logoBuffer = fs.readFileSync(`src/web/html/images/logo.png`)
+        let logo:Image = await this.imageService.createImageFromContent(logoBuffer, undefined, undefined, undefined, options)
+
+        await this.exportBufferIfChanged(`${ipfsDirectory}/images/${logo.cid}.png`, logo.cid, logo.dataFull)
+
+        pathMap["logo"] = `${logo.cid}.png`
+
+
+        //Write the OpenSea banner to IPFS
+        let openSeaBuffer = fs.readFileSync(`src/web/html/images/opensea_banner.png`)
+        let openSeaBanner:Image = await this.imageService.createImageFromContent(openSeaBuffer, undefined, undefined, undefined, options)
+
+        await this.exportBufferIfChanged(`${ipfsDirectory}/images/${openSeaBanner.cid}.png`, openSeaBanner.cid, openSeaBanner.dataFull)
+
+        pathMap["banner"] = `${openSeaBanner.cid}.png`
+
+
+        //First go through all of the NFTs and write the image to the image folder
+        for (let tls of tlss) {
+
+            let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+
+            console.time(`Exporting image for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
+
+            let image = await this.imageService.get(tls.logoId, options)
+
+            //Export to IPFS
+            pathMap[tls.teamId] = await this.exportImageIPFS(ipfsDirectory, image)
+
+            console.timeEnd(`Exporting image for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
+
+        }
+
+        //Get the cid of the image directory
+        let ipfsImagesStat = await this.ipfsService.heliaStat(`${ipfsDirectory}/images`)
+        let imagesCid = ipfsImagesStat.cid.toString()
+
+        //Now go through the teams and generate metadata
         for (let tls of tlss) {
 
             let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
 
             console.time(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
-            // let svg:string = await this.imageService.getTeamLogoSVG(tlsPlain.team)
-            // let animation:Animation = await this.animationService.generateAnimation(player)
-            // let metadata:NFTMetadata = this.playerService.createNFTMetadata(player, image, animation)
+            let metadata = await this.teamService.createNFTMetadata(tlsPlain.city, tlsPlain.team, `${imagesCid}/${pathMap[tls.teamId]}` )
 
-            let image = await this.imageService.get(tls.logoId, options)
-            let metadata = await this.teamService.createNFTMetadata(tlsPlain.city, tlsPlain.team, image )
-
-            // //Export to IPFS
-            await this.exportTeamIPFS(ipfsDirectory, tlsPlain.team, image, metadata)
+            //Export to IPFS
+            await this.exportTeamIPFS(ipfsDirectory, tlsPlain.team, metadata)
 
             console.timeEnd(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
         }
+
+
+        await this.exportToIPFS(ipfsDirectory, `${imagesCid}/${pathMap["logo"]}`, `${imagesCid}/${pathMap["banner"]}`,  options)
 
         let cid = await this.getUniverseCid(universe)
 

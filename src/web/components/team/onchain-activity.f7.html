@@ -124,71 +124,6 @@
     let nextPage
 
 
-    const load = async () => {
-
-      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
-      let currentTokenId = $f7.views.main.router.currentRoute?.params?.tokenId
-
-
-      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
-      universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
-
-      try {
-
-          tokenId = currentTokenId
-          startDate = currentStartDate
-
-          universeWebService.setStartDate(startDate, $f7.views.main.router.currentRoute)
-
-          team = await teamComponentService.loadTeam(tokenId, universeWebService.getStartDate(), { forceRefresh: true })
-
-          universeWebService.setRank(team.leagueRank)
-
-          $f7.emit('team-loaded')
-          $f7.emit('refresh')
-
-        await $update()
-
-      } catch (ex) {
-
-        $f7.dialog.alert(ex.message, "There was an error")
-
-      }
-
-
-    }
-
-
-    const loadActivity = async () => {
-
-        $f7.preloader.show()
-
-        try {
-
-            await load()
-
-            let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
-            let tokenId = parseInt($f7.views.main.router.currentRoute?.params?.tokenId)
-
-            onChainEvents.length = 0
-            onChainEvents.push(...await gameTransactionWebService.getOnChainByTeam(tokenId, page))
-
-            if (page > 1) {
-                previousPage = page - 1
-            }
-
-            if (model?.transactions?.length == 25 ) {
-                nextPage = page + 1
-            }
-
-
-            await $update()
-
-        } catch (ex) { console.log(ex) }
-
-        $f7.preloader.hide()
-
-    }
 
 
 
@@ -203,40 +138,19 @@
 
     $on('pageBeforeIn', async () => {
 
-      try {
+      onChainEvents = props.onChainEvents
+      page = props.page
+      previousPage = props.previousPage
+      nextPage = props.nextPage
+      tokenId = props.tokenId
 
-          await loadActivity()
+      $f7.emit('team-loaded')
+      $f7.emit('refresh')
 
-          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-            detail: {
-              tabLink: "/l/standings", breadcrumbs: [
-                {
-                  text: "Standings",
-                  path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                }, 
-                { 
-                    text: teamWebService.getTeamName(team), 
-                    path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                }, { text: 'Activity'}]
-            }
-          }))
+      await $update()
 
-
-          universeWebService.setMetadata(
-                `${team.city.name} ${team.name} Activity - Ethereum Baseball League`, 
-                window.location.href, 
-                `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
-                `View the activity for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
-         ) 
-
-
-          $('.hide-on-pageinit').hide()
-          $('.hidden-on-load').show()
-
-
-      } catch(ex) {
-          $f7.dialog.alert(ex.message, "There was an error")
-      }
+      $('.hide-on-pageinit').hide()
+      $('.hidden-on-load').show()
 
 
     })

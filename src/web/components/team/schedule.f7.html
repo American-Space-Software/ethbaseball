@@ -96,20 +96,10 @@
 
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"
-  import { OwnerWebService } from "../../service/owner-web-service.ts"
-  import { PlayerWebService } from "../../service/player-web-service.ts"
-  import { GameWebService } from "../../service/game-web-service.ts"
 
-  import { TransactionWebService } from "../../service/transaction-web-service.ts"
-  import { LoginWebService } from "../../service/login-web-service.ts"
-  import { CityWebService } from "../../service/city-web-service.ts"
-  import { TeamWebService } from "../../service/team-web-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
 
-  import { TeamComponentService } from "../../service/team-component-service.ts"
 
-  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
-  import { StatService } from "../../../service/stat-service.ts"
 
   import { Position } from "../../../service/enums.ts"
 
@@ -118,21 +108,8 @@
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
-    let ownerWebService = ContainerService.getInstance(OwnerWebService)
-    let walletService = ContainerService.getInstance("WalletService")
-    let playerWebService = ContainerService.getInstance(PlayerWebService)
-    let loginWebService = ContainerService.getInstance(LoginWebService)
-    let gameWebService = ContainerService.getInstance(GameWebService)
-    let cityWebService = ContainerService.getInstance(CityWebService)
-    let teamWebService = ContainerService.getInstance(TeamWebService)
-    let teamComponentService = ContainerService.getInstance(TeamComponentService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
-    let transactionWebService = ContainerService.getInstance(TransactionWebService)
-    let universeContractService = ContainerService.getInstance(UniverseContractService)
-    let statService = ContainerService.getInstance(StatService)
-
-   
     let tokenId
     let startDate
 
@@ -164,7 +141,7 @@
     }
 
     const pickerClose = (picker, values, displayValues) => {
-        console.log(tokenId)
+
         let date = dayjs(`${picker.getValue()[1]}-${parseInt(picker.getValue()[0]) + 1}-01`).toDate()
 
         $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/schedule/${tokenId}?date=${dayjs(date).format('YYYY-MM-DD')}`), { reloadCurrent: true })
@@ -173,80 +150,10 @@
 
 
 
-    const load = async () => {
-
-      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
-      let currentTokenId = $f7.views.main.router.currentRoute?.params?.tokenId
-
-
-      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
-      universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
-
-      try {
-
-          tokenId = currentTokenId
-
-          startDate = currentStartDate
-
-          universeWebService.setStartDate(startDate, $f7.views.main.router.currentRoute)
-
-          let team = await teamComponentService.loadTeam(tokenId, universeWebService.getStartDate(), { forceRefresh: true })
-
-          universeWebService.setRank(team.leagueRank)
-
-          $f7.emit('team-loaded')
-          $f7.emit('refresh')
-
-          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-            detail: {
-              tabLink: "/l/standings", breadcrumbs: [
-                {
-                  text: "Standings",
-                  path: universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                }, 
-                { 
-                    text: teamWebService.getTeamName(team), 
-                    path: universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                }, { text: 'Schedule'}]
-            }
-          }))
-
-          universeWebService.setMetadata(
-                `${team.city.name} ${team.name} Schedule - Ethereum Baseball League`, 
-                window.location.href, 
-                `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
-                `View the schedule for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
-         ) 
-
-
-          await $update()
-
-      } catch (ex) {
-
-        $f7.dialog.alert(ex.message, "There was an error")
-
-      }
-
-
-    }
-
-
-
-    const loadGameLogs = async () => {
-
-        tokenId = $f7.views.main.router.currentRoute?.params?.tokenId
-        date = $f7.views.main.router.currentRoute?.query?.date
-
-        //If we're showing an old season use the startDate as the date
-        if (!universeWebService.isCurrentSeason() && !date) {
-            date = universeWebService.startDate
-        }
-
-
-        $f7.preloader.show()
+    const initPicker = (theDate) => {
 
         // Inline date-time
-        const d = dayjs(date).toDate()
+        const d = dayjs(theDate).toDate()
         picker = $f7.picker.create({
             inputEl: '#picker-date',
             value: [
@@ -278,23 +185,10 @@
             }
         })
 
-
-        if (tokenId) {                
-            gameLogs = await teamWebService.getGameLog(tokenId, date)
-            await $update()
-        }
-
-        $f7.preloader.hide()
-
     }
 
     $on('pageInit', async (e) => {
-
-        await load()
-
-        await loadGameLogs()
-
-        await $update()
+        
 
     })
 
@@ -303,7 +197,19 @@
     })
 
 
-    $on('pageBeforeOut', async () => {
+    $on('pageBeforeIn', async () => {
+
+        tokenId = props.tokenId
+        date = props.date
+        gameLogs = props.gameLogs
+
+        $f7.emit('team-loaded')
+        $f7.emit('refresh')
+
+        initPicker(date)
+
+        await $update()
+
     })
 
 

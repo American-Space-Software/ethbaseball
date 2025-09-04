@@ -1328,7 +1328,7 @@ class TeamService {
 
     }
 
-    createNFTMetadata(city:City, team: Team, coverImage: Image) {
+    createNFTMetadata(city:City, team: Team, imagePath:string) {
 
         let result: NFTMetadata = {
             tokenId: team.tokenId,
@@ -1336,7 +1336,7 @@ class TeamService {
             description: ''
         }
 
-        result.image = `ipfs://${coverImage.cid}`
+        result.image = `ipfs://${imagePath}`
 
         result.attributes = [
             {

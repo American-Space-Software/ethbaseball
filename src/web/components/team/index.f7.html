@@ -1310,50 +1310,7 @@
 
       $f7.preloader.show()
 
-      let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
-      let currentTokenId = $f7.views.main.router.currentRoute?.params?.tokenId
-
-
-      universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
-      universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank || 1)
-
-      try {
-
-          tokenId = currentTokenId
-          startDate = currentStartDate
-
-          universeWebService.setStartDate(startDate, $f7.views.main.router.currentRoute)
-
-          team = await teamComponentService.loadTeam(tokenId, universeWebService.getStartDate(), { forceRefresh: true })
-
-          todaysGames.length = 0
-          yesterdaysGames.length = 0
-
-          todaysGames.push(...teamComponentService.todaysGames)
-          yesterdaysGames.push(...teamComponentService.yesterdaysGames)
-
-          universeWebService.setRank(team.leagueRank)
-
-          $f7.emit('team-loaded')
-          $f7.emit('refresh')
-
-          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-            detail: {
-              tabLink: "/l/standings", breadcrumbs: [
-                {
-                  text: "Standings",
-                  path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team?.leagueRank}`)
-                }, { text: teamWebService.getTeamName(teamComponentService.team) }]
-            }
-          }))
-
-
-        await $update()
-
-      } catch (ex) {
-        $f7.dialog.alert(ex.message, "There was an error")
-
-      }
+      
 
       $f7.preloader.hide()
 
@@ -1383,16 +1340,14 @@
 
     $on('pageBeforeIn', async () => {
 
-        authInfo = await loginWebService.getAuthInfo()
+        authInfo = props.authInfo
+        todaysGames = props.todaysGames
+        yesterdaysGames = props.yesterdaysGames
+        tokenId = props.tokenId
+        team = props.team
 
-        await load()
-
-        universeWebService.setMetadata(
-            `${team.city.name} ${team.name} - Ethereum Baseball League`, 
-            window.location.href, 
-            `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
-            `${teamComponentService.team.city.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
-        ) 
+        $f7.emit('team-loaded')
+        $f7.emit('refresh')
 
         await $update()
 

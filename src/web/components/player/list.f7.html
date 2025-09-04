@@ -156,10 +156,8 @@
   import StartDate from "../common/start-date.f7.html"
 
   import { ContainerService } from "../../../service/container-service"
-  import { TransactionWebService } from "../../service/transaction-web-service.ts"
   import { OwnerPageWebService } from "../../service/owner-page-web-service.ts"
   import { PlayerWebService } from "../../service/player-web-service.ts"
-  import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { Position } from "../../../service/enums.ts"
 
@@ -168,10 +166,6 @@
 
   export default (props, { $, $on, $f7, $update }) => {
 
-    let env = ContainerService.getInstance("env")()
-    let eventTarget = ContainerService.getInstance("eventTarget")
-    let transactionWebService = ContainerService.getInstance(TransactionWebService)
-    let statService = ContainerService.getInstance(StatService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
 
@@ -199,11 +193,11 @@
     }
 
     const getAllHitters = () => {
-        return allPlayers.filter(p => p.primaryPosition != Position.PITCHER)
+        return allPlayers?.filter(p => p.primaryPosition != Position.PITCHER)
     }
 
     const getAllPitchers = () => {
-        return allPlayers.filter(p => p.primaryPosition == Position.PITCHER)
+        return allPlayers?.filter(p => p.primaryPosition == Position.PITCHER)
     }
 
     const link = (href) => {
@@ -218,7 +212,7 @@
 
     const statsChange = async (e) => {
         selected = $(e.srcElement).val()
-        await loadStats()
+        // await loadStats()
         $update()
     }
 
@@ -253,36 +247,6 @@
 
     }
 
-
-    const loadStats = async () => {
-
-            loading = true
-
-            $f7.preloader.show()
-
-            try {
-
-                let rank = $f7.views.main.router.currentRoute?.query?.rank || 0
-
-                allPlayers.length = 0
-                let result = await playerWebService.getPlayers(universeWebService.getStartDate(), rank)
-
-                allPlayers.push(...result)
-                $f7.emit('refresh')
-
-            } catch (ex) { console.log(ex) }
-
-            $f7.preloader.hide()
-
-
-            loading = false
-
-        }
-
-
-
-
-
     const rankChange = (e) => {
 
       let rank = $(e.target).val()
@@ -295,43 +259,15 @@
 
 
     $on('pageBeforeIn', async (e) => {
-
-      try {
-
-        universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
-
-        rank = $f7.views.main.router.currentRoute?.query?.rank
-
-        if (rank > 0) {
-            universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank)
-        } 
-
-        await loadStats()
-
-
-        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-          detail: { tabLink: "/players/", breadcrumbs:[{ text: "Players" }] }
-        }))
-
-
-        universeWebService.setMetadata(
-                `Players - Ethereum Baseball League`, 
-                window.location.href, 
-                `${env.WEB}/logo.png`,
-                `View players in Ethereum Baseball League.`
-        ) 
-
-
+        allPlayers = props.allPlayers
+        rank = props.rank
+        console.log(allPlayers)
+        $f7.emit('refresh')
         await $update()
-
-      } catch (ex) { 
-        $f7.dialog.alert(ex.message, "There was an error")
-      }
-
-
     })
 
     $on('pageInit', async () => {
+
     })
 
 

@@ -74,7 +74,9 @@ class RoutingService {
                     name: mappedRoute.path,
                     async: async (ctx: Router.RouteCallbackCtx) => {
                         try {
+                            this.app.preloader.show()
                             await this.resolveRoute(ctx.to, ctx.resolve, controllerBean[mappedRoute.action]())
+                            this.app.preloader.hide()
                         } catch (ex) {
                             this.uiService.showExceptionPopup(ex)
                         }
