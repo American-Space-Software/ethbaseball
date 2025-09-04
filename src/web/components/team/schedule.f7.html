@@ -11,68 +11,7 @@
             </div>
 
             <div class="card-content card-content-padding">
-                <div class="stat-table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <th>Date</th>
-                            <th>Opp</th>
-                            <th>W/L</th>
-                            <th>R</th>
-                            <th>RA</th>
-                            <th>Record</th>
-                            <th>Win</th>
-                            <th>Loss</th>
-                            <th>Profit</th>
-                        </thead>
-                        <tbody>
-                            ${gameLogs?.length > 0 ? $h`
-                                ${gameLogs.map(gl => $h`
-                                    <tr>
-                                        <td class="game"><a href="${universeWebService.startDateLink(`/g/${gl._id}`)}">${dayjs(gl.startDate).format('LL')}</a></td>
-
-                                        <td><a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">${gl.isHome == true ? '' : '@ '}${gl.opp.cityName}</a> ${gl.opp.wins}-${gl.opp.losses}</td>
-
-                                        ${gl.isComplete ? $h`
-                                            <td>${gl.team.isWinner ? "W" : "L"}</td>
-                                        ` : $h`
-                                            <td></td>
-                                        `}
-
-                                        <td>${gl.team.runs}</td>
-                                        <td>${gl.opp.runs}</td>
-
-                                        ${gl.isComplete ? $h`
-                                            <td>${gl.team.wins}-${gl.team.losses}</td>
-                                        ` : $h`
-                                            <td></td>
-                                        `}
-
-                                        
-                                        <td>
-                                            ${gl.winningPitcher ? $h`
-                                            <a href="${universeWebService.startDateLink(`/p/${gl.winningPitcher._id}`)}">${gl.winningPitcher.name}</a>
-                                            ` : $h` `}
-                                        </td>
-
-                                        <td>
-                                            ${gl.losingPitcher ? $h`
-                                            <a href="${universeWebService.startDateLink(`/p/${gl.losingPitcher._id}`)}">${gl.losingPitcher.name}</a>
-                                            ` : $h` `}
-                                        </td>
-
-                                        <td>
-                                            ${gl.team.finances?.totalProfit ? $h`${universeWebService.displayDiamonds(gl.team.finances?.totalProfit)}` : $h` `}
-                                        </td>
-
-                                    </tr>
-                                `)}
-                            ` : $h`
-                            <td colspan="9">No games played.</td>
-                            `}
-
-                        </tbody>
-                    </table>
-                </div>
+                <${GameLogs} logs="${gameLogs}" />
             </div>
 
         </div>
@@ -93,6 +32,7 @@
 
 
   import Navbar from "../common/navbar.f7.html"
+  import GameLogs from "./schedule-table.f7.html"
 
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"
@@ -114,7 +54,7 @@
     let startDate
 
     let date
-    let gameLogs
+    let gameLogs = []
     let picker
 
     const PAGE_SIZE = 25
@@ -201,7 +141,9 @@
 
         tokenId = props.tokenId
         date = props.date
-        gameLogs = props.gameLogs
+
+        gameLogs.length = 0
+        gameLogs.push(...props.gameLogs)
 
         $f7.emit('team-loaded')
         $f7.emit('refresh')

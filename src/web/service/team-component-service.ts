@@ -22,8 +22,7 @@ class TeamComponentService {
 
     team
     startDate
-    todaysGames = []
-    yesterdaysGames = []
+    games = []
 
     rosterPlayers:any[] = []
 
@@ -116,11 +115,9 @@ class TeamComponentService {
             this.rosterPlayers.length = 0
             this.rosterPlayers.push(...teamViewModel.players)
 
-            this.todaysGames.length = 0
-            this.todaysGames.push(...teamViewModel.todaysGames)
+            this.games.length = 0
+            this.games.push(...teamViewModel.games)
 
-            this.yesterdaysGames.length = 0
-            this.yesterdaysGames.push(...teamViewModel.yesterdaysGames)
 
             this.hasChanges = false
             this.loading = false

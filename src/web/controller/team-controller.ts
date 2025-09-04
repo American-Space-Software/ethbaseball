@@ -77,9 +77,9 @@ class TeamController {
             return {
                 tokenId: team.tokenId,
                 team: team,
-                todaysGames: this.teamComponentService.todaysGames,
-                yesterdaysGames: this.teamComponentService.yesterdaysGames,
+                games: this.teamComponentService.games,
                 authInfo: authInfo,
+                env: this.env(),
                 discord: this.discord
             }
         }, TeamIndexComponent)
@@ -346,8 +346,6 @@ class TeamController {
         
         return new ModelView(async () => {
             return {
-,
-
                 discord: this.discord
             }
         }, TeamMintComponent)

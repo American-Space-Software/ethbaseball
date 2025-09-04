@@ -69,23 +69,10 @@
 
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"
-  import { OwnerWebService } from "../../service/owner-web-service.ts"
-  import { PlayerWebService } from "../../service/player-web-service.ts"
-  import { GameWebService } from "../../service/game-web-service.ts"
 
-  import { TransactionWebService } from "../../service/transaction-web-service.ts"
-  import { LoginWebService } from "../../service/login-web-service.ts"
-  import { CityWebService } from "../../service/city-web-service.ts"
-  import { TeamWebService } from "../../service/team-web-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
 
-  import { TeamComponentService } from "../../service/team-component-service.ts"
-
-  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
-  import { StatService } from "../../../service/stat-service.ts"
-
   import { Position } from "../../../service/enums.ts"
-  import { GameTransactionWebService } from "../../service/game-transaction-web-service.ts"
 
   // import OffChainEvents from "../activity/offchain-events.f7.html"
   // import OnChainEvents from "../activity/onchain-events.f7.html"
@@ -93,22 +80,7 @@
 
   export default (props, { $on, $, $f7, $update }) => {
 
-    let env = ContainerService.getInstance("env")()
-    let eventTarget = ContainerService.getInstance("eventTarget")
-    let ownerWebService = ContainerService.getInstance(OwnerWebService)
-    let walletService = ContainerService.getInstance("WalletService")
-    let playerWebService = ContainerService.getInstance(PlayerWebService)
-    let loginWebService = ContainerService.getInstance(LoginWebService)
-    let gameWebService = ContainerService.getInstance(GameWebService)
-    let cityWebService = ContainerService.getInstance(CityWebService)
-    let teamWebService = ContainerService.getInstance(TeamWebService)
-    let teamComponentService = ContainerService.getInstance(TeamComponentService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
-
-    let transactionWebService = ContainerService.getInstance(TransactionWebService)
-    let universeContractService = ContainerService.getInstance(UniverseContractService)
-    let statService = ContainerService.getInstance(StatService)
-    let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
 
     let tokenId 
 

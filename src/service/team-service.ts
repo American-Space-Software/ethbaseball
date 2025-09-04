@@ -158,8 +158,21 @@ class TeamService {
         let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
         
         //Get games for teams
-        let todaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().toDate(), t.team)
-        let yesterdaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().subtract(1, 'day').toDate(), t.team)
+        // let todaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().toDate(), t.team)
+        // let yesterdaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().subtract(1, 'day').toDate(), t.team)
+
+
+        let start = dayjs().subtract(6, 'days').toDate()
+        let end = dayjs().add(4, 'days').toDate()
+
+        let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
+        let games = await this.gameService.getByIds(gameIds, options)
+
+        //Sort so it matches ids order
+        games.sort(function(a,b) {
+            return gameIds.indexOf( a._id ) - gameIds.indexOf( b._id )
+        })
+
 
         return {
             team: {
@@ -240,8 +253,7 @@ class TeamService {
 
                 }
             }),
-            todaysGames: todaysGames.map( g => this.gameService.getGameSummaryViewModel(g)),
-            yesterdaysGames: yesterdaysGames.map( g => this.gameService.getGameSummaryViewModel(g))
+            games: games.map(g => { return this.createTeamGameViewModel(team, g) })
         }
 
     }
@@ -1424,8 +1436,8 @@ interface TeamViewModel {
     }
 
     players?: PlayerRowViewModel[]
-    yesterdaysGames?
-    todaysGames?
+    games?
+    // todaysGames?
 }
 
 interface SeasonHistory {

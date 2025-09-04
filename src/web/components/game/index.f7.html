@@ -708,7 +708,7 @@
 
             Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
             Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
-            console.log(gameViewModel)
+
             $update()
 
             $f7.emit('gameUpdate', gameViewModel)
@@ -734,49 +734,18 @@
 
 
     $on('pageBeforeIn', async (e) => {
+      Object.assign(gameViewModel, props.gameViewModel)
+      Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
 
-      try {
+      Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
+      Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
 
-        //Load game
-        await loadGame($f7.views.main.router.currentRoute?.params?.id)
+      await $update()
 
-        if (gameViewModel.linescoreViewModel) {
-
-          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-            detail: { tabLink: "/games", breadcrumbs:[
-              { text: 'Scores', path: "/games"}, 
-              {
-                text: dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD"),
-                path: `/games/?gameDate=${dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD")}`
-              },
-              {
-                text: `${gameViewModel.game.away.abbrev} @ ${gameViewModel.game.home.abbrev}`
-              }
-            ]}
-          }))
-
-
-          universeWebService.setMetadata(
-                  `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`, 
-                  window.location.href, 
-                  `${env.WEB}/logo.png`, 
-                  `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}`
-          ) 
-
-
-        }
-
-
-
-        await $update()
-
-      } catch(ex) {
-        $f7.dialog.alert(ex.message, "There was an error")
-      }
+      timeoutId = setTimeout(checkForUpdate, timeoutTime)
 
       $('.hide-on-pageinit').hide()
       $('.hidden-on-load').removeClass('hidden-on-load')
-
 
     })
 
