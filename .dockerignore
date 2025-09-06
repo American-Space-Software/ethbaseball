@@ -1,8 +1,37 @@
-Dockerfile
-Dockerfile-discord
-Dockerfile-web
-README.md
-node_modules
+# VCS / editor noise
+.git
+.github
+.gitignore
+.gitattributes
+.DS_Store
+.idea
+.vscode
+
+# Build artifacts / caches / logs
+dist
+build
+coverage
+.cache
+*.log
 npm-debug.log
-test
+*.tgz
+
+# Local deps (reinstalled in builder)
+node_modules
+
+# Big local data/state
+data
+tmp
 .tmp
+
+# Tests
+test
+tests
+spec
+e2e
+
+# Env files — include only the two production files in the build context
+.env
+.env.*
+!.env.web.production
+!.env.engine.production

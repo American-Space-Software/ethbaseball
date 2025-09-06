@@ -1,54 +1,36 @@
-# syntax=docker.io/docker/dockerfile:1.7-labs
-# Start from an official Ubuntu image
-FROM ubuntu:20.04
+# syntax=docker/dockerfile:1.7
+ARG NODE_VERSION=22.18.0
 
-# Set environment variables to avoid interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
+########### builder ###########
+FROM node:${NODE_VERSION}-bookworm-slim AS builder
+WORKDIR /app
 
-# Install dependencies and Nginx
-RUN apt-get update && \
-    apt-get install -y curl build-essential libssl-dev nginx && \
-    apt-get clean
+# Toolchain for any native deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 build-essential git \
+ && rm -rf /var/lib/apt/lists/*
 
-    
-    
-RUN apt install -y git
-RUN apt install python3 python3-pip -y
-RUN apt-get update && apt-get -y install cmake protobuf-compiler certbot python3-certbot-nginx cron
-
-
-# Install nvm (Node Version Manager)
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-
-# Set up nvm environment
-ENV NVM_DIR=/root/.nvm
-ENV NODE_VERSION=22.18.0
-RUN . "$NVM_DIR/nvm.sh" && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION
-
-# Ensure node and npm are available globally
-ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-
-# Verify Node.js and npm installation
-RUN node -v && npm -v
-# Create and change to the web directory.
-WORKDIR /usr/src/web
-
-# Copy application dependency manifests to the container image.
-# A wildcard is used to ensure both package.json AND package-lock.json are copied.
-# Copying this separately prevents re-running npm install on every code change.
 COPY package*.json ./
+RUN npm ci --no-audit --no-fund
 
-# Install production dependencies.
-RUN npm install
-
-# Copy local code to the container image. https://stackoverflow.com/a/62900696
-COPY --exclude=.env.* . ./
-
+# Bring in source and build the web bundles
+COPY . .
 RUN npm run build:web
 
-ARG NODE_ENV
-COPY .env.web.$NODE_ENV .env
+# Fail fast if contracts.json isn't present (your web-server reads it)
+RUN test -f ./contracts.json || (echo "contracts.json missing after build. Ensure your build produces it or check it into the repo." >&2; exit 1)
 
+########### runtime ###########
+FROM node:${NODE_VERSION}-bookworm-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+
+# nginx to reverse-proxy :80 -> node :8080
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nginx ca-certificates curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Minimal nginx.conf (note $$ escapes inside Dockerfile)
 # Write Nginx configuration
 RUN echo 'worker_processes auto;' > /etc/nginx/nginx.conf && \
     echo 'events { worker_connections 1024; }' >> /etc/nginx/nginx.conf && \
@@ -59,5 +41,17 @@ RUN echo 'worker_processes auto;' > /etc/nginx/nginx.conf && \
     echo 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/nginx.conf && \
     echo 'proxy_set_header X-Forwarded-Proto $scheme;' >> /etc/nginx/nginx.conf && \
     echo '} } }' >> /etc/nginx/nginx.conf
+    
+# Bring runtime bits from builder
+COPY --from=builder /app/package*.json ./ 
+COPY --from=builder /app/node_modules   ./node_modules
+COPY --from=builder /app/dist           ./dist
+COPY --from=builder /app/contracts.json ./contracts.json
 
-CMD ["sh", "-c", "service nginx start && node --env-file=.env --enable-source-maps dist/web-server.js"]
+# Per your requirement: only the production web env file
+ARG NODE_ENV
+COPY .env.web.${NODE_ENV} .env
+
+EXPOSE 80
+# Start nginx (daemonized by the Debian package) then exec Node
+CMD ["sh","-lc","nginx && exec node --env-file=.env --enable-source-maps dist/web-server.js"]

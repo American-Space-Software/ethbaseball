@@ -10,9 +10,6 @@ const require = createRequire(import.meta.url)
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-import pkg from 'convert-svg-to-png'
-const { convert } = pkg
-
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
@@ -299,7 +296,7 @@ let serviceWorkerConfig = {
 let engineConfig = {
   entry: "./src/engine/index.ts",
   target: "node",
-  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'convert-svg-to-png', 'discord.js', 'umzug', 'libp2p', 'chatgpt' ],
+  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'discord.js', 'umzug', 'libp2p', 'chatgpt' ],
   externalsPresets: { 
     node: true 
   },    
@@ -410,7 +407,7 @@ let createCarConfig = Object.assign(Object.assign({}, engineConfig), {
 let webServerConfig = {
   entry: "./src/web-server/index.ts",
   target: "node",
-  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'convert-svg-to-png', 'express', 'discord.js', 'umzug', 'chatgpt'],
+  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'express', 'discord.js', 'umzug', 'chatgpt'],
   externalsPresets: { 
     node: true 
   },    
@@ -474,7 +471,7 @@ let webServerConfig = {
 let indexConfig = {
   entry: "./src/index.ts",
   target: "node",
-  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'convert-svg-to-png', 'discord.js', 'umzug', 'libp2p', 'chatgpt', 'express' ],
+  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'discord.js', 'umzug', 'libp2p', 'chatgpt', 'express' ],
   externalsPresets: { 
     node: true 
   },    
@@ -560,9 +557,9 @@ let indexConfig = {
 }
 
 let deployCommandsConfig = {
-  entry: "./src/discord/deploy-commands.ts",
+  entry: "./src/engine/deploy-commands.ts",
   target: "node",
-  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'convert-svg-to-png', 'express', 'discord.js', 'umzug'],
+  externals: ['sequelize', 'sequelize-typescript', 'mariadb', 'express', 'discord.js', 'umzug'],
   externalsPresets: { 
     node: true 
   },    

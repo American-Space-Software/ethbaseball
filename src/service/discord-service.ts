@@ -206,13 +206,13 @@ Balance: ${ethers.formatUnits((await this.diamondService.getBalance(owner._id)).
 
     async generateImage(animationPath) {
 
-        const pngPath = animationPath.replace(".html", ".png")
+        // const pngPath = animationPath.replace(".html", ".png")
 
-        if (!fs.existsSync(pngPath)) {
-            console.time(`Generating PNG for HTML: ${animationPath}`)
-            await this.playerService.generatePNGFromHTML(fs.readFileSync(animationPath).toString(), pngPath, 500, 500)
-            console.timeEnd(`Generating PNG for HTML: ${animationPath}`)
-        }
+        // if (!fs.existsSync(pngPath)) {
+        //     console.time(`Generating PNG for HTML: ${animationPath}`)
+        //     await this.playerService.generatePNGFromHTML(fs.readFileSync(animationPath).toString(), pngPath, 500, 500)
+        //     console.timeEnd(`Generating PNG for HTML: ${animationPath}`)
+        // }
     }
 
 }

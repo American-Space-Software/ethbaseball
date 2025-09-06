@@ -6,8 +6,6 @@ import fs from "fs"
 import seedrandom from "seedrandom"
 import glicko2 from "glicko2"
 
-import pkg from 'convert-svg-to-png';
-const { convert } = pkg
 import { Container } from "inversify";
 
 
@@ -349,7 +347,6 @@ function getContainer(command?: GetContainerCommand) {
       publicPath: `${process.env.INIT_CWD }/test/public`
     }
   })
-  container.bind("convert-svg-to-png").toConstantValue(convert)
 
   container.bind("helia").toConstantValue(async () => {
 

@@ -76,7 +76,6 @@ class PlayerService {
         @inject("discord") private discord: Client,
         @inject("config") private _config: Function,
         @inject("getFees") private fees:Function,
-        @inject("convert-svg-to-png") private convert
     ) { }
 
 
@@ -1345,42 +1344,42 @@ class PlayerService {
 
     // }
 
-    async generatePNGFromHTML(html: string, outputPath: string, height: number, width: number) {
+    // async generatePNGFromHTML(html: string, outputPath: string, height: number, width: number) {
 
-        let page = parser.parseFromString(html, 'text/html')
+    //     let page = parser.parseFromString(html, 'text/html')
 
-        let body = page.getElementsByTagName('body')[0]
+    //     let body = page.getElementsByTagName('body')[0]
 
-        let contentHTML = he.unescape(new XMLSerializer().serializeToString(body))
+    //     let contentHTML = he.unescape(new XMLSerializer().serializeToString(body))
 
-        //Swap body tag to a div
-        contentHTML = "<div xmlns='http://www.w3.org/1999/xhtml'" + contentHTML.slice(5)
-        contentHTML = contentHTML.substring(0, contentHTML.length - 7) + "</div>"
+    //     //Swap body tag to a div
+    //     contentHTML = "<div xmlns='http://www.w3.org/1999/xhtml'" + contentHTML.slice(5)
+    //     contentHTML = contentHTML.substring(0, contentHTML.length - 7) + "</div>"
 
 
 
-        let svg = `<svg viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' version='1.1'>
-            <g>
-                <foreignObject x='0' y='0' width='${width}' height='${height}'>
-                    <div style="background: #ebf4ff; width:100%; height:100%;">
-                        ${contentHTML}
-                    </div>
+    //     let svg = `<svg viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' version='1.1'>
+    //         <g>
+    //             <foreignObject x='0' y='0' width='${width}' height='${height}'>
+    //                 <div style="background: #ebf4ff; width:100%; height:100%;">
+    //                     ${contentHTML}
+    //                 </div>
                     
-                </foreignObject>
-            </g>
-        </svg>`
+    //             </foreignObject>
+    //         </g>
+    //     </svg>`
 
-        let png = await this.convert(svg, {
-            height: height,
-            width: width,
-            puppeteer: {
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            }
-        })
+    //     let png = await this.convert(svg, {
+    //         height: height,
+    //         width: width,
+    //         puppeteer: {
+    //             args: ['--no-sandbox', '--disable-setuid-sandbox']
+    //         }
+    //     })
 
-        fs.writeFileSync(outputPath, png)
+    //     fs.writeFileSync(outputPath, png)
 
-    }
+    // }
 
     translateHitterRowsToHitter(hitterRows) {
 

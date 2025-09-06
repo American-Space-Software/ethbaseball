@@ -8,8 +8,6 @@ import { createHelia } from 'helia'
 import { FsBlockstore } from 'blockstore-fs'
 import { FsDatastore } from 'datastore-fs'
 
-import pkg from 'convert-svg-to-png';
-const { convert } = pkg
 
 import { JsonRpcProvider, Network, Wallet, ethers } from "ethers"
 
@@ -370,7 +368,6 @@ async function getContainer() {
 
     container.bind("dayjs").toConstantValue(dayjs)
 
-    container.bind("convert-svg-to-png").toConstantValue(convert)
 
     container.bind(LogEventService).toSelf().inSingletonScope()
 

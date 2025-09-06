@@ -4,19 +4,17 @@ import { Block } from "../dto/block.js"
 
 import fs from "fs"
 
-const contractsPath = join(
-    dirname(fileURLToPath(import.meta.url)),
-    '../external-abi/link-eth-usd.json'
-  )
-const linkETHUSDABI = JSON.parse(fs.readFileSync(contractsPath, 'utf8'))
+// const contractsPath = join(
+//     dirname(fileURLToPath(import.meta.url)),
+//     '../external-abi/link-eth-usd.json'
+//   )
+// const linkETHUSDABI = JSON.parse(fs.readFileSync(contractsPath, 'utf8'))
 
 
 
-import { ethers } from "ethers"
 import { BlockRepository } from "../repository/block-repository.js"
 import { WalletService } from "./wallet-service.js"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
+
 
 
 @injectable()
@@ -103,15 +101,15 @@ class BlockService {
     }
 
 
-    async getETHUSDAtBlock(blockNumber:number) {
+    // async getETHUSDAtBlock(blockNumber:number) {
 
-        let ethUsdContract = new ethers.Contract("0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", linkETHUSDABI, this.walletService.provider)
+    //     let ethUsdContract = new ethers.Contract("0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", linkETHUSDABI, this.walletService.provider)
 
-        let answer = await ethUsdContract.latestAnswer({blockTag: blockNumber})
+    //     let answer = await ethUsdContract.latestAnswer({blockTag: blockNumber})
         
-        return Number(answer) / 10**8 //chainlink returns 8 decimals
+    //     return Number(answer) / 10**8 //chainlink returns 8 decimals
 
-    }
+    // }
 
 
 }

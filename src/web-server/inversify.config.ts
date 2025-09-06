@@ -91,7 +91,6 @@ dayjs.extend(relativeTime)
 import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 
-import pkg from 'convert-svg-to-png';
 import { League } from "../dto/league.js"
 import { TeamMintPass } from "../dto/team-mint-pass.js"
 
@@ -154,7 +153,6 @@ import { AirdropService } from "../service/airdrop-service.js";
 import { TeamMintPassRepositoryNodeImpl } from "../repository/node/team-mint-pass-repository-impl.js";
 import { TeamMintPassService } from "../service/team-mint-pass-service.js";
 
-const { convert } = pkg
 
 let _diamondsAddress:string
 let _universeAddress:string
@@ -336,8 +334,6 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind("config").toConstantValue(() => {
         return _config
     })
-
-    container.bind("convert-svg-to-png").toConstantValue(convert)
 
     container.bind(DiamondMintPassService).toSelf().inSingletonScope()
 

@@ -183,7 +183,7 @@
 
                         <div class="grid grid-cols-2">
 
-                          ${gameViewModel.pitcher || vm.hitter ? $h`
+                          ${gameViewModel.pitcher || gameViewModel.hitter ? $h`
 
                             ${gameViewModel.pitcher ? $h`
 
@@ -260,199 +260,198 @@
       
               <div class="boxscores grid medium-grid-cols-2">
                 
-                <div class="card">
-                  <div class="card-header">${gameViewModel?.game.away.cityName} ${gameViewModel?.game.away.name}</div>
-                  <div class="card-content">
+                <div class="left">
 
-                    <${BatterTable} vm=${awayBoxscoreViewModel} />
-                    <${PitcherTable} vm=${awayBoxscoreViewModel} />
-                    <${BatterSummary} vm=${awayBoxscoreViewModel} />
-      
-                    <div class="game-finances">
+                  <${Boxscore} vm=${awayBoxscoreViewModel} name=${ `${gameViewModel?.game.away.cityName} ${gameViewModel?.game.away.name}`} />
 
-                      <table>
-                        <thead>
-                            <tr>
-                                <th class="label"></th>
-                                <th>Revenue</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr>
-                                <td class="label">Local Media Deal</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.localTvRevenue)}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">National Media Deal</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.nationalTvRevenue)}</td>
-                            </tr>
-        
-                            <tr class="total">
-                                <td class="label">Total</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalRevenue)}</td>
-                            </tr>
-        
-                        </tbody>
-                      </table>
-        
-                      <table>
-                        <thead>
-                            <tr>
-                                <th class="label"></th>
-                                <th>Expense</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr>
-                                <td class="label">Payroll</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.payroll)}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">Stadium Lease</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.stadiumLease)}</td>
-                            </tr>
-                            <tr class="total">
-                                <td class="label">Total</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalExpenses)}</td>
-                            </tr>
-        
-        
-                        </tbody>
-                      </table>
+                  <div class="card">
+                    <div class="card-content card-content-padding">
+                      <div class="game-finances">
 
-                      <table>
-                        <thead>
-                            <tr>
-                                <th class="label"></th>
-                                <th>Profit</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr class="total">
-                                <td class="label">Total</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalProfit)}</td>
-                            </tr>        
-                        </tbody>
-                      </table>
+                        <table>
+                          <thead>
+                              <tr>
+                                  <th class="label"></th>
+                                  <th>Revenue</th>
+                              </tr>
+                          </thead>
+          
+                          <tbody>
+                              <tr>
+                                  <td class="label">Local Media Deal</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.localTvRevenue)}</td>
+                              </tr>
+                              <tr>
+                                  <td class="label">National Media Deal</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.nationalTvRevenue)}</td>
+                              </tr>
+          
+                              <tr class="total">
+                                  <td class="label">Total</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalRevenue)}</td>
+                              </tr>
+          
+                          </tbody>
+                        </table>
+          
+                        <table>
+                          <thead>
+                              <tr>
+                                  <th class="label"></th>
+                                  <th>Expense</th>
+                              </tr>
+                          </thead>
+          
+                          <tbody>
+                              <tr>
+                                  <td class="label">Payroll</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.payroll)}</td>
+                              </tr>
+                              <tr>
+                                  <td class="label">Stadium Lease</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.stadiumLease)}</td>
+                              </tr>
+                              <tr class="total">
+                                  <td class="label">Total</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalExpenses)}</td>
+                              </tr>
+          
+          
+                          </tbody>
+                        </table>
+
+                        <table>
+                          <thead>
+                              <tr>
+                                  <th class="label"></th>
+                                  <th>Profit</th>
+                              </tr>
+                          </thead>
+          
+                          <tbody>
+                              <tr class="total">
+                                  <td class="label">Total</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalProfit)}</td>
+                              </tr>        
+                          </tbody>
+                        </table>
 
 
+                      </div>
                     </div>
-
-
                   </div>
+
                 </div>
 
-                <div class="card">
-                  <div class="card-header">${gameViewModel?.game.home.cityName} ${gameViewModel?.game.home.name}</div>
-                  <div class="card-content">
+                <div class="right">
+                  
+                  <${Boxscore} vm=${homeBoxscoreViewModel} name=${ `${gameViewModel?.game.home.cityName} ${gameViewModel?.game.home.name}`} />
 
-                    <${BatterTable} vm=${homeBoxscoreViewModel} />
-                    <${PitcherTable} vm=${homeBoxscoreViewModel} />
-                    <${BatterSummary} vm=${homeBoxscoreViewModel} />
-      
-                    <div class="game-finances">
+                  <div class="card">
+                    <div class="card-content card-content-padding">
+        
+                      <div class="game-finances">
 
-                      <div class="ticket-price">
-                        <strong>Ticket Price:</strong> ${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.ticketPrice)}
+                        <div class="ticket-price">
+                          <strong>Ticket Price:</strong> ${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.ticketPrice)}
+                        </div>
+
+
+                        <table>
+                          <thead>
+                              <tr>
+                                  <th class="label"></th>
+                                  <th>Attendance</th>
+                                  <th>Revenue</th>
+                              </tr>
+                          </thead>
+          
+                          <tbody>
+                              <tr>
+                                  <td class="label">Season Tickets</td>
+                                  <td class="numeric-cell">${gameViewModel.game.gameFinances.home.seasonTickets}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.seasonTicketRevenue)}</td>
+                              </tr>
+                              <tr>
+                                  <td class="label">Gate Tickets</td>
+                                  <td class="numeric-cell">${gameViewModel.game.gameFinances.home.gateTickets}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.gateTicketRevenue)}</td>
+                              </tr>
+
+
+                              <tr>
+                                  <td class="label">Local Media Deal</td>
+                                  <td></td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.localTvRevenue)}</td>
+                              </tr>
+                              <tr>
+                                  <td class="label">National Media Deal</td>
+                                  <td></td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.nationalTvRevenue)}</td>
+                              </tr>
+
+                              <tr class="total">
+                                  <td class="label">Total</td>
+                                  <td class="numeric-cell">${gameViewModel.game.gameFinances.home.totalAttendance}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalRevenue)}</td>
+                              </tr>
+          
+          
+                          </tbody>
+                        </table>
+
+          
+                        <table>
+                          <thead>
+                              <tr>
+                                  <th class="label"></th>
+                                  <th>Expenses</th>
+                              </tr>
+                          </thead>
+          
+                          <tbody>
+                              <tr>
+                                  <td class="label">Payroll</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.payroll)}</td>
+                              </tr>
+                              <tr>
+                                  <td class="label">Stadium Lease</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.stadiumLease)}</td>
+                              </tr>
+                              <tr class="total">
+                                  <td class="label">Total</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalExpenses)}</td>
+                              </tr>
+          
+          
+                          </tbody>
+                        </table>
+
+                        <table>
+                          <thead>
+                              <tr>
+                                  <th class="label"></th>
+                                  <th>Profit</th>
+                              </tr>
+                          </thead>
+          
+                          <tbody>
+                              <tr class="total">
+                                  <td class="label">Total</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalProfit)}</td>
+                              </tr>        
+                          </tbody>
+                        </table>
+
+
+
                       </div>
 
-
-                      <table>
-                        <thead>
-                            <tr>
-                                <th class="label"></th>
-                                <th>Attendance</th>
-                                <th>Revenue</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr>
-                                <td class="label">Season Tickets</td>
-                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.seasonTickets}</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.seasonTicketRevenue)}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">Gate Tickets</td>
-                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.gateTickets}</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.gateTicketRevenue)}</td>
-                            </tr>
-
-
-                            <tr>
-                                <td class="label">Local Media Deal</td>
-                                <td></td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.localTvRevenue)}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">National Media Deal</td>
-                                <td></td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.nationalTvRevenue)}</td>
-                            </tr>
-
-                            <tr class="total">
-                                <td class="label">Total</td>
-                                <td class="numeric-cell">${gameViewModel.game.gameFinances.home.totalAttendance}</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalRevenue)}</td>
-                            </tr>
-        
-        
-                        </tbody>
-                      </table>
-
-        
-                      <table>
-                        <thead>
-                            <tr>
-                                <th class="label"></th>
-                                <th>Expenses</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr>
-                                <td class="label">Payroll</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.payroll)}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">Stadium Lease</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.stadiumLease)}</td>
-                            </tr>
-                            <tr class="total">
-                                <td class="label">Total</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalExpenses)}</td>
-                            </tr>
-        
-        
-                        </tbody>
-                      </table>
-
-                      <table>
-                        <thead>
-                            <tr>
-                                <th class="label"></th>
-                                <th>Profit</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                            <tr class="total">
-                                <td class="label">Total</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalProfit)}</td>
-                            </tr>        
-                        </tbody>
-                      </table>
-
-
-
                     </div>
-
                   </div>
+
                 </div>
-    
+
               </div> 
       
               <div class="block-title block-title-large">Play by Play</div>
@@ -603,16 +602,12 @@
   import LineScore from "./linescore.f7.html"
   import GameState from "./game-state.f7.html"
 
-  import BatterTable from "./batter-table.f7.html"
-  import PitcherTable from "./pitcher-table.f7.html"
-  import BatterSummary from "./batter-summary.f7.html"
+
 
   import dayjs from "dayjs"
 
   import { ContainerService } from "../../../service/container-service.ts"
   import { GameWebService } from "../../service/game-web-service.ts"
-  import { FieldService } from "../../../service/field-service.ts"
-  import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
 
   import { Position } from "../../../service/enums.ts"
@@ -620,6 +615,158 @@
   import InProgress from "../game/in-progress.f7.html"
   import Scheduled from "../game/scheduled.f7.html"
   import Result from "../game/result.f7.html"
+
+  const arrayToStr = (arr) => {
+
+    let mapped = arr.map( v => `${v.name} ${v.value > 1 ? `${v.value}` : ``}`.trim())
+    return `${mapped.join("; ")}`
+  }
+
+
+  const Boxscore = (props, { $on, $, $f7, $h, $update }) => {
+
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let vm = props.vm
+    let name = props.name
+
+    let lineup = vm.teamInfo.lineupIds
+
+    let batters = lineup.map( id => vm.teamInfo.players.find( p => p._id == id))
+    let pitchers = lineup.map( id => vm.teamInfo.players.find( p => p._id == id)).filter( p2 => p2.currentPosition == Position.PITCHER)
+
+    let doubles = vm.teamInfo.players.filter(p => p.hitResult.doubles > 0).map( p => {
+      return { _id: p._id, name: p.fullName, value: p.hitResult.doubles }
+    })
+
+    let triples = vm.teamInfo.players.filter(p => p.hitResult.triples > 0).map( p => {
+      return {  _id: p._id, name: p.fullName, value: p.hitResult.triples }
+    })
+
+    let hr = vm.teamInfo.players.filter(p => p.hitResult.homeRuns > 0).map( p => {
+      return {  _id: p._id, name: p.fullName, value: p.hitResult.homeRuns }
+    })
+
+    let tb = vm.teamInfo.players.filter(p => p.hitResult.tb > 0).map( p => {
+      return {  _id: p._id, name: p.fullName, value: p.hitResult.tb }
+    })
+
+    let rbi = vm.teamInfo.players.filter(p => p.hitResult.rbi > 0).map( p => {
+      return { name: p.fullName, value: p.hitResult.rbi }
+    })
+
+
+    return () => $h`<div class="card">
+        <div class="card-header">${name}</div>
+        <div class="card-content">
+
+            <div class="stat-table-wrapper">
+                <table class="data-table small-font game-table">
+                <thead>
+                    <tr>
+                    <th class="image"></th>
+                    <th class="name">Batting</th>
+                    <th class="numeric-cell">POS</th>
+                    <th class="numeric-cell">AB</th>
+                    <th class="numeric-cell">R</th>
+                    <th class="numeric-cell">H</th>
+                    <th class="numeric-cell">2B</th>
+                    <th class="numeric-cell">3B</th>
+                    <th class="numeric-cell">HR</th>
+                    <th class="numeric-cell">RBI</th>
+                    <th class="numeric-cell">BB</th>
+                    <th class="numeric-cell">HBP</th>
+                    <th class="numeric-cell">SO</th>       
+                    </tr>                
+                </thead>
+                <tbody>
+                    ${batters.map( (p, index) => $h`
+                    <tr class="${vm.teamInfo.currentHitterIndex == index && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=='AWAY' || !vm.isTopInning && vm.homeaway=='HOME' ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
+                        <td class="image"><img src="/player/image/${p.playerId}" width="25" height="25" /></td>
+                        <td class="name"> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+                        <td class="pos">${p.currentPosition}</td>
+                        <td class="numeric-cell">${p.hitResult.atBats}</td>
+                        <td class="numeric-cell">${p.hitResult.runs}</td>
+                        <td class="numeric-cell">${p.hitResult.hits}</td>
+                        <td class="numeric-cell">${p.hitResult.doubles}</td>
+                        <td class="numeric-cell">${p.hitResult.triples}</td>
+                        <td class="numeric-cell">${p.hitResult.homeRuns}</td>
+                        <td class="numeric-cell">${p.hitResult.rbi}</td>
+                        <td class="numeric-cell">${p.hitResult.bb}</td>
+                        <td class="numeric-cell">${p.hitResult.hbp}</td>
+                        <td class="numeric-cell">${p.hitResult.so}</td>
+                    </tr>
+                    `)}
+
+
+                </tbody>                            
+                </table>
+            </div>
+
+            <div class="stat-table-wrapper">
+                <table class="data-table small-font game-table">
+                <thead>
+                    <tr>
+                    <th class="image"></th>
+                    <th>Pitching</th>
+                    <th class="pos">POS</th>
+                    <th class="numeric-cell">W</th>
+                    <th class="numeric-cell">L</th>
+                    <th class="numeric-cell">IP</th>
+                    <th class="numeric-cell">H</th>
+                    <th class="numeric-cell">R</th>
+                    <th class="numeric-cell">ER</th>
+                    <th class="numeric-cell">HR</th>
+                    <th class="numeric-cell">BB</th>
+                    <th class="numeric-cell">SO</th>
+                    <th class="numeric-cell">HBP</th>
+                    <th class="numeric-cell">BF</th>     
+                    <th class="numeric-cell">PIT</th>                  
+                    <th class="numeric-cell">STR</th>                  
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pitchers.map( (p, index) => $h`
+                    <tr class="${vm.teamInfo.currentPitcherId == p._id && (vm.isTopInning && vm.homeaway=='HOME' || !vm.isTopInning && vm.homeaway=='AWAY') && !vm.isComplete ? $h`pitching` : $h``}">
+                        <td class="image"><img src="/player/image/${p.playerId}" width="25" height="25" /></td>
+                        <td class="name">${p.throws} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+                        <td class="pos">${p.currentPosition}</td>
+                        <td class="numeric-cell">${p.pitchResult.wins}</td>
+                        <td class="numeric-cell">${p.pitchResult.losses}</td>
+                        <td class="numeric-cell">${p.pitchResult.ip}</td>
+                        <td class="numeric-cell">${p.pitchResult.hits}</td>
+                        <td class="numeric-cell">${p.pitchResult.runs}</td>
+                        <td class="numeric-cell">${p.pitchResult.er}</td>
+                        <td class="numeric-cell">${p.pitchResult.homeRuns}</td>
+                        <td class="numeric-cell">${p.pitchResult.bb}</td>
+                        <td class="numeric-cell">${p.pitchResult.so}</td>
+                        <td class="numeric-cell">${p.pitchResult.hbp}</td>
+                        <td class="numeric-cell">${p.pitchResult.battersFaced}</td>
+                        <td class="numeric-cell">${p.pitchResult.pitches}</td>
+                        <td class="numeric-cell">${p.pitchResult.strikes}</td>
+                    </tr>
+                    `)}
+
+                </tbody>                            
+                </table>
+            </div>
+
+            <div class="batter-summary">
+                ${doubles?.length > 0 ? $h`<strong>2B:</strong> ${arrayToStr(doubles)}<br />` : $h``}
+                ${triples?.length > 0 ? $h`<strong>3B:</strong> ${arrayToStr(triples)}<br />` : $h``}
+                ${hr?.length > 0 ? $h`<strong>HR:</strong> ${arrayToStr(hr)}<br />` : $h``}
+                ${tb?.length > 0 ? $h`<strong>TB:</strong> ${arrayToStr(tb)}<br />` : $h``}
+                ${rbi?.length > 0 ? $h`<strong>RBI:</strong> ${arrayToStr(rbi)}<br />` : $h``}
+            </div>
+
+        </div>
+    </div>`;
+
+
+
+
+  }
+
 
   function percentageFormatter(num) {
     return new Intl.NumberFormat('default', {
@@ -656,19 +803,14 @@
 
   export default (props, { $on, $, $f7, $update, $ref }) => {
 
-    let env = ContainerService.getInstance("env")()
-
-    let eventTarget = ContainerService.getInstance("eventTarget")
     let gameWebService = ContainerService.getInstance(GameWebService)
-    let fieldService = ContainerService.getInstance(FieldService)
-    let statService = ContainerService.getInstance(StatService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
-    let gameViewModel = {}
-    let linescoreViewModel = {}
-    let awayBoxscoreViewModel = {}
-    let homeBoxscoreViewModel = {}
-    let isComplete
+    let gameViewModel = props.gameViewModel
+    
+    let linescoreViewModel = gameViewModel.linescoreViewModel
+    let awayBoxscoreViewModel = gameViewModel.awayBoxscoreViewModel
+    let homeBoxscoreViewModel = gameViewModel.homeBoxscoreViewModel
 
     let loading 
     let timeoutId
@@ -695,6 +837,7 @@
 
     }
 
+
     const loadGame = async (gameId) => {
 
         if (!gameId) return
@@ -709,9 +852,10 @@
             Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
             Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
 
-            $update()
-
             $f7.emit('gameUpdate', gameViewModel)
+
+
+            await $update()
 
         } catch(ex) { 
           console.log(ex) 
@@ -725,8 +869,6 @@
           timeoutId = setTimeout(checkForUpdate, timeoutTime)
         }
 
-        // console.log(gameViewModel)
-
         console.timeEnd("Loading game...")
 
 
@@ -734,11 +876,8 @@
 
 
     $on('pageBeforeIn', async (e) => {
-      Object.assign(gameViewModel, props.gameViewModel)
-      Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
-
-      Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
-      Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
+              
+      $f7.emit('gameUpdate', gameViewModel)
 
       await $update()
 
