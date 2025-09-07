@@ -258,7 +258,9 @@ let startWebServer = async () => {
 
 
 
-
+  app.get('/health', (_req, res) => {
+    return res.status(200).send('ok')
+  })
 
   app.get('/env', cacheService.cacheResponse({ tag: ENV_TAG }), async function (req, res) {
     return res.json(getEnv())
@@ -1973,6 +1975,10 @@ let startWebServer = async () => {
   /** END AUTHENTICATION */
 
 
+
+
+
+
   //** ADMIN */
 
   //** */
@@ -1986,7 +1992,6 @@ let startWebServer = async () => {
     console.log(`EBL listening on port ${PORT}`)
   })
 
-  
 
 
   console.log(`

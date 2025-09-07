@@ -5,7 +5,7 @@ ARG NODE_VERSION=22.18.0
 FROM node:${NODE_VERSION}-bookworm-slim AS builder
 WORKDIR /app
 
-# Toolchain for any native deps
+# Toolchain for any native deps used during build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 build-essential git \
  && rm -rf /var/lib/apt/lists/*
@@ -17,41 +17,35 @@ RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build:web
 
-# Fail fast if contracts.json isn't present (your web-server reads it)
-RUN test -f ./contracts.json || (echo "contracts.json missing after build. Ensure your build produces it or check it into the repo." >&2; exit 1)
+# Sanity checks (fail fast if outputs/paths you rely on are missing)
+RUN test -f ./contracts.json || (echo "contracts.json missing after build" >&2; exit 1)
+RUN test -d ./public || (echo "public/ missing after build" >&2; exit 1)
+RUN test -d ./src/web-server/views || (echo "src/web-server/views missing" >&2; exit 1)
 
 ########### runtime ###########
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
-ENV NODE_ENV=production
 WORKDIR /app
 
-# nginx to reverse-proxy :80 -> node :8080
+# nginx to reverse-proxy :80 -> node :8080 (+service helper)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx ca-certificates curl \
+    nginx ca-certificates curl sysvinit-utils \
  && rm -rf /var/lib/apt/lists/*
 
-# Minimal nginx.conf (note $$ escapes inside Dockerfile)
-# Write Nginx configuration
+# Minimal nginx.conf (note: use 127.0.0.1 to avoid IPv6 surprises)
 RUN echo 'worker_processes auto;' > /etc/nginx/nginx.conf && \
     echo 'events { worker_connections 1024; }' >> /etc/nginx/nginx.conf && \
-    echo 'http { server { listen 80;' >> /etc/nginx/nginx.conf && \
-    echo 'location / { proxy_pass http://localhost:8080;' >> /etc/nginx/nginx.conf && \
-    echo 'proxy_set_header Host $host;' >> /etc/nginx/nginx.conf && \
-    echo 'proxy_set_header X-Real-IP $remote_addr;' >> /etc/nginx/nginx.conf && \
-    echo 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/nginx.conf && \
-    echo 'proxy_set_header X-Forwarded-Proto $scheme;' >> /etc/nginx/nginx.conf && \
-    echo '} } }' >> /etc/nginx/nginx.conf
-    
-# Bring runtime bits from builder
-COPY --from=builder /app/package*.json ./ 
-COPY --from=builder /app/node_modules   ./node_modules
-COPY --from=builder /app/dist           ./dist
-COPY --from=builder /app/contracts.json ./contracts.json
+    echo 'http { server { listen 80; location / { proxy_pass http://127.0.0.1:8080; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; } } }' >> /etc/nginx/nginx.conf
 
-# Per your requirement: only the production web env file
+# Bring runtime bits from builder
+COPY --from=builder /app/package*.json     ./
+COPY --from=builder /app/node_modules      ./node_modules
+COPY --from=builder /app/dist              ./dist
+COPY --from=builder /app/public            ./public
+COPY --from=builder /app/contracts.json    ./contracts.json
+COPY --from=builder /app/src/web-server/views ./src/web-server/views
+
+# Only the production web env file
 ARG NODE_ENV
 COPY .env.web.${NODE_ENV} .env
 
-EXPOSE 80
-# Start nginx (daemonized by the Debian package) then exec Node
-CMD ["sh","-lc","nginx && exec node --env-file=.env --enable-source-maps dist/web-server.js"]
+CMD ["sh", "-c", "service nginx start && node --env-file=.env --enable-source-maps dist/web-server.js"]

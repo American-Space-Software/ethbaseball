@@ -22,7 +22,6 @@ RUN test -f ./contracts.json || (echo "contracts.json missing after build. Ensur
 
 ########### runtime ###########
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
-ENV NODE_ENV=production
 WORKDIR /app
 
 # Copy runtime bits
@@ -35,5 +34,5 @@ COPY --from=builder /app/contracts.json ./contracts.json
 ARG NODE_ENV
 COPY .env.engine.${NODE_ENV} .env
 
-EXPOSE 8080
+
 CMD ["node","--env-file=.env","--enable-source-maps","dist/engine.js"]
