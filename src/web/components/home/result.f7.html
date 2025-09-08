@@ -2,6 +2,13 @@
   
     <a href="${universeWebService.startDateLink(`/g/${game._id}`)}">
       <table class="game-result">
+
+      <tr>
+        <td colspan="2" class="small-gray">
+            Final Result
+        </td>
+      </tr>
+
         <tr class="${game.score.away > game.score.home ? $h`winner` : $h` `}">
           <td class="name">
             
@@ -38,6 +45,7 @@
 
     import logo from "../../html/images/logo.png"
     import { ethers } from "ethers"
+    import dayjs from "dayjs"
 
     export default (props, { $on, $f7, $update }) => {
 
