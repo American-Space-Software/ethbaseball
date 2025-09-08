@@ -578,6 +578,11 @@ h1 {
   color: darkslategray;
 }
 
+.tokenId a {
+  font-size: .55em; 
+  margin-left: 15px;
+}
+
 .rank-dropdown {
   color: #000000;
   font-size: 13px;
@@ -1784,9 +1789,9 @@ h1 {
 }
 
 
-.lead {
+/* .lead {
   font-size: 19px;
-}
+} */
 
 .get-started {
   margin-top: 15px;
@@ -2382,6 +2387,7 @@ td.action, th.action {
 .game-finances table {
   width: 100%;
   margin-bottom: 15px;
+  white-space: nowrap;
 }
 
 .game-finances table th {

@@ -93,7 +93,6 @@ import { CityWebService } from "./service/city-web-service.js";
 import { TeamComponentService } from "./service/team-component-service.js";
 import { UniverseContractService } from "../service/universe-contract-service.js";
 import { UniverseWebService } from "./service/universe-web-service.js";
-import axios from "axios";
 import { LineupService } from "../service/lineup-service.js";
 import { GameTransactionWebService } from "./service/game-transaction-web-service.js";
 import { LeagueController } from "./controller/league-controller.js";

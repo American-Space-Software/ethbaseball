@@ -3,7 +3,7 @@
     <div>
         ${vm.teams?.length > 0 ? $h`
 
-            <div class="block-title block-title-large">Team(s)</div>
+            <div class="block-title block-title-small">Team(s)</div>
             <div class="block block-outline teams">
 
                 <div class="stat-table-wrapper">
@@ -52,31 +52,29 @@
     
             ${vm.games?.length > 0 ? $h`
 
-                <div class="block-title block-title-large">Today's Games</div>
-                <div class="block block-outline">
-                    <div class="list list-dividers-ios">
-                        <ul>
-            
-                            ${vm.games.map( game => $h`
+                <div class="block-title block-title-small">Today's Games</div>
+                <div class="list list-dividers-ios list-outline-ios list-outline">
+                    <ul>
+        
+                        ${vm.games.map( game => $h`
+                    
+                            ${!game.isStarted ? $h`
+                                <${Scheduled} game=${game} /> 
+                            ` : $h` `}
+
+                            ${game.isStarted && !game.isFinished ? $h`
+                                <${InProgress} game=${game} />
+                            ` : $h` `}
+
+                            ${game.isStarted && game.isFinished ? $h`
+                                <${Result} game=${game} />
+                            ` : $h` `}
+
                         
-                                ${!game.isStarted ? $h`
-                                    <${Scheduled} game=${game} /> 
-                                ` : $h` `}
-    
-                                ${game.isStarted && !game.isFinished ? $h`
-                                    <${InProgress} game=${game} />
-                                ` : $h` `}
-    
-                                ${game.isStarted && game.isFinished ? $h`
-                                    <${Result} game=${game} />
-                                ` : $h` `}
-    
-                            
-                            `)}
-            
-                        </ul>
-            
-                    </div>
+                        `)}
+        
+                    </ul>
+        
                 </div>
 
 
