@@ -7,9 +7,9 @@
 
       <${StartDate} />
 
-      <div class="block">
+        <div class="block">
 
-          <div class="list">
+            <div class="list">
 
             <strong>League</strong><br />
             <select name="rank" class="rank-dropdown" @change="${rankChange}">
@@ -32,109 +32,117 @@
                 
             </select>
 
-          </div>
+            </div>
 
-          <div class="search">
-              <!-- <div class="searchbar searchbar-inline">
-                  <div class="searchbar-input-wrap">
-                      <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
-                      <i class="searchbar-icon"></i>
-                      <span class="input-clear-button"></span>
-                  </div>
-              </div> -->
-              <div class="position">
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link active">Batters</a>
-                  <a href="#playerStatsPitchers" @click="${positionClick}" class="tab-link">Pitchers</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="C">C</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="1B">1B</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="2B">2B</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="3B">3B</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="SS">SS</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="LF">LF</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="CF">CF</a>
-                  <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="RF">RF</a>
-              </div>
-          </div>
+        </div>
+        
 
-          <div class="tabs-animated-wrap">
-              <div class="tabs">
-                  <div class="tab tab-active" id="playerStatsHitters">
 
-                      ${selected == "stats" ? $h`
-                      <hitter-stats hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                          actions="${getActions}" statprop="seasonStats">
-                          <select @change="${statsChange}" class="stats-dropdown">
-                              <option value="stats" selected>Season Stats</option>
-                              <option value="ratings">Ratings</option>
-                              <option value="contracts">Contracts</option>
-                          </select>
-                      </hitter-stats>
-                      ` : $h` `}
+        <div class="block block-strong block-outline">
+                <div class="search">
+                    <!-- <div class="searchbar searchbar-inline">
+                        <div class="searchbar-input-wrap">
+                            <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
+                            <i class="searchbar-icon"></i>
+                            <span class="input-clear-button"></span>
+                        </div>
+                    </div> -->
+                    <div class="position">
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link active">Batters</a>
+                        <a href="#playerStatsPitchers" @click="${positionClick}" class="tab-link">Pitchers</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="C">C</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="1B">1B</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="2B">2B</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="3B">3B</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="SS">SS</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="LF">LF</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="CF">CF</a>
+                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="RF">RF</a>
+                    </div>
+                </div>
 
-                      ${selected == "ratings" ? $h`
-                      <hitter-ratings hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                          actions="${getActions}">
-                          <select @change="${statsChange}" class="stats-dropdown">
-                              <option value="stats">Season Stats</option>
-                              <option value="ratings" selected>Ratings</option>
-                              <option value="contracts">Contracts</option>
-                          </select>
-                      </hitter-ratings>
-                      ` : $h` `}
+                <div class="tabs-animated-wrap">
+                    <div class="tabs">
+                        <div class="tab tab-active" id="playerStatsHitters">
 
-                      ${selected == "contracts" ? $h`
-                      <hitter-contracts hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                          actions="${getActions}">
-                          <select @change="${statsChange}" class="stats-dropdown">
-                              <option value="stats">Season Stats</option>
-                              <option value="ratings">Ratings</option>
-                              <option value="contracts" selected>Contracts</option>
-                          </select>
-                      </hitter-contracts>
-                      ` : $h` `}
+                            ${selected == "stats" ? $h`
+                            <hitter-stats hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                                actions="${getActions}" statprop="seasonStats">
+                                <select @change="${statsChange}" class="stats-dropdown">
+                                    <option value="stats" selected>Season Stats</option>
+                                    <option value="ratings">Ratings</option>
+                                    <option value="contracts">Contracts</option>
+                                </select>
+                            </hitter-stats>
+                            ` : $h` `}
 
-                  </div>
-                  <div class="tab" id="playerStatsPitchers">
+                            ${selected == "ratings" ? $h`
+                            <hitter-ratings hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                                actions="${getActions}">
+                                <select @change="${statsChange}" class="stats-dropdown">
+                                    <option value="stats">Season Stats</option>
+                                    <option value="ratings" selected>Ratings</option>
+                                    <option value="contracts">Contracts</option>
+                                </select>
+                            </hitter-ratings>
+                            ` : $h` `}
 
-                      ${selected == "stats" ? $h`
-                      <pitcher-stats pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                          actions="${getActions}" statprop="seasonStats">
-                          <select @change="${statsChange}" class="stats-dropdown">
-                              <option value="stats" selected>Season Stats</option>
-                              <option value="ratings">Ratings</option>
-                              <option value="contracts">Contracts</option>
-                          </select>
-                      </pitcher-stats>
-                      ` : $h` `}
+                            ${selected == "contracts" ? $h`
+                            <hitter-contracts hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                                actions="${getActions}">
+                                <select @change="${statsChange}" class="stats-dropdown">
+                                    <option value="stats">Season Stats</option>
+                                    <option value="ratings">Ratings</option>
+                                    <option value="contracts" selected>Contracts</option>
+                                </select>
+                            </hitter-contracts>
+                            ` : $h` `}
 
-                      ${selected == "ratings" ? $h`
-                      <pitcher-ratings pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                          actions="${getActions}">
-                          <select @change="${statsChange}" class="stats-dropdown">
-                              <option value="stats">Season Stats</option>
-                              <option value="ratings" selected>Ratings</option>
-                              <option value="contracts">Contracts</option>
-                          </select>
-                      </pitcher-ratings>
-                      ` : $h` `}
+                        </div>
+                        <div class="tab" id="playerStatsPitchers">
 
-                      ${selected == "contracts" ? $h`
-                      <pitcher-contracts pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                          actions="${getActions}">
-                          <select @change="${statsChange}" class="stats-dropdown">
-                              <option value="stats">Season Stats</option>
-                              <option value="ratings" >Ratings</option>
-                              <option value="contracts" selected>Contracts</option>
-                          </select>
-                      </pitcher-contracts>
-                      ` : $h` `}
+                            ${selected == "stats" ? $h`
+                            <pitcher-stats pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                                actions="${getActions}" statprop="seasonStats">
+                                <select @change="${statsChange}" class="stats-dropdown">
+                                    <option value="stats" selected>Season Stats</option>
+                                    <option value="ratings">Ratings</option>
+                                    <option value="contracts">Contracts</option>
+                                </select>
+                            </pitcher-stats>
+                            ` : $h` `}
 
-                  </div>
+                            ${selected == "ratings" ? $h`
+                            <pitcher-ratings pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                                actions="${getActions}">
+                                <select @change="${statsChange}" class="stats-dropdown">
+                                    <option value="stats">Season Stats</option>
+                                    <option value="ratings" selected>Ratings</option>
+                                    <option value="contracts">Contracts</option>
+                                </select>
+                            </pitcher-ratings>
+                            ` : $h` `}
 
-              </div>
-          </div>
+                            ${selected == "contracts" ? $h`
+                            <pitcher-contracts pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
+                                actions="${getActions}">
+                                <select @change="${statsChange}" class="stats-dropdown">
+                                    <option value="stats">Season Stats</option>
+                                    <option value="ratings" >Ratings</option>
+                                    <option value="contracts" selected>Contracts</option>
+                                </select>
+                            </pitcher-contracts>
+                            ` : $h` `}
 
-      </div>
+                        </div>
+
+                    </div>
+                </div>
+
+        </div>
+
+
+
 
 
     </div>

@@ -89,16 +89,10 @@
 
                 </div>
 
-              ` : $h` 
-              
-                ${authInfo?.address ? $h`
-                  <${UserDetails} vm=${vm} />
-                ` : $h` `}
-              
-              `}
+              ` : $h` `}
 
 
-              <div class="list links-list list-inset list-outline-ios list-dividers-ios">
+              <div class="list links-list list-inset list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
                     <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
                     <li><a class="link" href="/games">⚾ Scores</a></li>
@@ -112,58 +106,56 @@
                   </ul>
               </div>
 
-
+              ${authInfo?.address ? $h`
+                <${UserDetails} vm=${vm} />
+              ` : $h` `}
 
 
               ${vm?.topTeams?.length > 0 ? $h`
 
-                  <div class="block-title block-title-small">Top Teams</div>
-                  <div class="stat-table-wrapper">
-                      <table class="data-table home-standings standings">
-                          <thead>
-                            <tr>
-                                <th class="image"></th>
-                                <th class="name">Name</th>
-                                <th>Wins</th>
-                                <th>Losses</th>
-                                <th>Win%</th>
-                                <th>GB</th>
-                                <th class="numeric-cell">Cash</th>
-                                <th class="numeric-cell">Projected Revenue</th>
-                                <th class="numeric-cell">Projected Expenses</th>
-                                <th class="numeric-cell">Projected Profit</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${vm?.topTeams?.map( (t, index) => $h`
-                                <tr>
-                                    <td class="image"><img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" /></td>
-                                    <td class="name">
-                                        
-                                        <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
-                                    </td>
-                                    <td>${t.overallRecord.wins}</td>
-                                    <td>${t.overallRecord.losses}</td>
-                                    <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                                    <td>${t.overallRecord.gamesBack}</td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.revenue.projectedTotal.total)}</td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.expenses.projectedTotal.total)}</td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.profit.projectedTotal.total)}</td>
+                  <div class="block-title block-title-medium">Top 10 Teams</div>
 
-                                </tr>
-                            `)}
-                          </tbody>
-                      </table>
+                  <div class="block block-outline block-strong">
+                    <div class="stat-table-wrapper">
+                        <table class="data-table home-standings standings">
+                            <thead>
+                              <tr>
+                                  <th class="image"></th>
+                                  <th class="name">Name</th>
+                                  <th>Wins</th>
+                                  <th>Losses</th>
+                                  <th>Win%</th>
+                                  <th>GB</th>
+                                  <th class="numeric-cell">Cash</th>
+                                  <th class="numeric-cell">Projected Revenue</th>
+                                  <th class="numeric-cell">Projected Expenses</th>
+                                  <th class="numeric-cell">Projected Profit</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${vm?.topTeams?.map( (t, index) => $h`
+                                  <tr>
+                                      <td class="image"><img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" /></td>
+                                      <td class="name">
+                                          
+                                          <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
+                                      </td>
+                                      <td>${t.overallRecord.wins}</td>
+                                      <td>${t.overallRecord.losses}</td>
+                                      <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
+                                      <td>${t.overallRecord.gamesBack}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.revenue.projectedTotal.total)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.expenses.projectedTotal.total)}</td>
+                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.profit.projectedTotal.total)}</td>
+
+                                  </tr>
+                              `)}
+                            </tbody>
+                        </table>
+                    </div>
                   </div>
 
-                  <div class="list links-list list-inset list-outline-ios list-dividers-ios">
-                      <ul>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/l/standings/1`)}">🏆 Full Standings</a></li>
-                      </ul>
-                  </div>
-
-                
               ` : $h` `}
 
         </div>

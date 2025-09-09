@@ -162,8 +162,8 @@ class TeamService {
         // let yesterdaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().subtract(1, 'day').toDate(), t.team)
 
 
-        let start = dayjs().subtract(6, 'days').toDate()
-        let end = dayjs().add(4, 'days').toDate()
+        let start = dayjs().subtract(4, 'days').toDate()
+        let end = dayjs().add(2, 'days').toDate()
 
         let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
         let games = await this.gameService.getByIds(gameIds, options)

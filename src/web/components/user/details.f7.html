@@ -4,7 +4,7 @@
         ${vm.teams?.length > 0 ? $h`
 
             <div class="block-title block-title-small">Team(s)</div>
-            <div class="block block-outline teams">
+            <div class="block block-outline block-strong teams">
 
                 <div class="stat-table-wrapper">
                     <table class="data-table">
@@ -53,7 +53,7 @@
             ${vm.games?.length > 0 ? $h`
 
                 <div class="block-title block-title-small">Today's Games</div>
-                <div class="list list-dividers-ios list-outline-ios list-outline">
+                <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios">
                     <ul>
         
                         ${vm.games.map( game => $h`

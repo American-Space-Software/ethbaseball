@@ -269,14 +269,14 @@ h1 {
   position: sticky;
   left: 0;
   z-index: 200;
-  background-color: #efeff4;
+  background-color: var(--f7-block-strong-bg-color);
   padding: 0px;
   text-align: left;
 }
 
-.dark .players .image {
+/* .dark .players .image {
   background-color: black;
-}
+} */
 
 .players .name {
   width: 175px;
@@ -1552,16 +1552,16 @@ h1 {
 }
 
 .search {
-  background: #f1f1f1;
+  background: var(--f7-block-strong-bg-color);
   white-space: nowrap;
   padding: 3px;
   font-size: .65em;
   max-width: 100%;
 }
 
-.dark .search {
+/* .dark .search {
   background: black;
-}
+} */
 
 
 .search .position a:not(:first-child):before {
@@ -1804,8 +1804,73 @@ h1 {
   width: 35px;
 }
 
+
+
+
+.team-info {
+  max-width: 100%;
+  display: flex;
+  font-size: var(--f7-font-size);
+}
+
+.team-info .left {
+  margin-left: 5px;
+  flex: 0 0 120px;
+  max-width: 120px;
+}
+
+.team-info .right {
+  margin-top: 5px;
+  flex: 1;
+}
+
+.team-info .profilePic {
+  height: 100px;
+  width: 100px;
+}
+
+.team-info .name {
+  font-weight: bold;
+}
+
+
+
+.team-name {
+  display: flex;
+  width: 100%;
+  padding: 13px 5px 5px 5px;
+}
+
+.team-name .left {
+  flex: 0 0 30px;
+}
+
+.team-name .right {
+  flex:1;
+  vertical-align: middle;
+}
+
+
+
 .team-record {
-  font-size: 15px;
+  font-size: .65em;
+}
+
+.team-record .label {
+  display: inline-block;
+  width: 55px;
+  font-weight: bold;
+}
+
+.city-info {
+  font-weight: normal;
+  margin-bottom: 15px;
+}
+
+.city-info .label {
+  font-weight: bold;
+  width: 215px;
+  display: inline-block;
 }
 
 .team-owner {
@@ -2015,57 +2080,6 @@ td.handed-label {
 
 
 
-.team-info {
-  max-width: 100%;
-  display: flex;
-}
-
-.team-info .left {
-  flex: 0 0 160px;
-  max-width: 160px;
-}
-
-.team-info .right {
-  flex: 1;
-}
-
-.team-info .profilePic {
-  height: 100px;
-  width: 100px;
-}
-
-
-@media only screen and (max-width: 1024px) {
-
-  .team-info {
-    width: 100%;
-    max-width: 100%;
-    display: block;
-  }
-
-  .team-info .left {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    display: block;
-  }
-
-  .team-info .right {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-
-    display: block;
-  }
-
-  .team-info .profilePic {
-    height: 100px;
-    width: 100px;
-  }
-
-
-}
-
 
 
 
@@ -2092,21 +2106,6 @@ td.handed-label {
 }
 
 
-
-.team-name {
-  display: flex;
-  width: 100%;
-  padding: 13px 5px 5px 5px;
-}
-
-.team-name .left {
-  flex: 0 0 30px;
-}
-
-.team-name .right {
-  flex:1;
-  vertical-align: middle;
-}
 
 
 td.diamonds {
@@ -2144,16 +2143,16 @@ td.diamonds {
   position: sticky;
   left: 0;
   z-index: 200;
-  background-color: #efeff4;
+  background-color: var(--f7-block-strong-bg-color);
   padding: 0px;
   text-align: left;
   max-width: 60px;
   width: 60px;
 }
 
-.dark .standings .image {
+/* .dark .standings .image {
   background-color: black;
-}
+} */
 
 
 .standings .name, .linescore .name {
