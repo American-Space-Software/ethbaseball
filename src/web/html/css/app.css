@@ -1339,11 +1339,7 @@ h1 {
   font-size: .7em;
 }
 
-.team-name {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
+
 
 
 
@@ -1839,6 +1835,9 @@ h1 {
   display: flex;
   width: 100%;
   padding: 13px 5px 5px 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .team-name .left {
@@ -1886,17 +1885,22 @@ h1 {
 }
 
 
-
-.player-info .item-text {
-  color: black;
+.player-info {
+  display: flex;
 }
 
-.dark .player-info .item-text {
-  color: white;
+.player-info .left {
+  flex: 0 0 130px;
+  margin-right: 15px;
+}
+
+.player-info .right {
+  flex: 1;
+  font-size: .65em;
 }
 
 .player-info .name {
-  font-size: 23px;
+  font-size: 1.8em;
   font-weight: bold;
   margin-bottom: 3px;
 }
@@ -2120,7 +2124,6 @@ td.diamonds {
 
 
 .game-transactions th, .game-transactions td {
-  white-space: nowrap;
   text-align: left;
   padding: 5px;
   vertical-align: top;
@@ -2131,6 +2134,10 @@ td.diamonds {
   color: darkslategray;
 }
 
+.game-transactions .description {
+  white-space: wrap;
+}
+
 .stat-table.game-transactions {
   margin-top: 0px;
 }
@@ -2139,7 +2146,7 @@ td.diamonds {
   font-size: .85em;
 }
 
-.standings .image {
+.standings .image, .teams .image {
   position: sticky;
   left: 0;
   z-index: 200;
@@ -2169,7 +2176,9 @@ td.diamonds {
   font-size: 1.2em;
 }
 
-.teams .name {
+
+.teams td.name {
+  font-size: 1.3em;
   width: 200px;
   min-width: 175px;
 }
@@ -2634,4 +2643,45 @@ td.action, th.action {
 
 .dark .block.date-picker {
   color: white;
+}
+
+
+
+
+@media only screen and (max-width: 1024px) {
+
+
+  .home-nav {
+    margin: 0;
+  }
+
+
+
+}
+
+
+
+.back-arrow {
+  color: white;
+}
+
+
+.league-date {
+  display: flex;
+}
+
+.league-date .left {
+  flex: 0 0 200px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.league-date .right {
+  flex: 1;
+  align-items: center; 
+}
+
+.league-date .right .date-picker {
+    margin-top: 30px;
+    margin-left: 45px;
 }

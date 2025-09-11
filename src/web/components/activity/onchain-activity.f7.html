@@ -16,7 +16,15 @@
 
 
                 ${onChainEvents?.length > 0 ? $h`
-                    <${OnChainEvents} events="${onChainEvents}" />
+
+                    <div class="card card-outline card-header-divider">
+                        <div class="card-header">On-chain Events</div>
+                        <div class="card-content">
+                            <${OnChainEvents} events="${onChainEvents}" />
+                        </div>
+                    </div>
+
+                    
                 ` : $h` `}
 
                 <div class="block split-row-both">
@@ -93,47 +101,12 @@
         let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
         let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
 
-        let onChainEvents = []
-        let page = 1
 
-        let previousPage 
-        let nextPage
-
-        let rank
-
-        const loadActivity = async () => {
-
-            $f7.preloader.show()
-
-            try {
-
-                rank = $f7.views.main.router.currentRoute?.query?.rank || 0
-
-                if (rank > 0) {
-                    universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank)
-                } 
-
-                let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
-
-                onChainEvents.length = 0 
-                onChainEvents.push(...await gameTransactionWebService.getOnChain(page))
-
-                if (page > 1) {
-                    previousPage = page - 1
-                }
-
-                if (onChainEvents?.length == 25 ) {
-                    nextPage = page + 1
-                }
-
-
-                await $update()
-
-            } catch (ex) { console.log(ex) }
-
-            $f7.preloader.hide()
-
-        }
+        let page = props.page
+        let previousPage = props.previousPage
+        let nextPage = props.nextPage
+        let onChainEvents = props.onChainEvents
+        let rank = props.rank
 
 
         const link = (href) => {
@@ -146,7 +119,6 @@
 
         $on('pageBeforeIn', async () => {
 
-            await loadActivity()
 
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {
@@ -162,6 +134,8 @@
                     `${env.WEB}/logo.png`,
                    `Activity in Ethereum Baseball League.`
             ) 
+
+
 
             $('.hide-on-pageinit').hide()
             $('.hidden-on-load').removeClass('hidden-on-load')

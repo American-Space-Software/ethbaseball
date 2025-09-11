@@ -1,52 +1,56 @@
 <template>
 
-    <div class="card card-outline card-header-divider">
+    <div class="stat-table-wrapper">
+        <table class="data-table game-transactions">
+            <thead>
+            <th >Date</th>
+            <th class="label-cell">Description</th>
+            </thead>
+            <tbody>
 
-        <div class="card-header">Player Transactions</div>
-        <div class="card-content">
-            
-            <div class="stat-table-wrapper">
-                <table class="data-table game-transactions">
-                    <thead>
-                    <th >Date</th>
-                    <th class="label-cell">Description</th>
-                    </thead>
-                    <tbody>
+            ${gameTransactions?.transactions.map( t => $h`
 
-                    ${gameTransactions?.transactions.map( t => $h`
+                <tr>
+                    <td  >
 
-                        <tr>
-                            <td >${dayjs(t.date).format("ddd, MMM D, YYYY")} <span class="small-gray">${dayjs(t.dateCreated).format("h:mm A")}</span></td>
-                            <td class="label-cell">
+                        <div class="large-only-flex">
+                            <div style="display:block;">
+                                ${dayjs(t.date).format("ddd, MMM D, YYYY")}<br /> 
+                                <span class="small-gray">${dayjs(t.date).format("h:mm A")}</span>
+                            </div>
+                        </div>
+                        <div class="small-only-flex">
+                            <div style="display:block;">
+                                ${dayjs(t.date).format('ddd, MM/DD')}<br />
+                                <span class="small-gray">${dayjs(t.date).format("h:mm A")}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="label-cell description">
 
-                                ${t.events.map( e => $h`
-                        
-                                ${e.signing ? $h`
-                                    <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> signed <a href="${universeWebService.startDateLink(`/p/${e.signing.playerId}`)}">${getPlayer(e.signing.playerId).name}</a> to a 
-                                    ${e.signing.contract.isRookie ? $h` rookie contract.` : $h` ${e.signing.contract.years.length}-year contract @ ${universeWebService.displayDiamonds(e.signing.contract.years[0].salary)}.`}
-                                    
-                                ` : $h` `}
-                        
-                                ${e.dropping ? $h`
-                                    <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> released <a href="${universeWebService.startDateLink(`/p/${e.dropping.playerId}`)}">${getPlayer(e.dropping.playerId).name}</a>.
-                                ` : $h` `}
-                        
-                                `)}
+                        ${t.events.map( e => $h`
+                
+                        ${e.signing ? $h`
+                            <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> signed <a href="${universeWebService.startDateLink(`/p/${e.signing.playerId}`)}">${getPlayer(e.signing.playerId).name}</a> to a 
+                            ${e.signing.contract.isRookie ? $h` rookie contract.` : $h` ${e.signing.contract.years.length}-year contract @ ${universeWebService.displayDiamonds(e.signing.contract.years[0].salary)}.`}
+                            
+                        ` : $h` `}
+                
+                        ${e.dropping ? $h`
+                            <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> released <a href="${universeWebService.startDateLink(`/p/${e.dropping.playerId}`)}">${getPlayer(e.dropping.playerId).name}</a>.
+                        ` : $h` `}
+                
+                        `)}
 
-                            </td>
-                        </tr>
+                    </td>
+                </tr>
 
-            
-                    `)}
 
-                    </tbody>
-                </table>
-            </div>
+            `)}
 
-        </div>
-
+            </tbody>
+        </table>
     </div>
-
 
 </template>
 

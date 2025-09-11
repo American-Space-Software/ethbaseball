@@ -121,13 +121,7 @@ class RoutingService {
             //Load the new component if it's given to us. 
             resolve({
                 component: modelView.view
-            },
-                {
-                    // transition: "fade",
-                    props: props,
-                    history: true,
-                    browserHistory: true
-                })    
+            },Object.assign({ props: props }, routingOptions))    
 
         } 
 
@@ -148,13 +142,8 @@ class RoutingService {
                         ctx.resolve(
                             {
                             component: FooterContentTemplate
-                            },
-                            {
-                                // transition: "fade",
-                                props:  r,
-                                history: true,
-                                browserHistory: true
-                            }
+                            }, Object.assign({ props: r}, routingOptions)
+                            
                         )  
 
                     } catch (ex) {}
@@ -183,6 +172,12 @@ interface RouteTo {
 interface Route {
     path: string 
     method: string 
+}
+
+
+const routingOptions = {
+    history: true,
+    browserHistory: true,
 }
 
 

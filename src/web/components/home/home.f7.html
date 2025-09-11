@@ -9,7 +9,6 @@
 
         <!-- Slider container -->
         <div class="swiper scoreboard">
-            <!-- Slides wrapper -->
             <div class="swiper-wrapper">
 
               ${vm.todaysGames?.inProgress?.map( game => $h`
@@ -38,7 +37,23 @@
         </div>
 
         <div class="fixed-width-content center">
-          
+        
+              <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios home-nav">
+                  <ul>
+                    <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
+                    <li><a class="link" href="/games">⚾ Scores</a></li>
+                    <li><a class="link" href="/players/">🧢 Players</a></li>
+                    <li><a class="link" href="/u/owners">👤 Owners</a></li>
+                    <li><a class="link" href="/activity">📝 Activity</a></li>
+                    <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">🔷 Buy Diamonds (Uniswap)</a></li>
+                    ${env.OPENSEA_COLLECTION_URL ? $h`
+                      <li><a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">🌊 Buy a Team (OpenSea)</a></li>
+                      ` : $h` `}
+                    <li><a class="link" href="/about">📘 About</a></li>
+                    <li><a class="link external" href="${discord}" target="_blank">💬 Discord</a></li>
+                  </ul>
+              </div>
+
               ${!authInfo?._id ? $h`
 
                 <div class="home-banner">
@@ -92,28 +107,28 @@
               ` : $h` `}
 
 
-              <div class="list links-list list-inset list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
-                    <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
-                    <li><a class="link" href="/games">⚾ Scores</a></li>
-                    <li><a class="link" href="/players/">🧢 Players</a></li>
-                    <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">🔷 Buy Diamonds (Uniswap)</a></li>
-                    ${env.OPENSEA_COLLECTION_URL ? $h`
-                      <li><a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">🌊 Buy a Team (OpenSea)</a></li>
-                      ` : $h` `}
-                    <li><a class="link" href="/about">📘 About</a></li>
-                    <li><a class="link external" href="${discord}" target="_blank">💬 Discord</a></li>
-                  </ul>
-              </div>
 
               ${authInfo?.address ? $h`
                 <${UserDetails} vm=${vm} />
               ` : $h` `}
 
 
+              ${vm?.gameTransactions.transactions?.length > 0 ? $h`
+
+                  <div class="block-title block-title-small">Recent Player Activity</div>
+                  <div class="block block-outline block-strong">
+                    <${GameTransactions} transactions="${vm?.gameTransactions}" />
+
+                    <a class="button button-outline small-button" href="/activity/game">View All</a>
+
+                  </div>
+                  
+              ` : $h` `}
+
+
               ${vm?.topTeams?.length > 0 ? $h`
 
-                  <div class="block-title block-title-medium">Top 10 Teams</div>
+                  <div class="block-title block-title-small">Top 10 Teams</div>
 
                   <div class="block block-outline block-strong">
                     <div class="stat-table-wrapper">
@@ -198,18 +213,14 @@
 
   import Toolbar from "../common/toolbar.f7.html"
 
-  import { ContainerService } from "../../../service/container-service"
-  import { LoginWebService } from "../../service/login-web-service"
-  import { TeamWebService } from "../../service/team-web-service.ts"
-  import { OwnerWebService } from "../../service/owner-web-service.ts"
-  import { UniverseWebService } from "../../service/universe-web-service.ts"
-  import { DiamondWebService } from "../../service/diamond-web-service.ts"
-  import { PostWebService } from "../../service/post-web-service.ts"
+  import GameTransactions from "../activity/game-transaction-events.f7.html"
 
-  import { PlayerWebService } from "../../service/player-web-service.ts"
+
+  import { ContainerService } from "../../../service/container-service"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
   import { StatService } from "../../../service/stat-service.ts"
   import { Position } from "../../../service/enums.ts"
-  import { DiamondService } from "../../../service/diamond-service.ts"
 
   import dayjs from "dayjs"
 
@@ -223,52 +234,19 @@
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
-    let loginWebService = ContainerService.getInstance(LoginWebService)
-    let walletService = ContainerService.getInstance("WalletService")
-    let teamWebService = ContainerService.getInstance(TeamWebService)
-    let playerWebService = ContainerService.getInstance(PlayerWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let walletService = ContainerService.getInstance("WalletService")
 
-    let ownerWebService = ContainerService.getInstance(OwnerWebService)
     let statService = ContainerService.getInstance(StatService)
-    let diamondService = ContainerService.getInstance(DiamondService)
-    let diamondWebService = ContainerService.getInstance(DiamondWebService)
-    let postWebService = ContainerService.getInstance(PostWebService)
 
-    let authInfo
-    
-    let vm = {}
-
-    let contractBalance
-
+    let authInfo = props.authInfo
+    let vm = props.vm
+    let contractBalance = props.contractBalance
     let discord = props.discord
 
 
-
-    const loadUser = async () => {
-
-      Object.assign(vm, await universeWebService.getHome(universeWebService.getStartDate()))
-
-      authInfo = await loginWebService.getAuthInfo()
-
-      let walletAddresses = await walletService.getAddress()
-      
-      if (walletService.provider && walletAddresses) {
-        contractBalance = await universeWebService.getContractBalance()
-      }
-
-
-    }
-
     $on('pageBeforeIn', async (e) => {
-      
-      $f7.preloader.show()
-
-      universeWebService.setStartDate($f7.views.main.router.currentRoute?.query?.startDate, $f7.views.main.router.currentRoute)
-
-      await loadUser()
-
-
+    
       let swiper = $f7.swiper.create('.swiper', {
         slidesPerView: 2,
         breakpoints: {
@@ -287,14 +265,12 @@
       })
 
 
-
-
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-        detail: {
-          visible: false,
-          tabLink: "/",
-          breadcrumbs: [{ text: "Home", path: "/" }, { text: walletService.truncateEthAddress(vm?.authInfo?.address)}]
-        }
+          detail: {
+            visible: false,
+            tabLink: "/",
+            breadcrumbs: [{ text: "Home", path: "/" }, { text: walletService.truncateEthAddress(vm?.authInfo?.address)}]
+          }
       }))
 
       universeWebService.setMetadata(
@@ -310,8 +286,6 @@
 
       $('.hide-on-pageinit').hide()
       $('.hidden-on-load').show()
-
-      $f7.preloader.hide()
 
 
     })

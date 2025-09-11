@@ -10,34 +10,11 @@
       <div class="left">
 
         <div class="small-only-flex">
-
-          <a href="/" class="link icon-only" aria-label="Home">
+          <a href="/" class="link icon-only back" aria-label="Home">
             <img src="${logo}" width="42" height="42" alt="Logo" />
           </a>
-
-          <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}`)}" class="link color-white first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
-          <a href="${universeWebService.fullLink(`/games`)}" class="link color-white ${tabLink == '/games' ? 'active' : ''}">Scores</a>
-          <a href="${universeWebService.fullLink(`/players/`)}"  class="link color-white ${tabLink == '/players/' ? 'active' : ''}">Players</a>
-
-          <a href="#" class="popover-open link color-white ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">More</a>
-
-          
-          <div class="popover popover-menu">
-              <div class="popover-angle"></div>
-              <div class="popover-inner">
-                <div class="list inset list-strong list-dividers-ios">
-                  <ul>
-                    <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li>
-                    <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
-                    <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
-
-                  </ul>
-                </div>
-              </div>
-          </div>
-
-
         </div>
+
         <div class="large-only-flex">
 
           <a href="/" class="link icon-only" aria-label="Home">
@@ -53,9 +30,6 @@
 
 
         </div>
-
-
-
 
 
       </div>
@@ -389,7 +363,7 @@
   import { ethers } from "ethers"
   import dayjs from "dayjs"
 
-  export default (props, { $, $on, $f7, $update, $onMounted }) => {
+  export default (props, { $, $on, $f7, $update, $f7route, $onMounted }) => {
 
     let walletService = ContainerService.getInstance("WalletService")
     let eventTarget = ContainerService.getInstance("eventTarget")
@@ -398,6 +372,8 @@
     let diamondWebService = ContainerService.getInstance(DiamondWebService)
     let env = ContainerService.getInstance("env")()
 
+    let showHome
+    let showBack
     let tabLink 
     let authInfo
     let breadcrumbs
@@ -566,11 +542,22 @@
       subnavVisible = e.detail.visible == false ? false : true
       tabLink = e.detail.tabLink
       breadcrumbs = e.detail.breadcrumbs
+
+      showHome = $f7.views.main.router.currentRoute?.name == "/"
+      showBack = $f7.views.main.router.previousRoute?.name != undefined
+
+
       await $update()
+
     })
 
 
-
+    // const backClick = (e) => {
+    //   $f7.views.main.router.back("/", {
+    //     animate: false,
+    //     browserHistory: false
+    //   })
+    // }
 
     const login = (e) => {
 

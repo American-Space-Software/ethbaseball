@@ -1298,6 +1298,115 @@ class TeamService {
 
     }
 
+    async dropPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date) {
+
+        let s = await this.sequelize()
+        await s.transaction(async (t1) => {
+        
+            let options = { transaction: t1 }
+
+            //Update team. Remove from lineup and rotation.
+            let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+
+            //Make sure they can afford to drop player.
+            let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
+            let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
+
+            let costToDrop = this.playerService.getCostToDrop(player, gamesPerSeason, gamesRemaining)
+
+            let teamDiamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId)
+
+
+            if (BigInt(costToDrop) > BigInt(teamDiamondBalance)) {
+                throw new Error("Insufficient funds to drop.")
+            }
+
+
+            let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+
+            this.lineupService.lineupRemove(tls.lineups[0], player._id)
+            this.lineupService.rotationRemove(tls.lineups[0], player._id)
+
+            tls.changed("lineups", true)
+
+
+
+            //End current PLS
+            pls.endDate = date
+
+            await this.playerLeagueSeasonService.put(pls, options)
+
+
+            //Create new PLS
+            let nextPLS = new PlayerLeagueSeason()
+            nextPLS.playerId = pls.playerId
+            nextPLS.seasonId = season._id
+            nextPLS.seasonIndex = pls.seasonIndex + 1
+            nextPLS.primaryPosition = pls.primaryPosition
+            nextPLS.overallRating = pls.overallRating
+            nextPLS.hittingRatings = pls.hittingRatings
+            nextPLS.pitchRatings = pls.pitchRatings
+            nextPLS.startDate = date
+            nextPLS.endDate = season.endDate
+            nextPLS.age = player.age
+
+            nextPLS.stats = {
+                //@ts-ignore
+                hitting: this.statService.mergeHitResultsToStatLine({}, {}),
+                //@ts-ignore
+                pitching: this.statService.mergePitchResultsToStatLine({}, {})
+            }
+
+            if (player.contract.isRookie) {
+
+                let contractYear:ContractYear = player.contract.years.find(y => y.startDate == dayjs(season.startDate).format("YYYY-MM-DD"))
+            
+                if (contractYear?.salary) {
+                    nextPLS.askingPrice = parseFloat(ethers.formatUnits(contractYear.salary, "ether")) 
+                }
+
+            } else {
+
+                //If they are not on a rookie deal we need to generate a free agent contract for them.
+                let league:League = await this.leagueService.getByRank(1, options)
+
+                let highestLeaguePLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByLeagueSeason(league, season, options)
+                let laPlayerRating = this.rollService.getArrayAvg(highestLeaguePLS.map( p => p.overallRating))
+                let laSalary = this.rollService.getArrayAvg(highestLeaguePLS.map( p => parseFloat(ethers.formatUnits(p.contractYear.salary))))
+
+                this.playerService.createFreeAgentContract(player, laPlayerRating, laSalary, 7, 30)
+                nextPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
+
+            }
+
+            await this.playerLeagueSeasonService.put(nextPLS, options)
+
+            //drop the player
+            await this.gameTransactionService.dropPlayer(tlsPlain.league, team, season, player, date, options)
+
+
+            //Get updated player list for team
+            let teamPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
+            let teamPLSPlain = teamPLS.map( tls => tls.get({ plain: true }))
+
+            //Update team finances
+            this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium, this.financeService.calculateProjectedPayroll(teamPLSPlain))
+
+            await this.offchainEventService.createTeamBurnEvent(team.tokenId, `-${costToDrop}`, undefined, options)
+
+            let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
+
+            tls.financeSeason.diamondBalance = diamondBalance
+
+            await this.put(team, options)
+            await this.teamLeagueSeasonService.put(tls, options)
+
+        })
+
+
+    }
+
+
     optimizeLineup(team:Team, tls:TeamLeagueSeason, plss:PlayerLeagueSeason[], date:Date) {
 
         let originalLineup = JSON.parse(JSON.stringify(tls.lineups[0]))

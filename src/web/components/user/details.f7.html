@@ -10,7 +10,8 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="label-cell  lock-name">Name</th>
+                                <th class="image"></th>
+                                <th class="label-cell name">Name</th>
                                 <th class="numeric-cell">Wins</th>
                                 <th class="numeric-cell">Losses</th>
                                 <th class="numeric-cell">Win%</th>
@@ -26,8 +27,10 @@
 
                                 <tr>
 
-                                    <td class="name lock-name">
+                                    <td class="image">
                                         <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
+                                    </td>
+                                    <td class="name">
                                         <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
                                     </td>
 

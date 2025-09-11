@@ -33,9 +33,6 @@ class GameController {
             this.universeWebService.setRank(routeTo?.query?.rank || 1)
 
 
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: { tabLink: "/games", breadcrumbs:[{ text: "Scores" }] }
-            }))
 
             let gameDate = routeTo?.query?.gameDate || this.env().CURRENT_DATE
 
@@ -52,12 +49,9 @@ class GameController {
 
             let games = await this.gameWebService.getGames(gameDate, this.universeWebService.getRank())
 
-            this.universeWebService.setMetadata(
-                    `Scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/logo.png`, 
-                    `View scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`
-            ) 
+
+
+
 
 
 
@@ -81,33 +75,6 @@ class GameController {
             let id = routeTo?.params?.id
 
             let gameViewModel = await this.gameWebService.getGameViewModel(id)
-
-            if (gameViewModel.linescoreViewModel) {
-
-                this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                    detail: { tabLink: "/games", breadcrumbs:[
-                    { text: 'Scores', path: "/games"}, 
-                    {
-                        text: dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD"),
-                        path: `/games/?gameDate=${dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD")}`
-                    },
-                    {
-                        text: `${gameViewModel.game.away.abbrev} @ ${gameViewModel.game.home.abbrev}`
-                    }
-                    ]}
-                }))
-
-
-                this.universeWebService.setMetadata(
-                    `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/logo.png`, 
-                    `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}`
-                ) 
-
-
-            }
-
 
             return {
                 gameViewModel: gameViewModel,

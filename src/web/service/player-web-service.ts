@@ -16,29 +16,10 @@ class PlayerWebService {
         private universeWebService:UniverseWebService
     ) { }
 
-    async getDropPlayerToken(player:Player) {
-
-        await this.walletService.connect()
-    
-        let wallet = await this.walletService.getWallet()
-    
-        let sResult:any = await axios.get(`/auth/token/drop-player/${wallet.address}/${player._id}`)
-        let signatureToken:any = sResult.data
-
-        let message = `Dropping player '${player.fullName}'. \n\n @ ${signatureToken.token}`
-    
-        const signature = await wallet.signMessage(message)
+    async dropPlayer(player:Player) {
     
         let result = await fetch(`/api/player/drop/${player._id}`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: message,
-                signature: signature
-            })
+            method: 'POST'
         })
 
         return result

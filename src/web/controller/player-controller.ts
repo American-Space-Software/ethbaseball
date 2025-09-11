@@ -41,31 +41,11 @@ class PlayerController {
                 authInfo = await this.loginWebService.getAuthInfo()
             }
 
-            let breadcrumbs:any[] = [{ text: 'Players', path: this.universeWebService.startDateLink("/players/") }]
-
-            if (player.team?._id) {
-                breadcrumbs.push({ text: `${player.team.cityName} ${player.team.name}`, path: this.universeWebService.startDateLink(`/t/${player.team.tokenId}`) })
-            }
-
-            breadcrumbs.push({ text: player.fullName })
-
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: { tabLink: "/players/", breadcrumbs: breadcrumbs }
-            }))
-
-
-            this.universeWebService.setMetadata(
-                    `${player.fullName} - Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/player/image/${player._id}`, 
-                    `View ${player.fullName} in Ethereum Baseball League.`
-            ) 
-
+            
 
             return {
                 player: player,
                 authInfo: authInfo,
-                env: this.env(),
                 discord: this.discord
             }
 
@@ -82,7 +62,7 @@ class PlayerController {
 
             this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
 
-            let rank = routeTo?.query?.rank
+            let rank = routeTo?.query?.rank || 0
 
             if (rank > 0) {
                 this.universeWebService.setRank(routeTo?.query?.rank)
@@ -95,18 +75,6 @@ class PlayerController {
 
             allPlayers.push(...result)
             
-
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: { tabLink: "/players/", breadcrumbs:[{ text: "Players" }] }
-            }))
-
-
-            this.universeWebService.setMetadata(
-                    `Players - Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/ebl-512.png`,
-                    `View players in Ethereum Baseball League.`
-            ) 
 
             return {
                 discord: this.discord,

@@ -555,7 +555,45 @@
   
                   <div class="list list-dividers-ios">
                     <ul>
-                      <${Scheduled} game=${gameViewModel.game} />
+
+                      <li>
+                         <div class="item-content">
+
+                            <div class="item-inner">
+
+                              <table class="game-result">
+                                <tr>
+                                  <td colspan="2" class="small-gray">${gameWebService.getFormattedDate(gameViewModel.game.startDate)}</td>
+                                </tr>
+                                <tr class="${gameViewModel.game.score.away > gameViewModel.game.score.home ? $h`winner` : $h` `}">
+                                  <td class="name">
+                                    <a href="${universeWebService.startDateLink(`/t/${gameViewModel.game.away.tokenId}`)}" class="team-link">
+                                      <img src="/image/thumbnail/${gameViewModel.game.away.logoId}" class="profilePic" alt="${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} Logo" />
+                                      <span class="small">${gameViewModel.game.away.cityName}</span><br />
+                                      ${gameViewModel.game.away.name}
+                                    </a>
+
+                                    
+                                  </td>
+                                  <td class="runs"></td>
+                                </tr>
+                                <tr class="${gameViewModel.game.score.home > gameViewModel.game.score.away ? $h`winner` : $h` `}">
+                                  <td class="name">
+                                    
+                                    <a href="${universeWebService.startDateLink(`/t/${gameViewModel.game.home.tokenId}`)}" class="team-link">
+                                      <img src="/image/thumbnail/${gameViewModel.game.home.logoId}" class="profilePic" alt="${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} Logo"  />
+                                      <span class="small">${gameViewModel.game.home.cityName}</span><br />
+                                      ${gameViewModel.game.home.name}
+                                    </a>
+
+                                  </td>
+                                  <td class="runs"></td>
+                                </tr>
+                              </table>
+                            </div>
+
+                         </div>
+                      </li>
                     </ul>
                   </div>
       
@@ -803,6 +841,9 @@
 
   export default (props, { $on, $, $f7, $update, $ref }) => {
 
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+
     let gameWebService = ContainerService.getInstance(GameWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
@@ -882,6 +923,35 @@
       await $update()
 
       timeoutId = setTimeout(checkForUpdate, timeoutTime)
+
+
+      if (gameViewModel.linescoreViewModel) {
+
+          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+              detail: { tabLink: "/games", breadcrumbs:[
+              { text: 'Scores', path: "/games"}, 
+              {
+                  text: dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD"),
+                  path: `/games/?gameDate=${dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD")}`
+              },
+              {
+                  text: `${gameViewModel.game.away.abbrev} @ ${gameViewModel.game.home.abbrev}`
+              }
+              ]}
+          }))
+
+
+          universeWebService.setMetadata(
+              `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`, 
+              window.location.href, 
+              `${env.WEB}/logo.png`, 
+              `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}`
+          ) 
+
+
+      }
+
+
 
       $('.hide-on-pageinit').hide()
       $('.hidden-on-load').removeClass('hidden-on-load')

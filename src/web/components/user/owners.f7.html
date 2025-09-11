@@ -166,7 +166,10 @@
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
         detail: {
           tabLink: "/u/owners",
-          breadcrumbs: [{ text: "Owners" }]
+          breadcrumbs: [
+            { text: "Home", path: "/"},
+            { text: "Owners" }
+          ]
         }
       }))
 

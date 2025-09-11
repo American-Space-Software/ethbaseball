@@ -166,37 +166,22 @@
     import { ethers, FixedNumber } from "ethers"
 
     import { ContainerService } from "../../../service/container-service.ts"
-    import { OwnerWebService } from "../../service/owner-web-service.ts"
     import { PlayerWebService } from "../../service/player-web-service.ts"
     import { UniverseWebService } from "../../service/universe-web-service.ts"
 
-    import { TransactionWebService } from "../../service/transaction-web-service.ts"
     import { StatService } from "../../../service/stat-service.ts"
-    import { PagingService } from "../../../service/paging-service.ts"
-    import { LoginWebService } from "../../service/login-web-service.ts"
-    import { TeamWebService } from "../../service/team-web-service.ts"
     import { Position } from "../../../service/enums.ts"
-    import { TeamComponentService } from "../../service/team-component-service.ts"
-    import { LeagueWebService } from "../../service/league-web-service.ts"
 
     export default (props, { $on, $, $f7, $onMounted, $update }) => {
 
         let env = ContainerService.getInstance("env")()
-
         let eventTarget = ContainerService.getInstance("eventTarget")
-        let ownerWebService = ContainerService.getInstance(OwnerWebService)
-        let walletService = ContainerService.getInstance("WalletService")
-        let playerWebService = ContainerService.getInstance(PlayerWebService)
-        let transactionWebService = ContainerService.getInstance(TransactionWebService)
-        let statService = ContainerService.getInstance(StatService)
-        let pagingService = ContainerService.getInstance(PagingService)
-        let loginWebService = ContainerService.getInstance(LoginWebService)
-        let teamWebService = ContainerService.getInstance(TeamWebService)
-        let teamComponentService = ContainerService.getInstance(TeamComponentService)
-        let universeWebService = ContainerService.getInstance(UniverseWebService)
-        let leagueWebService = ContainerService.getInstance(LeagueWebService)
 
-        let viewModel
+        let playerWebService = ContainerService.getInstance(PlayerWebService)
+        let statService = ContainerService.getInstance(StatService)
+        let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+        let viewModel = props.viewModel
         let leagueVm
 
         const isPromoted = (t) => {
@@ -244,27 +229,17 @@
 
         }
 
-        const load = async () => {
-
-            viewModel = await leagueWebService.getStandings(universeWebService.getRank(), universeWebService.getStartDate())
-
-            await $update()
-
-        }
 
 
         $on('pageBeforeIn', async (e) => {
 
-            let currentStartDate = $f7.views.main.router.currentRoute?.query?.startDate
-
-            universeWebService.setStartDate(currentStartDate, $f7.views.main.router.currentRoute)
-            universeWebService.setRank($f7.views.main.router.currentRoute?.params?.rank || 1)
-
-            await load()
 
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {
-                    tabLink: "/l/standings", breadcrumbs: [{ text: 'Standings' }]
+                    tabLink: "/l/standings", breadcrumbs: [
+                        { text: "Home", path: "/"},
+                        { text: 'Standings' }
+                    ]
                 }
             }))
 
@@ -276,9 +251,7 @@
                     `View ${viewModel.leagueVm.league.name} standings in Ethereum Baseball League.`
             ) 
 
-
-
-
+    
             $('.hide-on-pageinit').hide()
             $('.hidden-on-load').show()
 

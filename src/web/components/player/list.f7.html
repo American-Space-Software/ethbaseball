@@ -174,13 +174,16 @@
 
   export default (props, { $, $on, $f7, $update }) => {
 
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
 
     let leagues = universeWebService.getLeagues()
-    let rank
 
-
+    let rank = props.rank
+    let allPlayers = props.allPlayers
 
     const getActions = () => { }
 
@@ -193,7 +196,7 @@
 
     let searchAutoComplete
 
-    let allPlayers = []
+
 
     let filters = {
         position: undefined,
@@ -267,9 +270,23 @@
 
 
     $on('pageBeforeIn', async (e) => {
-        allPlayers = props.allPlayers
-        rank = props.rank
-        console.log(allPlayers)
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: { tabLink: "/players/", breadcrumbs:[
+                { text: "Home", path: "/"},
+                { text: "Players" }
+            ] }
+        }))
+
+
+        universeWebService.setMetadata(
+                `Players - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/ebl-512.png`,
+                `View players in Ethereum Baseball League.`
+        ) 
+
+
         $f7.emit('refresh')
         await $update()
     })

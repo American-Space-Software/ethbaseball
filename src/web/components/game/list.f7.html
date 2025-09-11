@@ -8,27 +8,36 @@
 
         <div class="fixed-width-content center">
 
-            <div class="block">
-                <div class="list">
-                    <strong>League</strong><br />
-                    <select name="rank" class="rank-dropdown" @change="${rankChange}">
-                      ${leagues.map( (l, index) => $h`
+            <div class="block league-date">
 
-                          ${l.rank == universeWebService.getRank() ? $h`
-                            <option value="${l.rank}" selected >${l.name}</option>
-                          ` : $h` 
-                            <option value="${l.rank}">${l.name}</option>
-                          `}
-                      `)}
-                      
-                    </select>
+                <div class="left list">
+                      <strong>League</strong><br />
+                      <select name="rank" class="rank-dropdown" @change="${rankChange}">
+                        ${leagues.map( (l, index) => $h`
+
+                            ${l.rank == universeWebService.getRank() ? $h`
+                              <option value="${l.rank}" selected >${l.name}</option>
+                            ` : $h` 
+                              <option value="${l.rank}">${l.name}</option>
+                            `}
+                        `)}
+                        
+                      </select>
+
+
                 </div>
+                
+                <div class="right">
+                  <div class="date-picker">
+                    <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
+                  </div>
+                </div>
+
+
             </div>
 
 
-            <div class="block date-picker">
-              <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
-            </div>
+
 
       
             ${games?.inProgress?.length > 0 ? $h`
@@ -126,6 +135,7 @@
 
   export default (props, { $on, $, $f7, $update }) => {
 
+    let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
     let ownerWebService = ContainerService.getInstance(OwnerWebService)
     let walletService = ContainerService.getInstance("WalletService")
@@ -134,18 +144,18 @@
     let universeContractService = ContainerService.getInstance(UniverseContractService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
-    let leagues = []
+    let games = props.games
+    let gameDate = props.gameDate
+    let leagues = props.leagues
+    let lastGameUpdate = props.lastGameUpdate
 
-    let lastGameUpdate
     let linescores = []
 
     let timeoutTime = 10*1000
     let timeoutId
 
-    let gameDate = dayjs().toDate()
     let totalGames
 
-    let games = {}
 
     const rankChange = (e) => {
 
@@ -227,12 +237,25 @@
     
     $on('pageBeforeIn', async (e) => {
 
-        games = props.games
-        gameDate = props.gameDate
-        leagues = props.leagues
-        lastGameUpdate = props.lastGameUpdate
+
 
         timeoutId = setTimeout(checkForUpdate, timeoutTime)
+
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: { tabLink: "/games", breadcrumbs:[
+                { text: "Home", path: "/"},
+                { text: "Scores" }
+            ] }
+        }))
+
+        universeWebService.setMetadata(
+                `Scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/logo.png`, 
+                `View scores for ${dayjs(gameDate).format("YYYY-MM-DD")} - Ethereum Baseball League`
+        ) 
+
 
 
         await $update()

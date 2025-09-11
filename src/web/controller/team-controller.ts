@@ -55,31 +55,11 @@ class TeamController {
 
             this.universeWebService.setRank(team.leagueRank)
 
-
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: {
-                tabLink: "/l/standings", breadcrumbs: [
-                    {
-                    text: "Standings",
-                    path: this.universeWebService.startDateLink(`/l/standings/${this.teamComponentService.team?.leagueRank}`)
-                    }, { text: this.teamWebService.getTeamName(this.teamComponentService.team) }]
-                }
-            }))
-
-
-            this.universeWebService.setMetadata(
-                `${team.city.name} ${team.name} - Ethereum Baseball League`, 
-                window.location.href, 
-                `${this.env().WEB}/image/thumbnail/1024/${this.teamComponentService.team.logoId}`, 
-                `${this.teamComponentService.team.city.name} ${this.teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
-            ) 
-
             return {
                 tokenId: team.tokenId,
                 team: team,
                 games: this.teamComponentService.games,
                 authInfo: authInfo,
-                env: this.env(),
                 discord: this.discord
             }
         }, TeamIndexComponent)
@@ -108,27 +88,6 @@ class TeamController {
             }
 
             let gameLogs = await this.teamWebService.getGameLog(tokenId, date)
-
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: {
-                tabLink: "/l/standings", breadcrumbs: [
-                    {
-                    text: "Standings",
-                    path: this.universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                    }, 
-                    { 
-                        text: this.teamWebService.getTeamName(team), 
-                        path: this.universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                    }, { text: 'Schedule'}]
-                }
-            }))
-
-            this.universeWebService.setMetadata(
-                    `${team.city.name} ${team.name} Schedule - Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/image/thumbnail/1024/${this.teamComponentService.team.logoId}`, 
-                    `View the schedule for ${this.teamComponentService.team.city.name} ${this.teamComponentService.team.name} in Ethereum Baseball League.`
-            ) 
 
 
             return {
@@ -172,32 +131,6 @@ class TeamController {
                 nextPage = page + 1
             }
 
-
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: {
-                    tabLink: "/l/standings", 
-                    breadcrumbs: [
-                        {
-                            text: "Standings",
-                            path: this.universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                        }, 
-                        { 
-                            text: this.teamWebService.getTeamName(team), 
-                            path: this.universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                        }, { text: 'Activity'}
-                    ]
-                }
-            }))
-
-
-            this.universeWebService.setMetadata(
-                `${team.city.name} ${team.name} Activity - Ethereum Baseball League`, 
-                window.location.href, 
-                `${this.env().WEB}/image/thumbnail/1024/${this.teamComponentService.team.logoId}`, 
-                `View the activity for ${this.teamComponentService.team.city.name} ${this.teamComponentService.team.name} in Ethereum Baseball League.`
-            ) 
-
-
             return {
                 onChainEvents: onChainEvents,
                 page: page,
@@ -239,29 +172,6 @@ class TeamController {
             }
 
 
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: {
-                tabLink: "/l/standings", breadcrumbs: [
-                    {
-                    text: "Standings",
-                    path: this.universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                    }, 
-                    { 
-                        text: this.teamWebService.getTeamName(team), 
-                        path: this.universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                    }, { text: 'Activity'}]
-                }
-            }))
-
-
-            this.universeWebService.setMetadata(
-                    `${team.city.name} ${team.name} Activity - Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/image/thumbnail/1024/${this.teamComponentService.team.logoId}`, 
-                    `View the activity for ${this.teamComponentService.team.city.name} ${this.teamComponentService.team.name} in Ethereum Baseball League.`
-            ) 
-
-
             return {
                 tokenId: tokenId,
                 eventsViewModel: eventsViewModel,
@@ -301,30 +211,6 @@ class TeamController {
             if (model?.transactions?.length == 25 ) {
                 nextPage = page + 1
             }
-
-
-            this.eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                detail: {
-                tabLink: "/l/standings", breadcrumbs: [
-                    {
-                    text: "Standings",
-                    path: this.universeWebService.startDateLink(`/l/standings/${team.leagueRank}`)
-                    }, 
-                    { 
-                        text: this.teamWebService.getTeamName(team), 
-                        path: this.universeWebService.startDateLink(`/t/${team.tokenId}`) 
-                    }, { text: 'Activity'}]
-                }
-            }))
-
-
-            this.universeWebService.setMetadata(
-                    `${team.city.name} ${team.name} Activity - Ethereum Baseball League`, 
-                    window.location.href, 
-                    `${this.env().WEB}/image/thumbnail/1024/${this.teamComponentService.team.logoId}`, 
-                    `View the activity for ${this.teamComponentService.team.city.name} ${this.teamComponentService.team.name} in Ethereum Baseball League.`
-            ) 
-
 
             return {
                 model: model,

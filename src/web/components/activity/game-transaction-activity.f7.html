@@ -15,8 +15,19 @@
                 </div>
 
 
+
+                
+
                 ${model?.transactions?.length > 0 ? $h`
-                    <${GameTransactions} transactions="${model}" />
+
+                    <div class="card card-outline card-header-divider">
+
+                        <div class="card-header">Player Transactions</div>
+                        <div class="card-content">
+                            <${GameTransactions} transactions="${model}" />
+                        </div>
+                    </div>
+
                 ` : $h` `}
 
                 <div class="block split-row-both">
@@ -72,69 +83,22 @@
     import GameTransactions from "./game-transaction-events.f7.html"
 
     import { ContainerService } from "../../../service/container-service.ts"
-    import { OwnerWebService } from "../../service/owner-web-service.ts"
-    import { PlayerWebService } from "../../service/player-web-service.ts"
-    import { TransactionWebService } from "../../service/transaction-web-service.ts"
     import { UniverseWebService } from "../../service/universe-web-service.ts"
-    import { GameTransactionWebService } from "../../service/game-transaction-web-service.ts"
-    import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
 
 
     export default (props, { $on, $, $f7, $update }) => {
 
+        let dayjs = ContainerService.getInstance("dayjs")
         let env = ContainerService.getInstance("env")()
         let eventTarget = ContainerService.getInstance("eventTarget")
-        let ownerWebService = ContainerService.getInstance(OwnerWebService)
-        let walletService = ContainerService.getInstance("WalletService")
-        let playerWebService = ContainerService.getInstance(PlayerWebService)
-        let transactionWebService = ContainerService.getInstance(TransactionWebService)
-        let dayjs = ContainerService.getInstance("dayjs")
         let universeWebService = ContainerService.getInstance(UniverseWebService)
-        let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
-        let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
 
-        let model = []
-        let page = 1
+        let model = props.model
+        let page = props.page
+        let rank = props.rank
 
-        let previousPage 
-        let nextPage
-
-        let rank
-
-        const loadActivity = async () => {
-
-            $f7.preloader.show()
-
-            try {
-
-                rank = $f7.views.main.router.currentRoute?.query?.rank || 0
-
-                if (rank > 0) {
-                    universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank)
-                } 
-
-                let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
-
-                Object.assign(model, await gameTransactionWebService.latest(page))
-
-
-                if (page > 1) {
-                    previousPage = page - 1
-                }
-
-                if (model.transactions?.length == 25 ) {
-                    nextPage = page + 1
-                }
-
-
-                await $update()
-
-            } catch (ex) { console.log(ex) }
-
-            $f7.preloader.hide()
-
-        }
-
+        let previousPage = props.previousPage
+        let nextPage = props.nextPage
 
         const link = (href) => {
             return "/" + href
@@ -146,7 +110,6 @@
 
         $on('pageBeforeIn', async () => {
 
-            await loadActivity()
 
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {
@@ -162,6 +125,7 @@
                     `${env.WEB}/logo.png`,
                    `Activity (Player Moves) in Ethereum Baseball League.`
             ) 
+
 
             $('.hide-on-pageinit').hide()
             $('.hidden-on-load').removeClass('hidden-on-load')

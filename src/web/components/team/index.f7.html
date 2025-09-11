@@ -20,39 +20,32 @@
 
             ${teamComponentService.team ? $h`
 
-                <div class="block">
-                    <div class="team-owner">
-                    ${!teamComponentService.team.ownerId ? $h`
-                    Team is unminted and computer managed. <a href="/t/mint/${teamComponentService.team.tokenId}"
-                        class="link">Mint Team</a>
-                    ` : $h`
-                    Owned by: <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${teamComponentService.team.ownerId}"
-                        class="external">${walletService.truncateEthAddress(teamComponentService.team.ownerId)}</a>
-                    `}
-                    </div>
-                </div>
 
-                <div class="team-info">
+                <div class="block block-outline block-strong">
+                    <div class="team-info">
 
-                    <div class="left">
-                        <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" class="profilePic" height="100" width="100" />
-                    </div>
+                        <div class="left">
+                            <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" class="profilePic" height="100" width="100" />
+                        </div>
 
-                    <div class="right">
+                        <div class="right">
 
-                        <span class="name">${teamWebService.getTeamName(teamComponentService.team)}</span> 
+                            <span class="name">${teamWebService.getTeamName(teamComponentService.team)}</span> 
 
-                        <div class="team-record">
-                            <span class="label">Ranked: </span> ${ teamComponentService.team.overallRank } <br />
-                            <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} 
-                                        <span class="separator">|</span>  ${teamComponentService.team.overallRecord.gamesBack} GB<br />
-                            <span class="label">Cash: </span> <a data-popup=".front-office-popup" class="link popup-open" href="#">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</a>
+                            <div class="team-record">
+                                <span class="label">Ranked: </span> ${ teamComponentService.team.overallRank } <br />
+                                <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} 
+                                            <span class="separator">|</span>  ${teamComponentService.team.overallRecord.gamesBack} GB<br />
+                                <span class="label">Cash: </span> <a data-popup=".front-office-popup" class="link popup-open" href="#">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</a><br />
+                                <span class="label">Owner: </span> ${!teamComponentService.team.ownerId ? $h`Team is unminted and computer managed. <a href="/t/mint/${teamComponentService.team.tokenId}" class="link">Mint Team</a>
+                                ` : $h`<a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${teamComponentService.team.ownerId}" class="external">${walletService.truncateEthAddress(teamComponentService.team.ownerId)}</a>`}
+
+                            </div>
+
                         </div>
 
                     </div>
-
                 </div>
-
 
 
                 <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
@@ -561,6 +554,8 @@
 
   export default (props, { $on, $, $f7, $update }) => {
 
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
     let walletService = ContainerService.getInstance("WalletService")
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let teamComponentService = ContainerService.getInstance(TeamComponentService)
@@ -581,7 +576,6 @@
 
     let tokenId = props.tokenId
     let team = props.team
-    let env = props.env
 
 
     const isSigned = (mp) => {
@@ -1150,6 +1144,25 @@
 
 
     $on('pageBeforeIn', async () => {
+
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: {
+            tabLink: "/l/standings", breadcrumbs: [
+                {
+                text: "Standings",
+                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team?.leagueRank}`)
+                }, { text: teamWebService.getTeamName(teamComponentService.team) }]
+            }
+        }))
+
+
+        universeWebService.setMetadata(
+            `${team.city.name} ${team.name} - Ethereum Baseball League`, 
+            window.location.href, 
+            `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
+            `${teamComponentService.team.city.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
+        ) 
 
 
 

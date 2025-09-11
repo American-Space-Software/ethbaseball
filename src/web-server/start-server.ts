@@ -884,9 +884,13 @@ let startWebServer = async () => {
 
       let featuredPost:Post = await postService.getFeatured()
 
+
+
+
       let vm = {
         featuredPost: featuredPost,
         todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
+        gameTransactions: await gameTransactionService.latest({ limit: 10, offset: 0 }),
         topTeams: tlss.map((t, index) => {
           t = t.get({ plain: true })
           return teamService.getTeamStandingsViewModel(t, index + 1)
@@ -979,30 +983,29 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(userId)
+
+      //Make sure this user owns this player
       let player:Player = await playerService.get(playerId)
-      let season: Season = await seasonService.getMostRecent()
-
+      let season:Season = await seasonService.getMostRecent()
+      
       let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-
+      
       if (!pls.teamId) {
         throw new Error("Player is not rostered.")
       }
-
+      
+      
       let team:Team = await teamService.get(pls.teamId)
-
-
-      await refreshUniverse()
-
-      //Make sure this address owns this player
+      
+      //Must be team owner
       if (user.address != team.ownerId) {
         res.status(401)
         return res.send("Not authorized.")
       }
 
-    
-      let params = req.body
+      await refreshUniverse()
 
-      await teamService.dropPlayerWithSignature(pls, player, team, season, universe.currentDate, params.message, params.signature)
+      await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
 
       //Clear cache 
       await cacheService.clearPlayersTag()
@@ -1781,59 +1784,59 @@ let startWebServer = async () => {
 
   /** AUTHENTICATION */
 
-  app.get('/auth/token/drop-player/:address/:playerId', async function (req, res) {
+  // app.get('/auth/token/drop-player/:address/:playerId', async function (req, res) {
 
-    try {
+  //   try {
 
-      let address = req.params.address
-      let playerId = req.params.playerId
+  //     let address = req.params.address
+  //     let playerId = req.params.playerId
 
-      if (!ethers.isAddress(address)) {
-        res.status(500)
-        return res.send("Invalid wallet.")
-      }
+  //     if (!ethers.isAddress(address)) {
+  //       res.status(500)
+  //       return res.send("Invalid wallet.")
+  //     }
 
-      //@ts-ignore
-      let userId = req.session?.passport?.user
-      if (!userId) {
-        res.status(401)
-        return res.send("Not authorized.")
-      }
+  //     //@ts-ignore
+  //     let userId = req.session?.passport?.user
+  //     if (!userId) {
+  //       res.status(401)
+  //       return res.send("Not authorized.")
+  //     }
 
-      let user: User = await userService.get(userId)
-      if (user.address != address) {
-        res.status(401)
-        return res.send("Not authorized.")
-      }
+  //     let user: User = await userService.get(userId)
+  //     if (user.address != address) {
+  //       res.status(401)
+  //       return res.send("Not authorized.")
+  //     }
 
-      //Make sure this address owns this player
-      let player:Player = await playerService.get(playerId)
-      let season:Season = await seasonService.getMostRecent()
+  //     //Make sure this address owns this player
+  //     let player:Player = await playerService.get(playerId)
+  //     let season:Season = await seasonService.getMostRecent()
      
 
-      let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+  //     let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
 
-      if (!pls.teamId) {
-        throw new Error("Player is not rostered.")
-      }
+  //     if (!pls.teamId) {
+  //       throw new Error("Player is not rostered.")
+  //     }
 
-      let team:Team = await teamService.get(pls.teamId)
-      if (team.ownerId != address) throw new Error("Not team owner.")
+  //     let team:Team = await teamService.get(pls.teamId)
+  //     if (team.ownerId != address) throw new Error("Not team owner.")
 
-      let tokenKey = `drop-${playerId}-${address}`
+  //     let tokenKey = `drop-${playerId}-${address}`
 
-      let signatureToken = await signatureTokenService.getOrCreate(tokenKey)
+  //     let signatureToken = await signatureTokenService.getOrCreate(tokenKey)
   
-      res.send({
-        token: signatureToken.token,
-      })
+  //     res.send({
+  //       token: signatureToken.token,
+  //     })
       
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(404)
-    }
+  //   } catch (ex) {
+  //     console.log(ex)
+  //     res.sendStatus(404)
+  //   }
 
-  })
+  // })
 
   app.get('/auth/token/:address', async function (req, res) {
 

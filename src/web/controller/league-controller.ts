@@ -6,6 +6,8 @@ import LeagueStandingsComponent from '../components/league/standings.f7.html'
 
 import { ModelView } from '../../util/model-view.js';
 import { routeMap } from '../../util/route-map.js';
+import { UniverseWebService } from '../service/universe-web-service.js';
+import { LeagueWebService } from '../service/league-web-service.js';
 
 
 
@@ -13,7 +15,11 @@ import { routeMap } from '../../util/route-map.js';
 class LeagueController {
 
     constructor(
-        @inject("discord") private discord:Function
+        private leagueWebService:LeagueWebService,
+        private universeWebService:UniverseWebService,
+        @inject("discord") private discord:Function,
+        @inject("eventTarget") private eventTarget,
+        @inject("env") private env
     ) {}
 
 
@@ -31,8 +37,18 @@ class LeagueController {
     @routeMap("/l/standings/:rank")
     async showLeagueStandings(): Promise<ModelView> {
         
-        return new ModelView(async () => {
+        return new ModelView(async (routeTo) => {
+
+
+            let currentStartDate = routeTo?.query?.startDate
+
+            this.universeWebService.setStartDate(currentStartDate, routeTo)
+            this.universeWebService.setRank(routeTo?.params?.rank || 1)
+
+            let viewModel = await this.leagueWebService.getStandings(this.universeWebService.getRank(), this.universeWebService.getStartDate())
+
             return {
+                viewModel: viewModel,
                 discord: this.discord
             }
         }, LeagueStandingsComponent)

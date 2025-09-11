@@ -38,6 +38,8 @@
   import { ContainerService } from "../../../service/container-service.ts"
 
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamComponentService } from "../../service/team-component-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
 
 
 
@@ -49,13 +51,17 @@
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
     let universeWebService = ContainerService.getInstance(UniverseWebService)
-
-    let tokenId
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
     let startDate
 
-    let date
-    let gameLogs = []
     let picker
+
+
+    let tokenId = props.tokenId
+    let date = props.date
+    let gameLogs = props.gameLogs
+
 
     const PAGE_SIZE = 25
 
@@ -139,11 +145,29 @@
 
     $on('pageBeforeIn', async () => {
 
-        tokenId = props.tokenId
-        date = props.date
 
-        gameLogs.length = 0
-        gameLogs.push(...props.gameLogs)
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+            detail: {
+            tabLink: "/l/standings", breadcrumbs: [
+                {
+                text: "Standings",
+                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}`)
+                }, 
+                { 
+                    text: teamWebService.getTeamName(teamComponentService.team), 
+                    path: universeWebService.startDateLink(`/t/${teamComponentService.team.tokenId}`) 
+                }, { text: 'Schedule'}]
+            }
+        }))
+
+        universeWebService.setMetadata(
+                `${teamComponentService.team.city.name} ${teamComponentService.team.name} Schedule - Ethereum Baseball League`, 
+                window.location.href, 
+                `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
+                `View the schedule for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
+        ) 
+
+
 
         $f7.emit('team-loaded')
         $f7.emit('refresh')

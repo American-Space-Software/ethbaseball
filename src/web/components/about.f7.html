@@ -568,110 +568,6 @@
                   </ul>
                 </div>
 
-                <div class="block-title block-title-medium">FAQ</div>
-                <div class="block block-strong medium-inset">
-
-                  <p><strong>What is Ethereum Baseball League and how does it work?</strong><br />
-                    EBL is a daily baseball management sim. You own a team NFT, set lineups and rotations, and the sim
-                    plays one game per team per day. Results post automatically. You adjust strategy and roster between
-                    games.</p>
-
-                  <p><strong>How long is a season?</strong><br />
-                    162 days of games plus a 30 day offseason for trades, signings, and roster moves.</p>
-
-                  <p><strong>Do I have to be online during games?</strong><br />
-                    No. Games run automatically at set times. Results post when complete.</p>
-
-                  <p><strong>How are games simulated?</strong><br />
-                    An off-chain engine processes every pitch using ratings, matchups, stamina, and game context.
-                    Results, stats, and standings update right after each game.</p>
-
-                  <p><strong>How much time does it take to manage a team?</strong><br />
-                    About 5 to 10 minutes a day is enough for competitive play. More time helps with scouting, trades,
-                    and deeper strategy.</p>
-
-                  <p><strong>How do I get a team?</strong><br />
-                    Mint with Diamonds or ETH, buy from another manager, or claim via airdrop if eligible.</p>
-
-                  <p><strong>Can I own multiple teams?</strong><br />
-                    Yes. You can own as many as you want, in any leagues, from one or multiple wallets.</p>
-
-                  <p><strong>What happens if I lose my wallet?</strong><br />
-                    Teams are ERC-721 NFTs tied to your wallet. If you lose the wallet, you lose the team. Use a
-                    hardware wallet and store keys safely.</p>
-
-                  <p><strong>Can teams be repossessed?</strong><br />
-                    Yes. Foreclosure is the main path. Bottom 3 teams in the Tenth League that do not confirm activity
-                    can be re auctioned. The operator can also re mint teams with the minter key for foreclosure.</p>
-
-                  <p><strong>What is the difference between buying with Diamonds and ETH?</strong><br />
-                    Functionally none. Both give you the same team NFT. Diamonds are earned in game. ETH purchases are
-                    direct.</p>
-
-                  <p><strong>How do teams earn Diamonds?</strong><br />
-                    Your team earns 🔷 through wins, attendance, and media deals. Diamonds go into the team balance
-                    off-chain.</p>
-
-                  <p><strong>What can Diamonds be spent on?</strong><br />
-                    Player salaries, free agents, waiver claims, and future upgrades.</p>
-
-                  <p><strong>Can the operator mint Diamonds at any time?</strong><br />
-                    Yes. The ERC-20 contract allows the operator to mint new Diamonds. Treat Diamonds as in game
-                    currency, not a fixed supply token.</p>
-
-                  <p><strong>How long do deposits and withdrawals take?</strong><br />
-                    Usually about 15 minutes. Deposits burn Diamonds on-chain and credit your off-chain balance.
-                    Withdrawals burn off-chain and mint Diamonds to your wallet.</p>
-
-                  <p><strong>Why is team transfer locked after a withdrawal?</strong><br />
-                    To protect buyers. You cannot withdraw Diamonds and then instantly transfer the team. The lock lasts
-                    about 1 hour after a withdrawal.</p>
-
-                  <p><strong>What happens if my balance goes negative?</strong><br />
-                    Roster moves are soft locked until your balance is positive. Games still play, but you cannot sign
-                    or trade.</p>
-
-                  <p><strong>How do contracts work?</strong><br />
-                    Years 1 to 3 are league minimum. Years 4 to 7 use arbitration. After 7 years, a player enters free
-                    agency with a 30 day countdown where salary asks drop daily.</p>
-
-                  <p><strong>What happens when I drop a player?</strong><br />
-                    You owe the rest of the guaranteed contract. Dropping creates a new 17 to 21 year old prospect on a
-                    rookie deal to fill the spot.</p>
-
-                  <p><strong>How do free agents work?</strong><br />
-                    Free agents come from expiring rookie contracts. Asking prices drop daily during a 30 day window
-                    until they match the arbitration level.</p>
-
-                  <p><strong>How do promotions and relegations work?</strong><br />
-                    The top 3 teams in each league move up. The bottom 3 move down. The lowest league bottom 3 face
-                    foreclosure if inactive.</p>
-
-                  <p><strong>How do I log in without my wallet on every device?</strong><br />
-                    Link your wallet once to your Discord login. Then you can log in with Discord on other devices for
-                    non transaction moves like lineups.</p>
-
-                  <p><strong>Can I manage my team from my phone?</strong><br />
-                    Yes. Discord login works on mobile without your wallet. On-chain transactions still need your
-                    wallet.</p>
-
-                  <p><strong>What happens if the site is down?</strong><br />
-                    Games still simulate off-chain. Results post when the site is back online.</p>
-
-                  <p><strong>Is the sim run on-chain?</strong><br />
-                    No. It is off-chain for speed and cost reasons. Teams and Diamonds are on-chain.</p>
-
-                  <p><strong>Is this an investment?</strong><br />
-                    No. EBL is a hobby game. Spend only what you are comfortable treating as entertainment.</p>
-
-                  <p><strong>Can I fork the code and run my own league?</strong><br />
-                    Yes. EBL is MIT licensed. You can fork it and run your own version with your own rules.</p>
-
-                  <p><strong>Are there moderators?</strong><br />
-                    Yes. Harassment, spam, and infrastructure attacks can lead to bans or limits on lineup tools.</p>
-
-                </div>
-
               </div>
             </li>
 
@@ -711,22 +607,9 @@
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let walletService = ContainerService.getInstance("WalletService")
 
-    let authInfo
-
-    const loadUser = async () => {
-
-      authInfo = await loginWebService.getAuthInfo()
-
-      // $f7.emit('load-user', { authInfo: authInfo })
-
-      await $update()
-
-    }
 
 
     $on('pageBeforeIn', async (e) => {
-
-      await loadUser()
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
         detail: {
@@ -741,6 +624,8 @@
         `${env.WEB}/logo.png`,
         `About Ethereum Baseball League.`
       )
+
+      await $update()
 
 
     })

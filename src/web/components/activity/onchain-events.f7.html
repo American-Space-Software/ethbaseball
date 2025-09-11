@@ -1,54 +1,48 @@
 <template>
 
-    <div class="card card-outline card-header-divider">
-        <div class="card-header">On-chain Events</div>
-        <div class="card-content">
-            <div class="stat-table-wrapper">
-                <table class="data-table game-transactions">
-                    <thead>
-                        <th>Block #</th>
-                        <th>Contract</th>
-                        <th>Transaction</th>
-                        <th>Description</th>
-                        <th class="numeric-cell">Amount</th>
-                        <th>From Address</th>
-                        <th>To Address</th>
-                    </thead>
-                    <tbody>
+    <div class="stat-table-wrapper">
+        <table class="data-table game-transactions">
+            <thead>
+                <th>Block #</th>
+                <th>Contract</th>
+                <th>Transaction</th>
+                <th>Description</th>
+                <th class="numeric-cell">Amount</th>
+                <th>From Address</th>
+                <th>To Address</th>
+            </thead>
+            <tbody>
 
 
-                        ${onChainEvents?.map( oce => $h`
-                        <tr>
-                            <td>${oce.blockNumber}</td>
-                            <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${oce.contractAddress}"
-                                    class="external">${walletService.truncateEthAddress(oce.contractAddress)}</a>
-                            </td>
-                            <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${oce.processedTransactionId}"
-                                    class="external">${
-                                    walletService.truncateEthAddress(oce.processedTransactionId) }</a></td>
-                            <td>${getOnChainDescription(oce)}</td>
-                            <td class="numeric-cell">
-                                ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `}
-                            </td>
-                            <td>
-                                ${oce.fromAddress ? $h`
-                                    <a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
-                                ` : $h` `}
-                            </td>
-                            <td>
-                                ${oce.toAddress ? $h`
-                                    <a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
-                                ` : $h` `}
-                            </td>
-                        </tr>
-                        `)}
+                ${onChainEvents?.map( oce => $h`
+                <tr>
+                    <td>${oce.blockNumber}</td>
+                    <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${oce.contractAddress}"
+                            class="external">${walletService.truncateEthAddress(oce.contractAddress)}</a>
+                    </td>
+                    <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${oce.processedTransactionId}"
+                            class="external">${
+                            walletService.truncateEthAddress(oce.processedTransactionId) }</a></td>
+                    <td>${getOnChainDescription(oce)}</td>
+                    <td class="numeric-cell">
+                        ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `}
+                    </td>
+                    <td>
+                        ${oce.fromAddress ? $h`
+                            <a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
+                        ` : $h` `}
+                    </td>
+                    <td>
+                        ${oce.toAddress ? $h`
+                            <a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
+                        ` : $h` `}
+                    </td>
+                </tr>
+                `)}
 
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            </tbody>
+        </table>
     </div>
-
 
 </template>
 
