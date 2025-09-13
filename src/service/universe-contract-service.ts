@@ -39,7 +39,6 @@ class UniverseContractService {
     }
 
     async mint(to:string, tokenId:number, ethCost:string, expires:number, v:number, r:string, s:string, options?:any) {
-        console.log(to, tokenId, ethCost, expires, v, r, s, options)
         return this.universeContract.mint(to,tokenId, ethCost, expires, v, r, s, options)
     }
 

@@ -166,6 +166,10 @@ async function getContainer(env, footerRoutes) {
                 browserHistoryInitialMatch: false
             },
 
+            colors: {
+                primary: "#0A3161"
+            },
+
             navbar: {
                 hideOnPageScroll: true
             },

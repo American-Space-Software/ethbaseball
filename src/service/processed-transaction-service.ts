@@ -131,6 +131,10 @@ class ProcessedTransactionService {
         return this.processedTransactionRepository.getAllEventsByAddress(address, options)
     }
 
+    public async getAllEventsByTransactionIds(transactionIds:string[], options?:any) : Promise<ProcessedEvent[]> {
+        return this.processedTransactionRepository.getAllEventsByTransactionIds(transactionIds, options)
+    }
+
     public async getLastTransferByToken(contractAddress:string, tokenId:number, options?:any) : Promise<ProcessedEvent> {
         return this.processedTransactionRepository.getLastTransferByToken(contractAddress, tokenId, options)
     }
@@ -138,6 +142,36 @@ class ProcessedTransactionService {
     public getUnprocessedDepositEvents(contractAddress:string, options?:any) : Promise<ProcessedEvent[]> {
         return this.processedTransactionRepository.getUnprocessedDepositEvents(contractAddress, options)
     }
+
+    public async listWithEvents(options?:any) {
+
+        let transactions = await this.list(options.limit, options.offset, options)
+        let events = await this.getAllEventsByTransactionIds( transactions.map( t => t._id), options)
+
+        return transactions.map( t => {
+            return {
+                transaction: t,
+                events: events.filter( e => e.processedTransactionId == t._id )
+            }
+        })
+
+    }
+
+
+    public async listWithEventsByToken(tokenId:number, options?:any) {
+
+        let events = await this.getAllEventsByToken(tokenId, options)
+        let transactions = await this.getByIds( events.map( e => e.processedTransactionId), options)
+
+        return transactions.map( t => {
+            return {
+                transaction: t,
+                events: events.filter( e => e.processedTransactionId == t._id )
+            }
+        })
+
+    }
+
 
     public groupEventsByTransaction(events:ProcessedEvent[]) {
     

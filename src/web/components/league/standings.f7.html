@@ -9,38 +9,42 @@
 
                 <${StartDate} />
 
-                <form class="list" id="change-standings">
+                <form class="list standings-selectors" id="change-standings">
 
-                    <strong>League</strong> <br />
-                    <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
-                        ${viewModel?.leagues?.map( (l, index) => $h`
+                    <div class="left">
 
-                            ${l.rank == universeWebService.rank ? $h`
-                                <option value="${l.rank}" selected>${l.name}</option>
-                            ` : $h`
-                                <option value="${l.rank}">${l.name}</option>
-                            `}
+                        <strong>League</strong> <br />
+                        <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
+                            ${viewModel?.leagues?.map( (l, index) => $h`
 
-                        `)}
-                    </select>
+                                ${l.rank == universeWebService.rank ? $h`
+                                    <option value="${l.rank}" selected>${l.name}</option>
+                                ` : $h`
+                                    <option value="${l.rank}">${l.name}</option>
+                                `}
 
-                    <br />
+                            `)}
+                        </select>
 
-                    <strong>Season</strong> <br />
-                    <select name="startDate" class="rank-dropdown" @change="${startDateChange}" id="select-start-date">
-                        ${viewModel?.seasons?.map( (s, index) => $h`
+                    </div>
 
-                            ${s.startDate == universeWebService.startDate ? $h`
-                                <option value="${s.startDate}" selected>${s.startDate}</option>
-                            ` : $h`
-                                <option value="${s.startDate}">${s.startDate}</option>
-                            `}
+                    <div class="right">
 
-                        `)}
-                    </select>
+                        <strong>Season</strong> <br />
+                        <select name="startDate" class="rank-dropdown" @change="${startDateChange}" id="select-start-date">
+                            ${viewModel?.seasons?.map( (s, index) => $h`
+
+                                ${s.startDate == universeWebService.startDate ? $h`
+                                    <option value="${s.startDate}" selected>${s.startDate}</option>
+                                ` : $h`
+                                    <option value="${s.startDate}">${s.startDate}</option>
+                                `}
+
+                            `)}
+                        </select>
 
 
-
+                    </div>
 
                 </form>
 
@@ -79,7 +83,9 @@
                                     <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
 
                                         <td class="image">
-                                             <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
+                                             <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }">
+                                                <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
+                                              </a>
                                         </td>
 
                                         <td class="name lock-name">

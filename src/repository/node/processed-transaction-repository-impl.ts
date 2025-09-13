@@ -191,6 +191,21 @@ class ProcessedTransactionRepositoryNodeImpl implements ProcessedTransactionRepo
     }
 
 
+
+    async getAllEventsByTransactionIds(transactionIds:string[], options?:any) : Promise<ProcessedEvent[]>  {
+
+        return ProcessedEvent.findAll(Object.assign({
+            where: {
+                processedTransactionId: { [Op.in]: transactionIds }
+            },
+            order: [ ['blockNumber', 'DESC'], ['logIndex', 'DESC'] ]
+        }, options))
+
+    }
+
+
+
+
     async getEventsByToken(contractAddress:string, tokenId:number, options?:any) : Promise<ProcessedEvent[]>  {
 
         return ProcessedEvent.findAll(Object.assign({

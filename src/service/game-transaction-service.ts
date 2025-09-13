@@ -66,7 +66,7 @@ class GameTransactionService {
         return {
             transactions:gts,
             players: players.map( p => { return { _id: p._id, name: p.fullName } }),
-            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name } })
+            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId } })
         }
     }
 

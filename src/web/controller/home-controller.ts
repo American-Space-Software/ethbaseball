@@ -31,26 +31,39 @@ class HomeController {
         
         return new ModelView(async (routeTo) => {
 
-                this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+                const fetchHome = async (routeTo) => {
 
-                let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
-                let authInfo = await this.loginWebService.getAuthInfo()
+                    console.log(routeTo)
 
-                let contractBalance
+                    this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
 
-                let walletAddresses = await this.walletService.getAddress()
-                
-                if (this.walletService.provider && walletAddresses) {
-                    contractBalance = await this.universeWebService.getContractBalance()
+                    let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
+                    let authInfo = await this.loginWebService.getAuthInfo()
+
+                    let contractBalance
+
+                    let walletAddresses = await this.walletService.getAddress()
+                    
+                    if (this.walletService.provider && walletAddresses) {
+                        contractBalance = await this.universeWebService.getContractBalance()
+                    }
+
+                    return {
+                            
+                        contractBalance: contractBalance,
+                        authInfo: authInfo,
+                        vm: vm,
+                        discord: this.discord
+                    }
+
+
                 }
 
 
             return {
-                contractBalance: contractBalance,
-                authInfo: authInfo,
-                vm: vm,
-                discord: this.discord
+                fetchHome: fetchHome(routeTo)
             }
+
         }, HomeComponent)
 
     }

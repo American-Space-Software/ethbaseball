@@ -5,36 +5,6 @@
 
     <div class="page-content">
 
-      <div class="hidden-on-load">
-
-        <!-- Slider container -->
-        <div class="swiper scoreboard">
-            <div class="swiper-wrapper">
-
-              ${vm.todaysGames?.inProgress?.map( game => $h`
-                <div class="swiper-slide">
-                    <${InProgress} game=${game} />
-                </div>
-              `)}
-
-              ${vm.todaysGames?.finished?.map( game => $h`
-                <div class="swiper-slide">
-                    <${Result} game=${game} />
-                </div>
-              `)}
-
-              ${vm.todaysGames?.scheduled?.map( game => $h`
-                <div class="swiper-slide">
-                    <${Scheduled} game=${game} />
-                </div>
-              `)}
-
-
-            </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-pagination"></div>
-        </div>
 
         <div class="fixed-width-content center">
         
@@ -56,53 +26,38 @@
 
               ${!authInfo?._id ? $h`
 
-                <div class="home-banner">
+                  <div class="block-title block-title-large">
+                    Step Into the Owner’s Box. The League Awaits.
+                  </div>
+                  
+                  <div class="block">
 
-                  <div class="left">
+                    <p class="lead">
+                      Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator.
+                      Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
+                      where teams and Diamonds are bought, sold, and earned.
 
-                    <div class="block-title block-title-medium">
-                      Step Into the Owner’s Box. The League Awaits.
-                    </div>
-                    
-                    <div class="block">
+                      <ul>
+                        <li>Own a franchise as an NFT (ERC-721) on Ethereum.</li>
+                        <li>10 leagues · 280 teams · 162-day seasons with a 30-day offseason.</li>
+                        <li>Daily simulated games with live box scores and play-by-play.</li>
+                        <li>Diamonds (ERC-20) fund contracts, payroll, and operations.</li>
+                        <li>Promotion & relegation — climb to the Apex League or fall behind.</li>
+                        <li>100% open source (MIT) — fork and run your own custom universe.</li>
+                      </ul>
 
-                      <p class="lead">
-                        Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator.
-                        Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                        where teams and Diamonds are bought, sold, and earned.
+                    </p>
 
-                        <ul>
-                          <li>Own a franchise as an NFT (ERC-721) on Ethereum.</li>
-                          <li>10 leagues · 280 teams · 162-day seasons with a 30-day offseason.</li>
-                          <li>Daily simulated games with live box scores and play-by-play.</li>
-                          <li>Diamonds (ERC-20) fund contracts, payroll, and operations.</li>
-                          <li>Promotion & relegation — climb to the Apex League or fall behind.</li>
-                          <li>100% open source (MIT) — fork and run your own custom universe.</li>
-                        </ul>
-
-                      </p>
-
-                      <div class="list list-strong list-dividers-ios">
-                        <ul>
-                          <li><a class="list-button external" href="${discord}" target="_blank">Join us on Discord</a></li>
-                          <li><a class="list-button popup-open" data-popup=".login-popup" href="#">Login</a></li>
-                        </ul>
-                        
-                        
-                      </div>
-
+                    <div class="list list-strong list-dividers-ios">
+                      <ul>
+                        <li><a class="list-button external" href="${discord}" target="_blank">Join us on Discord</a></li>
+                        <li><a class="list-button popup-open" data-popup=".login-popup" href="#">Login</a></li>
+                      </ul>
+                      
+                      
                     </div>
 
                   </div>
-
-                  <div class="right">
-                    <div class="block">
-                      <img src="/game.png" alt="Ethereum Baseball League" />
-                    </div>
-                    
-                  </div>
-
-                </div>
 
               ` : $h` `}
 
@@ -175,23 +130,8 @@
 
         </div>
 
-      </div>
 
-      <div class="hide-on-pageinit">
-
-        <div class="card skeleton-text">
-          <div class="card-header">Home</div>
-          <div class="card-content card-content-padding data-table">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-            lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <${Footer} />
+        <${Footer} />
 
     </div>
 
@@ -239,14 +179,23 @@
 
     let statService = ContainerService.getInstance(StatService)
 
-    let authInfo = props.authInfo
-    let vm = props.vm
-    let contractBalance = props.contractBalance
-    let discord = props.discord
+    let authInfo
+    let vm
+    let contractBalance
+    let discord 
 
 
     $on('pageBeforeIn', async (e) => {
     
+      await $update()
+
+      let result = await props.fetchHome
+
+      authInfo = result.authInfo
+      vm = result.vm
+      contractBalance = result.contractBalance
+      discord = result.discord
+
       let swiper = $f7.swiper.create('.swiper', {
         slidesPerView: 2,
         breakpoints: {
@@ -284,8 +233,8 @@
       await $update()
 
 
-      $('.hide-on-pageinit').hide()
-      $('.hidden-on-load').show()
+      // $('.hide-on-pageinit').hide()
+      // $('.hidden-on-load').show()
 
 
     })

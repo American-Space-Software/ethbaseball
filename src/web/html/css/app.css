@@ -1637,6 +1637,18 @@ h1 {
   font-size: 14px;
 }
 
+
+
+.item-after.small-gray {
+  font-size: 11px;
+  color: darkslategray;
+}
+
+.dark .item-after.small-gray {
+  color: white;
+}
+
+
 .small-gray {
   font-size: 11px;
   color: darkslategray;
@@ -2123,10 +2135,16 @@ td.diamonds {
 }
 
 
+
 .game-transactions th, .game-transactions td {
-  text-align: left;
-  padding: 5px;
-  vertical-align: top;
+}
+
+.game-transactions a {
+  font-weight: bold;
+}
+
+.game-transaction .name {
+  width: 150px;
 }
 
 .game-transactions .id {
@@ -2168,6 +2186,9 @@ td.diamonds {
   font-size: 1.2em;
 }
 
+.standings a {
+  font-weight: bold;
+}
 
 
 .home-standings td.name {
@@ -2671,7 +2692,7 @@ td.action, th.action {
 }
 
 .league-date .left {
-  flex: 0 0 200px;
+  flex: 0 0 150px;
   margin-top: 0px;
   margin-bottom: 0px;
 }
@@ -2683,5 +2704,22 @@ td.action, th.action {
 
 .league-date .right .date-picker {
     margin-top: 30px;
-    margin-left: 45px;
+    margin-left: 25px;
+}
+
+.standings-selectors {
+  display: flex; 
+}
+
+.standings-selectors .left {
+  flex: 0 0 200px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.standings-selectors .right {
+  flex: 1;
+  align-items: center; 
+  margin-left: 25px;
+
 }

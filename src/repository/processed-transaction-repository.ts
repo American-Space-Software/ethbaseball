@@ -16,6 +16,7 @@ interface ProcessedTransactionRepository {
     getAllEventsByToken(tokenId:number, options?:any) : Promise<ProcessedEvent[]>
     getAllEvents(options?:any) : Promise<ProcessedEvent[]>
     getAllEventsByAddress(address:string, options?:any) : Promise<ProcessedEvent[]>
+    getAllEventsByTransactionIds(transactionIds:string[], options?:any) : Promise<ProcessedEvent[]>
     getUnprocessedDepositEvents(contractAddress:string, options?:any) : Promise<ProcessedEvent[]>
 
     findByContractBetweenBlocks(contractAddress:string, startBlock: number, endBlock: number, options?:any) : Promise<ProcessedTransaction[]>

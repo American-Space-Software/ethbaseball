@@ -882,13 +882,13 @@ let startWebServer = async () => {
 
       let tlss: TeamLeagueSeason[] = await teamLeagueSeasonService.listByLeagueAndSeason(leagueOne, season, { limit: 10 })
 
-      let featuredPost:Post = await postService.getFeatured()
+      // let featuredPost:Post = await postService.getFeatured()
 
 
 
 
       let vm = {
-        featuredPost: featuredPost,
+        // featuredPost: featuredPost,
         todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
         gameTransactions: await gameTransactionService.latest({ limit: 10, offset: 0 }),
         topTeams: tlss.map((t, index) => {
@@ -1124,7 +1124,7 @@ let startWebServer = async () => {
       let page = parseIntWithException(req.params.page)
       let options = { limit: perPage, offset: (page - 1) * perPage }
 
-      return res.json(await processedTransactionService.getAllEvents(options))
+      return res.json(await processedTransactionService.listWithEvents(options))
 
     } catch (ex) {
       console.log(ex)
@@ -1189,7 +1189,7 @@ let startWebServer = async () => {
       let options = { limit: perPage, offset: (page - 1) * perPage }
       let tokenId = parseIntWithException(req.params.teamTokenId)
 
-      return res.json(await processedTransactionService.getAllEventsByToken(tokenId, options))
+      return res.json(await processedTransactionService.listWithEventsByToken(tokenId, options))
 
     } catch (ex) {
       console.log(ex)

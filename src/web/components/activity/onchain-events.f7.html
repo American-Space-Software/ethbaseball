@@ -1,48 +1,52 @@
 <template>
 
-    <div class="stat-table-wrapper">
-        <table class="data-table game-transactions">
-            <thead>
-                <th>Block #</th>
-                <th>Contract</th>
-                <th>Transaction</th>
-                <th>Description</th>
-                <th class="numeric-cell">Amount</th>
-                <th>From Address</th>
-                <th>To Address</th>
-            </thead>
-            <tbody>
+
+    <div class="list list-dividers-ios media-list" style="margin-top: 0px;">
+      <ul>
+
+        ${onChainEvents?.map( t => $h`
+
+            <li>
+                <a class="item-link item-content" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${t.transaction._id}">
+
+                    <div class="item-media">
+                        <img src="/image/thumbnail/${getTeam(t.events[0].team._id).logoId}" height="40" width="40" alt="${getTeam(t.events[0].team._id).cityName} ${getTeam(t.events[0].team._id).name} Logo" />
+                    </div>
+
+                    <div class="item-inner">
+                        <div class="item-title-row">
+                            <div class="item-title">${walletService.truncateEthAddress(t.transaction.transactionFrom)}</div>
+                            <div class="item-after small-gray">${dayjs.unix(t.transaction.timestamp).format('ddd, MM/DD h:mm')}</div>
+                        </div>
+                        <div class="item-text">
+                            ${walletService.truncateEthAddress(t.transaction.transactionFrom)}     
 
 
-                ${onChainEvents?.map( oce => $h`
-                <tr>
-                    <td>${oce.blockNumber}</td>
-                    <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${oce.contractAddress}"
-                            class="external">${walletService.truncateEthAddress(oce.contractAddress)}</a>
-                    </td>
-                    <td><a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${oce.processedTransactionId}"
-                            class="external">${
-                            walletService.truncateEthAddress(oce.processedTransactionId) }</a></td>
-                    <td>${getOnChainDescription(oce)}</td>
-                    <td class="numeric-cell">
-                        ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `}
-                    </td>
-                    <td>
-                        ${oce.fromAddress ? $h`
-                            <a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
-                        ` : $h` `}
-                    </td>
-                    <td>
-                        ${oce.toAddress ? $h`
-                            <a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
-                        ` : $h` `}
-                    </td>
-                </tr>
-                `)}
+                            <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${t.transaction.contractAddress}" class="external">${walletService.truncateEthAddress(t.transaction.contractAddress)}</a>
+                        </div>
+                        <div class="item-subtitle">
+                            
 
-            </tbody>
-        </table>
+
+                            ${t.events.map( e => $h`
+                    
+
+                    
+                            `)}
+
+
+                        </div>
+                    </div>
+                </a>
+            </li>
+
+        `)}
+
+
+      </ul>
     </div>
+
+
 
 </template>
 
@@ -105,6 +109,13 @@
 
 
         let onChainEvents = props.events
+
+
+        getImage = (oce) => {
+            
+
+        }
+
 
         return $render
     }

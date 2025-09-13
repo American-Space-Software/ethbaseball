@@ -166,12 +166,20 @@ class TeamService {
         let end = dayjs().add(2, 'days').toDate()
 
         let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
-        let games = await this.gameService.getByIds(gameIds, options)
+        let games = []
 
-        //Sort so it matches ids order
-        games.sort(function(a,b) {
-            return gameIds.indexOf( a._id ) - gameIds.indexOf( b._id )
-        })
+        if (gameIds?.length > 0) {
+            games = await this.gameService.getByIds(gameIds, options)
+
+            //Sort so it matches ids order
+            games.sort(function(a,b) {
+                return gameIds.indexOf( a._id ) - gameIds.indexOf( b._id )
+            })
+
+        }
+
+
+
 
 
         return {

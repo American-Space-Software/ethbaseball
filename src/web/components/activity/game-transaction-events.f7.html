@@ -1,56 +1,47 @@
 <template>
 
-    <div class="stat-table-wrapper">
-        <table class="data-table game-transactions">
-            <thead>
-            <th >Date</th>
-            <th class="label-cell">Description</th>
-            </thead>
-            <tbody>
+    <div class="list list-dividers-ios media-list" style="margin-top: 0px;">
+      <ul>
 
-            ${gameTransactions?.transactions.map( t => $h`
+        ${gameTransactions?.transactions.map( t => $h`
 
-                <tr>
-                    <td  >
+            <li>
+            <a class="item-link item-content" href="${universeWebService.startDateLink(`/t/${t.events[0].team.tokenId}`)}">
+                <div class="item-media">
+                    <img src="/image/thumbnail/${getTeam(t.events[0].team._id).logoId}" height="40" width="40" alt="${getTeam(t.events[0].team._id).cityName} ${getTeam(t.events[0].team._id).name} Logo" />
+                </div>
+                <div class="item-inner">
+                    <div class="item-title-row">
+                        <div class="item-title">${getTeam(t.events[0].team._id).cityName} ${getTeam(t.events[0].team._id).name}</div>
+                        <div class="item-after small-gray">${dayjs(t.date).format('ddd, MM/DD h:mm')}</div>
+                    </div>
+                    <div class="item-subtitle">
 
-                        <div class="large-only-flex">
-                            <div style="display:block;">
-                                ${dayjs(t.date).format("ddd, MMM D, YYYY")}<br /> 
-                                <span class="small-gray">${dayjs(t.date).format("h:mm A")}</span>
-                            </div>
-                        </div>
-                        <div class="small-only-flex">
-                            <div style="display:block;">
-                                ${dayjs(t.date).format('ddd, MM/DD')}<br />
-                                <span class="small-gray">${dayjs(t.date).format("h:mm A")}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="label-cell description">
+                            ${t.events.map( e => $h`
+                    
+                                ${e.signing ? $h`
+                                    signed <a href="${universeWebService.startDateLink(`/p/${e.signing.playerId}`)}">${getPlayer(e.signing.playerId).name}</a> to a 
+                                    ${e.signing.contract.isRookie ? $h` rookie contract.` : $h` ${e.signing.contract.years.length}-year contract @ ${universeWebService.displayDiamonds(e.signing.contract.years[0].salary)}.`}
+                                    
+                                ` : $h` `}
+                        
+                                ${e.dropping ? $h`
+                                    released <a href="${universeWebService.startDateLink(`/p/${e.dropping.playerId}`)}">${getPlayer(e.dropping.playerId).name}</a>.
+                                ` : $h` `}
+                    
+                            `)}
 
-                        ${t.events.map( e => $h`
-                
-                        ${e.signing ? $h`
-                            <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> signed <a href="${universeWebService.startDateLink(`/p/${e.signing.playerId}`)}">${getPlayer(e.signing.playerId).name}</a> to a 
-                            ${e.signing.contract.isRookie ? $h` rookie contract.` : $h` ${e.signing.contract.years.length}-year contract @ ${universeWebService.displayDiamonds(e.signing.contract.years[0].salary)}.`}
-                            
-                        ` : $h` `}
-                
-                        ${e.dropping ? $h`
-                            <a href="${universeWebService.startDateLink(`/t/${e.team.tokenId}`)}">${getTeam(e.team._id).cityName} ${getTeam(e.team._id).name}</a> released <a href="${universeWebService.startDateLink(`/p/${e.dropping.playerId}`)}">${getPlayer(e.dropping.playerId).name}</a>.
-                        ` : $h` `}
-                
-                        `)}
+                    </div>
+                </div>
+            </a>
+            </li>
 
-                    </td>
-                </tr>
+        `)}
 
 
-            `)}
-
-            </tbody>
-        </table>
+      </ul>
     </div>
+
 
 </template>
 
@@ -86,11 +77,7 @@
             return gameTransactions?.players.find(p => p._id == id)
         }
 
-
-
         let gameTransactions = props.transactions
-
-
         let onChainEvents = props.events
 
         return $render
