@@ -1,41 +1,57 @@
 <template>
 
 
-    <div class="list list-dividers-ios media-list" style="margin-top: 0px;">
+    <div class="list list-dividers-ios" style="margin-top: 0px;">
       <ul>
 
-        ${onChainEvents?.map( t => $h`
+        ${onChainEvents.transactions?.map( t => $h`
 
             <li>
                 <a class="item-link item-content" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${t.transaction._id}">
-
-                    <div class="item-media">
-                        <img src="/image/thumbnail/${getTeam(t.events[0].team._id).logoId}" height="40" width="40" alt="${getTeam(t.events[0].team._id).cityName} ${getTeam(t.events[0].team._id).name} Logo" />
-                    </div>
-
                     <div class="item-inner">
-                        <div class="item-title-row">
-                            <div class="item-title">${walletService.truncateEthAddress(t.transaction.transactionFrom)}</div>
-                            <div class="item-after small-gray">${dayjs.unix(t.transaction.timestamp).format('ddd, MM/DD h:mm')}</div>
-                        </div>
-                        <div class="item-text">
-                            ${walletService.truncateEthAddress(t.transaction.transactionFrom)}     
+                        <div class="item-title">
+                            <!-- Item header, must be first child of item-title -->
+                            <div class="item-header">
+                                Transaction hash <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${t.transaction._id}" class="external">${ walletService.truncateEthAddress(t.transaction._id) }</a>
+                            </div>
 
+                            <ul class="event-list">
 
-                            <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${t.transaction.contractAddress}" class="external">${walletService.truncateEthAddress(t.transaction.contractAddress)}</a>
-                        </div>
-                        <div class="item-subtitle">
-                            
+                            ${t.events?.map( oce => $h`
+                                <li>
+                                    ${getOnChainDescription(oce)} 
+                                    
+                                    ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `} 
+                                    ${oce.tokenId ? $h` ${!oce.amount ? 'of ' : ''}  <a href="/t/${oce.tokenId}">${getTeamName(oce.tokenId)}</a> (#${oce.tokenId})` : $h` `}        
+                                    
+                                    ${oce.fromAddress ? $h`
+                                        <div class="transaction-info">
+                                            <span class="label">From: </span><a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
+                                        </div>
+                                    ` : $h` `}
 
+                                    ${oce.toAddress ? $h`
+                                        <div class="transaction-info">
+                                            <span class="label">To: </span><a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
+                                        </div>
+                                    ` : $h` `}
 
-                            ${t.events.map( e => $h`
-                    
+                                    ${oce.isMint ? $h`<span class="badge">Mint</span>` : $h` `}
+                                    ${oce.isTransfer ? $h`<span class="badge">Transfer</span>` : $h` `}
+                                </li>
 
-                    
                             `)}
 
+                                
+                            </ul>
 
+
+
+
+                            
+                            <div class="item-footer">Block # ${t.transaction.blockNumber}</div>
                         </div>
+                        <div class="item-after small-gray">${dayjs.unix(t.transaction.timestamp).format('ddd, MM/DD h:mm')}</div>
                     </div>
                 </a>
             </li>
@@ -76,13 +92,13 @@
 
         const getOnChainTransferAmount = (oce) => {
 
-            if (oce.event == "DepositToTeam") return universeWebService.displayDiamonds(oce.amount)
+            if (oce.event == "DepositToTeam") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
 
-            if (oce.event == "WithdrawFromTeam") return `-${universeWebService.displayDiamonds(oce.amount)}`
+            if (oce.event == "WithdrawFromTeam") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
 
             if (oce.event == "Transfer") {
-                if (oce.toAddress == "0x0000000000000000000000000000000000000000") return `-${universeWebService.displayDiamonds(oce.amount)}`
-                if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return universeWebService.displayDiamonds(oce.amount)
+                if (oce.toAddress == "0x0000000000000000000000000000000000000000") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
+                if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
             }
         }
 
@@ -90,32 +106,33 @@
         const getOnChainDescription = (oce) => {
 
             if (oce.event == "DepositToTeam") {
-                if (!oce.offChainEventId) return "Deposit To Team (Pending)"
-                return "Deposit To Team"
+                if (!oce.offChainEventId) return "Deposit to team (Pending)"
+                return "Deposit to team"
             }
 
 
 
-            if (oce.event == "WithdrawFromTeam") return "Withdraw From Team"
+            if (oce.event == "WithdrawFromTeam") return "Withdraw from team"
 
-            if (oce.isMint) {
-                if (oce.contractAddress == env.UNIVERSE_ADDRESS) return "Team Minted"
-                return "Mint"
-            }
+            // if (oce.isMint) {
+            //     if (oce.contractAddress == env.UNIVERSE_ADDRESS) return "Team Minted"
+            //     return "Mint"
+            // }
             if (oce.isTransfer) return "Transfer"
             return oce.event
         }
 
 
 
+
         let onChainEvents = props.events
 
+        console.log(onChainEvents)
 
-        getImage = (oce) => {
-            
-
+        const getTeamName = (tokenId) => {
+            let team = onChainEvents.teams?.find( t => t.tokenId == tokenId )
+            if (team) return `${team.cityName} ${team.name}`
         }
-
 
         return $render
     }

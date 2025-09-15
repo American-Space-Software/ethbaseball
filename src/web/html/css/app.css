@@ -2723,3 +2723,19 @@ td.action, th.action {
   margin-left: 25px;
 
 }
+
+
+.event-list li {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  list-style-type: disc;
+}
+
+.event-list .transaction-info {
+  font-size: .65em;
+}
+
+.event-list .label {
+  width: 75px;
+  font-weight: bold;
+}

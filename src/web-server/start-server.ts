@@ -890,6 +890,7 @@ let startWebServer = async () => {
       let vm = {
         // featuredPost: featuredPost,
         todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
+        onChainTransactions: await processedTransactionService.listWithEvents({ limit: 10, offset: 0 }),
         gameTransactions: await gameTransactionService.latest({ limit: 10, offset: 0 }),
         topTeams: tlss.map((t, index) => {
           t = t.get({ plain: true })

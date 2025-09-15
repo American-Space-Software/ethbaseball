@@ -11,6 +11,11 @@ import { OwnerService } from "./owner-service.js"
 import { ProcessedEvent, ProcessedTransaction } from "../dto/processed-transaction.js"
 import { TeamService } from "./team-service.js"
 import { ethers } from "ethers"
+import { TeamLeagueSeason } from "../dto/team-league-season.js"
+import { TeamLeagueSeasonService } from "./team-league-season-service.js"
+import { SeasonService } from "./season-service.js"
+import { Season } from "../dto/season.js"
+import { Team } from "../dto/team.js"
 
 @injectable()
 class ProcessedTransactionService {
@@ -20,6 +25,8 @@ class ProcessedTransactionService {
 
     constructor(
         private teamService:TeamService,
+        private seasonService:SeasonService,
+        private teamLeagueSeasonService:TeamLeagueSeasonService,
         private ownerService:OwnerService,
         private blockService:BlockService,
         private transactionService:TransactionService,
@@ -148,12 +155,27 @@ class ProcessedTransactionService {
         let transactions = await this.list(options.limit, options.offset, options)
         let events = await this.getAllEventsByTransactionIds( transactions.map( t => t._id), options)
 
-        return transactions.map( t => {
-            return {
-                transaction: t,
-                events: events.filter( e => e.processedTransactionId == t._id )
-            }
-        })
+        let season:Season = await this.seasonService.getMostRecent()
+        let teams:Team[] = await this.teamService.getByTokenIds(events.map( e => e.tokenId), options)
+
+        let tlss:TeamLeagueSeason[] = [ ]
+
+        for (let team of teams ) {
+            tlss.push( await this.teamLeagueSeasonService.getByTeamSeason(team, season, options))
+        }
+
+        let tlssPlain:TeamLeagueSeason[] = tlss.map( tls => tls.get({ plain: true}))
+
+
+        return {
+            transactions: transactions.map( t => {
+                return {
+                    transaction: t,
+                    events: events.filter( e => e.processedTransactionId == t._id ),
+                }
+            }),
+            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId, tokenId: tls.team.tokenId } })
+        }
 
     }
 
@@ -163,12 +185,27 @@ class ProcessedTransactionService {
         let events = await this.getAllEventsByToken(tokenId, options)
         let transactions = await this.getByIds( events.map( e => e.processedTransactionId), options)
 
-        return transactions.map( t => {
-            return {
-                transaction: t,
-                events: events.filter( e => e.processedTransactionId == t._id )
-            }
-        })
+
+        let season:Season = await this.seasonService.getMostRecent()
+        let teams:Team[] = await this.teamService.getByTokenIds(events.map( e => e.tokenId), options)
+
+        let tlss:TeamLeagueSeason[] = [ ]
+
+        for (let team of teams ) {
+            tlss.push( await this.teamLeagueSeasonService.getByTeamSeason(team, season, options))
+        }
+
+        let tlssPlain:TeamLeagueSeason[] = tlss.map( tls => tls.get({ plain: true}))
+
+        return {
+            transactions: transactions.map( t => {
+                return {
+                    transaction: t,
+                    events: events.filter( e => e.processedTransactionId == t._id ),
+                }
+            }),
+            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId, tokenId: tls.team.tokenId } })
+        }
 
     }
 

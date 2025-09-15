@@ -31,7 +31,7 @@ class DiamondWebService {
     async getWithdrawPass(tokenId:string) {
     
         //Download it.
-        let result = await axios.get(`/t/withdraw/${tokenId}`)
+        let result = await axios.get(`/api/team/withdraw/${tokenId}`)
         return result.data
     }
 

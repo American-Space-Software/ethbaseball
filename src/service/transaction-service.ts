@@ -6,7 +6,6 @@ import { TransactionRepository } from "../repository/transaction-repository.js"
 import { Transaction } from "../dto/transaction.js"
 import { TransactionValue } from "../dto/processed-transaction.js"
 import { WalletService } from "./wallet-service.js"
-import TYPES from "./types.js"
 
 
 

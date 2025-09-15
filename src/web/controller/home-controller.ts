@@ -33,8 +33,6 @@ class HomeController {
 
                 const fetchHome = async (routeTo) => {
 
-                    console.log(routeTo)
-
                     this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
 
                     let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())

@@ -68,6 +68,19 @@
               ` : $h` `}
 
 
+              ${vm?.onChainTransactions.transactions?.length > 0 ? $h`
+
+                  <div class="block-title block-title-small">On-chain Transactions</div>
+                  <div class="block block-outline block-strong">
+                    <${OnChainEvents} events="${vm?.onChainTransactions}" />
+
+                    <a class="button button-outline small-button" href="/activity">View All</a>
+
+                  </div>
+                  
+              ` : $h` `}
+
+
               ${vm?.gameTransactions.transactions?.length > 0 ? $h`
 
                   <div class="block-title block-title-small">Recent Player Activity</div>
@@ -154,6 +167,7 @@
   import Toolbar from "../common/toolbar.f7.html"
 
   import GameTransactions from "../activity/game-transaction-events.f7.html"
+  import OnChainEvents from "../activity/onchain-events.f7.html"
 
 
   import { ContainerService } from "../../../service/container-service"
@@ -189,7 +203,11 @@
     
       await $update()
 
+      $f7.preloader.show()
+
       let result = await props.fetchHome
+
+      $f7.preloader.hide()
 
       authInfo = result.authInfo
       vm = result.vm
