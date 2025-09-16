@@ -1737,28 +1737,18 @@ h1 {
 }
 
 
-.main-buttons {
-  display: flex;
-  width: 450px;
-}
 
-.main-buttons .l {
-  flex: 0 0 50%;
-}
-
-.main-buttons .r {
-  flex:1;
-  padding-left: 20px;
-}
 
 .main-button {
   width: 220px;
+  max-width: 40%;
   height: 50px;
   display: inline-block;
   line-height: 50px;
-  font-size: 20px;
+  font-size: 15px;
   margin-top: 20px;
   margin-bottom: 20px;
+  margin-left: 20px;
 }
 
 
@@ -2229,6 +2219,15 @@ td.action, th.action {
   font-size: .75em;
   margin-left: -10px;
   margin-top: 9px;
+}
+
+.dark .button-move {
+  border: 1px solid white;
+}
+
+.dark .button-move.button-fill {
+  background: #4e4e4e;
+
 }
 
 .swiper .game-result {
@@ -2729,10 +2728,12 @@ td.action, th.action {
   margin-top: 10px;
   margin-bottom: 10px;
   list-style-type: disc;
+  white-space: wrap;
+  font-size: .85em;
 }
 
 .event-list .transaction-info {
-  font-size: .65em;
+  font-size: .75em;
 }
 
 .event-list .label {

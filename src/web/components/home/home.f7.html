@@ -7,30 +7,16 @@
 
 
         <div class="fixed-width-content center">
-        
-              <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios home-nav">
-                  <ul>
-                    <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
-                    <li><a class="link" href="/games">⚾ Scores</a></li>
-                    <li><a class="link" href="/players/">🧢 Players</a></li>
-                    <li><a class="link" href="/u/owners">👤 Owners</a></li>
-                    <li><a class="link" href="/activity">📝 Activity</a></li>
-                    <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">🔷 Buy Diamonds (Uniswap)</a></li>
-                    ${env.OPENSEA_COLLECTION_URL ? $h`
-                      <li><a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">🌊 Buy a Team (OpenSea)</a></li>
-                      ` : $h` `}
-                    <li><a class="link" href="/about">📘 About</a></li>
-                    <li><a class="link external" href="${discord}" target="_blank">💬 Discord</a></li>
-                  </ul>
-              </div>
 
               ${!authInfo?._id ? $h`
 
-                  <div class="block-title block-title-large">
-                    Step Into the Owner’s Box. The League Awaits.
-                  </div>
+
                   
-                  <div class="block">
+                  <div class="block block-outline block-strong">
+
+                    <div class="block-title block-title-large">
+                      Step Into the Owner’s Box. The League Awaits.
+                    </div>
 
                     <p class="lead">
                       Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator.
@@ -48,19 +34,29 @@
 
                     </p>
 
-                    <div class="list list-strong list-dividers-ios">
-                      <ul>
-                        <li><a class="list-button external" href="${discord}" target="_blank">Join us on Discord</a></li>
-                        <li><a class="list-button popup-open" data-popup=".login-popup" href="#">Login</a></li>
-                      </ul>
-                      
-                      
-                    </div>
+                    <a class="button button-outline main-button external" href="${discord}" target="_blank">Join us on Discord</a>
+                    <a class="button button-fill main-button popup-open" data-popup=".login-popup"  href="#">Login</a>
 
                   </div>
 
               ` : $h` `}
 
+
+              <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios home-nav">
+                  <ul>
+                    <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
+                    <li><a class="link" href="/games">⚾ Scores</a></li>
+                    <li><a class="link" href="/players/">🧢 Players</a></li>
+                    <li><a class="link" href="/u/owners">👤 Owners</a></li>
+                    <li><a class="link" href="/activity">📝 Activity</a></li>
+                    <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">🔷 Buy Diamonds (Uniswap)</a></li>
+                    ${env.OPENSEA_COLLECTION_URL ? $h`
+                      <li><a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">🌊 Buy a Team (OpenSea)</a></li>
+                      ` : $h` `}
+                    <li><a class="link" href="/about">📘 About</a></li>
+                    <li><a class="link external" href="${discord}" target="_blank">💬 Discord</a></li>
+                  </ul>
+              </div>
 
 
               ${authInfo?.address ? $h`

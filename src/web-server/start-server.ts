@@ -1238,7 +1238,10 @@ let startWebServer = async () => {
 
       let offChainEvents = await offchainEventService.getByOwner(ContractType.DIAMONDS, owner, options) //await offchainEventService.getByTokenId(ContractType.DIAMONDS, tokenId, options)      
       
-      let onChainEvents = await processedTransactionService.getAllEventsByAddress(owner._id, options)
+      let onChainEvents = await processedTransactionService.listWithEventsByAddress(address, options)
+
+
+      // let onChainEvents = await processedTransactionService.getAllEventsByAddress(owner._id, options)
       // let onChainTransactions = processedTransactionService.groupEventsByTransaction(onChainEvents)
 
       return res.json({

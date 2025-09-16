@@ -15,40 +15,34 @@
                                 Transaction hash <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${t.transaction._id}" class="external">${ walletService.truncateEthAddress(t.transaction._id) }</a>
                             </div>
 
-                            <ul class="event-list">
+                            ${t.events?.length > 0 && hasEventName(t.events) ? $h` 
+                                <ul class="event-list">
+                                    ${t.events?.map( oce => $h`
+                                        <li>
+                                            ${getOnChainDescription(oce)} 
+                                            
+                                            ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `} 
+                                            ${oce.tokenId ? $h` ${!oce.amount ? 'of ' : ''}  <a href="/t/${oce.tokenId}">${getTeamName(oce.tokenId)}</a> (#${oce.tokenId})` : $h` `}        
+                                            
+                                            ${oce.fromAddress ? $h`
+                                                <div class="transaction-info">
+                                                    <span class="label">From: </span><a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
+                                                </div>
+                                            ` : $h` `}
 
-                            ${t.events?.map( oce => $h`
-                                <li>
-                                    ${getOnChainDescription(oce)} 
-                                    
-                                    ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `} 
-                                    ${oce.tokenId ? $h` ${!oce.amount ? 'of ' : ''}  <a href="/t/${oce.tokenId}">${getTeamName(oce.tokenId)}</a> (#${oce.tokenId})` : $h` `}        
-                                    
-                                    ${oce.fromAddress ? $h`
-                                        <div class="transaction-info">
-                                            <span class="label">From: </span><a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
-                                        </div>
-                                    ` : $h` `}
+                                            ${oce.toAddress ? $h`
+                                                <div class="transaction-info">
+                                                    <span class="label">To: </span><a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
+                                                </div>
+                                            ` : $h` `}
 
-                                    ${oce.toAddress ? $h`
-                                        <div class="transaction-info">
-                                            <span class="label">To: </span><a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
-                                        </div>
-                                    ` : $h` `}
+                                            ${oce.isMint ? $h`<span class="badge">Mint</span>` : $h` `}
+                                            ${oce.isTransfer ? $h`<span class="badge">Transfer</span>` : $h` `}
+                                        </li>
+                                    `)}
+                                </ul>
+                            ` : $h` `}
 
-                                    ${oce.isMint ? $h`<span class="badge">Mint</span>` : $h` `}
-                                    ${oce.isTransfer ? $h`<span class="badge">Transfer</span>` : $h` `}
-                                </li>
-
-                            `)}
-
-                                
-                            </ul>
-
-
-
-
-                            
                             <div class="item-footer">Block # ${t.transaction.blockNumber}</div>
                         </div>
                         <div class="item-after small-gray">${dayjs.unix(t.transaction.timestamp).format('ddd, MM/DD h:mm')}</div>
@@ -122,12 +116,14 @@
             return oce.event
         }
 
-
+        const hasEventName = ( events) => {
+            if (events.find( e => e.event != undefined)) return true
+            return false
+        }
 
 
         let onChainEvents = props.events
 
-        console.log(onChainEvents)
 
         const getTeamName = (tokenId) => {
             let team = onChainEvents.teams?.find( t => t.tokenId == tokenId )

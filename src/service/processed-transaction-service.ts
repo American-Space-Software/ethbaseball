@@ -151,38 +151,25 @@ class ProcessedTransactionService {
     }
 
     public async listWithEvents(options?:any) {
-
-        let transactions = await this.list(options.limit, options.offset, options)
-        let events = await this.getAllEventsByTransactionIds( transactions.map( t => t._id), options)
-
-        let season:Season = await this.seasonService.getMostRecent()
-        let teams:Team[] = await this.teamService.getByTokenIds(events.map( e => e.tokenId), options)
-
-        let tlss:TeamLeagueSeason[] = [ ]
-
-        for (let team of teams ) {
-            tlss.push( await this.teamLeagueSeasonService.getByTeamSeason(team, season, options))
-        }
-
-        let tlssPlain:TeamLeagueSeason[] = tlss.map( tls => tls.get({ plain: true}))
-
-
-        return {
-            transactions: transactions.map( t => {
-                return {
-                    transaction: t,
-                    events: events.filter( e => e.processedTransactionId == t._id ),
-                }
-            }),
-            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId, tokenId: tls.team.tokenId } })
-        }
-
+        let events = await this.getAllEvents( options)
+        return this.buildListWithEvents(events, options)
     }
-
 
     public async listWithEventsByToken(tokenId:number, options?:any) {
 
         let events = await this.getAllEventsByToken(tokenId, options)
+        return this.buildListWithEvents(events, options)
+    }
+
+    public async listWithEventsByAddress(address:string, options?:any) {
+
+        let events = await this.getAllEventsByAddress(address, options)
+        return this.buildListWithEvents(events, options)
+
+    }
+
+    async buildListWithEvents(events:ProcessedEvent[], options?:any) {
+
         let transactions = await this.getByIds( events.map( e => e.processedTransactionId), options)
 
 

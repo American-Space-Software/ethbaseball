@@ -4,41 +4,51 @@
 
     <div class="page-content">
 
-        <div class="fixed-width-content center">
-
-            ${model?.onChainEvents?.length > 0 || model?.offChainEvents?.length >0 ? $h`
-                
-                ${model?.onChainEvents?.length > 0 ? $h`
-                    <${OnChainEvents} events="${model?.onChainEvents}" />
-                ` : $h` `}
-
-
-                ${model?.offChainEvents?.length > 0 ? $h`
-                    <${OffChainEvents} events="${model?.offChainEvents}" />
-                ` : $h` `}
-
-                <div class="block split-row-both">
-                    <div>
-                        ${previousPage ? $h`
-                            <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
-                        ` : $h` `}
-                    </div>
-                    <div>
-                        ${nextPage ? $h`
-                            <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
-                        ` : $h` `}
-                    </div>
-                </div>
-
-            ` : $h`
-                <div class="block">
-                    No activity.
-                </div>
+        ${model?.onChainEvents?.transactions?.length > 0 || model?.offChainEvents?.length >0 ? $h`
             
-            `}
+            ${model?.onChainEvents?.transactions?.length > 0 ? $h`
+
+                <div class="card card-outline card-header-divider">
+                    <div class="card-header">On-chain Events</div>
+                    <div class="card-content">
+                        <${OnChainEvents} events="${model?.onChainEvents}" />
+                    </div>
+                </div>
+                
+            ` : $h` `}
 
 
-        </div>
+            ${model?.offChainEvents?.length > 0 ? $h`
+
+                <div class="card card-outline card-header-divider">
+                    <div class="card-header">Off-chain Events</div>
+                    <div class="card-content">
+                        <${OffChainEvents} events="${model?.offChainEvents}" />
+                    </div>
+                </div>
+
+                
+            ` : $h` `}
+
+            <div class="block split-row-both">
+                <div>
+                    ${previousPage ? $h`
+                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
+                    ` : $h` `}
+                </div>
+                <div>
+                    ${nextPage ? $h`
+                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
+                    ` : $h` `}
+                </div>
+            </div>
+
+        ` : $h`
+            <div class="block">
+                No activity.
+            </div>
+        
+        `}
 
 
 
@@ -64,11 +74,7 @@
     import dayjs from "dayjs"
 
     import { ContainerService } from "../../../service/container-service.ts"
-    import { OwnerWebService } from "../../service/owner-web-service.ts"
-    import { PlayerWebService } from "../../service/player-web-service.ts"
-    import { TransactionWebService } from "../../service/transaction-web-service.ts"
-    import { StatService } from "../../../service/stat-service.ts"
-    import { GameTransactionWebService } from "../../service/game-transaction-web-service.ts"
+
     import { UniverseWebService } from "../../service/universe-web-service.ts"
     import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
 
@@ -81,23 +87,18 @@
 
         let env = ContainerService.getInstance("env")()
         let eventTarget = ContainerService.getInstance("eventTarget")
-        let ownerWebService = ContainerService.getInstance(OwnerWebService)
-        let walletService = ContainerService.getInstance("WalletService")
-        let playerWebService = ContainerService.getInstance(PlayerWebService)
-        let transactionWebService = ContainerService.getInstance(TransactionWebService)
-        let statService = ContainerService.getInstance(StatService)
-        let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
         let universeWebService = ContainerService.getInstance(UniverseWebService)
         let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
 
-        let address
-        let model = {}
         
-        
-        let nextPage
-        let previousPage
-        
-        let page
+    
+        let page = props.page
+        let address =  props.address
+        let model = props.model
+        let previousPage = props.previousPage
+        let nextPage =  props.nextPage
+
+        console.log(model)
 
 
         let loading = false
@@ -178,37 +179,6 @@
         }
 
 
-
-
-        const loadActivity = async () => {
-
-            $f7.preloader.show()
-
-            try {
-
-                page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
-                address = $f7.views.main.router.currentRoute?.query?.address
-
-                Object.assign(model, await gameTransactionWebService.getByOwner(address, page))
-
-                if (page > 1) {
-                    previousPage = page - 1
-                }
-
-                if (model.offChainEvents?.length == 25 || model.onChainEvents?.length == 25 ) {
-                    nextPage = page + 1
-                }
-
-                await $update()
-
-            } catch (ex) { console.log(ex) }
-
-            $f7.preloader.hide()
-
-        }
-
-
-
         $on('pageInit', async (e) => {
             await $update()
         })
@@ -219,29 +189,23 @@
 
 
         $on('pageBeforeIn', async () => {
-            try {
-                await loadActivity()
 
-                eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-                    detail: {
-                        visible: true,
-                        tabLink: "/",
-                        breadcrumbs: [{ text: "Home", path: "/" }, { text: "Owners", path: "/u/owners" }, { text: address }]
-                    }
-                }))
+            eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+                detail: {
+                    visible: true,
+                    tabLink: "/",
+                    breadcrumbs: [{ text: "Home", path: "/" }, { text: "Owners", path: "/u/owners" }, { text: address }]
+                }
+            }))
 
-                universeWebService.setMetadata(
-                            `Activity - Ethereum Baseball League`, 
-                        window.location.href, 
-                        `${env.WEB}/logo.png`,
-                        `Activity in Ethereum Baseball League.`
-                ) 
+            universeWebService.setMetadata(
+                        `Activity - Ethereum Baseball League`, 
+                    window.location.href, 
+                    `${env.WEB}/logo.png`,
+                    `Activity in Ethereum Baseball League.`
+            ) 
 
-
-
-            } catch(ex) {
-                $f7.dialog.alert(ex.message, "There was an error")
-            }
+            await $update()
             
         })
 
