@@ -13,13 +13,20 @@ class OffChainEventWebService {
             if (oce.toAddress == "0x0000000000000000000000000000000000000000") {
 
                 if (oce.fromTokenId) {
-                    return "Spent"
+                    return "Expenses"
                 } else {
                     return "Created Mint Pass"
                 }
 
             }
-            if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return "Reward"
+            if (oce.fromAddress == "0x0000000000000000000000000000000000000000") {
+
+                if (oce.toTokenId) {
+                    return "Revenue"
+                } else {
+                    return "Reward"
+                }
+            }
         }
 
     }

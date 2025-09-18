@@ -149,6 +149,33 @@
 
               ${authInfo?._id ? $h`
 
+                ${authInfo.discordId ? $h`
+                  <div class="card card-outline card-header-divider">
+                    <div class="card-header">Discord</div>
+                    <div class="card-content card-content-padding">
+
+                      <div class="list links-list list-outline">
+                        <ul>
+                          <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                      Username
+                                    </div>
+                                    <div class="item-after">
+                                      ${authInfo.discordUsername}
+                                    </div>
+                                </div>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+
+                    </div>
+                  </div>
+
+                ` : $h` `}
+
                 ${authInfo?.address ? $h`
 
                   <div class="card card-outline card-header-divider">
@@ -292,6 +319,16 @@
                 ` : $h`
                 
                   <div class="card card-outline card-header-divider">
+                    <div class="card-header">Link Wallet</div>
+                    <div class="card-content card-content-padding">
+                      <p>Sign a message with your wallet to link your account to your wallet.</p>
+                      <p>This verifies your control of the wallet and does not submit a transaction.</p>
+                      <a @click="${linkUserClicked}" class="button button-fill small-button" style="margin-bottom: 10px;">Begin Signing</a>
+                    </div>
+                  </div>
+
+
+                  <div class="card card-outline card-header-divider">
                     <div class="card-header">Account</div>
                     <div class="card-content card-content-padding">
                       <div class="list links-list list-outline">
@@ -301,16 +338,6 @@
                           </li>
                         </ul>
                       </div>
-                    </div>
-                  </div>
-
-
-                  <div class="card card-outline card-header-divider">
-                    <div class="card-header">Link Wallet</div>
-                    <div class="card-content card-content-padding">
-                      <p>Sign a message with your wallet to link your account to your wallet.</p>
-                      <p>This verifies your control of the wallet and does not submit a transaction.</p>
-                      <a @click="${linkUserClicked}" class="button button-fill small-button" style="margin-bottom: 10px;">Begin Signing</a>
                     </div>
                   </div>
 

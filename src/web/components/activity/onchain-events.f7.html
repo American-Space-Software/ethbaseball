@@ -1,7 +1,7 @@
 <template>
 
 
-    <div class="list list-dividers-ios" style="margin-top: 0px;">
+    <div class="list list-dividers-ios onchain-events" style="margin-top: 0px;">
       <ul>
 
         ${onChainEvents.transactions?.map( t => $h`
@@ -12,7 +12,7 @@
                         <div class="item-title">
                             <!-- Item header, must be first child of item-title -->
                             <div class="item-header">
-                                Transaction hash <a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${t.transaction._id}" class="external">${ walletService.truncateEthAddress(t.transaction._id) }</a>
+                                Transaction hash ${ walletService.truncateEthAddress(t.transaction._id) }
                             </div>
 
                             ${t.events?.length > 0 && hasEventName(t.events) ? $h` 

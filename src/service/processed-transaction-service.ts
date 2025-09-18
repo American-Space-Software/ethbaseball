@@ -170,6 +170,13 @@ class ProcessedTransactionService {
 
     async buildListWithEvents(events:ProcessedEvent[], options?:any) {
 
+        if (events.length <= 0) {
+            return {
+                transactions: [],
+                teams: []
+            }
+        } 
+
         let transactions = await this.getByIds( events.map( e => e.processedTransactionId), options)
 
 

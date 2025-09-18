@@ -59,7 +59,7 @@ class UserController {
                 previousPage = page - 1
             }
 
-            if (model.offChainEvents?.length == 25 || model.onChainEvents?.transactions?.length == 25 ) {
+            if (model.offChainEvents?.events?.length == 25 || model.onChainEvents?.transactions?.length == 25 ) {
                 nextPage = page + 1
             }
 

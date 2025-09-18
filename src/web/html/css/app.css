@@ -2740,3 +2740,23 @@ td.action, th.action {
   width: 75px;
   font-weight: bold;
 }
+
+.owner-info {
+  font-size: .85em;
+}
+.owner-info .row .label {
+  width: 175px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.owner-info .row .value {
+  display: inline-block;
+  width: 150px;
+  text-align: right;
+}
+
+.onchain-events a {
+  font-weight: bold;
+}
+

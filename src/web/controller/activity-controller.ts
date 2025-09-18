@@ -17,8 +17,6 @@ class ActivityController {
 
     constructor(
         @inject("discord") private discord:Function,
-        @inject("env") private env,
-        @inject("eventTarget") private eventTarget,
          private universeWebService:UniverseWebService,
          private gameTransactionWebService:GameTransactionWebService
     ) {}

@@ -1236,17 +1236,26 @@ let startWebServer = async () => {
 
       let owner:Owner = await ownerService.get(address)
 
-      let offChainEvents = await offchainEventService.getByOwner(ContractType.DIAMONDS, owner, options) //await offchainEventService.getByTokenId(ContractType.DIAMONDS, tokenId, options)      
+      if (!owner) {
+              return res.json({
+                owner: { _id: address },
+                offChainEvents: [],
+                onChainEvents: []
+              })
+      }
+
       
+
+      let season:Season = await seasonService.getMostRecent()
+
+
+      let offChainEvents = await offchainEventService.getByOwner(ContractType.DIAMONDS, owner, options) //await offchainEventService.getByTokenId(ContractType.DIAMONDS, tokenId, options)      
+      let offChainEventsVm = await offchainEventService.getOffChainEventViewModels(offChainEvents, season)
       let onChainEvents = await processedTransactionService.listWithEventsByAddress(address, options)
-
-
-      // let onChainEvents = await processedTransactionService.getAllEventsByAddress(owner._id, options)
-      // let onChainTransactions = processedTransactionService.groupEventsByTransaction(onChainEvents)
 
       return res.json({
         owner: owner,
-        offChainEvents: offChainEvents,
+        offChainEvents: offChainEventsVm,
         onChainEvents: onChainEvents
       })
 
