@@ -475,6 +475,18 @@ class LadderService {
 
                 //Update finances for team.
                 this.financeService.updateFinanceSeason(tls.financeSeason, gameFinances)
+
+
+                let counts = await this.gameService.getGameCountsByTeamSeason(team, season, date, options)
+
+
+                //Update games remaining/played
+                tls.financeSeason.homeGamesPlayed = counts.homeGamesPlayed
+                tls.financeSeason.totalGamesPlayed = counts.totalGamesPlayed
+
+                tls.financeSeason.homeGamesRemaining = counts.homeGamesRemaining
+                tls.financeSeason.totalGamesRemaining = counts.totalGamesRemaining
+
                 tls.financeSeason.diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
 
                 this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium, this.financeService.calculateProjectedPayroll(plssPlain))   
@@ -581,21 +593,6 @@ class LadderService {
                 let awayStartingPitcher:RotationPitcher = this.teamService.getStartingPitcher(awayRotation, date)
 
                 this.gameService.startGame(game, league.rank, home, homeTlsPlain, homePlssPlain, homeStartingPitcher, away, awayTlsPlain, awayPlssPlain, awayStartingPitcher, leagueAverage, date)
-
-                //Update games remaining/played
-                //Home
-                homeTLS.financeSeason.homeGamesPlayed++
-                homeTLS.financeSeason.totalGamesPlayed++
-
-                homeTLS.financeSeason.homeGamesRemaining--
-                homeTLS.financeSeason.totalGamesRemaining--
-
-                //Away
-                awayTLS.financeSeason.awayGamesPlayed++
-                awayTLS.financeSeason.totalGamesPlayed++
-
-                awayTLS.financeSeason.awayGamesRemaining--
-                awayTLS.financeSeason.totalGamesRemaining--
 
 
                 //Update players last game date

@@ -1,5 +1,6 @@
 import { Game } from "../dto/game.js"
 import { League } from "../dto/league.js"
+import { Season } from "../dto/season.js"
 import { Team } from "../dto/team.js"
 
 
@@ -13,6 +14,7 @@ interface GameRepository {
     getByDateAndTeamIds(date:Date, teams:Team[], options?:any): Promise<string[]>
     getByDatesAndTeamIds(dates:Date[], teams:Team[], options?:any): Promise<string[]>
     getIdsByTeamAndPeriod(team:Team, start:Date, end:Date, options?:any)
+    getIdsByTeamAndSeason(team:Team, season:Season, options?:any)
     getReadyForIncrementIds(options?:any) : Promise<string[]>
     getLastUpdate(options?:any) : Promise<Date>
     getRecentScheduledDate(options?:any) : Promise<Date>
@@ -24,6 +26,7 @@ interface GameRepository {
     getCompleteAndUnfinishedByDateIds(date:Date, options?:any): Promise<string[]>
     getInProgressIdsByDate(date:Date, options?:any) : Promise<string[]>
     updateGameRatings(games:Game[], options?:any)
+    getGameCountsByTeamSeason(team:Team, season:Season, date:Date, options?:any)
 }
 
 export {

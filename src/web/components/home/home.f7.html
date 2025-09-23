@@ -13,7 +13,7 @@
                   <div class="block block-outline block-strong">
 
                     <div class="block-title block-title-large">
-                      Step Into the Owner’s Box. The League Awaits.
+                      Global baseball esports league with ownership on Ethereum. Compete in the Business of Baseball.
                     </div>
 
                     <p class="lead">
@@ -38,7 +38,6 @@
                   </div>
 
               ` : $h` `}
-
 
               <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios home-nav">
                   <ul>
@@ -268,26 +267,13 @@
 
     let statService = ContainerService.getInstance(StatService)
 
-    let authInfo
-    let vm
-    let contractBalance
-    let discord 
+    let authInfo = props.authInfo
+    let vm = props.vm
+    let contractBalance = props.contractBalance
+    let discord = props.discord 
 
 
     $on('pageBeforeIn', async (e) => {
-    
-      await $update()
-
-      $f7.preloader.show()
-
-      let result = await props.fetchHome
-
-      $f7.preloader.hide()
-
-      authInfo = result.authInfo
-      vm = result.vm
-      contractBalance = result.contractBalance
-      discord = result.discord
 
       let swiper = $f7.swiper.create('.swiper', {
         slidesPerView: 2,

@@ -445,7 +445,7 @@
                                                             ${Math.floor(teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance / teamComponentService.team.financeSeason.homeGamesPlayed).toLocaleString()}
                                                         ` : $h`0`}
                                                     </td>
-                                                    <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance}</td>
+                                                    <td class="numeric-cell">${teamComponentService.team.financeSeason.attendance.seasonToDate.totalAttendance.toLocaleString()}</td>
                                                     <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
                                                     <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.total)}</td>
                                                     <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}</td>

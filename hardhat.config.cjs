@@ -21,18 +21,18 @@ const PROVIDER_LINK = process.env.PROVIDER_LINK
  */
  module.exports = {
 
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY
-  },
+  // etherscan: {
+  //   apiKey: ETHERSCAN_API_KEY
+  // },
 
-  gasReporter: {
-    L1: "ethereum",
-    currency: "usd",
-    etherscan: ETHERSCAN_API_KEY,    // Etherscan api key
-    coinmarketcap: COINMARKETCAP_API_KEY,
-    enabled: true,
-    includeIntrinsicGas: true
-  },
+  // gasReporter: {
+  //   L1: "ethereum",
+  //   currency: "usd",
+  //   etherscan: ETHERSCAN_API_KEY,    // Etherscan api key
+  //   coinmarketcap: COINMARKETCAP_API_KEY,
+  //   enabled: true,
+  //   includeIntrinsicGas: true
+  // },
 
   solidity: {
     version: "0.8.21",

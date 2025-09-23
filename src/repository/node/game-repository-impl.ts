@@ -256,6 +256,37 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     }
 
+    async getIdsByTeamAndSeason(team:Team, season:Season, options?:any) {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                teamId: team._id,
+                start: dayjs(season.startDate).format("YYYY-MM-DD"),
+                end: dayjs(season.endDate).format("YYYY-MM-DD")
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select 
+                g._id
+            from game g 
+            INNER JOIN game_team gt on gt.gameId = g._id
+            WHERE 
+                gt.teamId = :teamId AND
+                g.startDate >= :start && g.startDate <= :end
+            ORDER BY g.startDate ASC
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+    }
+
+
     async getByDateIds(date:Date, options?:any): Promise<string[]> {
 
         let s = await this.sequelize()
@@ -530,7 +561,53 @@ class GameRepositoryNodeImpl implements GameRepository {
         })
 
         await Game.bulkCreate(updateGames, queryOptions)
-}
+    }
+
+    async getGameCountsByTeamSeason(team:Team, season:Season, date:Date, options?:any) {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                teamId: team._id,
+                start: dayjs(season.startDate).format("YYYY-MM-DD"),
+                end: dayjs(season.endDate).format("YYYY-MM-DD"),
+                currentDate: dayjs(date).format("YYYY-MM-DD")
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            SELECT
+            COALESCE(SUM(g.gameDate <= :currentDate), 0) AS totalGamesPlayed,
+            COALESCE(SUM(g.gameDate >  :currentDate), 0) AS totalGamesRemaining,
+            COALESCE(SUM(g.gameDate <= :currentDate
+                AND JSON_UNQUOTE(JSON_EXTRACT(g.home, '$._id')) = CAST(:teamId AS CHAR)), 0) AS homeGamesPlayed,
+            COALESCE(SUM(g.gameDate >  :currentDate
+                AND JSON_UNQUOTE(JSON_EXTRACT(g.home, '$._id')) = CAST(:teamId AS CHAR)), 0) AS homeGamesRemaining
+            FROM game g
+            JOIN game_team gt ON gt.gameId = g._id
+            WHERE
+            gt.teamId = :teamId
+            -- If you filter the season by date, prefer gameDate to avoid DATETIME vs DATE mismatches:
+            AND g.gameDate >= :start
+            AND g.gameDate <= :end;
+
+
+        `, Object.assign(queryOptions, options))
+
+        return {
+            homeGamesPlayed: parseInt(queryResults[0].homeGamesPlayed),
+            homeGamesRemaining: parseInt(queryResults[0].homeGamesRemaining),
+            totalGamesPlayed: parseInt(queryResults[0].totalGamesPlayed),
+            totalGamesRemaining: parseInt(queryResults[0].totalGamesRemaining),
+        }
+
+
+
+    }
 
 }
 

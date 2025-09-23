@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify';
 
 import HomeComponent from '../components/home/home.f7.html'
+
 import ConnectComponent from '../components/connect.f7.html'
 import DraftComponent from '../components/draft.f7.html'
 import AboutComponent from '../components/about.f7.html'
@@ -31,40 +32,30 @@ class HomeController {
         
         return new ModelView(async (routeTo) => {
 
-                const fetchHome = async (routeTo) => {
+            this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
 
-                    this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+            let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
+            let authInfo = await this.loginWebService.getAuthInfo()
 
-                    let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
-                    let authInfo = await this.loginWebService.getAuthInfo()
+            let contractBalance
 
-                    let contractBalance
-
-                    let walletAddresses = await this.walletService.getAddress()
-                    
-                    if (this.walletService.provider && walletAddresses) {
-                        contractBalance = await this.universeWebService.getContractBalance()
-                    }
-
-                    return {
-                            
-                        contractBalance: contractBalance,
-                        authInfo: authInfo,
-                        vm: vm,
-                        discord: this.discord
-                    }
-
-
-                }
-
+            let walletAddresses = await this.walletService.getAddress()
+            
+            if (this.walletService.provider && walletAddresses) {
+                contractBalance = await this.universeWebService.getContractBalance()
+            }
 
             return {
-                fetchHome: fetchHome(routeTo)
+                contractBalance: contractBalance,
+                authInfo: authInfo,
+                vm: vm,
+                discord: this.discord
             }
 
         }, HomeComponent)
 
     }
+
 
     @routeMap("/connect")
     async showConnectStarted(): Promise<ModelView> {

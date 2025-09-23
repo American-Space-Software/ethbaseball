@@ -146,6 +146,22 @@ class GameService {
         return games
     }
 
+    async getByTeamAndSeason(team:Team, season:Season, options?:any) {
+
+        let ids = await this.gameRepository.getIdsByTeamAndSeason(team, season, options)
+        if (ids.length == 0) return []
+
+        let games:Game[] = await this.gameRepository.getByIds(ids, options)
+        
+        //Sort so it matches ids order
+        games.sort(function(a,b) {
+            return ids.indexOf( a._id ) - ids.indexOf( b._id )
+        })
+
+        return games
+    }
+
+
 
     async getIdsByDate(date:Date, options?:any) {
         return this.gameRepository.getByDateIds(date, options)
@@ -169,6 +185,10 @@ class GameService {
 
     async updateGameRatings(games:Game[], options?:any) {
         return this.gameRepository.updateGameRatings(games, options)
+    }
+
+    async getGameCountsByTeamSeason(team:Team, season:Season, date:Date, options?:any) {
+        return this.gameRepository.getGameCountsByTeamSeason(team, season, date, options)
     }
 
     async getGames(date:Date, league:League, options?:any) : Promise<GamesViewModel> {
