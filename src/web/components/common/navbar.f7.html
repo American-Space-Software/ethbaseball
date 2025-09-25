@@ -10,9 +10,40 @@
       <div class="left">
 
         <div class="small-only-flex">
-          <a href="/" class="link icon-only" aria-label="Home">
-            <img src="${logo}" width="42" height="42" alt="Logo" />
-          </a>
+
+            <a href="/" class="link icon-only" aria-label="Home">
+              <img src="${logo}" width="42" height="42" alt="Logo" />
+            </a>
+
+            <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}`)}" class="link color-white first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
+            <a href="${universeWebService.fullLink(`/games`)}" class="link color-white ${tabLink == '/games' ? 'active' : ''}">Scores</a>
+            <a href="${universeWebService.fullLink(`/players/`)}"  class="link color-white ${tabLink == '/players/' ? 'active' : ''}">Players</a>
+
+            <a href="#" class="popover-open link color-white ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">More</a>
+
+            
+            <div class="popover popover-menu">
+                <div class="popover-angle"></div>
+                <div class="popover-inner">
+                  <div class="list inset list-strong list-dividers-ios">
+                    <ul>
+                      <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li>
+                      <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
+                      <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
+                      <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li>
+
+                      ${env.OPENSEA_COLLECTION_URL ? $h`
+                        <li><a class="list-button external popover-close" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a></li>
+                        ` : $h` `}
+                      <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
+
+
+                    </ul>
+                  </div>
+                </div>
+            </div>
+
+
         </div>
 
         <div class="large-only-flex">
@@ -27,7 +58,12 @@
           <a href="/u/owners" class="link color-white ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a>
           <a href="/activity"  class="link color-white ${tabLink == '/activity' ? 'active' : ''}">Activity</a>
           <a href="/about"  class="link color-white ${tabLink == '/about' ? 'active' : ''}">About</a>
+          <a class="link external color-white" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a>
 
+          ${env.OPENSEA_COLLECTION_URL ? $h`
+            <a class="link external color-white" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a>
+            ` : $h` `}
+          <a class="link external color-white" href="${discord}" target="_blank">💬 Discord</a>
 
         </div>
 
@@ -398,6 +434,7 @@
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let diamondWebService = ContainerService.getInstance(DiamondWebService)
     let env = ContainerService.getInstance("env")()
+    let discord = ContainerService.getInstance("discord")
 
     let showHome
     let showBack

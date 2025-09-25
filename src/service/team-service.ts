@@ -32,6 +32,8 @@ import { GameTransaction } from "../dto/game-transaction.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { GameService } from "./game-service.js";
+import { UserService } from "./user-service.js";
+import { User } from "../dto/user.js";
 
 const MAX_ROSTER_SIZE = 13
 const HIGHEST_CITY_POPULATION = 8804190
@@ -142,7 +144,7 @@ class TeamService {
         })
     }
 
-    async getTeamViewModel(team: Team, season: Season, options?: any): Promise<TeamViewModel> {
+    async getTeamViewModel(team: Team, season: Season, currentDate:Date, userOwner:User, options?: any): Promise<TeamViewModel> {
 
         let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)
 
@@ -156,14 +158,9 @@ class TeamService {
 
         let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTokenId(team.tokenId, options)
         let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
-        
-        //Get games for teams
-        // let todaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().toDate(), t.team)
-        // let yesterdaysGames:Game[] = await this.gameService.getByDateAndTeam(dayjs().subtract(1, 'day').toDate(), t.team)
 
-
-        let start = dayjs().subtract(4, 'days').toDate()
-        let end = dayjs().add(2, 'days').toDate()
+        let start = dayjs(currentDate).subtract(4, 'days').toDate()
+        let end = dayjs(currentDate).add(2, 'days').toDate()
 
         let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
         let games = []
@@ -179,9 +176,6 @@ class TeamService {
         }
 
 
-
-
-
         return {
             team: {
                 _id: team._id,
@@ -193,7 +187,6 @@ class TeamService {
                 abbrev: team.abbrev,
                 city: t.city,
                 stadium: t.stadium,
-                ownerId: team.ownerId,
                 lineups: t.lineups,
                 seasonRating: t.seasonRating,
                 longTermRating: t.longTermRating,
@@ -219,7 +212,11 @@ class TeamService {
                         financeSeason: t.financeSeason
                     }
                 }),
-                
+                owner: {
+                    _id: team.ownerId,
+                    discordId: userOwner?.discordId,
+                    discordUsername: userOwner?.discordProfile?.username
+                }
             },
             players: plss.map(pls => {
 
@@ -1529,7 +1526,7 @@ interface TeamViewModel {
         abbrev: string
         city: City
         stadium: Stadium
-        ownerId: string
+        
         rank?: number
         seasonRating?: Rating
         longTermRating?: Rating
@@ -1549,7 +1546,13 @@ interface TeamViewModel {
         // teamCost
 
         diamondMintPasses: DiamondMintPass[]
-        diamondBalance:string
+        diamondBalance:string,
+
+        owner?: {
+            _id: string
+            discordId?:string
+            discordUsername?:string
+        }
     }
 
     players?: PlayerRowViewModel[]

@@ -286,7 +286,6 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     }
 
-
     async getByDateIds(date:Date, options?:any): Promise<string[]> {
 
         let s = await this.sequelize()
@@ -394,7 +393,6 @@ class GameRepositoryNodeImpl implements GameRepository {
         return queryResults?.map(r => r._id)
 
     }
-
 
     async getUnfinishedByDateIds(date:Date, options?:any): Promise<string[]> {
 

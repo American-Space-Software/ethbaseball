@@ -1725,18 +1725,50 @@ h1 {
 
 .main-card {
   display: flex;
+  margin-top: 15px;
+  background: #172e49;
+  color: white;
+  max-width: 100%;
+  width: 100%;
+}
+
+.dark .main-card  {
+  background: unset;
+  color: unset;
+}
+
+
+.main-card .logo-wrapper {
+
+  width: 300px;
+  margin: auto auto;
+}
+
+.main-card .left img {
+  max-width: 100%;
+}
+
+.main-card .right img {
+  width: 520px;
+  margin: 15px;
+}
+
+.main-card .description {
+  font-size: 27px;
+  font-weight: bold;
+  padding: 10px;
 }
 
 .main-card .left {
   flex: 0 0 50%;
+  text-align: center;
 }
 
 .main-card .right {
   flex:1;
   padding-left: 10px;
+  font-size: .85em;
 }
-
-
 
 
 .main-button {
@@ -1750,6 +1782,7 @@ h1 {
   margin-bottom: 20px;
   margin-left: 20px;
 }
+
 
 
 @media only screen and (max-width: 1024px) {
@@ -1773,11 +1806,15 @@ h1 {
   }
 
   .main-card {
+    margin-top: 0px;
     display: block;
   }
 
   .main-card .left {
+    display: block;
     width: 100%;
+    max-width: 100%;
+    min-width: 100%;
   }
 
   .main-card .right {
@@ -1861,6 +1898,11 @@ h1 {
   display: inline-block;
   width: 55px;
   font-weight: bold;
+}
+
+.team-record .owner-label {
+  font-weight: bold;
+  font-size: 1.2em;
 }
 
 .city-info {
@@ -2760,3 +2802,21 @@ td.action, th.action {
   font-weight: bold;
 }
 
+
+
+.main-banner {
+  display: flex;
+}
+
+.main-banner .left {
+  flex: 0 0 50%;
+}
+
+.main-banner .right {
+  flex: 0 0 50%;
+}
+
+.block ul li {
+  margin-bottom: 5px;
+  font-size: .90em;
+}

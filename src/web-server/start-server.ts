@@ -149,7 +149,6 @@ let startWebServer = async () => {
 
 
 
-
   // initalize sequelize with session store
   const SequelizeStore = connectSessionSequelize(session.Store)
 
@@ -1304,7 +1303,13 @@ let startWebServer = async () => {
 
       let season: Season = await seasonService.getByDate(startDate)
 
-      return res.json(await teamService.getTeamViewModel(team, season))
+      let user:User 
+
+      if (team.ownerId) {
+          user = await userService.getByAddress(team.ownerId)
+      }
+
+      return res.json(await teamService.getTeamViewModel(team, season, universe.currentDate, user))
 
     } catch (ex) {
       console.log(ex)

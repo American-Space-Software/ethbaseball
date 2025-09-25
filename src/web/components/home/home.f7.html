@@ -5,55 +5,82 @@
 
     <div class="page-content">
 
+        <div class="swiper scoreboard">
+            <!-- Slides wrapper -->
+            <div class="swiper-wrapper">
+
+              ${vm.todaysGames?.inProgress?.map( game => $h`
+                <div class="swiper-slide">
+                    <${InProgress} game=${game} />
+                </div>
+              `)}
+
+              ${vm.todaysGames?.finished?.map( game => $h`
+                <div class="swiper-slide">
+                    <${Result} game=${game} />
+                </div>
+              `)}
+
+              ${vm.todaysGames?.scheduled?.map( game => $h`
+                <div class="swiper-slide">
+                    <${Scheduled} game=${game} />
+                </div>
+              `)}
+
+
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
 
         <div class="fixed-width-content center">
 
               ${!authInfo?._id ? $h`
 
-                  <div class="block block-outline block-strong">
+                  <div class="main-card">
 
-                    <div class="block-title block-title-large">
-                      Global baseball esports league with ownership on Ethereum. Compete in the Business of Baseball.
+                    <div class="left">
+
+                      <div class="logo-wrapper">
+                        <img src="${logo}" />
+                      </div>
+                      
+                      <div class="description">
+                        Compete in the Business of Baseball. Powered by Ethereum.
+                      </div>
+
+                      <a class="button button-outline main-button external color-white" href="${discord}" target="_blank">Join us on Discord</a>
+                      <a class="button button-fill main-button color-green"  href="/about">Learn More</a>
+
                     </div>
 
-                    <p class="lead">
-                      Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator.
-                      Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                      where teams and Diamonds are bought, sold, and earned.
-
-                      <ul>
-                        <li>Own a franchise as an NFT (ERC-721) on Ethereum.</li>
-                        <li>10 leagues · 280 teams · 162-day seasons with a 30-day offseason.</li>
-                        <li>Daily simulated games with live box scores and play-by-play.</li>
-                        <li>Diamonds (ERC-20) fund contracts, payroll, and operations.</li>
-                        <li>Promotion & relegation — climb to the Apex League or fall behind.</li>
-                        <li>100% open source (MIT) — fork and run your own custom universe.</li>
-                      </ul>
-
-                    </p>
-
-                    <a class="button button-outline main-button external" href="${discord}" target="_blank">Join us on Discord</a>
-                    <a class="button button-fill main-button popup-open" data-popup=".login-popup"  href="#">Login</a>
+                    <div class="right">
+                      <img src="${gameShot}" />
+                    </div>
 
                   </div>
 
-              ` : $h` `}
+                  <div class="block block-strong block-outline">
+                      <p>
+                        Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator.
+                        Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
+                        where teams and Diamonds are bought, sold, and earned.
 
-              <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios home-nav">
-                  <ul>
-                    <li><a class="link" href="/l/standings/1">🏆 Standings</a></li>
-                    <li><a class="link" href="/games">⚾ Scores</a></li>
-                    <li><a class="link" href="/players/">🧢 Players</a></li>
-                    <li><a class="link" href="/u/owners">👤 Owners</a></li>
-                    <li><a class="link" href="/activity">📝 Activity</a></li>
-                    <li><a class="link external" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">🔷 Buy Diamonds (Uniswap)</a></li>
-                    ${env.OPENSEA_COLLECTION_URL ? $h`
-                      <li><a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">🌊 Buy a Team (OpenSea)</a></li>
-                      ` : $h` `}
-                    <li><a class="link" href="/about">📘 About</a></li>
-                    <li><a class="link external" href="${discord}" target="_blank">💬 Discord</a></li>
-                  </ul>
-              </div>
+                        <ul>
+                          <li>Own a franchise as an NFT (ERC-721) on Ethereum.</li>
+                          <li>10 leagues · 280 teams · 162-day seasons with a 30-day offseason.</li>
+                          <li>Daily simulated games with live box scores and play-by-play.</li>
+                          <li>Diamonds (ERC-20) fund contracts, payroll, and operations.</li>
+                          <li>Promotion & relegation — climb to the Apex League or fall behind.</li>
+                          <li>100% open source (MIT) — fork and run your own custom universe.</li>
+                        </ul>
+
+                      </p>
+                  </div>
+
+
+              ` : $h` `}
 
 
               ${authInfo?.address ? $h`
@@ -257,6 +284,10 @@
   import InProgress from "./in-progress.f7.html"
   import Scheduled from "./scheduled.f7.html"
   import Result from "./result.f7.html"
+
+  import gameShot from "../../html/images/screenshots/game.png"
+  import logo from "../../html/images/logo.png"
+
 
   export default (props, { $, $on, $f7, $update }) => {
 

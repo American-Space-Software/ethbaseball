@@ -36,10 +36,23 @@
                                 <span class="label">Ranked: </span> ${ teamComponentService.team.overallRank } <br />
                                 <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} 
                                             <span class="separator">|</span>  ${teamComponentService.team.overallRecord.gamesBack} GB<br />
-                                <span class="label">Cash: </span> <a data-popup=".front-office-popup" class="link popup-open" href="#">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</a><br />
-                                <span class="label">Owner: </span> ${!teamComponentService.team.ownerId ? $h`Team is unminted and computer managed. <a href="/t/mint/${teamComponentService.team.tokenId}" class="link">Mint Team</a>
-                                ` : $h`<a href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${teamComponentService.team.ownerId}" class="external">${walletService.truncateEthAddress(teamComponentService.team.ownerId)}</a>`}
+                                <span class="label">Cash: </span> <a data-popup=".front-office-popup" class="link popup-open" href="#">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</a><br /><br />
+                            
+                                ${teamComponentService.team.owner?._id ? $h`
+                        
+                                    <span class="owner-label">Owner</span> <br />
 
+                                    <span class="label">Wallet:</span> <a class="link" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${teamComponentService.team.owner?._id}" class="external">${walletService.truncateEthAddress(teamComponentService.team.owner?._id)}</a><br />
+                        
+                                    ${teamComponentService.team.owner?.discordId ? $h`
+                                        <span class="label">Discord:</span> <a class="external link" href="https://discord.com/users/${teamComponentService.team.owner?.discordId}">${teamComponentService.team.owner?.discordUsername}</a>
+                                    ` : $h` `}
+
+                                ` : $h`
+                                    Team is unminted and computer managed. <a href="/t/mint/${teamComponentService.team.tokenId}" class="link">Mint Team</a>
+                                `}
+                            
+                            
                             </div>
 
                         </div>
@@ -61,6 +74,9 @@
 
                     </ul>
                 </div>
+
+
+
 
                 <div class="block-title block-title-medium">Current Schedule</div>
                 <div class="block block-outline block-strong">
