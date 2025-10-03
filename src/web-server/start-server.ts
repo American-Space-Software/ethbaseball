@@ -47,7 +47,6 @@ import { OffchainEventService } from '../service/offchain-event-service.js'
 import { ContractType, OwnerSorts, TeamCost } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { PostService } from '../service/post-service.js'
-import { Post } from '../dto/post.js'
 import { ProcessedTransactionService } from '../service/processed-transaction-service.js'
 import { DiamondMintPassService } from '../service/diamond-mint-pass-service.js'
 import { TeamMintPassService } from '../service/team-mint-pass-service.js'
@@ -118,7 +117,6 @@ let startWebServer = async () => {
   let teamMintPassService:TeamMintPassService = container.get(TeamMintPassService)
 
   let offchainEventService:OffchainEventService = container.get(OffchainEventService)
-  let postService:PostService = container.get(PostService)
   let processedTransactionService:ProcessedTransactionService = container.get(ProcessedTransactionService)
 
   

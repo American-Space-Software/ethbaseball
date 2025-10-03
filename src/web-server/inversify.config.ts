@@ -526,22 +526,6 @@ async function getContainer(command?:GetContainerCommand) {
 
           }
 
-
-          // this.success({user: Express.User}, info?: object): void;
-      
-          //// *** Other available inherited methods
-          //// * fail(challenge?: {message?: string, [key: string]: any } | string | number, status?: number): void;
-          // this.fail('not your day body'); // default statusCode 401
-          // this.fail('not your day body', 403); // change for statusCode 403
-      
-          //// * redirect(url: string, status?: number): void;
-          // this.redirect('https://url');
-      
-          //// * pass() // ignores check
-          // this.pass();
-      
-          //// * error(err: any)
-          // this.error('error of some kind');
         }
     }
 

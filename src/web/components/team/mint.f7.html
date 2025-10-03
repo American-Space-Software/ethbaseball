@@ -12,9 +12,8 @@
 
           ${!team.ownerId ? $h`
 
-          <div class="card">
-            <div class="card-header">Mint Team</div>
-            <div class="card-content card-content-padding">
+            <div class="block-title block-title-medium">Mint Team</div>
+            <div class="block block-strong block-outline">
 
               <div class="team-info">
 
@@ -37,195 +36,169 @@
               </div>
 
             </div>
-          </div>
 
-          ${mintInfo ? $h`
+            ${mintInfo ? $h`
 
-            ${!mintInfo.error ? $h`
-              <div class="card">
-                <div class="card-header">Franchise Details</div>
-                <div class="card-content data-table">
-
-                  <ul class="mint-help">
-                    <li>When you receieve the team it will include the team's 🔷 Diamond balance.</li>
-                    <li>Those diamonds are added with the franchise fee to give a final total in Diamonds.</li>
-                    <li>Teams can be minted with Diamonds or ETH directly.</li>
-                  </ul>
-
-                  <table>
-                    <tbody>
-                      <tr>
-                        <td class="label-cell">🔷 Diamond Balance:</td>
-                        <td class="numeric-cell">${universeWebService.displayDiamonds(team.financeSeason.diamondBalance)}
-                        </td>
-
-                      </tr>
-                      ${mintInfo?.diamonds ? $h`
-                        <tr>
-                          <td class="label-cell">🔷 Franchise Fee:</td>
-                          <td class="numeric-cell">${universeWebService.displayDiamonds( mintInfo.diamonds.revenueWithMultiplier )}
-                          </td>
-                        </tr>
-                      ` : $h`
-                        
-                      `}
-
-                    </tbody>
-                  </table>
-
-                  <br /><br />
-
-                  ${walletService.correctNetwork ? $h`
-
-                    <div class="block-title block-title-small">Cost
-
-                    </div>
-
+              ${!mintInfo.error ? $h`
+                  <div class="block-title block-title-medium">Franchise Details</div>
+                  <div class="block block-strong block-outline data-table">
                     <table>
                       <tbody>
+                        <tr>
+                          <td class="label-cell">🔷 Diamond Balance:</td>
+                          <td class="numeric-cell">${universeWebService.displayDiamonds(team.financeSeason.diamondBalance)}
+                          </td>
 
-                        ${mintInfo?.diamonds != undefined ? $h`
-                          
-                          <tr class="total">
-                            <td class="label-cell">Mint With Diamonds:</td>
-                            <td class="numeric-cell">
-
-                              ${BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds) ? $h`
-                                ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
-                              ` : $h`
-                                ${universeWebService.displayDiamonds(authInfo.diamondBalance)} / ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
-                              `}
-
+                        </tr>
+                        ${mintInfo?.diamonds ? $h`
+                          <tr>
+                            <td class="label-cell">🔷 Franchise Fee:</td>
+                            <td class="numeric-cell">${universeWebService.displayDiamonds( mintInfo.diamonds.revenueWithMultiplier )}
                             </td>
                           </tr>
-
-                        ` : $h` `}
-
-  
-                        ${mintInfo.eth?.ethCost ? $h`
-
-                          <tr>
-                            <td colspan="2" style="text-align: center;">- or -</td>
-                          </tr>
-
-                          <tr class="total">
-                            <td class="label-cell">Mint With ETH</td>
-                            <td class="numeric-cell">
-                              ${ethers.formatUnits(mintInfo.eth.ethCost, 'ether')} ETH
-                            </td>
-                          </tr>
-                        ` : $h` `}
-
-                        ${showStartMintButton ? $h`
-                          <tr>
-                              <td colspan="2" class="label-cell">
-                                <a class="button button-fill small-button center" @click="${mintTeamClick}">Start Mint Process</a>
-                              </td>
-                          </tr>
-                        ` : $h` `}
-
-                        ${teamMintPasses?.eth || teamMintPasses?.diamond ? $h`
+                        ` : $h`
                           
-                            <tr>
-                                <td colspan="2" class="label-cell">
+                        `}
 
-                                  ${ isSigned(teamMintPasses?.eth) || isSigned(teamMintPasses?.diamond) ? $h`
-                                    
-                                    ${showMintWithDiamonds && isSigned(teamMintPasses.diamond) ? $h`
-                                      <br />
-                                      <a class="button button-fill small-button center" @click="${mintDiamondsTeamClick}">Mint with Diamonds 🔷</a>
-                                    ` : $h` `}
-
-                                    ${isSigned(teamMintPasses.eth) ? $h`
-                                      <br />
-                                      <a class="button button-outline small-button center" @click="${mintETHTeamClick}">Mint with ETH</a>
-                                    ` : $h` `}
-
-
-                                  ` : $h`
-
-                                    Processing request. Please wait... <div class="preloader"></div>
-                                  
-                                  ` }
-
-                                </td>
-                            </tr>
-
-                        ` : $h` `}
-
-  
                       </tbody>
                     </table>
-
+                  </div>    
                   
+                  ${walletService.correctNetwork ? $h`
+
+                    <div class="block-title block-title-medium">Cost</div>
+                    <div class="block block-strong block-outline data-table">
+                      <table>
+                        <tbody>
+
+                          ${mintInfo?.diamonds != undefined ? $h`
+                            
+                            <tr class="total">
+                              <td class="label-cell">Mint With Diamonds:</td>
+                              <td class="numeric-cell">
+
+                                ${BigInt(authInfo.diamondBalance) >= BigInt(mintInfo.diamonds.totalDiamonds) ? $h`
+                                  ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
+                                ` : $h`
+                                  ${universeWebService.displayDiamonds(authInfo.diamondBalance)} / ${universeWebService.displayDiamonds(mintInfo.diamonds.totalDiamonds)}
+                                `}
+
+                              </td>
+                            </tr>
+
+                          ` : $h` `}
+
+    
+                          ${mintInfo.eth?.ethCost ? $h`
+
+                            <tr>
+                              <td colspan="2" style="text-align: center;">- or -</td>
+                            </tr>
+
+                            <tr class="total">
+                              <td class="label-cell">Mint With ETH</td>
+                              <td class="numeric-cell">
+                                ${ethers.formatUnits(mintInfo.eth.ethCost, 'ether')} ETH
+                              </td>
+                            </tr>
+                          ` : $h` `}
+
+                          ${showStartMintButton ? $h`
+                            <tr>
+                                <td colspan="2" class="label-cell">
+                                  <a class="button button-fill small-button center" @click="${mintTeamClick}">Start Mint Process</a>
+                                </td>
+                            </tr>
+                          ` : $h` `}
+
+                          ${teamMintPasses?.eth || teamMintPasses?.diamond ? $h`
+                            
+                              <tr>
+                                  <td colspan="2" class="label-cell">
+
+                                    ${ isSigned(teamMintPasses?.eth) || isSigned(teamMintPasses?.diamond) ? $h`
+                                      
+                                      ${showMintWithDiamonds && isSigned(teamMintPasses.diamond) ? $h`
+                                        <br />
+                                        <a class="button button-fill small-button center" @click="${mintDiamondsTeamClick}">Mint with Diamonds 🔷</a>
+                                      ` : $h` `}
+
+                                      ${isSigned(teamMintPasses.eth) ? $h`
+                                        <br />
+                                        <a class="button button-outline small-button center" @click="${mintETHTeamClick}">Mint with ETH</a>
+                                      ` : $h` `}
+
+
+                                    ` : $h`
+
+                                      Processing request. Please wait... <div class="preloader"></div>
+                                    
+                                    ` }
+
+                                  </td>
+                              </tr>
+
+                          ` : $h` `}
+
+    
+                        </tbody>
+                      </table>
+                    </div>
+
                   ` : $h`
                     <br />
-                    <div class="block">
+                    <div class="block block-strong block-outline">
                       Connect wallet to correct network to mint.
                     </div>
   
                   `}
-  
-  
-                </div>
-              </div>              
+
               ` : $h`
 
-              <div class="card">
-                <div class="card-header">Mint Key</div>
-                <div class="card-content card-content-padding">
-
-
-                  <form @submit="${mintKeySubmit}" id="mint-key-form">
-                    <div class="list">
-                      <ul>
-    
-                        <li class="item-content item-input" style="margin-top: 25px;">
-                          <div class="item-inner">
-                            <div class="item-title item-label">Enter Mint Key</div>
-                            <div class="item-input-wrap">
-                              <input type="text" placeholder="Mint Key" name="mintkey" required validate />
-                              <span class="input-clear-button"></span>
+                  <div class="block-title block-title-medium">Mint Key</div>
+                  <div class="block block-strong block-outline">
+                    <form @submit="${mintKeySubmit}" id="mint-key-form">
+                      <div class="list">
+                        <ul>
+      
+                          <li class="item-content item-input" style="margin-top: 25px;">
+                            <div class="item-inner">
+                              <div class="item-title item-label">Enter Mint Key</div>
+                              <div class="item-input-wrap">
+                                <input type="text" placeholder="Mint Key" name="mintkey" required validate />
+                                <span class="input-clear-button"></span>
+                              </div>
                             </div>
-                          </div>
-                        </li>
-    
-                        <li class="item-content" style="display: block;">
-                          <button type="submit" class="button button-fill small-button save-button color-greeen">Enter</button>
-                        </li>
-                      </ul>
-                    </div>
-                  </form>
-    
+                          </li>
+      
+                          <li class="item-content" style="display: block;">
+                            <button type="submit" class="button button-fill small-button save-button color-greeen">Enter</button>
+                          </li>
+                        </ul>
+                      </div>
+                    </form>
+                  </div>
+
+              `}
 
 
 
-                </div>
-
+            ` : $h`
+              <div class="block block-outline">
+                ${authInfo._id ? $h`<a href="#" data-popup=".logged-in-popup" class="popup-open">Link a wallet</a> to mint team.` : $h`<a href="#" data-popup=".login-popup" class="popup-open">Login and link a wallet</a> to mint team.`}
               </div>
-
             `}
 
-
-
           ` : $h`
-
-          <div class="block block-outline">
-            ${authInfo._id ? $h`<a href="/">Link a wallet</a> to mint team.` : $h`Login and link a wallet to mint
-            team.`}
-          </div>
+            <div class="block">
+              Team is already owned.
+            </div>
           `}
 
           ` : $h`
-          <div class="block">
-            Team is already owned.
-          </div>
-          `}
-
-          ` : $h`
-          <div class="block">
-            Error loading team
-          </div>
+            <div class="block">
+              Error loading team
+            </div>
 
           `}
 

@@ -95,7 +95,7 @@ class TeamComponentService {
     }
 
     isTeamOwner() {
-        return (this.authInfo?.address == this.team?.ownerId && this.team?.ownerId != undefined)
+        return (this.authInfo?.address == this.team?.owner?._id && this.team?.owner?._id != undefined)
     }
 
     async loadTeam(tokenId:number, startDate:string, options?:any) {
@@ -108,7 +108,7 @@ class TeamComponentService {
 
             this.authInfo = await this.loginWebService.getAuthInfo()
             let teamViewModel = await this.teamWebService.getByDate(tokenId, startDate)
-            console.log(teamViewModel)
+
             this.team = teamViewModel.team
             this.startDate = startDate
            

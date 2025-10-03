@@ -5,6 +5,8 @@ import { Owner } from "../dto/owner.js";
 
 import { ProcessedEvent } from "../dto/processed-transaction.js";
 import { ethers } from "ethers";
+import { OffchainEventService } from "./offchain-event-service.js";
+import { ContractType } from "./enums.js";
 
 
 
@@ -15,6 +17,7 @@ class OwnerService {
     private ownerRepository:OwnerRepository
     
     constructor(
+        private offchainEventService:OffchainEventService
     ) {}
 
     async get(_id:string, options?:any) {
@@ -67,6 +70,47 @@ class OwnerService {
 
     async removeUserId(owner:Owner, options?:any) {
         return this.ownerRepository.removeUserId(owner, options)
+    }
+
+    async syncOffChainBalances(options?:any) {
+
+        let owners = await this.listByOffChainDiamonds(options)
+
+        console.time(`Syncing offchain balance of ${owners.length} owners`)
+
+        let events = await this.offchainEventService.list(ContractType.DIAMONDS, options)
+
+        let ownerEvents = {}
+
+        for (let e of events) {
+
+            let ownerAddresses = [e.fromAddress, e.toAddress].filter( a => a != undefined && a != null)
+
+            for (let a of ownerAddresses) {
+                let existing = ownerEvents[a]
+                if (!existing) ownerEvents[a] = []
+                ownerEvents[a].push(e)
+            }
+
+        }
+
+
+        let i=1
+        for (let owner of owners) {
+
+            let offchainBalance = this.offchainEventService.getBalanceForOwnerFromEvents(owner, ownerEvents[owner._id] || [])
+
+            if (offchainBalance != owner.offChainDiamondBalance) {
+                this.setOfflineDiamondBalance(owner, offchainBalance)
+                await this.put(owner, options)
+            }
+
+            i++
+        }
+
+        console.timeEnd(`Syncing offchain balance of ${owners.length} owners`)
+
+
     }
 
     setTokenIds(owner:Owner, processedEvents:ProcessedEvent[]) {
@@ -131,19 +175,7 @@ class OwnerService {
         return this.ownerRepository.count(options)
     }
 
-    // async listViewModels(limit: number, skip: number, options?:any): Promise<LeaderboardRowViewModel[]> {
 
-    //     let owners = await this.ownerRepository.list(limit, skip, options)
-
-    //     return owners.map( (o, index) => {
-    //         return {
-    //             _id: o._id,
-    //             count: o.count,
-    //             rank: skip + index + 1
-    //         }
-    //     })
-
-    // }
 
     async putAll(owners:Owner[], options?:any) {
         return this.ownerRepository.putAll(owners, options)

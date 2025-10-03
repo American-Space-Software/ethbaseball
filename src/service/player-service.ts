@@ -1,7 +1,5 @@
 import { inject, injectable } from "inversify"
 
-import fs from "fs"
-
 import { PlayerRepository } from "../repository/player-repository.js"
 import { Player } from "../dto/player.js"
 
@@ -14,13 +12,11 @@ import { Image } from "../dto/image.js"
 import { ContactTypeRollInput, PowerRollInput } from "../dto/roll-input.js"
 
 import glicko2 from "glicko2"
-import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
-import he from "he"
+// import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
 
 import { Animation } from "../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
-import { Client } from "discord.js"
 import { StatService } from "./stat-service.js"
 import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, ContractYear, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings } from "./enums.js"
 import dayjs from "dayjs"
@@ -39,7 +35,7 @@ import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 
 const zodiac = zodiacFn("en")
 
-const parser = new DOMParser()
+// const parser = new DOMParser()
 
 const GLICKO_SETTINGS = {
     // tau : "Reasonable choices are between 0.3 and 1.2, though the system should
@@ -61,6 +57,9 @@ const PLAYER_RETIREMENT_AGE = 41
 @injectable()
 class PlayerService {
 
+    @inject("sequelize")
+    private sequelize:Function
+
     @inject("PlayerRepository")
     private playerRepository: PlayerRepository
 
@@ -72,10 +71,7 @@ class PlayerService {
         private statService: StatService,
         private seasonService:SeasonService,
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
-        private teamLeagueSeasonService:TeamLeagueSeasonService,
-        @inject("discord") private discord: Client,
-        @inject("config") private _config: Function,
-        @inject("getFees") private fees:Function,
+        private teamLeagueSeasonService:TeamLeagueSeasonService
     ) { }
 
 
@@ -1866,6 +1862,44 @@ class PlayerService {
 
     }
 
+
+    async updateAllPercentileRatings() {
+
+        //Make sure that players have percentile ratings. 
+        let s = await this.sequelize()
+
+        await s.transaction(async (t1) => {
+
+            let options = { transaction: t1 }
+
+            let playerPercentileRatings = await this.getPlayerPercentileRatings(options)
+
+            let season:Season = await this.seasonService.getMostRecent(options)
+
+            for (let pRating of playerPercentileRatings) {
+            
+                //Update player
+                let player:Player = await this.get(pRating._id, options)
+
+                player.percentileRatings = pRating
+                player.changed("percentileRatings", true)
+
+                await this.put(player, options)
+
+
+                //Update pls
+                let pls:PlayerLeagueSeason = await this.playerLeagueSeasonService.getByPlayerSeason(player, season, options)
+
+                pls.percentileRatings = pRating
+                pls.changed("percentileRatings", true)
+
+                await this.playerLeagueSeasonService.put(pls, options)
+
+            }
+
+        })
+
+    }
 
 }
 

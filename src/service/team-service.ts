@@ -159,8 +159,8 @@ class TeamService {
         let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTokenId(team.tokenId, options)
         let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
 
-        let start = dayjs(currentDate).subtract(4, 'days').toDate()
-        let end = dayjs(currentDate).add(2, 'days').toDate()
+        let start = dayjs(currentDate).subtract(3, 'days').toDate()
+        let end = dayjs(currentDate).add(3, 'days').toDate()
 
         let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
         let games = []

@@ -66,14 +66,13 @@
                                     <th @click=${sortStandings} data-sort="overallRecord.winPercent" class="numeric-cell">Win%</th>
                                     <th @click=${sortStandings} data-sort="overallRecord.gamesBack" class="numeric-cell">GB</th>
 
-                                    <th @click=${sortStandings} data-sort="seasonRating.rating" class="numeric-cell">Rating</th>
+                                    <th @click=${sortStandings} data-sort="longTermRating.rating" class="numeric-cell">Rating</th>
+
                                     <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell">Cash</th>
                                     <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalRevenue" class="numeric-cell">Projected Revenue</th>
                                     <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalExpenses" class="numeric-cell">Projected Expenses</th>
                                     <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalProfit" class="numeric-cell">Projected Profit</th>
                                     <th @click=${sortStandings} data-sort="teamCost.ethCostDecimal" class="numeric-cell">Cost</th>
-
-
 
                                 </tr>
                             </thead>
@@ -96,7 +95,8 @@
                                         <td class="numeric-cell">${t.overallRecord.losses}</td>
                                         <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
                                         <td class="numeric-cell">${t.overallRecord.gamesBack}</td>
-                                        <td class="numeric-cell">${t.seasonRating.rating.toFixed(0)}</td>
+                                        <td class="numeric-cell">${t.longTermRating.rating.toFixed(0)}</td>
+
                                         <td class="numeric-cell">
                                             ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
                                         <td class="numeric-cell">
@@ -135,6 +135,23 @@
                     </table>
                 </div>
             </div>
+
+
+
+            <div class="block split-row-both">
+              <div>
+                  ${previousLeague ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${previousLeague}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
+                  ` : $h` `}
+              </div>
+              <div>
+                  ${nextLeague ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${nextLeague}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
+                  ` : $h` `}
+              </div>
+            </div>
+
+
 
           </div>
 
@@ -189,6 +206,10 @@
 
         let viewModel = props.viewModel
         let leagueVm
+
+        let previousLeague = viewModel.leagueVm.league.rank == 1 ? undefined : viewModel.leagueVm.league.rank - 1
+        let nextLeague = viewModel.leagueVm.league.rank == 10 ? undefined : viewModel.leagueVm.league.rank + 1
+
 
         const isPromoted = (t) => {
             if (!viewModel.season.promotionRelegationLog) return false

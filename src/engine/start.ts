@@ -24,6 +24,7 @@ import { SeasonService } from "../service/season-service.js"
 import { Season } from "../dto/season.js"
 import { PlayerLeagueSeason } from "../dto/player-league-season.js"
 import { PlayerLeagueSeasonService } from "../service/player-league-season-service.js"
+import { OwnerService } from "../service/owner-service.js"
 
 
 
@@ -59,8 +60,7 @@ let startEngine = async () => {
   let playerService:PlayerService = container.get(PlayerService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
   let ladderService: LadderService = container.get(LadderService)
-  let seasonService: SeasonService = container.get(SeasonService)
-  let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
+  let ownerService:OwnerService = container.get(OwnerService)
 
   let ipfsService: IPFSService = container.get(IPFSService)
 
@@ -244,40 +244,15 @@ let startEngine = async () => {
 
   const startupTasks = async () => {
 
-    //Make sure that players have percentile ratings. probably move this to a service method and call it
-    let s = await sequelize()
+    //Make sure that players have percentile ratings. 
+    await playerService.updateAllPercentileRatings()
 
-    await s.transaction(async (t1) => {
+    console.log(`Updated player percentile ratings`)
 
-        let options = { transaction: t1 }
+    //Make sure owner off-chain balances are up to date
+    await ownerService.syncOffChainBalances()
 
-        let playerPercentileRatings = await playerService.getPlayerPercentileRatings(options)
-
-        let season:Season = await seasonService.getMostRecent(options)
-
-        for (let pRating of playerPercentileRatings) {
-        
-          //Update player
-          let player:Player = await playerService.get(pRating._id, options)
-
-          player.percentileRatings = pRating
-          player.changed("percentileRatings", true)
-
-          await playerService.put(player, options)
-
-
-          //Update pls
-          let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getByPlayerSeason(player, season, options)
-
-          pls.percentileRatings = pRating
-          pls.changed("percentileRatings", true)
-
-          await playerLeagueSeasonService.put(pls, options)
-
-
-        }
-
-    })
+    console.log(`Sync offchain diamond balances`)
 
   }
 

@@ -111,6 +111,13 @@ class OffchainEventService {
 
         let events:OffchainEvent[] = await this.getByOwner(contractType, owner, options)
 
+        return this.getBalanceForOwnerFromEvents(owner, events)
+
+    }
+
+
+    getBalanceForOwnerFromEvents(owner:Owner, events:OffchainEvent[]) {
+
         let diamondBalance = "0"
 
         //Look through events
@@ -122,14 +129,14 @@ class OffchainEventService {
                 } else {
                     diamondBalance = (  BigInt(diamondBalance || 0) - BigInt(event.amount) ).toString() 
                 }
-
             }
-
         }
 
         return diamondBalance
 
     }
+
+
 
     async getBalanceForTokenId(contractAddress:string, tokenId:number, options?:any) {
 

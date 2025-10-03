@@ -194,26 +194,6 @@ This keeps the **minter private key off the web server** entirely (nice for secu
 
 ---
 
-### Mainnet Launch & Airdrop
-
-To celebrate EBL’s mainnet launch, we’re airdropping **40+ billion Diamonds** to **7,061 wallets** from historic Ethereum baseball NFT communities — enough to claim *every* team in the league using only rewards from the drop.
-
-**Distribution:** 70% to MLB Champions holders, 30% to holders of other baseball NFT projects (Big Leagz, Moonshot Baseball, Meta Athletes, Diamond Dogs, Metafans, Baseball Head, Project Sandlot, Sandlot Slots).
-
-The airdrop logic is open source. View the full list of recipients and rewards [here](LINK_TO_AIRDROP_PAGE).
-
----
-
-### Claiming Diamonds & Minting a Team
-
-1. Visit [playebl.com](https://playebl.com) and connect your wallet.
-2. Open your dashboard and click **Mint XXX Diamonds** to lock in your reward.
-3. Redeem on-chain to receive Diamonds (mint pass valid for 1 year).
-4. On the Teams page, click **Start Mint Process** → choose **Mint with Diamonds** (or ETH) → confirm transaction.
-5. The team NFT is transferred directly to your wallet. You can mint as many as you can afford in Diamonds or ETH.
-
----
-
 ### How to Start
 
 1. **Get a Team:** Claim via airdrop or buy a team NFT.

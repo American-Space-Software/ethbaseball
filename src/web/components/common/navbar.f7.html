@@ -152,9 +152,12 @@
 
             <div class="list links-list list-outline list-strong">
               <ul>
-                <li>
-                  <a @click="${loginWithWallet}" class="list-button popover-close">Wallet</a>
-                </li>
+                ${window?.ethereum != undefined ? $h`
+                  <li>
+                    <a @click="${loginWithWallet}" class="list-button popover-close">Wallet</a>
+                  </li>
+                ` : $h``}
+
                 <li>
                   <a href="/auth/discord" class="list-button popover-close external">Discord</a>
                 </li>
@@ -362,7 +365,6 @@
                       <a @click="${linkUserClicked}" class="button button-fill small-button" style="margin-bottom: 10px;">Begin Signing</a>
                     </div>
                   </div>
-
 
                   <div class="card card-outline card-header-divider">
                     <div class="card-header">Account</div>
