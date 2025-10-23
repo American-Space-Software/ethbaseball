@@ -511,11 +511,9 @@ Join us at [https://playebl.com](https://playebl.com)`,
             await this.teamLeagueSeasonService.put(tls, options)
         }
 
-        let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
+        // let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
 
-        await this.ladderService.scheduleGenerator(tlss, league, season, options)
-
-
+        // await this.ladderService.scheduleGenerator(tlss, league, season, options)
     }
 
     async loadPresetLeagues(season:Season, leagues:LeagueInfo[], config, options?:any) {
@@ -594,9 +592,9 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             }
 
-            let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
+            // let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
 
-            await this.ladderService.scheduleGenerator(tlss, league, season, options)
+            // await this.ladderService.scheduleGenerator(tlss, league, season, options)
 
         }
 
@@ -631,6 +629,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
           let season:Season = new Season()
           season._id = uuidv4()
           season.startDate = dayjs(universe.currentDate).toDate()
+          season.endDate = dayjs(season.startDate).add(161, 'day').toDate()
           season.isComplete = false
           season.isInitialized = false
           
@@ -644,16 +643,18 @@ Join us at [https://playebl.com](https://playebl.com)`,
       
           } else {
       
-            await this.runLeagueGenerator(season, 1, "Apex League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 2, "The Second League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 3, "The Third League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 4, "The Fourth League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 5, "The Fifth League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 6, "The Sixth League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 7, "The Seventh League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 8, "The Eighth League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 9, "The Ninth League", TEAMS_PER_TIER, options)
-            await this.runLeagueGenerator(season, 10, "The Tenth League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 1, "The Apex League", 0, options)
+            await this.runLeagueGenerator(season, 1, "The Genesis League", 0, options)
+
+            // await this.runLeagueGenerator(season, 2, "The Second League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 3, "The Third League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 4, "The Fourth League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 5, "The Fifth League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 6, "The Sixth League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 7, "The Seventh League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 8, "The Eighth League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 9, "The Ninth League", TEAMS_PER_TIER, options)
+            // await this.runLeagueGenerator(season, 10, "The Tenth League", TEAMS_PER_TIER, options)
           }
       
           //Generate player pool
@@ -664,88 +665,65 @@ Join us at [https://playebl.com](https://playebl.com)`,
           await this.ladderService.startSeason(season, allLeagues, options)
       
 
-          if (process.env.AIRDROP_LIST) {
+        //   if (process.env.AIRDROP_LIST) {
       
-            let airdropList = JSON.parse(process.env.AIRDROP_LIST)
+        //     let airdropList = JSON.parse(process.env.AIRDROP_LIST)
       
-            for (let entry of airdropList ) {
+        //     for (let entry of airdropList ) {
       
-              let address = entry[0]
-              let amount = entry[1]
+        //       let address = entry[0]
+        //       let amount = entry[1]
       
-              let owner:Owner = await this.ownerService.getOrCreate(address, options)
+        //       let owner:Owner = await this.ownerService.getOrCreate(address, options)
 
-              await this.offchainEventService.createMintEvent(address, amount, options)
+        //       await this.offchainEventService.createMintEvent(address, amount, options)
 
-              this.ownerService.setOfflineDiamondBalance(owner, await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner, options))
+        //       this.ownerService.setOfflineDiamondBalance(owner, await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner, options))
     
-              await this.ownerService.put(owner, options)
+        //       await this.ownerService.put(owner, options)
       
-            }
+        //     }
       
-          } else if (process.env.DEFAULT_AIRDROP == "true") {
+        //   } else if (process.env.DEFAULT_AIRDROP == "true") {
 
-            //Get the total # of diamonds needed to buy every team that is for sale
-            let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listBySeason(season, options)
+        //     //Get the total # of diamonds needed to buy every team that is for sale
+        //     let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listBySeason(season, options)
 
-            let totalDiamonds = "0"
+        //     let totalDiamonds = "0"
 
-            for (let tls of tlss) {
+        //     for (let tls of tlss) {
                 
-                let team:Team  = await this.teamService.get(tls.teamId, options)
+        //         let team:Team  = await this.teamService.get(tls.teamId, options)
 
-                if (!team.mintKey) {
-                    let cost = this.teamService.getTeamCost(tls.financeSeason)
-                    totalDiamonds = (BigInt(totalDiamonds) + BigInt(cost.totalDiamonds)).toString()
-                }
-
-            }
-
-            //Increase total by 20%
-            totalDiamonds = (BigInt(totalDiamonds) * 120n / 100n).toString()
-
-            let airdropList = await this.airdropService.getAirdropList( BigInt(totalDiamonds) )
-
-            console.time(`Creating airdrop list containing ${airdropList.length} addresses.`)
-            for (let o of airdropList) {
-
-                let owner:Owner = await this.ownerService.getOrCreate(o.address, options)
-
-                await this.offchainEventService.createMintEvent(o.address, o.count, options)
-                
-                this.ownerService.setOfflineDiamondBalance(owner, await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner, options))
-
-                await this.ownerService.put(owner, options)
-            }
-
-            console.timeEnd(`Creating airdrop list containing ${airdropList.length} addresses.`)
-
-          }
-      
-
-        //   if (process.env.INITIAL_POSTS) {
-
-        //     let initialPosts = JSON.parse(process.env.INITIAL_POSTS)
-
-        //     for (let p of initialPosts) {
-
-        //         let post = new Post()
-        //         post._id = p._id
-        //         post.title = p.title
-        //         post.content = p.content
-        //         post.short = p.short
-        //         post.isFeatured = p.isFeatured
-        //         post.publishDate = p.publishDate
-
-        //         await this.postService.put(post, options)
+        //         if (!team.mintKey) {
+        //             let cost = this.teamService.getTeamCost(tls.financeSeason)
+        //             totalDiamonds = (BigInt(totalDiamonds) + BigInt(cost.totalDiamonds)).toString()
+        //         }
 
         //     }
 
+        //     //Increase total by 20%
+        //     totalDiamonds = (BigInt(totalDiamonds) * 120n / 100n).toString()
+
+        //     let airdropList = await this.airdropService.getAirdropList( BigInt(totalDiamonds) )
+
+        //     console.time(`Creating airdrop list containing ${airdropList.length} addresses.`)
+        //     for (let o of airdropList) {
+
+        //         let owner:Owner = await this.ownerService.getOrCreate(o.address, options)
+
+        //         await this.offchainEventService.createMintEvent(o.address, o.count, options)
+                
+        //         this.ownerService.setOfflineDiamondBalance(owner, await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner, options))
+
+        //         await this.ownerService.put(owner, options)
+        //     }
+
+        //     console.timeEnd(`Creating airdrop list containing ${airdropList.length} addresses.`)
+
         //   }
+      
 
-
-          
-    
         }
 
     }

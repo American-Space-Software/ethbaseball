@@ -4,7 +4,7 @@ import { PlayerLeagueSeason } from "../dto/player-league-season.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
 import { Team } from "../dto/team.js"
-import { Position } from "../service/enums.js"
+import { HitterPitcher, Position } from "../service/enums.js"
 
 interface PlayerLeagueSeasonRepository {
     getById(_id: string, options?: any): Promise<PlayerLeagueSeason>
@@ -30,9 +30,9 @@ interface PlayerLeagueSeasonRepository {
     getMostRecentByTeamSeason(team: Team, season:Season, options?: any): Promise<PlayerLeagueSeason[]>
     getMostRecentByPlayerSeason(player: Player, season:Season, options?: any): Promise<PlayerLeagueSeason>
     getByTeamSeason(team: Team, season: Season, options?: any): Promise<PlayerLeagueSeason[]> 
-    getByLeagueSeason(league: League, season: Season, options?: any): Promise<PlayerLeagueSeason[]>
+    getByLeagueSeason(league: League, season: Season, positions:Position[], sortColumn:string, sortDirection:string, options?: any): Promise<PlayerLeagueSeason[]>
     getFreeAgentsByPositionAndSalary(position:Position, season:Season, salary:number, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]>
-    getFreeAgentsBySeason(season:Season, options?:any): Promise<PlayerLeagueSeason[]>
+    getFreeAgentsBySeason(season:Season, positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]>
     getFreeAgentIdsBySeason(season:Season, options?:any): Promise<string[]>
     delete(pls:PlayerLeagueSeason, options?:any)
 }

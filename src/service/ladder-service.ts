@@ -4,7 +4,7 @@ import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./player-
 
 import { GameService } from "./game-service.js"
 import { RotationPitcher, Team } from "../dto/team.js"
-import {  ContractYear, GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType } from "./enums.js"
+import {  ContractYear, GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./team-service.js"
 
@@ -168,7 +168,10 @@ class LadderService {
     private async updateFreeAgentContracts(leagueBundle:LeagueBundle, season:Season, modifier:number, options?:any) {
 
         //Get free agents
-        const plss:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, options)
+        const plss:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, 
+            [ Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.PITCHER ], 
+            "overallRating", "DESC", options)
+            
         const freeAgentPlayers:Player[] = await this.playerService.getByIds( plss.map( pls => pls.playerId), options)
 
         const nonRookies = freeAgentPlayers.filter( p => !p.contract.isRookie )
@@ -753,6 +756,7 @@ class LadderService {
 
 
     }
+    
 
     async scheduleGenerator(tlss:TeamLeagueSeason[], league:League, season:Season, options?:any) {
 
@@ -796,7 +800,7 @@ class LadderService {
                     await this.teamLeagueSeasonService.put(tls, options)
 
 
-                    let minimumOnly:boolean = team.ownerId ? true : false //if it's an ownerless team spend some money.
+                    let minimumOnly:boolean = true //team.ownerId ? true : false //if it's an ownerless team spend some money.
 
                     //Fill the rosters of each team from player pool.
                     await this.teamService.fillAndValidateRoster(league, team, tls, roster, season, season.startDate, minimumOnly, options)  

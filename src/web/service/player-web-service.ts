@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { ContractYear, PlayerContract, Position } from "../../service/enums.js";
+import { ContractYear, HitterPitcher, PlayerContract, Position } from "../../service/enums.js";
 import dayjs from "dayjs";
 import { WalletService } from "../../service/wallet-service.js";
 import { Player } from "../../dto/player.js";
@@ -39,120 +39,12 @@ class PlayerWebService {
 
     }
 
-    async getPlayers(startDate:string, rank:number) {
-        try {
-            //Download it.
-            let result = await axios.get(`/api/player/list/${rank}/${startDate}`)
-            return result.data
-        } catch (ex) {
-            console.log(ex)
-        }
+    async getPlayers(startDate:string, rank:number, page:number, position:Position|HitterPitcher, sortColumn:string, sortDirection:string) {
+    //Download it.
+    let result = await axios.get(`/api/player/list/${rank}/${startDate}/${page}?sortColumn=${sortColumn}&sortDirection=${sortDirection}&position=${position}`)
+    return result.data
 
     }
-
-
-    // async getAnimation(_id: number) {
-    //     try {
-    //         //Download it.
-    //         let result = await axios.get(`/animations/${_id}.html`)
-    //         return result.data
-    //     } catch (ex) {
-    //         console.log(ex)
-    //     }
-
-    // }
-
-
-
-
-
-    // async getTransactions(startDate:string, pageNumber:number) {
-    //     try {
-    //         //Download it.
-    //         let result = await axios.get(`/player/${startDate}`)
-    //         return result.data
-    //     } catch (ex) {
-    //         console.log(ex)
-    //     }
-
-    // }
-
-
-    // async getGlobalStats() {
-    //     try {
-    //         //Download it.
-    //         let result = await axios.get(`/player/stats`)
-    //         return result.data
-    //     } catch (ex) {
-    //         console.log(ex)
-    //     }
-
-    // }
-
-    // async getPlayersByOwner(_id: string) {
-    //     try {
-    //         //Download it.
-    //         let result = await axios.get(`/o/${_id}/players`)
-    //         return result.data
-    //     } catch (ex) {
-    //         console.log(ex)
-    //     }
-
-    // }
-
-
-
-    async ownerItemPage(address: string, pageNumber: number): Promise<ItemPage> {
-        return this.getRowItemViewModelsByOwner(address, pageNumber)
-    }
-
-
-
-
-    async getRowItemViewModelsByAttribute(traitType: string, value: string, pageNumber: number): Promise<ItemPage> {
-
-        const escape = (s) => {
-            return s.replace(/[^a-z0-9]/gi, '_').toLowerCase()
-        }
-
-        let itemPage: ItemPage
-
-        const response = await axios.get(`/attributes/items/${escape(traitType)}/${escape(value)}/${pageNumber}.json`)
-
-        itemPage = response.data
-
-        return itemPage
-    }
-
-    async getRowItemViewModelsByOwner(address: string, pageNumber: number): Promise<ItemPage> {
-
-        let itemPage: ItemPage
-
-        const response = await axios.get(`/sync/tokenOwner/${address}/tokens/${pageNumber}.json`)
-
-        itemPage = response.data
-
-        return itemPage
-    }
-
-    // async getRowItemViewModelsByTokenIds(tokenIds: number[]): Promise<RowItemViewModel[]> {
-
-    //     let items: RowItemViewModel[] = []
-
-    //     for (let tokenId of tokenIds) {
-    //         const response = await axios.get(`/t/${tokenId}/rowItemViewModel.json`)
-    //         items.push(response.data)
-    //     }
-
-    //     return items
-    // }
-
-    // async getRowItemViewModelsByTokenId(tokenId: number): Promise<RowItemViewModel> {
-
-    //     const response = await axios.get(`/t/${tokenId}/rowItemViewModel.json`)
-    //     return response.data
-
-    // }
 
 
     getPositionFull(position: Position) {
@@ -310,15 +202,15 @@ class PlayerWebService {
     }
 
 
-    getActiveContractYear(contract:PlayerContract) : ContractYear {
+    // getActiveContractYear(contract:PlayerContract) : ContractYear {
         
-        if (!contract?.startDate) return
+    //     if (!contract?.startDate) return
 
-        let today = new Date(new Date().toUTCString())
+    //     let today = new Date(new Date().toUTCString())
 
-        return contract.years.find( y => dayjs(y.startDate).toDate() <= today && dayjs(y.endDate).toDate() >= today)
+    //     return contract.years.find( y => dayjs(y.startDate).toDate() <= today && dayjs(y.endDate).toDate() >= today)
 
-    }
+    // }
 
     displayRestDays(player, universeDate) {
 
@@ -447,25 +339,7 @@ class PlayerWebService {
 
 }
 
-interface ItemPage {
-    items?: RowItemViewModel[]
-}
 
-interface ItemResults {
-    items?: RowItemViewModel[]
-    totalMatches?: number
-    limit?: number
-    skip?: number
-}
-
-interface RowItemViewModel {
-    _id: string
-    title: string
-    coverImageId: string
-    coverImageGenerated: boolean
-    tokenId: number
-
-}
 
 
 export {

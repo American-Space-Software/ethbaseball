@@ -44,6 +44,7 @@
 
     let authInfo
 
+
     $f7ready(async () => {
 
       let eventTarget = ContainerService.getInstance("eventTarget")
@@ -51,6 +52,9 @@
       walletService = ContainerService.getInstance("WalletService")
       universeWebService = ContainerService.getInstance(UniverseWebService)
       loginWebService = ContainerService.getInstance(LoginWebService)
+
+      console.log(universeWebService.getPWADisplayMode())
+
 
       //Just need to load this
       authInfo = await loginWebService.getAuthInfo()
@@ -90,6 +94,7 @@
           switchNetworkNofication.open()
 
       }
+
 
     })
 

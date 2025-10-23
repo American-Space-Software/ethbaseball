@@ -6,7 +6,7 @@ import { PlayerLeagueSeason } from "../dto/player-league-season.js";
 import { PlayerLeagueSeasonRepository } from "../repository/player-league-season-repository.js";
 import { Player } from "../dto/player.js";
 import { Team } from "../dto/team.js";
-import { MIN_AAV_CONTRACT, Position } from "./enums.js";
+import { HitterPitcher, MIN_AAV_CONTRACT, Position } from "./enums.js";
 import { PlayerService } from "./player-service.js";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -99,8 +99,8 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getByTeamSeason(team, season, options)
     }
 
-    async getByLeagueSeason(league: League, season: Season, options?: any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.getByLeagueSeason(league, season, options)
+    async getByLeagueSeason(league: League, season: Season, positions:Position[], sortColumn:string, sortDirection:string, options?: any): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getByLeagueSeason(league, season, positions, sortColumn, sortDirection, options)
     }
 
     async getMostRecentByTeamSeason(team: Team, season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
@@ -119,8 +119,8 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.listActive(player, options)
     }
 
-    async getFreeAgentsBySeason(season:Season, options?:any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.getFreeAgentsBySeason(season, options)
+    async getFreeAgentsBySeason(season:Season,positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getFreeAgentsBySeason(season, positions, sortColumn, sortDirection, options)
     }
 
     async getByPlayer(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {

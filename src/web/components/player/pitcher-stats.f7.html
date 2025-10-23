@@ -3,7 +3,7 @@
   <div>
 
     <div class="paging">
-        Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, effectivePitchers.length)} of ${effectivePitchers.length} pitchers.
+        Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, displayPitchers.length)}.
         <slot></slot>
     
     </div>
@@ -14,28 +14,28 @@
                 <tr>
                     ${actions ? $h`<th class="action"></th>` : $h` `} 
                     <th class="image"></th>
-                    <th @click=${sortPitchers} data-sort="fullName" class="name">Name</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="percentileRatings.overallRating_pct">OVR</th>                    
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="age">Age</th>
-                    <th @click=${sortPitchers} data-sort="throws">Throws</th>
-                    <th @click=${sortPitchers} data-sort="hits">Bats</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.wins">W</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.losses">L</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.winPercent">W/L%</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.era">ERA</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.starts">GS</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.outs">IP</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.hits">H</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.runs">R</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.er">ER</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.hr">HR</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.bb">BB</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.so">SO</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.bbPercent">BB%</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.soPercent">SO%</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.hbp">HBP</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.bf">BF</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="${statprop}.pitching.wpa">WPA</th>
+                    <th @click=${sortRows}  class="name">Name</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'overallRating_pct' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="overallRating_pct">OVR</th>                    
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'age' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="age">Age</th>
+                    <th @click=${sortRows} data-sort="throws" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'throws' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Throws</th>
+                    <th @click=${sortRows} data-sort="hits" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'bats' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" >Bats</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.wins' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.wins">W</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.losses' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.losses">L</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.winPercent' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.winPercent">W/L%</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.era' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.era">ERA</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.starts' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.starts">GS</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.outs' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.outs">IP</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.hits' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.hits">H</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.runs' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.runs">R</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.er' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.er">ER</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.homeRuns' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.homeRuns">HR</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.bb' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.bb">BB</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.so' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.so">SO</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.bbPercent' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.bbPercent">BB%</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.soPercent' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.soPercent">SO%</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.hbp' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.hbp">HBP</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.battersFaced' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.battersFaced">BF</th>
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.wpa' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.wpa">WPA</th>
 
                 </tr>
             </thead>
@@ -111,19 +111,6 @@
         </table>
     </div>
 
-    <div class="block split-row-both">
-        <div>
-            ${pagingService.hasPreviousPage(PAGE_SIZE, currentPage, effectivePitchers) ? $h`
-                <a @click="${previousClick}" class="button button-outline color-gray">Previous</a>
-            ` : $h` `}
-        </div>
-        <div>
-            ${pagingService.hasNextPage(PAGE_SIZE, currentPage, effectivePitchers) ? $h`
-                <a @click="${nextClick}" class="button button-fill">Next</a>
-            ` : $h` `}
-        </div>
-
-    </div>
 
   </div>
 
@@ -168,78 +155,21 @@
     const moveFilter = props.movefilter
     const sortable = props.sortable == "true"
 
+    let sortColumn = props.sortcolumn
+    let sortDirection = props.sortdirection
+
     const PAGE_SIZE = props.pagesize
 
-    let effectivePitchers = []
-    let displayPitchers = []
+    let displayPitchers = props.pitchers
+    let sortRows = props.sortrows
+
+
 
     const getStats = (p) => {
       if (!p) return
       return p[statprop]
     }
-
-    const sortPitchers = (e) => {
-
-        if (sortable) {
-            playerWebService.sort($, e, '.pitchers', effectivePitchers)
-            currentPage = 0
-            setCurrentPage()
-            $update()
-        }
-
-    }
-
-    const nextClick = (e) => {
-        currentPage++
-        setCurrentPage()
-        $update()
-    }
-
-    const previousClick = (e) => {
-        currentPage--
-        setCurrentPage()
-        $update()
-    }
-
-    const setCurrentPage = (pitchers) => {
-
-      if (pitchers) {
-        effectivePitchers = pitchers
-      }
-
-      let start = pagingService.startIndex(PAGE_SIZE, currentPage)
-      let end = pagingService.endIndex(PAGE_SIZE, currentPage)
-
-      displayPitchers.length = 0
-
-      if (props?.filters?.name) {
-        effectivePitchers = effectivePitchers.filter(p => p.fullName.toLowerCase().indexOf(props.filters.name.toLowerCase()) >= 0)
-      } 
-
     
-      displayPitchers.push(...effectivePitchers.slice(start, end))
-
-    }
-
-
-    setCurrentPage(props.pitchers())
-
-
-    $f7.on('refresh', (cb) => {
-
-      if (props.actions) {
-        actions = props.actions()
-      }
-
-      if (props.statprop) {
-        statprop = props.statprop
-      }
-
-      setCurrentPage(props.pitchers())
-      $update()
-      if (cb) cb()
-    })
-
 
     return $render
   }

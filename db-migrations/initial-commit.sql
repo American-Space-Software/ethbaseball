@@ -444,6 +444,8 @@ CREATE TABLE `player` (
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
 
+  `percentileRatings` JSON NULL DEFAULT NULL,
+
   `lastGamePitched` datetime DEFAULT NULL,
   `lastGamePlayed` datetime DEFAULT NULL,
   `lastTeamChange` datetime DEFAULT NULL,
@@ -484,6 +486,9 @@ CREATE TABLE `player_league_season` (
   `overallRating` decimal(10,2) NOT NULL,
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
+
+  `percentileRatings` JSON NULL DEFAULT NULL,
+
   `stats` json NOT NULL,
   `contractYear` json DEFAULT NULL,
 
@@ -506,6 +511,59 @@ CREATE TABLE `player_league_season` (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
+
+ALTER TABLE player_league_season
+
+  ADD INDEX idx_cov_league_season_pos_team__overallRating
+    (leagueId, seasonId, primaryPosition, teamId, overallRating),
+  ADD INDEX idx_cov_league_season_pos_team__age
+    (leagueId, seasonId, primaryPosition, teamId, age),
+
+  ADD INDEX idx_sort_ovr_pct
+    (seasonId, primaryPosition, teamId,
+     (CAST(percentileRatings->>"$.overallRating_pct" AS DECIMAL(10,3)))),
+
+  ADD INDEX idx_sort_hit_ops
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.ops" AS DECIMAL(10,3)))),
+  ADD INDEX idx_sort_hit_avg
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.avg" AS DECIMAL(10,3)))),
+  ADD INDEX idx_sort_hit_obp
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.obp" AS DECIMAL(10,3)))),
+  ADD INDEX idx_sort_hit_slg
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.slg" AS DECIMAL(10,3)))),
+  ADD INDEX idx_sort_hit_homeRuns
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.homeRuns" AS SIGNED))),
+  ADD INDEX idx_sort_hit_runs
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.runs" AS SIGNED))),
+  ADD INDEX idx_sort_hit_hits
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.hits" AS SIGNED))),
+  ADD INDEX idx_sort_hit_rbi
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.rbi" AS SIGNED))),
+
+  /* PITCHING: core */
+  ADD INDEX idx_sort_pit_era
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.pitching.era" AS DECIMAL(10,3)))),
+  ADD INDEX idx_sort_pit_wpa
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.pitching.wpa" AS DECIMAL(10,3)))),
+  ADD INDEX idx_sort_pit_so
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.pitching.so" AS SIGNED))),
+  ADD INDEX idx_sort_pit_bb
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.pitching.bb" AS SIGNED))),
+  ADD INDEX idx_sort_pit_wins
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.pitching.wins" AS SIGNED))),
+  ADD INDEX idx_sort_pit_outs
+    (seasonId, primaryPosition, teamId, (CAST(stats->>"$.pitching.outs" AS SIGNED)));
+
+
+
+
+
+
+
+
+
 
 
 

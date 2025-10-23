@@ -3,7 +3,7 @@
   <div>
 
     <div class="paging">
-      Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, effectiveHitters.length)} of ${effectiveHitters.length} hitters.
+      Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, displayHitters.length)}.
       <slot></slot>
     </div>
 
@@ -14,7 +14,7 @@
             ${actions ? $h`<th class="action"></th>` : $h` `}     
             <th class="image"></th>
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.overallRating_pct">OVR</th>
+            <th @click=${sortHitters} class="numeric-cell" data-sort="overallRating_pct">OVR</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="age">Age</th>
             <th @click=${sortHitters} data-sort="throws">Throws</th>
             <th @click=${sortHitters} data-sort="hits">Bats</th>
@@ -122,20 +122,6 @@
         </tbody>
       </table>
     </div>
-  
-    <div class="block split-row-both">
-        <div>
-            ${pagingService.hasPreviousPage(PAGE_SIZE, currentPage, effectiveHitters) ? $h`
-                <a @click="${previousClick}" class="button button-outline color-gray">Previous</a>
-            ` : $h` `}
-        </div>
-        <div>
-            ${pagingService.hasNextPage(PAGE_SIZE, currentPage, effectiveHitters) ? $h`
-                <a @click="${nextClick}" class="button button-fill">Next</a>
-            ` : $h` `}
-        </div>
-  
-    </div>
 
   </div>
 
@@ -179,67 +165,15 @@
 
     const PAGE_SIZE = props.pagesize
 
-    let effectiveHitters = []
-    let displayHitters = []
+    let displayHitters = props.hitters
 
     const sortHitters = (e) => {
 
         if (sortable) {
-          playerWebService.sort($, e, '.hitters', effectiveHitters)
-          currentPage = 0
-          setCurrentPage()
-          $update()
+
         }
 
     }
-
-    const nextClick = (e) => {
-        currentPage++
-        setCurrentPage()
-        $update()
-    }
-
-    const previousClick = (e) => {
-        currentPage--
-        setCurrentPage()
-        $update()
-    }
-
-    const setCurrentPage = (hitters) => {
-
-      if (hitters) {
-        effectiveHitters = hitters
-      }
-
-      let start = pagingService.startIndex(PAGE_SIZE, currentPage)
-      let end = pagingService.endIndex(PAGE_SIZE, currentPage)
-
-      displayHitters.length = 0
-
-      if (props.filters?.position) {
-        effectiveHitters = effectiveHitters.filter(p => p.primaryPosition == props.filters.position)
-      } else if (props.filters?.name) {
-        effectiveHitters = effectiveHitters.filter(p => p.fullName.toLowerCase().indexOf(props.filters.name.toLowerCase()) >= 0)
-      } 
-
-
-      displayHitters.push(...effectiveHitters.slice(start, end))
-
-    }
-
-    setCurrentPage(props.hitters())
-
-    $f7.on('refresh', (cb) => {
-
-      if (props.actions) {
-        actions = props.actions()
-      }
-
-      setCurrentPage(props.hitters())
-      $update()
-      if (cb) cb()
-    })
-
 
     return $render
   }

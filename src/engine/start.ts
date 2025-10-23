@@ -12,18 +12,13 @@ import { LadderService } from "../service/ladder-service.js"
 import dayjs from "dayjs"
 import { UniverseIndexerService } from "../service/universe-indexer-service.js"
 import { UniverseContractService } from "../service/universe-contract-service.js"
-import { HuggingFaceService } from "../service/hugging-face-service.js"
 import { ContractState } from "../dto/contract-state.js"
 import { ProcessedEvent, ProcessedTransaction, ProcessedTransactionToken, ProcessedTransactionTrader } from "../dto/processed-transaction.js"
 import { Owner } from "../dto/owner.js"
 import { MintPassIndexerService } from "../service/mint-pass-indexer-service.js"
 import { SchemaService } from "../service/schema-service.js"
 import { PlayerService } from "../service/player-service.js"
-import { Player } from "../dto/player.js"
-import { SeasonService } from "../service/season-service.js"
-import { Season } from "../dto/season.js"
-import { PlayerLeagueSeason } from "../dto/player-league-season.js"
-import { PlayerLeagueSeasonService } from "../service/player-league-season-service.js"
+
 import { OwnerService } from "../service/owner-service.js"
 
 
@@ -35,7 +30,7 @@ let startEngine = async () => {
   const SECONDS_BETWEEN_INDEXES = process.env.SECONDS_BETWEEN_INDEXES ?  parseInt(process.env.SECONDS_BETWEEN_INDEXES) : 30
   const SECONDS_BETWEEN_MINT_PASS_SIGNINGS = process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS  ? parseInt(process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS) : 5
 
-  const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY
+  // const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY
   
   //@ts-ignore
   const version = VERSION
@@ -55,7 +50,7 @@ let startEngine = async () => {
   let diamondService: DiamondService = container.get(DiamondService)
   let universeService: UniverseService = container.get(UniverseService)
   let universeContractService: UniverseContractService = container.get(UniverseContractService)
-  let huggingFaceService: HuggingFaceService = container.get(HuggingFaceService)
+  // let huggingFaceService: HuggingFaceService = container.get(HuggingFaceService)
   let mintPassIndexerService: MintPassIndexerService = container.get(MintPassIndexerService)
   let playerService:PlayerService = container.get(PlayerService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
@@ -197,7 +192,7 @@ let startEngine = async () => {
   }
 
 
-  huggingFaceService.init(HUGGING_FACE_API_KEY)
+  // huggingFaceService.init(HUGGING_FACE_API_KEY)
 
 
 

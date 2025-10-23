@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register",
-    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-airdrop-service.spec.ts",
+    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-game-service.spec.ts",
 
     "test:contracts": "export NODE_ENV=development && npx hardhat test test/hardhat/test-universe.spec.js",
 

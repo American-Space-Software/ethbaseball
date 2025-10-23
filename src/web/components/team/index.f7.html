@@ -63,7 +63,7 @@
 
                 <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
                     <ul>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/t/schedule/${teamComponentService.team.tokenId}`)}">📅 Schedule</a></li>
+                        <li><a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team.tokenId}`)}">📅 Results</a></li>
                         <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/${teamComponentService.team.tokenId}`)}">📝 Activity</a></li>
                         <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>   
             
@@ -78,16 +78,16 @@
 
 
 
-                <div class="block-title block-title-medium">Current Schedule</div>
+                <div class="block-title block-title-medium">Recent Games</div>
                 <div class="block block-outline block-strong">
-                    <${GameLogs} logs="${games}" />
+                    <${ResultTable} logs="${games}" />
                 </div>
 
                 <div class="block-title block-title-medium">Lineup</div>
 
                 <div class="block block-outline block-strong ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
                         ${teamComponentService.selected == "stats" ? $h`
-                        <hitter-stats hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
+                        <hitter-stats hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}"
                             statprop="seasonStats">
                             <select @change="${statsChange}" class="stats-dropdown">
@@ -99,7 +99,7 @@
                         ` : $h` `}
 
                         ${teamComponentService.selected == "ratings" ? $h`
-                        <hitter-ratings hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
+                        <hitter-ratings hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
@@ -110,7 +110,7 @@
                         ` : $h` `}
 
                         ${teamComponentService.selected == "contracts" ? $h`
-                        <hitter-contracts hitters=${getDisplayHitters} sortable="false" pagesize=${PAGE_SIZE}
+                        <hitter-contracts hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
@@ -128,7 +128,7 @@
                 <div class="block block-outline block-strong ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
 
                         ${teamComponentService.selected == "stats" ? $h`
-                        <pitcher-stats pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                        <pitcher-stats pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}"
                             statprop="seasonStats">
                             <span />
@@ -136,14 +136,14 @@
                         ` : $h` `}
 
                         ${teamComponentService.selected == "ratings" ? $h`
-                        <pitcher-ratings pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                        <pitcher-ratings pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
                             <span />
                         </pitcher-ratings>
                         ` : $h` `}
 
                         ${teamComponentService.selected == "contracts" ? $h`
-                        <pitcher-contracts pitchers=${getDisplayPitchers} sortable="false" pagesize=${PAGE_SIZE}
+                        <pitcher-contracts pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
                             <span />
                         </pitcher-contracts>
@@ -564,7 +564,7 @@
   import InProgress from "../game/in-progress.f7.html"
   import Scheduled from "../game/scheduled.f7.html"
   import Result from "../game/result.f7.html"
-  import GameLogs from "./schedule-table.f7.html"
+  import ResultTable from "./result-table.f7.html"
 
   import { ethers } from "ethers"
 
@@ -592,6 +592,9 @@
 
     let tokenId = props.tokenId
     let team = props.team
+
+    let displayHitters = teamComponentService.getDisplayHitters()
+    let displayPitchers = teamComponentService.getDisplayPitchers()
 
 
     const isSigned = (mp) => {
@@ -805,22 +808,6 @@
             $f7.dialog.alert(ex.response.data, "There was an error")
         }
 
-    }
-
-    const getDisplayHitters = () => {
-        return teamComponentService.getDisplayHitters()
-    }
-
-    const getDisplayPitchers = () => {
-        return teamComponentService.getDisplayPitchers()
-    }
-
-    const getUnrosteredHitters = () => {
-        return teamComponentService.getUnrosteredHitters()
-    }
-
-    const getUnrosteredPitchers = () => {
-        return teamComponentService.getUnrosteredPitchers()
     }
 
     let rosterFilters = {
@@ -1167,7 +1154,7 @@
             tabLink: "/l/standings", breadcrumbs: [
                 {
                 text: "Standings",
-                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team?.leagueRank}`)
+                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team?.leagueRank}/1`)
                 }, { text: teamWebService.getTeamName(teamComponentService.team) }]
             }
         }))

@@ -143,6 +143,11 @@ enum HomeAway {
     AWAY = "Away"
 }
 
+enum HitterPitcher {
+    HITTER = "H",
+    PITCHER = "P"
+}
+
 
 
 interface Rating {
@@ -1276,9 +1281,65 @@ interface TeamCost {
     ethCostDecimal: string
 }
 
-export  { TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+
+const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
+  // scalar / joined columns
+  'overallRating_pct': 'CAST(pls.percentileRatings->>"$.overallRating_pct" AS DECIMAL(10,3))',
+  'age': 'pls.age',
+  'throws': 'p.throws',
+  'hits': 'p.hits',
+
+  // hitting
+  'hitting.games':           'CAST(stats->>"$.hitting.games" AS SIGNED)',
+  'hitting.pa':              'CAST(stats->>"$.hitting.pa" AS SIGNED)',
+  'hitting.atBats':          'CAST(stats->>"$.hitting.atBats" AS SIGNED)',
+  'hitting.runs':            'CAST(stats->>"$.hitting.runs" AS SIGNED)',
+  'hitting.hits':            'CAST(stats->>"$.hitting.hits" AS SIGNED)',
+  'hitting.doubles':         'CAST(stats->>"$.hitting.doubles" AS SIGNED)',
+  'hitting.triples':         'CAST(stats->>"$.hitting.triples" AS SIGNED)',
+  'hitting.homeRuns':        'CAST(stats->>"$.hitting.homeRuns" AS SIGNED)',
+  'hitting.rbi':             'CAST(stats->>"$.hitting.rbi" AS SIGNED)',
+  'hitting.sb':              'CAST(stats->>"$.hitting.sb" AS SIGNED)',
+  'hitting.cs':              'CAST(stats->>"$.hitting.cs" AS SIGNED)',
+  'hitting.bb':              'CAST(stats->>"$.hitting.bb" AS SIGNED)',
+  'hitting.so':              'CAST(stats->>"$.hitting.so" AS SIGNED)',
+  'hitting.bbPercent':       'CAST(stats->>"$.hitting.bbPercent" AS DECIMAL(10,3))',
+  'hitting.soPercent':       'CAST(stats->>"$.hitting.soPercent" AS DECIMAL(10,3))',
+  'hitting.po':              'CAST(stats->>"$.hitting.po" AS SIGNED)',
+  'hitting.assists':         'CAST(stats->>"$.hitting.assists" AS SIGNED)',
+  'hitting.outfieldAssists': 'CAST(stats->>"$.hitting.outfieldAssists" AS SIGNED)',
+  'hitting.e':               'CAST(stats->>"$.hitting.e" AS SIGNED)',
+  'hitting.avg':             'CAST(stats->>"$.hitting.avg" AS DECIMAL(10,3))',
+  'hitting.obp':             'CAST(stats->>"$.hitting.obp" AS DECIMAL(10,3))',
+  'hitting.slg':             'CAST(stats->>"$.hitting.slg" AS DECIMAL(10,3))',
+  'hitting.ops':             'CAST(stats->>"$.hitting.ops" AS DECIMAL(10,3))',
+  'hitting.wpa':             'CAST(stats->>"$.hitting.wpa" AS DECIMAL(10,3))',
+
+  // pitching
+  'pitching.wins':            'CAST(stats->>"$.pitching.wins" AS SIGNED)',
+  'pitching.losses':          'CAST(stats->>"$.pitching.losses" AS SIGNED)',
+  'pitching.winPercent':      'CAST(stats->>"$.pitching.winPercent" AS DECIMAL(10,3))',
+  'pitching.era':             'CAST(stats->>"$.pitching.era" AS DECIMAL(10,3))',
+  'pitching.starts':          'CAST(stats->>"$.pitching.starts" AS SIGNED)',
+  'pitching.outs':            'CAST(stats->>"$.pitching.outs" AS DECIMAL(6,1))',
+  'pitching.hits':            'CAST(stats->>"$.pitching.hits" AS SIGNED)',
+  'pitching.runs':            'CAST(stats->>"$.pitching.runs" AS SIGNED)',
+  'pitching.er':              'CAST(stats->>"$.pitching.er" AS SIGNED)',
+  'pitching.homeRuns':        'CAST(stats->>"$.pitching.homeRuns" AS SIGNED)',
+  'pitching.bb':              'CAST(stats->>"$.pitching.bb" AS SIGNED)',
+  'pitching.so':              'CAST(stats->>"$.pitching.so" AS SIGNED)',
+  'pitching.bbPercent':       'CAST(stats->>"$.pitching.bbPercent" AS DECIMAL(10,3))',
+  'pitching.soPercent':       'CAST(stats->>"$.pitching.soPercent" AS DECIMAL(10,3))',
+  'pitching.hbp':             'CAST(stats->>"$.pitching.hbp" AS SIGNED)',
+  'pitching.battersFaced':    'CAST(stats->>"$.pitching.battersFaced" AS SIGNED)',
+  'pitching.wpa':             'CAST(stats->>"$.pitching.wpa" AS DECIMAL(10,3))',
+}
+
+
+
+export  { PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, PlayerContract, ContractYear, WPAReward, WPA, MatchupHandedness, SimMatchupCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
-    RunnerResult, HomeAway, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, PlayerLevel, GameLevel, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
+    RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, PlayerLevel, GameLevel, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
     Handedness, Rating, PitchRatings, HittingRatings, ContactProfile, GamePlayer, HitterStatLine, PitcherStatLine, PitchLog, PitchResult, RunnerEvent, Pitch, PitchCount,
     PitchProfile, BaseResult, DefensiveCredit, DefenseCreditType, LeagueAverage,ThrowRoll, InZoneByCount, OfficialRunnerResult, ThrowResult, BallTakeByCount, BallSwingByCount, StrikeSwingByCount, StrikeTakeByCount,HittingProfile, PitchingProfile, PitchRating, PlayerStatLines, PersonalityType }

@@ -1,6 +1,6 @@
 <template>
 
-  <div class="page page-with-subnavbar" data-name="team-schedule">
+  <div class="page page-with-subnavbar" data-name="team-results">
 
     <div class="page-content">
 
@@ -11,7 +11,7 @@
             </div>
 
             <div class="card-content card-content-padding">
-                <${GameLogs} logs="${gameLogs}" />
+                <${ResultTable} logs="${gameLogs}" />
             </div>
 
         </div>
@@ -32,7 +32,7 @@
 
 
   import Navbar from "../common/navbar.f7.html"
-  import GameLogs from "./schedule-table.f7.html"
+  import ResultTable from "./result-table.f7.html"
 
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"

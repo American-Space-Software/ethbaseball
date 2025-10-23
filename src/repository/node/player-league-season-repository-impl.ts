@@ -7,7 +7,12 @@ import { PlayerLeagueSeason } from "../../dto/player-league-season.js"
 import { Player } from "../../dto/player.js"
 import { Team } from "../../dto/team.js"
 import { Op, QueryTypes } from "sequelize"
-import { Position } from "../../service/enums.js"
+import { HitterPitcher, PLAYER_STATS_SORT_EXPRESSION, Position } from "../../service/enums.js"
+
+
+
+
+
 
 
 
@@ -433,19 +438,70 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
-    async getByLeagueSeason(league: League, season: Season, options?: any): Promise<PlayerLeagueSeason[]> {
+    async getByLeagueSeason(league: League, season: Season, positions:Position[], sortColumn:string, sortDirection:string, options?: any): Promise<PlayerLeagueSeason[]> {
 
-        let query = {
+        let s = await this.sequelize()
 
-            where: {
+        let queryOptions = {
+            type: QueryTypes.RAW,
+            plain: false,
+            mapToModel: true,
+            model: PlayerLeagueSeason,
+            replacements: {
                 leagueId: league._id,
-                seasonId: season._id
-            },
-            include: [Season, Team, League, Player]
-
+                seasonId: season._id,
+                positions: positions
+            }
         }
 
-        return PlayerLeagueSeason.findAll(Object.assign(query, options))
+        const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? 'overallRating'
+        const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
+        let theQuery = `
+            WITH latest AS (
+                SELECT
+                playerId,
+                startDate,
+                ROW_NUMBER() OVER (
+                    PARTITION BY playerId
+                    ORDER BY startDate DESC
+                ) AS rn
+                FROM player_league_season
+                WHERE seasonId = :seasonId
+            )
+            SELECT pls._id
+            FROM player_league_season AS pls
+            JOIN latest l
+                ON l.playerId = pls.playerId
+            AND l.startDate = pls.startDate
+            AND l.rn = 1
+            JOIN player AS p
+                ON p._id = pls.playerId
+            WHERE pls.leagueId = :leagueId
+                AND pls.seasonId = :seasonId
+                AND pls.primaryPosition IN (:positions)
+            ORDER BY ${expr} ${safeDir}
+            LIMIT ${Number(options.limit) | 0}
+            OFFSET ${Number(options.offset) | 0};
+        `
+
+        const [idQueryResults, metadata] = await s.query(theQuery, Object.assign(queryOptions, options))
+
+        let idOptions = JSON.parse(JSON.stringify(options))
+        delete idOptions.limit
+        delete idOptions.offset
+
+        let ids = idQueryResults.map(qr => qr._id)
+
+        let pls = await this.getByIds(ids, idOptions)
+
+        //Sort so it matches ids order
+        pls.sort(function(a,b) {
+            return ids.indexOf( a._id ) - ids.indexOf( b._id )
+        })
+
+
+        return pls
+
 
     }
 
@@ -480,7 +536,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
-    async getFreeAgentsBySeason(season:Season, options?:any): Promise<PlayerLeagueSeason[]> {
+    async getFreeAgentsBySeason(season:Season, positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]> {
 
         let s = await this.sequelize()
 
@@ -489,26 +545,57 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             plain: false,
             mapToModel: false,
             replacements: {
-                seasonId: season._id
+                seasonId: season._id,
+                positions: positions
             }
         }
 
-        const [idQueryResults, metadata] = await s.query(`
-            SELECT 
-                pls._id
-            FROM player_league_season pls 
-            INNER JOIN (
-				SELECT pls.playerId, MAX(pls.startDate) startDate 
-				FROM player_league_season pls 
-                WHERE pls.seasonId = :seasonId
-				GROUP BY pls.playerId
-            ) recent ON pls.playerId = recent.playerID AND pls.startDate = recent.startDate
-            WHERE pls.seasonId = :seasonId AND pls.teamId is null
-			ORDER BY pls.startDate DESC, pls.seasonIndex DESC
-        `, Object.assign(queryOptions, options))
 
-        return this.getByIds(idQueryResults.map(qr => qr._id), options)
+        const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? 'overallRating'
+        const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
+        let theQuery = `
+            WITH latest AS (
+                SELECT
+                playerId,
+                startDate,
+                ROW_NUMBER() OVER (
+                    PARTITION BY playerId
+                    ORDER BY startDate DESC
+                ) AS rn
+                FROM player_league_season
+                WHERE seasonId = :seasonId
+            )
+            SELECT pls._id
+            FROM player_league_season AS pls
+            JOIN latest l
+                ON l.playerId = pls.playerId
+            AND l.startDate = pls.startDate
+            AND l.rn = 1
+            WHERE pls.seasonId = :seasonId
+                AND pls.teamId IS NULL
+                AND pls.primaryPosition IN (:positions)
+            ORDER BY ${expr} ${safeDir}
+            LIMIT ${Number(options.limit) | 0}
+            OFFSET ${Number(options.offset) | 0};
+        `
 
+        const [idQueryResults, metadata] = await s.query(theQuery, Object.assign(queryOptions, options))
+
+        let idOptions = JSON.parse(JSON.stringify(options))
+        delete idOptions.limit
+        delete idOptions.offset
+
+        let ids = idQueryResults.map(qr => qr._id)
+
+        let pls = await this.getByIds(ids, idOptions)
+
+        //Sort so it matches ids order
+        pls.sort(function(a,b) {
+            return ids.indexOf( a._id ) - ids.indexOf( b._id )
+        })
+
+
+        return pls
     }
 
     async getFreeAgentIdsBySeason(season:Season, options?:any): Promise<string[]> {

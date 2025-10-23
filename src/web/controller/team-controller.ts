@@ -9,7 +9,7 @@ import TeamOnChainActivityComponent from '../components/team/onchain-activity.f7
 
 
 
-import TeamScheduleComponent from '../components/team/schedule.f7.html'
+import TeamResultsComponent from '../components/team/results.f7.html'
 
 
 
@@ -66,8 +66,8 @@ class TeamController {
 
     }
 
-    @routeMap("/t/schedule/:tokenId")
-    async showSchedule(): Promise<ModelView> {
+    @routeMap("/t/results/:tokenId")
+    async showResults(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
 
@@ -96,7 +96,7 @@ class TeamController {
                 gameLogs: gameLogs,
                 discord: this.discord
             }
-        }, TeamScheduleComponent)
+        }, TeamResultsComponent)
 
     }
 

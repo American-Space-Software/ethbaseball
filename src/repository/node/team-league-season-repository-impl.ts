@@ -178,7 +178,7 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
             },
 
             order: [
-                ['overallRecord.winPercent', 'desc'],
+                ['longTermRating.rating', 'desc'],
                 ['seasonRating.rating', 'desc'],
             ],
             include: [Team, League, Season, City, Stadium]
@@ -199,7 +199,7 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
                 leagueId: league._id,
             },
             order: [
-                ['overallRecord.winPercent', 'desc'],
+                ['longTermRating.rating', 'desc'],
                 ['seasonRating.rating', 'desc'],
             ],
             include: [Team, League, Season, City, Stadium]
@@ -218,7 +218,7 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
                 seasonId: season._id
             },
             order: [
-                ['overallRecord.winPercent', 'desc'],
+                ['longTermRating.rating', 'desc'],
                 ['seasonRating.rating', 'desc'],
             ],
             include: [Team, League, Season, City, Stadium]

@@ -44,7 +44,7 @@ import { PlayerLeagueSeasonService } from '../service/player-league-season-servi
 import { TeamLeagueSeasonService } from '../service/team-league-season-service.js'
 
 import { OffchainEventService } from '../service/offchain-event-service.js'
-import { ContractType, OwnerSorts, TeamCost } from '../service/enums.js'
+import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, TeamCost } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { PostService } from '../service/post-service.js'
 import { ProcessedTransactionService } from '../service/processed-transaction-service.js'
@@ -494,7 +494,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/l/standings/:leagueRank", async function (req, res) {
+  app.get("/l/standings/:leagueRank/:page", async function (req, res) {
 
       try {
 
@@ -1018,18 +1018,52 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/player/list/:rank/:startDate', cacheService.cacheResponse({ tag: PLAYERS }), async function (req, res) {
+  app.get('/api/player/list/:rank/:startDate/:page', async function (req, res) {
 
     try {
       let startDate = dayjs(req.params.startDate).toDate()
       let rank = parseIntWithException(req.params.rank)
+
+      let perPage = 25
+      let page = parseIntWithException(req.params.page)
+      let options = { limit: perPage, offset: (page - 1) * perPage }
+
 
       let league:League
       if (rank > 0) {
         league = await leagueService.getByRank(rank)
       }
 
-      return res.json(await playerService.getPlayerViewModels(startDate, league))
+      let sortColumn = req.query.sortColumn ? req.query.sortColumn.toString() : 'overallRating_pct'
+      let sortDirection = req.query.sortDirection ? req.query.sortDirection.toString() : 'DESC'
+      let playerPosition = req.query.position ? req.query.position.toString() : HitterPitcher.HITTER
+
+
+      if (sortDirection != 'ASC' && sortDirection != 'DESC') {
+        throw new Error("Invalid sort direction.")
+      }
+
+      if (!PLAYER_STATS_SORT_EXPRESSION[sortColumn]) {
+        throw new Error("Invalid sort column.")
+      }
+
+      if (playerPosition != Position.CATCHER && playerPosition != Position.FIRST_BASE && playerPosition != Position.SECOND_BASE &&
+        playerPosition != Position.THIRD_BASE && playerPosition != Position.SHORTSTOP && playerPosition != Position.LEFT_FIELD &&
+        playerPosition != Position.CENTER_FIELD && playerPosition != Position.RIGHT_FIELD && playerPosition != Position.PITCHER && playerPosition != HitterPitcher.HITTER) {
+        throw new Error("Invalid position.")
+      }
+
+      let positions:Position[] = []
+
+      if (playerPosition == HitterPitcher.HITTER) {
+        positions = [ Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE,
+          Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD,
+          Position.CENTER_FIELD, Position.RIGHT_FIELD ]
+      } else {
+        positions = [playerPosition as Position]
+      }
+
+      return res.json(await playerService.getPlayerViewModels(startDate, league, positions, sortColumn, sortDirection, options))
     } catch (ex) {
       console.log(ex)
       res.sendStatus(404)
@@ -1671,7 +1705,7 @@ let startWebServer = async () => {
     return
   })
 
-  app.get('/api/league/standings/:leagueRank/:startDate?', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
+  app.get('/api/league/standings/:leagueRank/:page/:startDate?', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
 
     try {
 
@@ -1692,7 +1726,15 @@ let startWebServer = async () => {
         season = seasons[0]
       }
 
-      return res.json(await teamService.getStandingsViewModel(seasons,leagues, league, season))
+
+      let perPage = 25
+      let page = parseIntWithException(req.params.page)
+      let options = { limit: perPage, offset: page * perPage }
+
+      let vm = await teamService.getStandingsViewModel(seasons,leagues, league, season, options)
+      vm['page'] = page
+
+      return res.json(vm)
 
     } catch (ex) {
       console.log(ex)

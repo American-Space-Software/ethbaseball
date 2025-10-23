@@ -105,13 +105,13 @@ class ProcessedEvent extends Model {
     @BelongsTo(() => ProcessedTransaction)
     processedTransaction: ProcessedTransaction
 
-    @ForeignKey(() => OffchainEvent)
+    // @ForeignKey(() => OffchainEvent)
     @AllowNull(true)	
     @Column(DataType.STRING)
     declare offChainEventId?:string 
 
-    @BelongsTo(() => OffchainEvent)
-    offChainEvent: OffchainEvent
+    // @BelongsTo(() => OffchainEvent)
+    // offChainEvent: OffchainEvent
 
 
     @Column(DataType.STRING)

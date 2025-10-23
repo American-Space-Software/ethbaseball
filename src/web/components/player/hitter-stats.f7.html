@@ -3,7 +3,7 @@
   <div>
 
     <div class="paging">
-      Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, effectiveHitters.length)} of ${effectiveHitters.length} hitters.
+      Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, displayHitters.length)}.
       <slot></slot>
     </div>
 
@@ -13,35 +13,35 @@
           <tr>
             ${actions ? $h`<th class="action"></th>` : $h` `}  
             <th class="image"></th>
-            <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.overallRating_pct">OVR</th>          
-            <th @click=${sortHitters} class="numeric-cell" data-sort="age">Age</th>
-            <th @click=${sortHitters} data-sort="throws">Throws</th>
-            <th @click=${sortHitters} data-sort="hits">Bats</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.games">G</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.pa">PA</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.atBats">AB</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.runs">R</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.hits">H</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.doubles">2B</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.triples">3B</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.homeRuns">HR</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.rbi">RBI</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.sb">SB</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.cs">CS</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.bb">BB</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.so">SO</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.bbPercent">BB%</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.soPercent">SO%</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.po">PO</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.assists">AST</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.outfieldAssists">OFA</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.e">E</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.avg">BA</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.obp">OBP</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.slg">SLG</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.ops">OPS</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="${statprop}.hitting.wpa">WPA</th>
+            <th class="name">Name</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'overallRating_pct' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="overallRating_pct">OVR</th>          
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'age' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="age">Age</th>
+            <th @click=${sortRows} data-sort="throws" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'throws' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Throws</th>
+            <th @click=${sortRows} data-sort="hits" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hits' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Bats</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.games' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.games">G</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.pa' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.pa">PA</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.atBats' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.atBats">AB</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.runs' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.runs">R</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.hits' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.hits">H</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.doubles' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.doubles">2B</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.triples' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.triples">3B</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.homeRuns' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.homeRuns">HR</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.rbi' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.rbi">RBI</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.sb' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.sb">SB</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.cs' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.cs">CS</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.bb' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.bb">BB</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.so' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.so">SO</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.bbPercent' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.bbPercent">BB%</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.soPercent' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.soPercent">SO%</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.po' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.po">PO</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.assists' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.assists">AST</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.outfieldAssists' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.outfieldAssists">OFA</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.e' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.e">E</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.avg' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.avg">BA</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.obp' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.obp">OBP</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.slg' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.slg">SLG</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.ops' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.ops">OPS</th>
+            <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.wpa' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.wpa">WPA</th>
           </tr>
         </thead>
         <tbody>
@@ -125,19 +125,6 @@
     </div>
 
   
-    <div class="block split-row-both">
-        <div>
-            ${pagingService.hasPreviousPage(PAGE_SIZE, currentPage, effectiveHitters) ? $h`
-                <a @click="${previousClick}" class="button button-outline color-gray">Previous</a>
-            ` : $h` `}
-        </div>
-        <div>
-            ${pagingService.hasNextPage(PAGE_SIZE, currentPage, effectiveHitters) ? $h`
-                <a @click="${nextClick}" class="button button-fill">Next</a>
-            ` : $h` `}
-        </div>
-  
-    </div>
 
   </div>
 
@@ -166,7 +153,6 @@
     let statService = ContainerService.getInstance(StatService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
-
     let pagingService = ContainerService.getInstance(PagingService)
 
     let currentPage = 0
@@ -188,8 +174,11 @@
     const moveFilter = props.movefilter
     const sortable = props.sortable == "true"
 
-    let effectiveHitters = []
-    let displayHitters = []
+    let sortColumn = props.sortcolumn
+    let sortDirection = props.sortdirection
+
+    let displayHitters = props.hitters
+    let sortRows = props.sortrows
 
     const getStats = (p) => {
       if (!p) return
@@ -201,71 +190,6 @@
       showMoveButton(p, "hitter-stats")
     }
 
-    const setEffectiveHitters = (hitters) => {
-      effectiveHitters = hitters
-    }
-
-    const sortHitters = (e) => {
-
-        if (sortable) {
-          playerWebService.sort($, e, '.hitters', effectiveHitters)
-          currentPage = 0
-          setCurrentPage()
-          $update()
-        }
-
-    }
-
-    const nextClick = (e) => {
-        currentPage++
-        setCurrentPage()
-        $update()
-    }
-
-    const previousClick = (e) => {
-        currentPage--
-        setCurrentPage()
-        $update()
-    }
-
-    const setCurrentPage = (hitters) => {
-
-      if (hitters) {
-        effectiveHitters = hitters
-      }
-
-      let start = pagingService.startIndex(PAGE_SIZE, currentPage)
-      let end = pagingService.endIndex(PAGE_SIZE, currentPage)
-
-      displayHitters.length = 0
-
-      if (props.filters?.position) {
-        effectiveHitters = effectiveHitters.filter(p => p.primaryPosition == props.filters.position)
-      } else if (props.filters?.name) {
-        effectiveHitters = effectiveHitters.filter(p => p.fullName.toLowerCase().indexOf(props.filters.name.toLowerCase()) >= 0)
-      } 
-
-      displayHitters.push(...effectiveHitters.slice(start, end))
-
-
-    }
-
-    setCurrentPage(props.hitters())
-
-    $f7.on('refresh', (cb) => {
-
-      if (props.actions) {
-        actions = props.actions()
-      }
-      
-      if (props.statprop) {
-        statprop = props.statprop
-      }
-
-      setCurrentPage(props.hitters())
-      $update()
-      if (cb) cb()
-    })
 
 
     return $render

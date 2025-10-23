@@ -34,18 +34,19 @@ class LeagueController {
 
     }
 
-    @routeMap("/l/standings/:rank")
+    @routeMap("/l/standings/:rank/:page")
     async showLeagueStandings(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
-
 
             let currentStartDate = routeTo?.query?.startDate
 
             this.universeWebService.setStartDate(currentStartDate, routeTo)
             this.universeWebService.setRank(routeTo?.params?.rank || 1)
 
-            let viewModel = await this.leagueWebService.getStandings(this.universeWebService.getRank(), this.universeWebService.getStartDate())
+            let page = routeTo.params?.page || 1
+
+            let viewModel = await this.leagueWebService.getStandings(this.universeWebService.getRank(), this.universeWebService.getStartDate(), page)
 
             return {
                 viewModel: viewModel,

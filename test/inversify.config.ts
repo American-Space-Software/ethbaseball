@@ -260,7 +260,7 @@ function getContainer(command?: GetContainerCommand) {
 
   })
 
-  let sequelize
+  let sequelize:any
 
   container.bind('sequelize').toConstantValue(async () => {
 

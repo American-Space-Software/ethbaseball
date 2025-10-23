@@ -19,9 +19,9 @@ class LeagueWebService {
 
     }
 
-    async getStandings(leagueRank:number, startDate:string) {
+    async getStandings(leagueRank:number, startDate:string, page:number) {
         
-        let url = startDate ? `/api/league/standings/${leagueRank}/${startDate}` : `/api/league/standings/${leagueRank}/`
+        let url = startDate ? `/api/league/standings/${leagueRank}/${page}/${startDate}` : `/api/league/standings/${leagueRank}/${page}`
 
         //Download it.
         let result = await axios.get(url)

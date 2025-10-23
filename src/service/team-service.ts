@@ -32,7 +32,6 @@ import { GameTransaction } from "../dto/game-transaction.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { GameService } from "./game-service.js";
-import { UserService } from "./user-service.js";
 import { User } from "../dto/user.js";
 
 const MAX_ROSTER_SIZE = 13

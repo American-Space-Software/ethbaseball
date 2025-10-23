@@ -140,13 +140,13 @@
 
             <div class="block split-row-both">
               <div>
-                  ${previousLeague ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${previousLeague}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
+                  ${previousPage ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${previousPage}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
                   ` : $h` `}
               </div>
               <div>
-                  ${nextLeague ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${nextLeague}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
+                  ${nextPage ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${nextPage}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
                   ` : $h` `}
               </div>
             </div>
@@ -207,8 +207,8 @@
         let viewModel = props.viewModel
         let leagueVm
 
-        let previousLeague = viewModel.leagueVm.league.rank == 1 ? undefined : viewModel.leagueVm.league.rank - 1
-        let nextLeague = viewModel.leagueVm.league.rank == 10 ? undefined : viewModel.leagueVm.league.rank + 1
+        let previousPage = viewModel.page == 1 ? undefined : viewModel.page - 1
+        let nextPage = viewModel.leagueVm?.leagues?.length > 25 ? undefined : viewModel.page + 1
 
 
         const isPromoted = (t) => {

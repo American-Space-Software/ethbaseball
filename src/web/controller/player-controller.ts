@@ -9,6 +9,7 @@ import { routeMap } from '../../util/route-map.js';
 import { UniverseWebService } from '../service/universe-web-service.js';
 import { PlayerWebService } from '../service/player-web-service.js';
 import { LoginWebService } from '../service/login-web-service.js';
+import { HitterPitcher } from '../../service/enums.js';
 
 
 @injectable()
@@ -68,18 +69,36 @@ class PlayerController {
                 this.universeWebService.setRank(routeTo?.query?.rank)
             } 
 
+            let page = parseInt(routeTo?.query?.page) || 1
+            let sortColumn = routeTo?.query?.sortColumn || "overallRating_pct"
+            let sortDirection = routeTo?.query?.sortDirection || "DESC"
+            let position = routeTo?.query?.position || HitterPitcher.HITTER
+
+
             let allPlayers = []
 
             allPlayers.length = 0
-            let result = await this.playerWebService.getPlayers(this.universeWebService.getStartDate(), rank)
 
-            allPlayers.push(...result)
+            try {
+                let result = await this.playerWebService.getPlayers(this.universeWebService.getStartDate(), rank, page, position, sortColumn, sortDirection)
+                
+                if (Array.isArray(result)) {
+                    allPlayers.push(...result)
+                }
+
+            } catch(ex) {}
+
+
             
 
             return {
                 discord: this.discord,
                 allPlayers: allPlayers,
-                rank: rank
+                rank: rank,
+                position: position,
+                sortColumn: sortColumn,
+                sortDirection: sortDirection,
+                page: page
             }
 
         }, PlayersListComponent)

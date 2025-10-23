@@ -1620,6 +1620,14 @@ h1 {
   background: rgb(48, 48, 0);
 }
 
+.card-unsaved .image {
+  background : lightyellow;
+}
+
+.dark .card-unsaved .image {
+  background: rgb(48, 48, 0);
+}
+
 
 .inline {
   flex: 0 0 100px;

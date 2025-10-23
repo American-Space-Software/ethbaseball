@@ -1,8 +1,8 @@
 import assert, { fail } from "assert"
 
 import fs from 'fs'
-
 import { getContainer } from "./inversify.config.js"
+
 
 import { RollService } from '../src/service/roll-service.js'
 import { GameService, SimGameCommand } from "../src/service/game-service.js"
@@ -54,9 +54,9 @@ describe('GameService', async () => {
 
 
     before('Before', async () => {
-        
+
         let container = getContainer()
-        
+
         service = container.get(GameService)
         // gameQueueService = container.get(GameQueueService)
         rollService = container.get(RollService)
@@ -173,114 +173,6 @@ describe('GameService', async () => {
         assert.equal(result.score.home, 6)
 
     })
-
-
-
-    // it("should sim a full season", async () => {
-
-    //     let s = await sequelize()
-
-    //     // Arrange
-    //     let owner = await ownerService.getOrCreate("yyyvvvmmmbb")
-
-    //     //Create 30 more teams
-    //     for (let i=0; i < 30; i++) {
-
-    //         if (i % 2 == 0) {
-    //             await playerService.draftTeam(owner)
-    //         } else {
-    //             await playerService.draftTeam(owner)
-    //         }
-
-    //     }
-
-
-    //     // Arrange
-    //     function shuffleArray(array) {
-    //         for (let i = array.length - 1; i > 0; i--) {
-    //             const j = Math.floor(Math.random() * (i + 1));
-    //             [array[i], array[j]] = [array[j], array[i]];
-    //         }
-    //     }
-
-    //     let overallStats:any[] = []
-    //     let playerReports:any[] = []
-
-    //     let lineups = await lineupService.list()
-
-
-    //     //We want each team to play 162 games. Queue in random order.
-    //     for (let i=0; i < 162; i++) {
-                
-    //         console.time(`Queuing...`)
-
-    //         shuffleArray(lineups)
-
-    //         for (let lineup of lineups) {
-    //             //@ts-ignore
-    //             await playerService.clearCooldowns(lineup.players.map ( p => { return { tokenId: p.tokenId} }))
-    //             await gameQueueService.queueLineup(lineup)
-    //         }
-
-    //         console.timeEnd(`Queuing...`)
-
-    //         console.time(`Starting...`)
-    //         await gameQueueService.startLineups()
-    //         console.timeEnd(`Starting...`)
-
-
-    //         //Play all the games
-    //         let games:Game[] = await service.getInProgress()
-
-    //         console.time(`Day ${i+1}: ${games.length} games in progress. Simulating.`)
-    //         await service.simGames(games)
-    //         console.timeEnd(`Day ${i+1}: ${games.length} games in progress. Simulating.`)
-
-
-    //         console.time(`Saving ${games.length}...`)
-    //         for (let game of games) {
-    //             await service.put(game)
-    //         }
-
-    //         console.timeEnd(`Saving ${games.length}...`)
-
-    //         console.time(`Writing report...`)
-
-    //         let stats = await service.getOverallStats({ limit: 112 }) //7 days
-    //         //@ts-ignore
-    //         stats.dayNumber = i +1 
-
-    //         overallStats.push(stats)
-
-
-    //         let report = await playerService.getPlayerReport()
-
-    //         //@ts-ignore
-    //         report.dayNumber = i + 1
-
-    //         playerReports.push(report)
-
-    //         let reports:any[] = []
-
-    //         for (let i = 0; i < overallStats.length; i++) {
-    //             assert.equal(overallStats[i].dayNumber, playerReports[i].dayNumber)
-    //             reports.push(Object.assign(overallStats[i], playerReports[i]))
-    //         }
-
-
-    //         await fs.writeFileSync('./test/data/reports.json', JSON.stringify(reports))
-
-    //         console.timeEnd(`Writing report...`)
-
-
-
-
-            
-
-    //     }
-
-    // })
-
 
 
 })

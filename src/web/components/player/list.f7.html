@@ -39,105 +39,111 @@
 
 
         <div class="block block-strong block-outline">
-                <div class="search">
-                    <!-- <div class="searchbar searchbar-inline">
-                        <div class="searchbar-input-wrap">
-                            <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
-                            <i class="searchbar-icon"></i>
-                            <span class="input-clear-button"></span>
-                        </div>
-                    </div> -->
-                    <div class="position">
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link active">Batters</a>
-                        <a href="#playerStatsPitchers" @click="${positionClick}" class="tab-link">Pitchers</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="C">C</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="1B">1B</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="2B">2B</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="3B">3B</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="SS">SS</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="LF">LF</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="CF">CF</a>
-                        <a href="#playerStatsHitters" @click="${positionClick}" class="tab-link" data-pos="RF">RF</a>
+            <div class="search">
+                <!-- <div class="searchbar searchbar-inline">
+                    <div class="searchbar-input-wrap">
+                        <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
+                        <i class="searchbar-icon"></i>
+                        <span class="input-clear-button"></span>
                     </div>
+                </div> -->
+                <div class="position">
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=H" class="tab-link ${position=='H' ? 'active' : ''}" data-animate="false" >Batters</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=P" class="tab-link ${position=='P' ? 'active' : ''}" data-animate="false" >Pitchers</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=C" class="tab-link ${position=='C' ? 'active' : ''}" data-animate="false" >C</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=1B" class="tab-link ${position=='1B' ? 'active' : ''}" data-animate="false" >1B</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=2B" class="tab-link ${position=='2B' ? 'active' : ''}" data-animate="false" >2B</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=3B" class="tab-link ${position=='3B' ? 'active' : ''}" data-animate="false" >3B</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=SS" class="tab-link ${position=='SS' ? 'active' : ''}" data-animate="false" >SS</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=LF" class="tab-link ${position=='LF' ? 'active' : ''}" data-animate="false" >LF</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=CF" class="tab-link ${position=='CF' ? 'active' : ''}" data-animate="false" >CF</a>
+                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=RF" class="tab-link ${position=='RF' ? 'active' : ''}" data-animate="false" >RF</a>
                 </div>
+            </div>
 
-                <div class="tabs-animated-wrap">
-                    <div class="tabs">
-                        <div class="tab tab-active" id="playerStatsHitters">
+            ${position == 'P' ? $h`
+                <div>
 
-                            ${selected == "stats" ? $h`
-                            <hitter-stats hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                                actions="${getActions}" statprop="seasonStats">
-                                <select @change="${statsChange}" class="stats-dropdown">
-                                    <option value="stats" selected>Season Stats</option>
-                                    <option value="ratings">Ratings</option>
-                                    <option value="contracts">Contracts</option>
-                                </select>
-                            </hitter-stats>
-                            ` : $h` `}
+                    ${selected == "stats" ? $h`
+                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <select @change="${statsChange}" class="stats-dropdown">
+                                <option value="stats" selected>Season Stats</option>
+                                <option value="ratings">Ratings</option>
+                                <option value="contracts">Contracts</option>
+                            </select>
+                        </pitcher-stats>
+                    ` : $h` `}
 
-                            ${selected == "ratings" ? $h`
-                            <hitter-ratings hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                                actions="${getActions}">
-                                <select @change="${statsChange}" class="stats-dropdown">
-                                    <option value="stats">Season Stats</option>
-                                    <option value="ratings" selected>Ratings</option>
-                                    <option value="contracts">Contracts</option>
-                                </select>
-                            </hitter-ratings>
-                            ` : $h` `}
+                    ${selected == "ratings" ? $h`
+                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <select @change="${statsChange}" class="stats-dropdown">
+                                <option value="stats">Season Stats</option>
+                                <option value="ratings" selected>Ratings</option>
+                                <option value="contracts">Contracts</option>
+                            </select>
+                        </pitcher-ratings>
+                    ` : $h` `}
 
-                            ${selected == "contracts" ? $h`
-                            <hitter-contracts hitters=${getAllHitters} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                                actions="${getActions}">
-                                <select @change="${statsChange}" class="stats-dropdown">
-                                    <option value="stats">Season Stats</option>
-                                    <option value="ratings">Ratings</option>
-                                    <option value="contracts" selected>Contracts</option>
-                                </select>
-                            </hitter-contracts>
-                            ` : $h` `}
+                    ${selected == "contracts" ? $h`
+                        <pitcher-contracts pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <select @change="${statsChange}" class="stats-dropdown">
+                                <option value="stats">Season Stats</option>
+                                <option value="ratings" >Ratings</option>
+                                <option value="contracts" selected>Contracts</option>
+                            </select>
+                        </pitcher-contracts>
+                    ` : $h` `}
 
-                        </div>
-                        <div class="tab" id="playerStatsPitchers">
-
-                            ${selected == "stats" ? $h`
-                            <pitcher-stats pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                                actions="${getActions}" statprop="seasonStats">
-                                <select @change="${statsChange}" class="stats-dropdown">
-                                    <option value="stats" selected>Season Stats</option>
-                                    <option value="ratings">Ratings</option>
-                                    <option value="contracts">Contracts</option>
-                                </select>
-                            </pitcher-stats>
-                            ` : $h` `}
-
-                            ${selected == "ratings" ? $h`
-                            <pitcher-ratings pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                                actions="${getActions}">
-                                <select @change="${statsChange}" class="stats-dropdown">
-                                    <option value="stats">Season Stats</option>
-                                    <option value="ratings" selected>Ratings</option>
-                                    <option value="contracts">Contracts</option>
-                                </select>
-                            </pitcher-ratings>
-                            ` : $h` `}
-
-                            ${selected == "contracts" ? $h`
-                            <pitcher-contracts pitchers=${getAllPitchers} sortable="true" pagesize=${PAGE_SIZE} filters=${filters}
-                                actions="${getActions}">
-                                <select @change="${statsChange}" class="stats-dropdown">
-                                    <option value="stats">Season Stats</option>
-                                    <option value="ratings" >Ratings</option>
-                                    <option value="contracts" selected>Contracts</option>
-                                </select>
-                            </pitcher-contracts>
-                            ` : $h` `}
-
-                        </div>
-
-                    </div>
                 </div>
+            ` : $h` 
+                <div>
+
+                    ${selected == "stats" ? $h`
+                        <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <select @change="${statsChange}" class="stats-dropdown">
+                                <option value="stats" selected>Season Stats</option>
+                                <option value="ratings">Ratings</option>
+                                <option value="contracts">Contracts</option>
+                            </select>
+                        </hitter-stats>
+                    ` : $h` `}
+
+                    ${selected == "ratings" ? $h`
+                        <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <select @change="${statsChange}" class="stats-dropdown">
+                                <option value="stats">Season Stats</option>
+                                <option value="ratings" selected>Ratings</option>
+                                <option value="contracts">Contracts</option>
+                            </select>
+                        </hitter-ratings>
+                    ` : $h` `}
+
+                    ${selected == "contracts" ? $h`
+                        <hitter-contracts hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <select @change="${statsChange}" class="stats-dropdown">
+                                <option value="stats">Season Stats</option>
+                                <option value="ratings">Ratings</option>
+                                <option value="contracts" selected>Contracts</option>
+                            </select>
+                        </hitter-contracts>
+                    ` : $h` `}
+
+                </div>
+            ` }
+
+            <div class="block split-row-both">
+              <div>
+                  ${previousPage ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=${previousPage}&sortColumn=${sortColumn}&sortDirection=${sortDirection}" class="button button-outline color-gray">Previous</a>
+                  ` : $h` `}
+              </div>
+              <div>
+                  ${nextPage ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=${nextPage}&sortColumn=${sortColumn}&sortDirection=${sortDirection}" class="button button-fill">Next</a>
+                  ` : $h` `}
+              </div>
+            </div>
+
 
         </div>
 
@@ -182,15 +188,24 @@
 
     let leagues = universeWebService.getLeagues()
 
+    const PAGE_SIZE = 25
+
+
     let rank = props.rank
     let allPlayers = props.allPlayers
+    let position = props.position
+    let page = props.page
+
+    const sortColumn = props.sortColumn
+    const sortDirection = props.sortDirection
+    let previousPage = page > 1 ? page - 1 : null
+    let nextPage = allPlayers.length == PAGE_SIZE ? page + 1 : null
 
     const getActions = () => { }
 
 
     let selected = "stats"
 
-    const PAGE_SIZE = 25
 
     let loading = false
 
@@ -203,13 +218,20 @@
         name: undefined
     }
 
-    const getAllHitters = () => {
-        return allPlayers?.filter(p => p.primaryPosition != Position.PITCHER)
+
+    const sortRows = (e) => {
+
+        let target = $(e.target)
+
+        let sort = target.data("sort")
+
+        let direction = $(target).hasClass("sortable-desc") ? "DESC" : "ASC"
+
+        let url = `/players/?rank=${universeWebService.getRank()}&startDate=${universeWebService.getStartDate()}&position=${position}&page=1&sortColumn=${sort}&sortDirection=${direction}`
+        $f7.views.main.router.navigate(url, { reloadCurrent: true })
+
     }
 
-    const getAllPitchers = () => {
-        return allPlayers?.filter(p => p.primaryPosition == Position.PITCHER)
-    }
 
     const link = (href) => {
         return "/" + href
@@ -241,20 +263,11 @@
 
     const positionClick = (e) => {
 
-        // currentPage = 0
+      let position = $(e.target).data("pos")
 
-        $('.position a').removeClass("active")
-        $(e.srcElement).addClass("active")
+      let url = `${$f7.views.main.router.currentRoute.path}?rank=${universeWebService.getRank()}&startDate=${universeWebService.getStartDate()}&position=${position}`
+      $f7.views.main.router.navigate(url, { reloadCurrent: true })
 
-        $('#playerSearch').val("")
-
-        let value = $(e.srcElement).data('pos')
-
-        filters.position = value
-
-        // setCurrentPage()
-        $update()
-        $f7.emit('refresh')
 
     }
 

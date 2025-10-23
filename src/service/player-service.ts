@@ -18,7 +18,7 @@ import { Animation } from "../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "./stat-service.js"
-import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, ContractYear, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings } from "./enums.js"
+import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, ContractYear, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "./enums.js"
 import dayjs from "dayjs"
 
 
@@ -297,7 +297,7 @@ class PlayerService {
 
         //Slash ratings if this is a pitcher
         if (player.primaryPosition == Position.PITCHER) {
-            normalizedMax *= .5
+            normalizedMax *= .25
         }
 
         //Adjust based on player's profile and normalize to rating max.
@@ -362,7 +362,7 @@ class PlayerService {
 
         //Slash ratings if this is a pitcher
         if (player.primaryPosition != Position.PITCHER) {
-            normalizedMax *= .5
+            normalizedMax *= .25
         }
 
 
@@ -1498,7 +1498,7 @@ class PlayerService {
         })
     }
 
-    async getPlayerViewModels(startDate:Date, league:League) {
+    async getPlayerViewModels(startDate:Date, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
 
         let season:Season = await this.seasonService.getByDate(startDate)
 
@@ -1507,10 +1507,16 @@ class PlayerService {
         let plss:PlayerLeagueSeason[]
 
         if (league) {
-            plss = await this.playerLeagueSeasonService.getByLeagueSeason(league, season)
-            tlss = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season)
+
+            plss = await this.playerLeagueSeasonService.getByLeagueSeason(league, season, positions, sortColumn, sortDirection, options)
+
+            let teamIds = Array.from(new Set(plss.map( p => p.teamId )))
+            let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
+
+            tlss = await this.teamLeagueSeasonService.getByTeamSeasonIds( teamSeasonIds)
+
         } else {
-            plss = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season)
+            plss = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, positions, sortColumn, sortDirection, options)
         }
 
     

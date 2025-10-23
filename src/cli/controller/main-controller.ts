@@ -457,23 +457,23 @@ class MainController {
 
         try {
 
-            let playerId = parseInt(arg)
+            // let playerId = parseInt(arg)
 
-            if (playerId) {
+            // if (playerId) {
 
-                player = await this.playerService.getByTokenId(playerId)
+            //     player = await this.playerService.getByTokenId(playerId)
 
-                if (!player) {
-                    throw new Error(this.userIO.getInvalidPlayerMessage())
-                }
+            //     if (!player) {
+            //         throw new Error(this.userIO.getInvalidPlayerMessage())
+            //     }
     
-                if (player.ownerId != this.connected._id) {
-                    throw new Error(this.userIO.getPlayerNotOnRosterMessage())
-                }
+            //     if (player.ownerId != this.connected._id) {
+            //         throw new Error(this.userIO.getPlayerNotOnRosterMessage())
+            //     }
 
-            } else {
-                throw new Error(this.userIO.getInvalidPlayerMessage())
-            }
+            // } else {
+            //     throw new Error(this.userIO.getInvalidPlayerMessage())
+            // }
 
 
         } catch(ex) {
