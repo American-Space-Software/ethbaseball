@@ -135,9 +135,6 @@ import { TeamLeagueSeasonRepositoryNodeImpl } from "../repository/node/team-leag
 import { PlayerLeagueSeasonRepositoryNodeImpl } from "../repository/node/player-league-season-repository-impl.js"
 import { PlayerLeagueSeasonService } from "../service/player-league-season-service.js"
 import { PlayerLeagueSeason } from "../dto/player-league-season.js"
-import { GameTransactionRepositoryNodeImpl } from "../repository/node/game-transaction-repository-impl.js"
-import { GameTransactionService } from "../service/game-transaction-service.js"
-import { GameTransaction } from "../dto/game-transaction.js"
 import { DiamondMintPassService } from "../service/diamond-mint-pass-service.js"
 import { DiamondMintPassRepositoryNodeImpl } from "../repository/node/diamond-mint-pass-repository-impl.js"
 import { ChatGPTService } from "../service/chatgpt-service.js"
@@ -281,7 +278,7 @@ async function getContainer() {
                 connectTimeout: process.env.MYSQL_TIMEOUT,
                 multipleStatements: true        
                },
-               models: [TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, GameTransaction, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
+               models: [TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
                  DiamondMintPass, Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ],
@@ -417,7 +414,6 @@ async function getContainer() {
     container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
     container.bind(PlayerLeagueSeasonService).toSelf().inSingletonScope()
 
-    container.bind(GameTransactionService).toSelf().inSingletonScope()
     container.bind(ChatGPTService).toSelf().inSingletonScope()
     container.bind(OffchainEventService).toSelf().inSingletonScope()
     container.bind(OllamaService).toSelf().inSingletonScope()
@@ -453,7 +449,6 @@ async function getContainer() {
     container.bind("TeamLeagueSeasonRepository").to(TeamLeagueSeasonRepositoryNodeImpl).inSingletonScope()
     container.bind("PlayerLeagueSeasonRepository").to(PlayerLeagueSeasonRepositoryNodeImpl).inSingletonScope()
 
-    container.bind("GameTransactionRepository").to(GameTransactionRepositoryNodeImpl).inSingletonScope()
     container.bind("DiamondMintPassRepository").to(DiamondMintPassRepositoryNodeImpl).inSingletonScope()
     container.bind("TeamMintPassRepository").to(TeamMintPassRepositoryNodeImpl).inSingletonScope()
 

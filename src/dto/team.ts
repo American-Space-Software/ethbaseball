@@ -76,7 +76,7 @@ interface Revenue {
 }
 
 interface Expenses {
-    payroll:string
+    // payroll:string
     stadiumLease:string
     total:string
 }

@@ -218,17 +218,6 @@
 
               ` : $h` `}
 
-              ${vm?.gameTransactions.transactions?.length > 0 ? $h`
-
-                  <div class="block-title block-title-small">Recent Player Activity</div>
-                  <div class="block block-outline block-strong">
-                    <${GameTransactions} transactions="${vm?.gameTransactions}" />
-
-                    <a class="button button-outline small-button" href="/activity/game">View All</a>
-
-                  </div>
-                  
-              ` : $h` `}
 
               ${vm?.onChainTransactions.transactions?.length > 0 ? $h`
 

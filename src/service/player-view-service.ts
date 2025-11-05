@@ -4,7 +4,7 @@ import { Player } from "../dto/player.js"
 import { ProcessedTransactionService, TransactionsViewModel } from "./processed-transaction-service.js"
 import { PlayerService } from "./player-service.js"
 
-import { ContractType, ContractYear, Handedness, HitResultGame, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, PitchResultGame, PlayerContract, PlayerPercentileRatings, Position } from "./enums.js"
+import { ContractType, Handedness, HitResultGame, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, PitchResultGame, PlayerPercentileRatings, Position } from "./enums.js"
 import { Team } from "../dto/team.js"
 import { TeamService } from "./team-service.js"
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js"
@@ -63,11 +63,8 @@ class PlayerViewService {
         let result:PlayerViewModel = {
             _id: player._id,
             isRetired: player.isRetired,
-            contract: player.contract,
-            contractYear: currentPls?.contractYear,
             askingPrice: currentPls?.askingPrice ? ethers.parseUnits(currentPls?.askingPrice.toString(), 'ether').toString() : undefined,
             team: currentPls?.team,
-            completeContracts: player.completeContracts,
             hits: player.hits,
             age: player.age,
             throws: player.throws,
@@ -130,10 +127,10 @@ class PlayerViewService {
                 diamondBalance: diamondBalance
             }
 
-            let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
-            let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
+            // let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
+            // let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
 
-            result.dropCost = this.playerService.getCostToDrop(player, gamesPerSeason, gamesRemaining)
+            // result.dropCost = this.playerService.getCostToDrop(player, gamesPerSeason, gamesRemaining)
 
         }
 
@@ -161,9 +158,6 @@ interface PlayerViewModel {
     hittingRatings:HittingRatings
     pitchRatings:PitchRatings
     percentileRatings:PlayerPercentileRatings
-    contract:PlayerContract
-    contractYear:ContractYear
-    completeContracts: PlayerContract[]
     askingPrice:string
 
     careerHitterStats: HitterStatLine

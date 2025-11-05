@@ -308,9 +308,9 @@ class GameService {
 
         //Home
         game.gameFinances.home.ticketPrice = homeTLS.financeSeason.currentTicketPrice
-        game.gameFinances.home.payroll = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
+        // game.gameFinances.home.payroll = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
         game.gameFinances.home.stadiumLease = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
-        game.gameFinances.home.totalExpenses = (BigInt(game.gameFinances.home.payroll) + BigInt(game.gameFinances.home.stadiumLease)).toString()
+        game.gameFinances.home.totalExpenses = BigInt(game.gameFinances.home.stadiumLease).toString()
 
         game.gameFinances.home.seasonTickets = homeTLS.financeSeason.attendance.seasonTicketsSold
         game.gameFinances.home.gateTickets = this.financeService.calculateSingleGameTicketSales(leagueRank, homeTLS.fanInterestShortTerm, homeTLS.fanInterestLongTerm, homeTLS.city.population, homeTLS.stadium.capacity, game.gameFinances.home.seasonTickets)
@@ -326,9 +326,9 @@ class GameService {
 
 
         //Away
-        game.gameFinances.away.payroll = (BigInt(awayTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(awayTLS.financeSeason.totalGamesRemaining)).toString()
+        // game.gameFinances.away.payroll = (BigInt(awayTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(awayTLS.financeSeason.totalGamesRemaining)).toString()
         game.gameFinances.away.stadiumLease = (BigInt(awayTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(awayTLS.financeSeason.totalGamesRemaining)).toString()
-        game.gameFinances.away.totalExpenses = (BigInt(game.gameFinances.away.payroll) + BigInt(game.gameFinances.away.stadiumLease)).toString()
+        game.gameFinances.away.totalExpenses = (BigInt(game.gameFinances.away.stadiumLease)).toString()
 
         game.gameFinances.away.seasonTickets = 0
         game.gameFinances.away.gateTickets = 0

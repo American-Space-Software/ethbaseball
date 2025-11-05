@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { ContractYear, HitterPitcher, PlayerContract, Position } from "../../service/enums.js";
+import { HitterPitcher, Position } from "../../service/enums.js";
 import dayjs from "dayjs";
 import { WalletService } from "../../service/wallet-service.js";
 import { Player } from "../../dto/player.js";

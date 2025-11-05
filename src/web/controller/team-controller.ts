@@ -3,7 +3,6 @@ import { inject, injectable } from 'inversify';
 import TeamMintComponent from '../components/team/mint.f7.html'
 import TeamIndexComponent from '../components/team/index.f7.html'
 
-import TeamGameTransactionActivityComponent from '../components/team/game-transaction-activity.f7.html'
 import TeamOffChainActivityComponent from '../components/team/offchain-activity.f7.html'
 import TeamOnChainActivityComponent from '../components/team/onchain-activity.f7.html'
 
@@ -183,47 +182,6 @@ class TeamController {
         }, TeamOffChainActivityComponent)
 
     }
-
-    @routeMap("/t/activity/game/:tokenId")
-    async showOnchainActivity(): Promise<ModelView> {
-        
-        return new ModelView(async (routeTo) => {
-
-            let startDate = routeTo?.query?.startDate
-            let tokenId = routeTo?.params?.tokenId
-            let page = parseInt(routeTo?.query?.page || 1)
-
-            this.universeWebService.setStartDate(startDate, routeTo)
-
-            let team = await this.teamComponentService.loadTeam(tokenId, this.universeWebService.getStartDate(), { forceRefresh: true })
-
-            this.universeWebService.setRank(team.leagueRank)
-
-            let model = await this.gameTransactionWebService.latestByTeamSeason(tokenId, this.universeWebService.getStartDate(), page)
-
-            let previousPage
-            let nextPage
-
-            if (page > 1) {
-                previousPage = page - 1
-            }
-
-            if (model?.transactions?.length == 25 ) {
-                nextPage = page + 1
-            }
-
-            return {
-                model: model,
-                tokenId: tokenId,
-                page: page,
-                previousPage: previousPage,
-                nextPage: nextPage,
-                discord: this.discord
-            }
-        }, TeamGameTransactionActivityComponent)
-
-    }
-
 
 
 

@@ -180,8 +180,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 
-import { GameTransactionRepository } from "../src/repository/game-transaction-repository.js"
-import { GameTransactionRepositoryNodeImpl } from "../src/repository/node/game-transaction-repository-impl.js"
+
 
 import { GameHitResultRepository } from "../src/repository/game-hit-result-repository.js"
 import { GameHitResultRepositoryNodeImpl } from "../src/repository/node/game-hit-result-repository-impl.js"
@@ -189,7 +188,6 @@ import { GameHitResultRepositoryNodeImpl } from "../src/repository/node/game-hit
 import { GamePitchResultRepository } from "../src/repository/game-pitch-result-repository.js"
 import { GamePitchResultRepositoryNodeImpl } from "../src/repository/node/game-pitch-result-repository-impl.js"
 
-import { GameTransactionService } from "../src/service/game-transaction-service.js"
 import { ChatGPTService } from "../src/service/chatgpt-service.js"
 import { OffchainEvent } from "../src/dto/offchain-event.js"
 import { OffchainEventService } from "../src/service/offchain-event-service.js"
@@ -427,7 +425,6 @@ function getContainer(command?: GetContainerCommand) {
 
   container.bind<TeamLeagueSeasonRepository>("TeamLeagueSeasonRepository").to(TeamLeagueSeasonRepositoryNodeImpl).inSingletonScope()
   container.bind<PlayerLeagueSeasonRepository>("PlayerLeagueSeasonRepository").to(PlayerLeagueSeasonRepositoryNodeImpl).inSingletonScope()
-  container.bind<GameTransactionRepository>("GameTransactionRepository").to(GameTransactionRepositoryNodeImpl).inSingletonScope()
   container.bind<DiamondMintPassRepository>("DiamondMintPassRepository").to(DiamondMintPassRepositoryNodeImpl).inSingletonScope()
   container.bind<TeamMintPassRepository>("TeamMintPassRepository").to(TeamMintPassRepositoryNodeImpl).inSingletonScope()
 
@@ -481,7 +478,6 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
   container.bind(PlayerLeagueSeasonService).toSelf().inSingletonScope()
   container.bind(LadderService).toSelf().inSingletonScope()
-  container.bind(GameTransactionService).toSelf().inSingletonScope()
   container.bind(OffchainEventService).toSelf().inSingletonScope()
   container.bind(OllamaService).toSelf().inSingletonScope()
   container.bind(DiamondMintPassService).toSelf().inSingletonScope()

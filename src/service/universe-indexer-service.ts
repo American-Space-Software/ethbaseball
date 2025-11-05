@@ -15,7 +15,6 @@ import { OwnerService } from "./owner-service.js";
 import { WalletService } from "./wallet-service.js";
 import { TeamService } from "./team-service.js";
 import { DiamondMintPass, Team } from "../dto/team.js";
-import { GameTransactionService } from "./game-transaction-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { LogEventService } from "./log-event-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
@@ -54,7 +53,6 @@ class UniverseIndexerService {
         private contractStateService: ContractStateService,
         private ownerService: OwnerService,
         private diamondMintPassService:DiamondMintPassService,
-        private gameTransactionService:GameTransactionService,
         private offChainEventService:OffchainEventService,
         private logEventService:LogEventService,
         private teamLeagueSeasonService:TeamLeagueSeasonService
@@ -213,8 +211,6 @@ class UniverseIndexerService {
         //Save transactions
         await this.saveProcessedTransactions(result, options)
 
-        //Save game transactions
-        await this.saveGameTransactions(result, options)
 
         //Save tokens
         await this.saveTokens(result, options)
@@ -521,20 +517,6 @@ class UniverseIndexerService {
 
     }
 
-    private async saveGameTransactions(result: ERCIndexResult, options?:any) {
-
-        if (Object.keys(result.gameTransactionsToUpdate).length == 0) return
-
-        console.time(`Saving ${Object.keys(result.gameTransactionsToUpdate).length} game transactions`)
-
-        for (let _id of Object.keys(result.gameTransactionsToUpdate)) {
-            await this.gameTransactionService.put(result.gameTransactionsToUpdate[_id], options)
-        }
-
-        console.timeEnd(`Saving ${Object.keys(result.gameTransactionsToUpdate).length} game transactions`)
-
-
-    }
 
     private async saveDiamondMintPasses(result: ERCIndexResult, options?:any) {
         

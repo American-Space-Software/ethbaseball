@@ -4,7 +4,7 @@ import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./player-
 
 import { GameService } from "./game-service.js"
 import { RotationPitcher, Team } from "../dto/team.js"
-import {  ContractYear, GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position } from "./enums.js"
+import {  GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./team-service.js"
 
@@ -30,7 +30,6 @@ import { Universe } from "../dto/universe.js"
 import { UniverseRepository } from "../repository/universe-repository.js"
 import { LineupService } from "./lineup-service.js"
 import { GamePlayerRepository } from "../repository/game-player-repository.js"
-import { GameTransactionService } from "./game-transaction-service.js"
 import { StatService } from "./stat-service.js"
 import { faker } from '@faker-js/faker'
 import { OffchainEventService } from "./offchain-event-service.js"
@@ -72,7 +71,6 @@ class LadderService {
         private rollService:RollService,
         private statService:StatService,
         private offchainEventService:OffchainEventService,
-        private gameTransactionService:GameTransactionService
     ) {}
 
 
@@ -129,33 +127,33 @@ class LadderService {
 
 
                     //Get the next scheduled season.
-                    let nextSeason:Season = await this.seasonService.getMostRecent(options)
+                    // let nextSeason:Season = await this.seasonService.getMostRecent(options)
 
-                    const oneDay = 24 * 60 * 60 * 1000 // hours*minutes*seconds*milliseconds
+                    // const oneDay = 24 * 60 * 60 * 1000 // hours*minutes*seconds*milliseconds
 
-                    const diffDays = Math.round(Math.abs((universe.currentDate.getTime() - dayjs(nextSeason.startDate).toDate().getTime()) / oneDay))
+                    // const diffDays = Math.round(Math.abs((universe.currentDate.getTime() - dayjs(nextSeason.startDate).toDate().getTime()) / oneDay))
 
-                    let multiplier = Math.max(diffDays / 6, 1)
+                    // let multiplier = Math.max(diffDays / 6, 1)
 
-                    console.time(`Updating free agent contracts with ${multiplier.toFixed(3)} multiplier...`)
+                    // console.time(`Updating free agent contracts with ${multiplier.toFixed(3)} multiplier...`)
 
-                    //Get league bundles for last sesason.
-                    let lastSeason:Season = await this.seasonService.getMostRecentCompleted(options)
-                    let lastSeasonPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentBySeason(lastSeason, options)
-                    let leagueBundles:LeagueBundle[] = this.getLeagueBundles(leagues, lastSeasonPLS)
+                    // //Get league bundles for last sesason.
+                    // let lastSeason:Season = await this.seasonService.getMostRecentCompleted(options)
+                    // let lastSeasonPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentBySeason(lastSeason, options)
+                    // let leagueBundles:LeagueBundle[] = this.getLeagueBundles(leagues, lastSeasonPLS)
 
-                    let leagueBundle:LeagueBundle = leagueBundles.find( lb => lb.league.rank == 1)
+                    // let leagueBundle:LeagueBundle = leagueBundles.find( lb => lb.league.rank == 1)
 
-                    await this.updateFreeAgentContracts(leagueBundle, nextSeason, multiplier, options)
-
-
-                    console.timeEnd(`Updating free agent contracts with ${multiplier.toFixed(3)} multiplier...`)
+                    // await this.updateFreeAgentContracts(leagueBundle, nextSeason, multiplier, options)
 
 
-                    //No season just go to next date.
-                    universe.currentDate.setDate(universe.currentDate.getDate() + 1)
-                    universe.changed('currentDate', true)
-                    await this.universeRepository.put(universe, options)
+                    // console.timeEnd(`Updating free agent contracts with ${multiplier.toFixed(3)} multiplier...`)
+
+
+                    // //No season just go to next date.
+                    // universe.currentDate.setDate(universe.currentDate.getDate() + 1)
+                    // universe.changed('currentDate', true)
+                    // await this.universeRepository.put(universe, options)
                 }
 
                 
@@ -165,38 +163,38 @@ class LadderService {
 
     }
 
-    private async updateFreeAgentContracts(leagueBundle:LeagueBundle, season:Season, modifier:number, options?:any) {
+    // private async updateFreeAgentContracts(leagueBundle:LeagueBundle, season:Season, modifier:number, options?:any) {
 
-        //Get free agents
-        const plss:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, 
-            [ Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.PITCHER ], 
-            "overallRating", "DESC", options)
+    //     //Get free agents
+    //     const plss:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, 
+    //         [ Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.PITCHER ], 
+    //         "overallRating", "DESC", options)
             
-        const freeAgentPlayers:Player[] = await this.playerService.getByIds( plss.map( pls => pls.playerId), options)
+    //     const freeAgentPlayers:Player[] = await this.playerService.getByIds( plss.map( pls => pls.playerId), options)
 
-        const nonRookies = freeAgentPlayers.filter( p => !p.contract.isRookie )
+    //     const nonRookies = freeAgentPlayers.filter( p => !p.contract.isRookie )
 
-        //Get all the free agent players and generate new contracts for them and change their asking price.
-        for (let player of nonRookies) {
+    //     //Get all the free agent players and generate new contracts for them and change their asking price.
+    //     for (let player of nonRookies) {
 
-            let nextSeasonPLS:PlayerLeagueSeason = plss.find( pls => pls.playerId == player._id)
+    //         let nextSeasonPLS:PlayerLeagueSeason = plss.find( pls => pls.playerId == player._id)
 
-            let years = this.playerService.getYearsContractAsk(player.age)
+    //         let years = this.playerService.getYearsContractAsk(player.age)
 
-            if (modifier == 1 && years > 2) {
-                years -= 2
-            }
+    //         if (modifier == 1 && years > 2) {
+    //             years -= 2
+    //         }
 
-            this.playerService.createFreeAgentContract(player, leagueBundle.laPlayerRating, leagueBundle.laSalary, years, modifier)
+    //         this.playerService.createFreeAgentContract(player, leagueBundle.laPlayerRating, leagueBundle.laSalary, years, modifier)
 
-            nextSeasonPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
+    //         nextSeasonPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
 
-        }
+    //     }
 
-        await this.playerLeagueSeasonService.updateGameFields(plss, options)
-        await this.playerService.updateGameFields(freeAgentPlayers, options)
+    //     await this.playerLeagueSeasonService.updateGameFields(plss, options)
+    //     await this.playerService.updateGameFields(freeAgentPlayers, options)
 
-    }
+    // }
 
 
     private isDateBeforeOrEqualToToday(date:Date) : boolean {
@@ -492,7 +490,7 @@ class LadderService {
 
                 tls.financeSeason.diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
 
-                this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium, this.financeService.calculateProjectedPayroll(plssPlain))   
+                this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium)   
 
             }
 
@@ -794,8 +792,8 @@ class LadderService {
                     let roster:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getByTeamSeason(team, season, options)
 
                     //Set projections before adjusting roster. So we have good numbers for revenue, etc.
-                    let projectedPayrollTotal = this.financeService.calculateProjectedPayroll(roster.map( r => r.get({plain: true})))
-                    this.financeService.setFinancialProjections(tls, league, tlsPlain.city, tlsPlain.stadium, projectedPayrollTotal)
+                    // let projectedPayrollTotal = this.financeService.calculateProjectedPayroll(roster.map( r => r.get({plain: true})))
+                    this.financeService.setFinancialProjections(tls, league, tlsPlain.city, tlsPlain.stadium)
 
                     await this.teamLeagueSeasonService.put(tls, options)
 
@@ -817,24 +815,24 @@ class LadderService {
 
     }
 
-    getLeagueBundles(leagues:League[], currentPLS:PlayerLeagueSeason[]) : LeagueBundle[] {
+    // getLeagueBundles(leagues:League[], currentPLS:PlayerLeagueSeason[]) : LeagueBundle[] {
 
-        let leagueBundles:LeagueBundle[] = []
+    //     let leagueBundles:LeagueBundle[] = []
 
-        for (let league of leagues) {
+    //     for (let league of leagues) {
 
-            let plss = currentPLS.filter( pls => pls.leagueId == league._id)
+    //         let plss = currentPLS.filter( pls => pls.leagueId == league._id)
 
-            leagueBundles.push({
-                league: league,
-                laPlayerRating: this.rollService.getArrayAvg(plss.map( p => p.overallRating)),
-                laSalary: this.rollService.getArrayAvg(plss.map( p => parseFloat(ethers.formatUnits(p.contractYear.salary))))
-            })
+    //         leagueBundles.push({
+    //             league: league,
+    //             laPlayerRating: this.rollService.getArrayAvg(plss.map( p => p.overallRating)),
+    //             laSalary: this.rollService.getArrayAvg(plss.map( p => parseFloat(ethers.formatUnits(p.contractYear.salary))))
+    //         })
 
-        }
+    //     }
 
-        return leagueBundles
-    }
+    //     return leagueBundles
+    // }
 
     async finishSeason(season:Season, leagues:League[], options?:any) {
 
@@ -955,7 +953,7 @@ class LadderService {
 
         let currentPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentBySeason(season, options)
 
-        let leagueBundles:LeagueBundle[] = this.getLeagueBundles(leagues, currentPLS)
+        // let leagueBundles:LeagueBundle[] = this.getLeagueBundles(leagues, currentPLS)
         
         for (let pls of currentPLS) {
 
@@ -968,31 +966,31 @@ class LadderService {
                 player.isRetired = true
             }
 
-            let isFinalContractYear:boolean = false
+            // let isFinalContractYear:boolean = false
 
-            //Close out player contracts for current season.
-            if (pls.contractYear) {
+            // //Close out player contracts for current season.
+            // if (pls.contractYear) {
 
-                //Complete the current year of their contract.
-                let contractYear:ContractYear = player.contract.years.find(y => y.startDate == dayjs(season.startDate).format("YYYY-MM-DD") && y.endDate == dayjs(season.endDate).format("YYYY-MM-DD"))
-                contractYear.complete = true
+            //     //Complete the current year of their contract.
+            //     let contractYear:ContractYear = player.contract.years.find(y => y.startDate == dayjs(season.startDate).format("YYYY-MM-DD") && y.endDate == dayjs(season.endDate).format("YYYY-MM-DD"))
+            //     contractYear.complete = true
 
-                pls.contractYear.complete = true
-                pls.changed("contractYear", true)
+            //     pls.contractYear.complete = true
+            //     pls.changed("contractYear", true)
 
-                //Complete contracts. 
-                if (contractYear.startDate == player.contract.years[player.contract.years.length -1].startDate) {
-                    isFinalContractYear = true
-                    player.completeContracts.push(player.contract)
-                    player.changed('completeContracts', true)
+            //     //Complete contracts. 
+            //     if (contractYear.startDate == player.contract.years[player.contract.years.length -1].startDate) {
+            //         isFinalContractYear = true
+            //         player.completeContracts.push(player.contract)
+            //         player.changed('completeContracts', true)
 
-                }
+            //     }
 
-                player.changed('contract', true)
+            //     player.changed('contract', true)
 
-                await this.playerLeagueSeasonService.put(pls, options)
+            //     await this.playerLeagueSeasonService.put(pls, options)
 
-            }
+            // }
 
             
             if (!player.isRetired) {
@@ -1021,57 +1019,57 @@ class LadderService {
                 if (pls.teamId) {
 
                     let team:Team = await this.teamService.get(pls.teamId, options)
-                    let nextSeasonTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, nextSeason, options)
+                    // let nextSeasonTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, nextSeason, options)
 
 
-                    if (isFinalContractYear) {
+                    // if (isFinalContractYear) {
 
-                        let leagueBundle = leagueBundles.find( l => l.league._id == pls.leagueId)
+                    //     let leagueBundle = leagueBundles.find( l => l.league._id == pls.leagueId)
 
 
-                        await this.gameTransactionService.dropPlayer(leagueBundle.league, team, season, player, season.endDate, options)
+                    //     await this.gameTransactionService.dropPlayer(leagueBundle.league, team, season, player, season.endDate, options)
 
-                        let years = this.playerService.getYearsContractAsk(player.age)
+                    //     let years = this.playerService.getYearsContractAsk(player.age)
     
 
-                        this.playerService.createFreeAgentContract(player, leagueBundle.laPlayerRating, leagueBundle.laSalary, years, 30)
-                        nextSeasonPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
+                    //     this.playerService.createFreeAgentContract(player, leagueBundle.laPlayerRating, leagueBundle.laSalary, years, 30)
+                    //     nextSeasonPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
     
-                        //Remove from lineup and rotation.
-                        this.lineupService.lineupRemove(nextSeasonTLS.lineups[0], pls.playerId)
-                        this.lineupService.rotationRemove(nextSeasonTLS.lineups[0], pls.playerId)
+                    //     //Remove from lineup and rotation.
+                    //     this.lineupService.lineupRemove(nextSeasonTLS.lineups[0], pls.playerId)
+                    //     this.lineupService.rotationRemove(nextSeasonTLS.lineups[0], pls.playerId)
     
-                        nextSeasonTLS.changed("lineups", true)
+                    //     nextSeasonTLS.changed("lineups", true)
 
-                        await this.teamLeagueSeasonService.put(nextSeasonTLS, options)
+                    //     await this.teamLeagueSeasonService.put(nextSeasonTLS, options)
     
-                    } else {
+                    // } else {
 
-                        let leagueBundle = leagueBundles.find( l => l.league._id == nextSeasonTLS.leagueId)
+                    //     let leagueBundle = leagueBundles.find( l => l.league._id == nextSeasonTLS.leagueId)
 
-                        //Start contract year
-                        let contractYear:ContractYear = player.contract.years.find( p => !p.complete)
-                        contractYear.startDate = dayjs(nextSeason.startDate).format("YYYY-MM-DD")
-                        contractYear.endDate = dayjs(nextSeason.endDate).format("YYYY-MM-DD")
+                    //     //Start contract year
+                    //     let contractYear:ContractYear = player.contract.years.find( p => !p.complete)
+                    //     contractYear.startDate = dayjs(nextSeason.startDate).format("YYYY-MM-DD")
+                    //     contractYear.endDate = dayjs(nextSeason.endDate).format("YYYY-MM-DD")
         
-                        let rookieSalary = this.playerService.getRookieSalary(leagueBundle.league.rank)
+                    //     let rookieSalary = this.playerService.getRookieSalary(leagueBundle.league.rank)
 
-                        if (contractYear.isPreArbitration) {
-                            contractYear.salary = ethers.parseUnits(rookieSalary.toString(), 'ether').toString()
-                        } else if (contractYear.isArbitration) {
-                            let leagueBundle = leagueBundles.find( l => l.league._id == nextSeasonTLS.leagueId)
-                            contractYear.salary = ethers.parseUnits(this.playerService.getArbitrationSalary(player.overallRating, leagueBundle.laPlayerRating, leagueBundle.laSalary, rookieSalary).toString(), 'ether').toString()
-                        }
+                    //     if (contractYear.isPreArbitration) {
+                    //         contractYear.salary = ethers.parseUnits(rookieSalary.toString(), 'ether').toString()
+                    //     } else if (contractYear.isArbitration) {
+                    //         let leagueBundle = leagueBundles.find( l => l.league._id == nextSeasonTLS.leagueId)
+                    //         contractYear.salary = ethers.parseUnits(this.playerService.getArbitrationSalary(player.overallRating, leagueBundle.laPlayerRating, leagueBundle.laSalary, rookieSalary).toString(), 'ether').toString()
+                    //     }
 
-                        player.changed('contract', true)
+                    //     player.changed('contract', true)
 
     
-                        nextSeasonPLS.contractYear = contractYear
+                    //     nextSeasonPLS.contractYear = contractYear
     
-                        nextSeasonPLS.teamId = nextSeasonTLS.teamId
-                        nextSeasonPLS.leagueId = nextSeasonTLS.leagueId
+                    //     nextSeasonPLS.teamId = nextSeasonTLS.teamId
+                    //     nextSeasonPLS.leagueId = nextSeasonTLS.leagueId
 
-                    }
+                    // }
 
 
                 } else {
@@ -1172,8 +1170,8 @@ class LadderService {
                 ])
 
 
-                this.playerService.createFreeAgentContract(player, 65, MIN_AAV_CONTRACT * 5, years, 1)
-                pls.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
+                // this.playerService.createFreeAgentContract(player, 65, MIN_AAV_CONTRACT * 5, years, 1)
+                // pls.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
 
                 await this.playerService.put(player, options)
                 await this.playerLeagueSeasonService.put(pls, options)                

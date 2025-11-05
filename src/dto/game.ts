@@ -198,7 +198,7 @@ interface GameTeamFinance {
     totalExpenses?:string
     totalProfit? :string
 
-    payroll?:string
+    // payroll?:string
     stadiumLease?:string
 }
 

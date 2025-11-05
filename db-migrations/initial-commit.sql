@@ -431,8 +431,6 @@ CREATE TABLE `player` (
   `ownerId` varchar(255) DEFAULT NULL,
   `pitchingProfile` json NOT NULL,
   `hittingProfile` json NOT NULL,
-  `contract` json DEFAULT NULL,
-  `completeContracts` json DEFAULT NULL,
   `throws` varchar(255) NOT NULL,
   `hits` varchar(255) NOT NULL,
   `isRetired` tinyint(1) NOT NULL,
@@ -490,7 +488,6 @@ CREATE TABLE `player_league_season` (
   `percentileRatings` JSON NULL DEFAULT NULL,
 
   `stats` json NOT NULL,
-  `contractYear` json DEFAULT NULL,
 
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,

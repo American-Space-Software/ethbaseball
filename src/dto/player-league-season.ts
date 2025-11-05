@@ -2,7 +2,7 @@ import { Table, Column, Model, DataType, AllowNull, Is, Length, ForeignKey, Belo
 import { Season } from './season.js'
 import { League } from './league.js'
 import { Player } from './player.js'
-import { ContractYear, HittingRatings, PitchRatings, PlayerPercentileRatings, PlayerStatLines, Position } from '../service/enums.js'
+import { HittingRatings, PitchRatings, PlayerPercentileRatings, PlayerStatLines, Position } from '../service/enums.js'
 import { Team } from './team.js'
 
 @Table({
@@ -86,9 +86,9 @@ class PlayerLeagueSeason extends Model {
     @Column(DataType.JSON)
     declare stats: PlayerStatLines
 
-    @AllowNull(true)
-    @Column(DataType.JSON)
-    declare contractYear: ContractYear
+    // @AllowNull(true)
+    // @Column(DataType.JSON)
+    // declare contractYear: ContractYear
 
     @AllowNull(false)
     @Column(DataType.INTEGER)

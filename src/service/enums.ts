@@ -221,23 +221,23 @@ interface PlayerStatLines {
     pitching: PitcherStatLine
 }
 
-interface ContractYear {
-    startDate?:string
-    endDate?:string
-    complete:boolean
-    isArbitration:boolean
-    isPreArbitration:boolean
-    isPlayerOption:boolean
-    isTeamOption:boolean
-    salary?:string
-}
+// interface ContractYear {
+//     startDate?:string
+//     endDate?:string
+//     complete:boolean
+//     isArbitration:boolean
+//     isPreArbitration:boolean
+//     isPlayerOption:boolean
+//     isTeamOption:boolean
+//     salary?:string
+// }
 
-interface PlayerContract {
-    startDate?:string
-    endDate?:string
-    isRookie:boolean
-    years:ContractYear[]
-}
+// interface PlayerContract {
+//     startDate?:string
+//     endDate?:string
+//     isRookie:boolean
+//     years:ContractYear[]
+// }
 
 
 interface HitterStatLine {
@@ -1338,7 +1338,7 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
 
 
 export  { PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
-    LEASE_PER_CAPACITY, SERIES_LENGTH, PlayerContract, ContractYear, WPAReward, WPA, MatchupHandedness, SimMatchupCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
+    LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimMatchupCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, PlayerLevel, GameLevel, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
     Handedness, Rating, PitchRatings, HittingRatings, ContactProfile, GamePlayer, HitterStatLine, PitcherStatLine, PitchLog, PitchResult, RunnerEvent, Pitch, PitchCount,

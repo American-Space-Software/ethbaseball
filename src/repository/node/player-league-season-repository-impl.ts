@@ -692,8 +692,8 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
     async updateGameFields(plss: PlayerLeagueSeason[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "playerId", "leagueId", "seasonId", "teamId", "stats", "contractYear", "startDate", "endDate", "overallRating", "hittingRatings", "pitchRatings", "percentileRatings", "primaryPosition", "askingPrice", "age", "seasonIndex"],
-            updateOnDuplicate: ["_id", "playerId", "leagueId", "seasonId", "stats", "contractYear", "teamId", "startDate", "endDate", "overallRating", "hittingRatings", "percentileRatings", "pitchRatings", "primaryPosition", "askingPrice", "age", "seasonIndex"],
+            fields: ["_id", "playerId", "leagueId", "seasonId", "teamId", "stats", "startDate", "endDate", "overallRating", "hittingRatings", "pitchRatings", "percentileRatings", "primaryPosition", "askingPrice", "age", "seasonIndex"],
+            updateOnDuplicate: ["_id", "playerId", "leagueId", "seasonId", "stats",  "teamId", "startDate", "endDate", "overallRating", "hittingRatings", "percentileRatings", "pitchRatings", "primaryPosition", "askingPrice", "age", "seasonIndex"],
         }, options)
 
         let updatePlayers = plss.map(p => {
@@ -704,7 +704,6 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
                 seasonId: p.seasonId,
                 teamId: p.teamId,
                 stats: p.stats,
-                contractYear: p.contractYear,
                 startDate: p.startDate,
                 endDate: p.endDate,
                 overallRating: p.overallRating,

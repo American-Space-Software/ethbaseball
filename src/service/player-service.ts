@@ -18,7 +18,7 @@ import { Animation } from "../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "./stat-service.js"
-import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, ContractYear, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "./enums.js"
+import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "./enums.js"
 import dayjs from "dayjs"
 
 
@@ -169,7 +169,6 @@ class PlayerService {
 
 
         player.age = 18
-        player.completeContracts = []
 
         let sign = zodiac.getSignByDate()
 
@@ -1529,14 +1528,14 @@ class PlayerService {
 
             let salaryDecimal = 0
             
-            if (p.askingPrice) {
-                salaryDecimal = p.askingPrice
-            } else if (p.contractYear) {
-                salaryDecimal = parseInt(ethers.formatUnits(p.contractYear.salary, 'ether'))
-            }
+            // if (p.askingPrice) {
+            //     salaryDecimal = p.askingPrice
+            // } else if (p.contractYear) {
+            //     salaryDecimal = parseInt(ethers.formatUnits(p.contractYear.salary, 'ether'))
+            // }
             
-            let allYears = this.getAllContractYears(p.player)
-            let futureContractYears = allYears.filter( y =>   dayjs(y.startDate).toDate() >= dayjs(season.startDate).toDate() || y.startDate == undefined   )
+            // let allYears = this.getAllContractYears(p.player)
+            // let futureContractYears = allYears.filter( y =>   dayjs(y.startDate).toDate() >= dayjs(season.startDate).toDate() || y.startDate == undefined   )
             
             //p.askingPrice ? p.askingPrice : parseInt(ethers.formatUnits(p.contractYear.salary, 'ether'))
 
@@ -1565,7 +1564,7 @@ class PlayerService {
                 careerStats: p.player.careerStats,
                 seasonStats: p.stats,
 
-                futureContractYears: futureContractYears
+                // futureContractYears: futureContractYears
             }
 
             if (t) {
@@ -1626,111 +1625,111 @@ class PlayerService {
         return salary
     }
 
-    createRookieContract(player:Player) {
-        player.contract = {
+    // createRookieContract(player:Player) {
+    //     player.contract = {
 
-            isRookie: true,
+    //         isRookie: true,
 
-            years:[ { 
-                complete: false, 
-                isArbitration: false,
-                isPlayerOption: false,
-                isPreArbitration: true,
-                isTeamOption: false
-            },
-            { 
-                complete: false, 
-                isArbitration: false,
-                isPlayerOption: false,
-                isPreArbitration: true,
-                isTeamOption: false
-            },
-            { 
-                complete: false, 
-                isArbitration: false,
-                isPlayerOption: false,
-                isPreArbitration: true,
-                isTeamOption: false
-            },
-            { 
-                complete: false, 
-                isArbitration: true,
-                isPlayerOption: false,
-                isPreArbitration: false,
-                isTeamOption: false
-            },
-            { 
-                complete: false, 
-                isArbitration: true,
-                isPlayerOption: false,
-                isPreArbitration: false,
-                isTeamOption: false
-            },
-            { 
-                complete: false, 
-                isArbitration: true,
-                isPlayerOption: false,
-                isPreArbitration: false,
-                isTeamOption: false
-            },
-            { 
-                complete: false, 
-                isArbitration: true,
-                isPlayerOption: false,
-                isPreArbitration: false,
-                isTeamOption: false
-            }      
+    //         years:[ { 
+    //             complete: false, 
+    //             isArbitration: false,
+    //             isPlayerOption: false,
+    //             isPreArbitration: true,
+    //             isTeamOption: false
+    //         },
+    //         { 
+    //             complete: false, 
+    //             isArbitration: false,
+    //             isPlayerOption: false,
+    //             isPreArbitration: true,
+    //             isTeamOption: false
+    //         },
+    //         { 
+    //             complete: false, 
+    //             isArbitration: false,
+    //             isPlayerOption: false,
+    //             isPreArbitration: true,
+    //             isTeamOption: false
+    //         },
+    //         { 
+    //             complete: false, 
+    //             isArbitration: true,
+    //             isPlayerOption: false,
+    //             isPreArbitration: false,
+    //             isTeamOption: false
+    //         },
+    //         { 
+    //             complete: false, 
+    //             isArbitration: true,
+    //             isPlayerOption: false,
+    //             isPreArbitration: false,
+    //             isTeamOption: false
+    //         },
+    //         { 
+    //             complete: false, 
+    //             isArbitration: true,
+    //             isPlayerOption: false,
+    //             isPreArbitration: false,
+    //             isTeamOption: false
+    //         },
+    //         { 
+    //             complete: false, 
+    //             isArbitration: true,
+    //             isPlayerOption: false,
+    //             isPreArbitration: false,
+    //             isTeamOption: false
+    //         }      
         
-            ]
-        }
-    }
+    //         ]
+    //     }
+    // }
 
-    createFreeAgentContract(player:Player, laOverallRating:number, laSalary:number, years:number, modifier:number) {
+    // createFreeAgentContract(player:Player, laOverallRating:number, laSalary:number, years:number, modifier:number) {
 
-        player.contract = {
-            isRookie: false,
-            years:[ ]
-        }
+    //     player.contract = {
+    //         isRookie: false,
+    //         years:[ ]
+    //     }
 
-        for (let i=0; i < years; i++) {
-            player.contract.years.push({ 
-                complete: false, 
-                isArbitration: false,
-                isPlayerOption: false,
-                isPreArbitration: false,
-                isTeamOption: false
-            })
-        }
+    //     for (let i=0; i < years; i++) {
+    //         player.contract.years.push({ 
+    //             complete: false, 
+    //             isArbitration: false,
+    //             isPlayerOption: false,
+    //             isPreArbitration: false,
+    //             isTeamOption: false
+    //         })
+    //     }
 
-        for (let year of player.contract.years) {
-            let salary = this.getFreeAgentSalary(player.overallRating, laOverallRating, laSalary) * modifier
-            year.salary = ethers.parseUnits(salary.toString(), 'ether').toString()
-        }
+    //     for (let year of player.contract.years) {
+    //         let salary = this.getFreeAgentSalary(player.overallRating, laOverallRating, laSalary) * modifier
+    //         year.salary = ethers.parseUnits(salary.toString(), 'ether').toString()
+    //     }
 
-    }
+    // }
 
-    getCostToDrop(player:Player, gamesPerSeason:number, gamesRemaining:number) {
+    // getCostToDrop(player:Player, gamesPerSeason:number, gamesRemaining:number) {
 
-        let currentSalary = player.contract.years.find( y => !y.complete && y.salary).salary
-        let salaryPerGame = BigInt(currentSalary) / BigInt(gamesPerSeason)
+    //     let currentSalary = player.contract.years.find( y => !y.complete && y.salary).salary
+    //     let salaryPerGame = BigInt(currentSalary) / BigInt(gamesPerSeason)
 
-        if (player.contract.isRookie) {
-            return (salaryPerGame * BigInt(gamesRemaining)).toString()
-        }
+    //     if (player.contract.isRookie) {
+    //         return (salaryPerGame * BigInt(gamesRemaining)).toString()
+    //     }
             
-        //Get total cost of remaining contract
-        let cost = BigInt(0)
+    //     //Get total cost of remaining contract
+    //     let cost = BigInt(0)
 
-        for (let year of player.contract.years.filter( y => y.complete == false)) {
-            cost += BigInt(year.salary)
-        }
+    //     for (let year of player.contract.years.filter( y => y.complete == false)) {
+    //         cost += BigInt(year.salary)
+    //     }
 
-        //Subtract what's been paid this season.
-        cost -= BigInt(gamesPerSeason - gamesRemaining) * salaryPerGame
+    //     //Subtract what's been paid this season.
+    //     cost -= BigInt(gamesPerSeason - gamesRemaining) * salaryPerGame
 
-        return cost.toString()        
+    //     return cost.toString()        
 
-    }
+    // }
 
     getSalaryModifier(leagueRank:number) {
 
@@ -1749,22 +1748,22 @@ class PlayerService {
         return MIN_AAV_CONTRACT * salaryModifier
     }
 
-    signContract(league:League, player:Player, season:Season, date:Date) {
+    // signContract(league:League, player:Player, season:Season, date:Date) {
 
-        player.contract.startDate = dayjs(date).format("YYYY-MM-DD")
-        player.contract.years[0].startDate = player.contract.startDate
-        player.contract.years[0].endDate = dayjs(season.endDate).format("YYYY-MM-DD")
+    //     player.contract.startDate = dayjs(date).format("YYYY-MM-DD")
+    //     player.contract.years[0].startDate = player.contract.startDate
+    //     player.contract.years[0].endDate = dayjs(season.endDate).format("YYYY-MM-DD")
 
-        if (player.contract.isRookie) {
+    //     if (player.contract.isRookie) {
 
-            let rookieSalary = this.getRookieSalary(league.rank)
+    //         let rookieSalary = this.getRookieSalary(league.rank)
 
-            player.contract.years[0].salary = ethers.parseUnits(rookieSalary.toString(), 'ether').toString()
-        }
+    //         player.contract.years[0].salary = ethers.parseUnits(rookieSalary.toString(), 'ether').toString()
+    //     }
 
-        player.lastTeamChange = date
-        player.changed('contract', true)
-    }
+    //     player.lastTeamChange = date
+    //     player.changed('contract', true)
+    // }
 
     getYearsContractAsk(yearsOld: number): number {
 
@@ -1848,15 +1847,15 @@ class PlayerService {
         return this.playerRepository.getFreeAgentIdsByPositionAndSalary(position, salary, date, limit, offset, options)
     }
 
-    getAllContractYears(player:Player) {
+    // getAllContractYears(player:Player) {
 
-        let allYears = player.completeContracts.flatMap( c => c.years).concat(player.contract.years)
+    //     let allYears = player.completeContracts.flatMap( c => c.years).concat(player.contract.years)
 
-        return allYears.map( y => Object.assign({
-            salaryDecimal: y.salary ? parseInt(ethers.formatUnits(y.salary, 'ether')) : undefined
-        }, y))
+    //     return allYears.map( y => Object.assign({
+    //         salaryDecimal: y.salary ? parseInt(ethers.formatUnits(y.salary, 'ether')) : undefined
+    //     }, y))
         
-    }
+    // }
 
     randomPersonalityType(rng) : PersonalityType {
 

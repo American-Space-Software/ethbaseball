@@ -6,12 +6,6 @@ class GameTransactionWebService {
 
     constructor() {}
 
-    async latest(page:number) {
-        let result = await axios.get(`/api/game-transaction/latest/${page}`)
-        return result.data
-    }
-
-
     // async getGameTransactionByLeagueSeason(leagueRank:number, date:string, page:number) {
 
     //   let result = await axios.get(`/api/game-transaction/league/${leagueRank}/${date}/${page}`)
@@ -41,13 +35,6 @@ class GameTransactionWebService {
 
 
 
-    async latestByTeamSeason(tokenId:number, date:string, page:number) {
-
-      let result = await axios.get(`/api/game-transaction/team/latest/${tokenId}/${date}/${page}`)
-
-      return result.data
-
-    }
 
     async getOffChainByTeam(tokenId:number, page:number) {
 

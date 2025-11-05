@@ -28,10 +28,7 @@
               <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
               <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
               <span><strong>Overall Rating:</strong> ${player.percentileRatings.overallRating_pct.toFixed(1)}</span><br />     
-              
-              ${player.contractYear?.salary != undefined ? $h`
-                <span><strong>Salary:</strong> ${universeWebService.displayDiamonds(player.contractYear?.salary)}</span> 
-              ` : $h` `}
+
 
               ${authInfo?.address != undefined && authInfo.address == player.team?.ownerId ? $h`
                 <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
@@ -293,89 +290,6 @@
             </div>
           </div>
 
-
-          ${player.completeContracts?.length > 0 ? $h`
-
-            <div class="block-title block-title-small">Completed Contracts</div>
-            <div class="block block-outline block-strong">
-              ${player.completeContracts.map( cc => $h`
-                
-                <div class="stat-table-wrapper">
-                  <table class="data-table small">
-                    <thead>
-                      <tr>
-                        <th>Year</th>
-                        <th>Season</th>
-                        <th>Salary</th>
-                        <th>Pre-Arbitration</th>
-                        <th>Arbitration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${cc.years.map( (y, index) => $h`
-                        <tr>
-                          <td>${index + 1}</td>
-                          <td>${y.startDate}</td>
-                          <td>${universeWebService.displayDiamonds(y.salary)}</td>
-                          <td>${y.isPreArbitration ? $h`X` : $h` `}</td>
-                          <td>${y.isArbitration ? $h`X` : $h` `}</td>
-                        </tr>
-                      `)}
-                    </tbody>
-                  </table>
-                </div>
-
-              `)}
-            </div>
-
-          ` : $h` `}
-
-          <div class="block-title block-title-small">Contract</div>
-          <div class="block block-outline block-strong">
-
-              ${player.contract?.startDate ? $h`
-                
-                <div class="stat-table-wrapper">
-                  <table class="data-table small">
-                    <thead>
-                      <tr>
-                        <th>Year</th>
-                        <th>Season</th>
-                        <th>Salary</th>
-                        <th>Pre-Arbitration</th>
-                        <th>Arbitration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${player.contract.years.map( (y, index) => $h`
-                        <tr>
-                          <td>${index + 1}</td>
-                          <td>${y.startDate}</td>
-                          <td>${universeWebService.displayDiamonds(y.salary)}</td>
-                          <td>${y.isPreArbitration ? $h`X` : $h` `}</td>
-                          <td>${y.isArbitration ? $h`X` : $h` `}</td>
-                        </tr>
-                      `)}
-                    </tbody>
-                  </table>
-                </div>
-
-              ` : $h` `}
-
-            
-              ${player.askingPrice && player.isRetired == false ? $h`
-
-                <br />
-
-                ${player.contract.isRookie ? $h`
-                  ${player.fullName} is seeking to continue their rookie contract.
-                ` : $h`
-                  ${player.fullName} is seeking a ${player.contract.years.length}-year contract paying ${universeWebService.displayDiamonds(player.askingPrice)} per season.
-                `}
-                
-              ` : $h` `}
-
-          </div>
 
           ${player.primaryPosition == "P" ? $h`
             
@@ -696,93 +610,12 @@
                   </div>
                   <div class="page-content">
 
-                      ${BigInt(player.dropCost) > BigInt(player.team.diamondBalance) ? $h`
-
-                        <div class="block">
-
-                          <p>
-                            <strong>Cost To Drop:</strong><br />
-                            ${universeWebService.displayDiamonds(player.dropCost)}
-                          </p>
-
-                          <p>
-                            <strong>Balance:</strong><br />
-                            ${universeWebService.displayDiamonds(player.team.diamondBalance)}
-                          </p>
-
-                          <p>
-                            <strong>Team does not have enough cash to buy out the contract.</strong>
-                          </p>
-
-                        </div>                  
-
-                      ` : $h`
-
-                        <div class="block">
-
-                          ${player.contract.isRookie ? $h`
-                            <p>${player.fullName} is signed to a rookie contract. You must pay the rest of their salary for the current season in order to drop them.</p>
-                          ` : $h`
-                            <p>To drop ${player.fullName} you must pay their full contract.</p>
-                          `}
-
-
-                          <p>
-                            <strong>Cost To Drop:</strong><br />
-                            ${universeWebService.displayDiamonds(player.dropCost)}
-                          </p>
-
-                          <p>
-                            <strong>Balance:</strong><br />
-                            ${universeWebService.displayDiamonds(player.team.diamondBalance)}
-                          </p>
-
-
-                          <p>
-                            Are you sure you want to drop ${player.fullName}? They will become a free agent that can be signed by any team.
-                          </p>
-                          
-
-                          <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
-
-                        </div>
-
-                      `}
-
-
-
                   </div>
                 </div>
               </div>
             </div>
           ` : $h` `}
 
-          ${player.askingPrice ? $h`
-            <div class="popup sign-popup">
-              <div class="view">
-                <div class="page">
-                  <div class="navbar">
-                    <div class="navbar-bg"></div>
-                    <div class="navbar-inner">
-                      <div class="title">Sign Player</div>
-                      <div class="right">
-                        <!-- Link to close popup -->
-                        <a class="link popup-close">Close</a>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="page-content">
-
-
-                      
-
-
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          ` : $h` `}
 
 
 

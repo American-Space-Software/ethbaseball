@@ -38,7 +38,6 @@ import { LeagueService } from '../service/league-service.js'
 import { League } from '../dto/league.js'
 import { SeasonService } from '../service/season-service.js'
 import { Season } from '../dto/season.js'
-import { GameTransactionService } from '../service/game-transaction-service.js'
 import { PlayerLeagueSeason } from '../dto/player-league-season.js'
 import { PlayerLeagueSeasonService } from '../service/player-league-season-service.js'
 import { TeamLeagueSeasonService } from '../service/team-league-season-service.js'
@@ -110,7 +109,6 @@ let startWebServer = async () => {
   let signatureTokenService: SignatureTokenService = container.get(SignatureTokenService)
   let leagueService: LeagueService = container.get(LeagueService)
   let seasonService: SeasonService = container.get(SeasonService)
-  let gameTransactionService:GameTransactionService = container.get(GameTransactionService)
   let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
   let teamLeagueSeasonService:TeamLeagueSeasonService = container.get(TeamLeagueSeasonService)
   let diamondMintPassService:DiamondMintPassService = container.get(DiamondMintPassService)
@@ -888,7 +886,6 @@ let startWebServer = async () => {
         // featuredPost: featuredPost,
         todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
         onChainTransactions: await processedTransactionService.listWithEvents({ limit: 10, offset: 0 }),
-        gameTransactions: await gameTransactionService.latest({ limit: 10, offset: 0 }),
         topTeams: tlss.map((t, index) => {
           t = t.get({ plain: true })
           return teamService.getTeamStandingsViewModel(t, index + 1)
@@ -1003,7 +1000,7 @@ let startWebServer = async () => {
 
       await refreshUniverse()
 
-      await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
+      // await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
 
       //Clear cache 
       await cacheService.clearPlayersTag()
@@ -1130,23 +1127,6 @@ let startWebServer = async () => {
 
 /** Game transactions */
 
-  app.get('/api/game-transaction/latest/:page', async function (req, res) {
-
-    try {
-
-      let perPage = 25
-      let page = parseIntWithException(req.params.page)
-      let options = { limit: perPage, offset: (page - 1) * perPage }
-
-
-      return res.json(await gameTransactionService.latest(options))
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(500)
-    }
-
-  })
 
   app.get('/api/game-transaction/on-chain/:page', async function (req, res) {
 
@@ -1188,29 +1168,6 @@ let startWebServer = async () => {
 
 
 
-  app.get('/api/game-transaction/team/latest/:teamTokenId/:startDate/:page', async function (req, res) {
-
-    try {
-
-      let perPage = 25
-      let page = parseIntWithException(req.params.page)
-      let options = { limit: perPage, offset: (page - 1) * perPage }
-      let tokenId = parseIntWithException(req.params.teamTokenId)
-
-      let startDate = dayjs(req.params.startDate).toDate()
-      let season: Season = await seasonService.getByDate(startDate)
-
-      let team:Team = await teamService.getByTokenId(tokenId)
-      
-
-      return res.json(await gameTransactionService.getByTeamSeason(team, season, options))
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(500)
-    }
-
-  })
 
   app.get('/api/game-transaction/team/on-chain/:teamTokenId/:page', async function (req, res) {
 
@@ -1290,24 +1247,6 @@ let startWebServer = async () => {
         onChainEvents: onChainEvents
       })
 
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(500)
-    }
-
-  })
-
-  app.get('/api/game-transaction/player/:playerTokenId/:page', cacheService.cacheResponse({ tag: PLAYERS }), async function (req, res) {
-
-    try {
-
-      let perPage = 25
-      let page = parseIntWithException(req.params.page)
-      let options = { limit: perPage, offset: (page - 1) * perPage }
-      
-      let player:Player = await playerService.getByTokenId(parseIntWithException(req.params.playerTokenId))
-
-      return res.json(await gameTransactionService.getByPlayer(player, options))
     } catch (ex) {
       console.log(ex)
       res.sendStatus(500)
@@ -1407,27 +1346,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/team/activity/:tokenId/:startDate', async function (req, res) {
-
-    try {
-
-      let tokenId = parseIntWithException(req.params.tokenId)
-
-      let team: Team = await teamService.getByTokenId(tokenId)
-
-
-      let startDate = dayjs(req.params.startDate).toDate()
-
-      let season: Season = await seasonService.getByDate(startDate)
-
-      return res.json(await teamService.getTeamGameTransactionsForSeason(team, season))
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(404)
-    }
-
-  })
+  
 
   app.post('/api/team/roster/:tokenId', async function (req, res) {
 

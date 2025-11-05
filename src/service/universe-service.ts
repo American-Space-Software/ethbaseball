@@ -665,65 +665,6 @@ Join us at [https://playebl.com](https://playebl.com)`,
           await this.ladderService.startSeason(season, allLeagues, options)
       
 
-        //   if (process.env.AIRDROP_LIST) {
-      
-        //     let airdropList = JSON.parse(process.env.AIRDROP_LIST)
-      
-        //     for (let entry of airdropList ) {
-      
-        //       let address = entry[0]
-        //       let amount = entry[1]
-      
-        //       let owner:Owner = await this.ownerService.getOrCreate(address, options)
-
-        //       await this.offchainEventService.createMintEvent(address, amount, options)
-
-        //       this.ownerService.setOfflineDiamondBalance(owner, await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner, options))
-    
-        //       await this.ownerService.put(owner, options)
-      
-        //     }
-      
-        //   } else if (process.env.DEFAULT_AIRDROP == "true") {
-
-        //     //Get the total # of diamonds needed to buy every team that is for sale
-        //     let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listBySeason(season, options)
-
-        //     let totalDiamonds = "0"
-
-        //     for (let tls of tlss) {
-                
-        //         let team:Team  = await this.teamService.get(tls.teamId, options)
-
-        //         if (!team.mintKey) {
-        //             let cost = this.teamService.getTeamCost(tls.financeSeason)
-        //             totalDiamonds = (BigInt(totalDiamonds) + BigInt(cost.totalDiamonds)).toString()
-        //         }
-
-        //     }
-
-        //     //Increase total by 20%
-        //     totalDiamonds = (BigInt(totalDiamonds) * 120n / 100n).toString()
-
-        //     let airdropList = await this.airdropService.getAirdropList( BigInt(totalDiamonds) )
-
-        //     console.time(`Creating airdrop list containing ${airdropList.length} addresses.`)
-        //     for (let o of airdropList) {
-
-        //         let owner:Owner = await this.ownerService.getOrCreate(o.address, options)
-
-        //         await this.offchainEventService.createMintEvent(o.address, o.count, options)
-                
-        //         this.ownerService.setOfflineDiamondBalance(owner, await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner, options))
-
-        //         await this.ownerService.put(owner, options)
-        //     }
-
-        //     console.timeEnd(`Creating airdrop list containing ${airdropList.length} addresses.`)
-
-        //   }
-      
-
         }
 
     }

@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 
 import OnchainActivityComponent from '../components/activity/onchain-activity.f7.html'
 import OffchainActivityComponent from '../components/activity/offchain-activity.f7.html'
-import GameTransactionActivityComponent from '../components/activity/game-transaction-activity.f7.html'
 
 
 
@@ -69,47 +68,6 @@ class ActivityController {
                 discord: this.discord,
             }
         }, OffchainActivityComponent)
-
-    }
-
-
-    @routeMap("/activity/game")
-    async showGame(): Promise<ModelView> {
-        
-        return new ModelView(async (routeTo) => {
-
-
-                let rank = routeTo?.query?.rank || 0
-
-                if (rank > 0) {
-                    this.universeWebService.setRank(routeTo?.query?.rank)
-                } 
-
-                let page = parseInt(routeTo?.query?.page || 1)
-
-                let model = await this.gameTransactionWebService.latest(page)
-
-                let previousPage
-                let nextPage
-
-                if (page > 1) {
-                    previousPage = page - 1
-                }
-
-                if (model.transactions?.length == 25 ) {
-                    nextPage = page + 1
-                }
-
-
-            return {
-                page: page,
-                previousPage: previousPage,
-                nextPage: nextPage,
-                model: model,
-                rank: rank,
-                discord: this.discord,
-            }
-        }, GameTransactionActivityComponent)
 
     }
 

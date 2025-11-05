@@ -52,12 +52,6 @@ class TeamWebService {
 
     }
 
-    async getActivity(tokenId:number, date:Date) {
-        //Download it.
-        let result = await axios.get(`/api/team/activity/${tokenId}/${dayjs(date).format("YYYY-MM-DD")}`)
-        return result.data
-
-    }
 
     async withdraw(tokenId:number) {
         //Download it.
