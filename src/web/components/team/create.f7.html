@@ -1,0 +1,132 @@
+<template>
+
+  <div class="page page-with-subnavbar" data-name="create-team">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+        <div class="hidden-on-load">
+
+          
+
+        </div>
+
+        <div class="hide-on-pageinit">
+
+          <div class="card skeleton-text">
+            <div class="card-header">Create Team</div>
+            <div class="card-content card-content-padding data-table">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+              lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+
+  import dayjs from "dayjs"
+  import { ContainerService } from "../../../service/container-service.ts"
+
+  import { LoginWebService } from "../../service/login-web-service.ts"
+  import { CityWebService } from "../../service/city-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  export default (props, { $on, $, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let team
+    let authInfo
+
+    let cities
+
+
+
+
+
+    $on('pageInit', async (e) => {
+
+    })
+
+
+    $on('pageBeforeIn', async (e) => {
+
+      try {
+
+        $f7.preloader.show()
+
+        // await load()
+
+        eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: {
+            tabLink: "/l/standings", breadcrumbs: [
+              {
+                text: "Standings",
+                path: universeWebService.startDateLink(`/l/standings/1/1`)
+              },
+              { text: "Create Team"}]
+          }
+        }))
+
+
+        universeWebService.setMetadata(
+              `Create Team - Ethereum Baseball League`, 
+              window.location.href, 
+              `${env.WEB}/logo.png`, 
+              `Create team in Ethereum Baseball League.`
+        ) 
+
+
+        $('.hide-on-pageinit').hide()
+        $('.hidden-on-load').removeClass('hidden-on-load')
+
+        await $update()
+
+        $f7.preloader.hide()
+
+
+      } catch (ex) {
+
+        $f7.dialog.alert(ex.message, "There was an error")
+
+      }
+
+    })
+
+
+    $on('pageReinit', async () => {
+    })
+
+
+    $on('pageBeforeOut', async () => {
+    })
+
+
+
+    return $render
+
+  }
+</script>

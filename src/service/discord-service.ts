@@ -13,7 +13,6 @@ import { ethers } from 'ethers';
 import commands from "../engine/commands/commands.js"
 import { AnimationService } from './animation-service.js';
 
-import fs from "fs"
 
 
 const NO_WALLET = "Not connected to wallet."

@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 
-import TeamMintComponent from '../components/team/mint.f7.html'
+import TeamCreateComponent from '../components/team/create.f7.html'
 import TeamIndexComponent from '../components/team/index.f7.html'
 
 import TeamOffChainActivityComponent from '../components/team/offchain-activity.f7.html'
@@ -186,7 +186,7 @@ class TeamController {
 
 
     @routeMap("/t/mint/:tokenId")
-    async showCreate(): Promise<ModelView> {
+    async showMint(): Promise<ModelView> {
         
         return new ModelView(async () => {
             return {
@@ -196,7 +196,17 @@ class TeamController {
 
     }
 
+    @routeMap("/t/create/index")
+    async showCreate(): Promise<ModelView> {
+        
+        return new ModelView(async () => {
 
+            return {
+                discord: this.discord
+            }
+        }, TeamCreateComponent)
+
+    }
 
 
 }

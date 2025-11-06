@@ -314,6 +314,30 @@ let startWebServer = async () => {
 
   })
 
+  app.get("/t/create/index", async function (req, res) {
+
+      try {
+
+
+
+        await renderIndex(res,{ 
+          twitter: TWITTER,
+          title: `Create Team - Ethereum Baseball League`,
+          description: `Create team in Ethereum Baseball League.`,
+          VERSION: version,
+          image: `${process.env.WEB}/ebl-512.png`,
+          url: req.originalUrl
+
+        })
+
+      } catch (ex) {
+        res.sendStatus(500)
+      }
+
+  })
+
+
+
   app.get("/t/:tokenId", async function (req, res) {
 
       try {
@@ -960,57 +984,6 @@ let startWebServer = async () => {
     } catch (ex) {
       console.log(ex)
       res.sendStatus(404)
-    }
-
-  })
-
-  app.post('/api/player/drop/:playerId', async function (req, res) {
-
-    try {
-
-      let playerId = req.params.playerId
-
-      //@ts-ignore
-      let userId = req.session?.passport?.user
-      if (!userId) {
-        res.status(401)
-        return res.send("Not authorized.")
-      }
-
-      let user: User = await userService.get(userId)
-
-      //Make sure this user owns this player
-      let player:Player = await playerService.get(playerId)
-      let season:Season = await seasonService.getMostRecent()
-      
-      let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-      
-      if (!pls.teamId) {
-        throw new Error("Player is not rostered.")
-      }
-      
-      
-      let team:Team = await teamService.get(pls.teamId)
-      
-      //Must be team owner
-      if (user.address != team.ownerId) {
-        res.status(401)
-        return res.send("Not authorized.")
-      }
-
-      await refreshUniverse()
-
-      // await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
-
-      //Clear cache 
-      await cacheService.clearPlayersTag()
-      await cacheService.clearTeamsTag()
-
-      res.send("success")
-
-    } catch (ex) {
-      res.status(500)
-      res.send(ex.message);
     }
 
   })
