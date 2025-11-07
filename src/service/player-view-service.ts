@@ -62,6 +62,7 @@ class PlayerViewService {
 
         let result:PlayerViewModel = {
             _id: player._id,
+            overallRating: player.overallRating,
             isRetired: player.isRetired,
             askingPrice: currentPls?.askingPrice ? ethers.parseUnits(currentPls?.askingPrice.toString(), 'ether').toString() : undefined,
             team: currentPls?.team,
@@ -159,6 +160,7 @@ interface PlayerViewModel {
     pitchRatings:PitchRatings
     percentileRatings:PlayerPercentileRatings
     askingPrice:string
+    overallRating:number
 
     careerHitterStats: HitterStatLine
     careerPitcherStats: PitcherStatLine

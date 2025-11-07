@@ -224,6 +224,7 @@ class TeamService {
                 return {
                     _id: p.playerId,
                     coverImageCid: p.player.coverImageCid,
+                    overallRating: p.player.overallRating,
                     fullName: `${p.player.firstName} ${p.player.lastName}`,
                     firstName: p.player.firstName,
                     lastName: p.player.lastName,
@@ -411,16 +412,9 @@ class TeamService {
             overallRecord: tls.overallRecord,
             financeSeason: tls.financeSeason,
             financeSeasonDecimal: {
-
                 diamondBalance: parseFloat(ethers.formatUnits(tls.financeSeason.diamondBalance, "ether")),
                 revenue: parseFloat(ethers.formatUnits(tls.financeSeason.revenue.seasonToDate.total, "ether")),
-                expenses: parseFloat(ethers.formatUnits(tls.financeSeason.expenses.seasonToDate.total, "ether")),
-                profit: parseFloat(ethers.formatUnits(tls.financeSeason.profit.seasonToDate.total, "ether")),
-
                 projectedTotalRevenue: parseFloat(ethers.formatUnits(tls.financeSeason.revenue.projectedTotal.total, "ether")),
-                projectedTotalExpenses: parseFloat(ethers.formatUnits(tls.financeSeason.expenses.projectedTotal.total, "ether")),
-                projectedTotalProfit: parseFloat(ethers.formatUnits(tls.financeSeason.profit.projectedTotal.total, "ether"))
-
             },
             teamCost: cost
         }
@@ -455,12 +449,7 @@ class TeamService {
         for (let vm of viewModels) {
             leagueFinance.cash = (BigInt(leagueFinance.cash) + BigInt(vm.financeSeason.diamondBalance)).toString()
             leagueFinance.revenue = (BigInt(leagueFinance.revenue) + BigInt(vm.financeSeason.revenue.seasonToDate.total)).toString()
-            leagueFinance.expenses = (BigInt(leagueFinance.expenses) + BigInt(vm.financeSeason.expenses.seasonToDate.total)).toString()
-            leagueFinance.profit = (BigInt(leagueFinance.profit) + BigInt(vm.financeSeason.profit.seasonToDate.total)).toString()
-
             leagueFinance.projectedTotalRevenue = (BigInt(leagueFinance.projectedTotalRevenue) + BigInt(vm.financeSeason.revenue.projectedTotal.total)).toString()
-            leagueFinance.projectedTotalExpenses = (BigInt(leagueFinance.projectedTotalExpenses) + BigInt(vm.financeSeason.expenses.projectedTotal.total)).toString()
-            leagueFinance.projectedTotalProfit = (BigInt(leagueFinance.projectedTotalProfit) + BigInt(vm.financeSeason.profit.projectedTotal.total)).toString()
 
             if (vm.teamCost) {
                 leagueFinance.teamCostETH = (BigInt(leagueFinance.teamCostETH) + BigInt(vm.teamCost.ethCost )).toString()
@@ -893,34 +882,7 @@ class TeamService {
 
     }
 
-    getMaxSalaryOffer(financeSeason: FinanceSeason, spotsToFill: number, rookieSalary:number): number {
 
-        let maxSalary = 0
-
-        let gamesPerSeason = financeSeason.totalGamesPlayed + financeSeason.totalGamesRemaining
-        let gamesRemaining = financeSeason.homeGamesRemaining + financeSeason.awayGamesRemaining
-
-        let diamondsForFreeAgents = (BigInt(financeSeason.profit.projectedRemaining.total) * 7n) / 10n //90%
-
-
-        //Calculate the max total money this team could spend on payroll.
-        let diamondsToSpendPerGame = BigInt(0)
-
-        if (gamesRemaining > 0) {
-            diamondsToSpendPerGame = diamondsForFreeAgents / BigInt(gamesRemaining)
-        }
-
-        let diamondsToSpendPerGameNumber = parseFloat(ethers.formatUnits(diamondsToSpendPerGame, 'ether'))
-
-        //So we can afford a player who's yearly salary is that amount per game.
-        maxSalary = (diamondsToSpendPerGameNumber * gamesPerSeason) - ((spotsToFill - 1) * rookieSalary)
-
-        if (maxSalary > MAX_AAV_CONTRACT) maxSalary = MAX_AAV_CONTRACT
-        if (maxSalary < rookieSalary) maxSalary = rookieSalary
-
-        return maxSalary
-
-    }
 
     listRequiredRosterSpots(roster: PlayerLeagueSeason[]): Position[] {
 
@@ -1013,11 +975,8 @@ class TeamService {
 
         for (let position of shuffled) {
 
-            let rookieSalary = this.playerService.getRookieSalary(league.rank)
-
             //Find a player from the pool that fits via salary.
-            let maxSalary = this.getMaxSalaryOffer(tls.financeSeason, shuffled.length - fillCount, rookieSalary)
-            let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsByPositionAndSalary(position, season, maxSalary, 1, 0, options)
+            let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsByPosition(position, season, 1, 0, options)
 
 
             let pls: PlayerLeagueSeason

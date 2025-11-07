@@ -1541,6 +1541,7 @@ class PlayerService {
 
             let vm:any = {
                 _id: p.player._id,
+                overallRating: p.player.overallRating,
                 coverImageCid: p.player.coverImageCid,
                 fullName: `${p.player.firstName} ${p.player.lastName}`,
                 firstName: p.player.firstName,

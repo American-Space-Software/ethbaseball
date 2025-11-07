@@ -87,8 +87,8 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getMostRecentByTeam(team, options)
     }
 
-    async getFreeAgentsByPositionAndSalary(position:Position, season:Season, salary:number, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.getFreeAgentsByPositionAndSalary(position, season, salary, limit, offset, options)
+    async getFreeAgentsByPosition(position:Position, season:Season, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getFreeAgentsByPosition(position, season, limit, offset, options)
     }
 
     async getById(_id:string, options?:any): Promise<PlayerLeagueSeason> {

@@ -76,34 +76,34 @@
                                 ` : $h` `}
                             </td>
 
-                            <td class="numeric-cell">${p?.percentileRatings?.overallRating_pct?.toFixed(1)}</td>
+                            <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
 
                             <td class="numeric-cell">${p?.age}</td>
                             <td>${p?.throws}</td>
                             <td>${p?.hits}</td>
                             <td class="numeric-cell">${p?.pitchRatings?.power}</td>
 
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FF")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "CU")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "CH")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FC")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FO")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "KN")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "KC")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SC")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SI")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SL")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "SV")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "FS")?.rating}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings.pitches.find( pi => pi.type == "ST")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "FF")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "CU")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "CH")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "FC")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "FO")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "KN")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "KC")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "SC")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "SI")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "SL")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "SV")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "FS")?.rating}</td>
+                            <td class="numeric-cell">${p?.pitchRatings.pitches.find( pi => pi.type == "ST")?.rating}</td>
 
                             <td class="handed-label" ></td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsR?.control}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsR?.movement}</td>
+                            <td class="numeric-cell">${p?.pitchRatings?.vsR?.control}</td>
+                            <td class="numeric-cell">${p?.pitchRatings?.vsR?.movement}</td>
 
                             <td class="handed-label" ></td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsL?.control}</td>
-                            <td class="numeric-cell">${p?.percentileRatings.pitchRatings?.vsL?.movement}</td>
+                            <td class="numeric-cell">${p?.pitchRatings?.vsL?.control}</td>
+                            <td class="numeric-cell">${p?.pitchRatings?.vsL?.movement}</td>
 
                         </tr>
                     `)}

@@ -27,7 +27,7 @@
               <span><strong>Position:</strong> ${player.primaryPosition}</span><br />
               <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
               <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
-              <span><strong>Overall Rating:</strong> ${player.percentileRatings.overallRating_pct.toFixed(1)}</span><br />     
+              <span><strong>Overall Rating:</strong> ${player.overallRating.toFixed(0)}</span><br />     
 
 
               ${authInfo?.address != undefined && authInfo.address == player.team?.ownerId ? $h`
@@ -420,7 +420,7 @@
                 <div class="skill-wrapper">
                   <div class="label">Power</div>
                   <div class="skill-bar">
-                    <div class="red" style="flex-basis: ${player.percentileRatings.pitchRatings.power }%;">${ player.percentileRatings.pitchRatings.power }</div>
+                    <div class="red" style="flex-basis: ${player.pitchRatings.power }%;">${ player.pitchRatings.power }</div>
                   </div>
                 </div>
 
@@ -428,11 +428,11 @@
                   <div class="label">Control</div>
 
                   <div class="skill-bar handedness">
-                    <div class="red" style="flex-basis:${ player.percentileRatings.pitchRatings.vsL.control}%;"><strong>L</strong> ${ player.percentileRatings.pitchRatings.vsL.control }</div>
+                    <div class="red" style="flex-basis:${ player.pitchRatings.vsL.control}%;"><strong>L</strong> ${ player.pitchRatings.vsL.control }</div>
                   </div>
 
                   <div class="skill-bar handedness">
-                    <div class="light-red" style="flex-basis:${ player.percentileRatings.pitchRatings.vsR.control }%;"> <strong>R</strong> ${ player.percentileRatings.pitchRatings.vsR.control }</div>
+                    <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.control }%;"> <strong>R</strong> ${ player.pitchRatings.vsR.control }</div>
                   </div>
 
                 </div>
@@ -441,11 +441,11 @@
                   <div class="label">Movement</div>
 
                   <div class="skill-bar handedness">
-                    <div class="red" style="flex-basis:${ player.percentileRatings.pitchRatings.vsL.movement }%;"> <strong>L</strong> ${ player.percentileRatings.pitchRatings.vsL.movement }</div>
+                    <div class="red" style="flex-basis:${ player.pitchRatings.vsL.movement }%;"> <strong>L</strong> ${ player.pitchRatings.vsL.movement }</div>
                   </div>
 
                   <div class="skill-bar handedness">
-                    <div class="light-red" style="flex-basis:${ player.percentileRatings.pitchRatings.vsR.movement}%;"> <strong>R</strong> ${ player.percentileRatings.pitchRatings.vsR.movement }</div>
+                    <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.movement}%;"> <strong>R</strong> ${ player.pitchRatings.vsR.movement }</div>
                   </div>
 
                 </div>
@@ -470,7 +470,7 @@
                 
                 <h4>Pitches</h4>
 
-                ${player.percentileRatings.pitchRatings.pitches?.map(p => $h`
+                ${player.pitchRatings.pitches?.map(p => $h`
                   <div class="skill-wrapper">
                     <div class="label">${ p.type }</div>
                     <div class="skill-bar">
@@ -491,28 +491,28 @@
                   <div class="skill-wrapper">
                     <div class="label">Speed</div>
                     <div class="skill-bar">
-                      <div class="red" style="flex-basis: ${player.percentileRatings.hittingRatings.speed }%;">${player.percentileRatings.hittingRatings.speed}</div>
+                      <div class="red" style="flex-basis: ${player.hittingRatings.speed }%;">${player.hittingRatings.speed}</div>
                     </div>
                   </div>
 
                   <div class="skill-wrapper">
                     <div class="label">Steals</div>
                     <div class="skill-bar">
-                      <div class="red" style="flex-basis: ${ player.percentileRatings.hittingRatings.steals }%;">${player.percentileRatings.hittingRatings.steals}</div>
+                      <div class="red" style="flex-basis: ${ player.hittingRatings.steals }%;">${player.hittingRatings.steals}</div>
                     </div>
                   </div>
 
                   <div class="skill-wrapper">
                     <div class="label">Defense</div>
                     <div class="skill-bar">
-                      <div class="red" style="flex-basis: ${ player.percentileRatings.hittingRatings.defense }%;">${player.percentileRatings.hittingRatings.defense}</div>
+                      <div class="red" style="flex-basis: ${ player.hittingRatings.defense }%;">${player.hittingRatings.defense}</div>
                     </div>
                   </div>
 
                   <div class="skill-wrapper">
                     <div class="label">Arm</div>
                     <div class="skill-bar">
-                      <div class="red" style="flex-basis: ${player.percentileRatings.hittingRatings.arm }%;">${player.percentileRatings.hittingRatings.arm }</div>
+                      <div class="red" style="flex-basis: ${player.hittingRatings.arm }%;">${player.hittingRatings.arm }</div>
                     </div>
                   </div>
 
@@ -541,11 +541,11 @@
                     <div class="label">Contact</div>
 
                     <div class="skill-bar handedness">
-                      <div class="red" style="flex-basis: ${player.percentileRatings.hittingRatings.vsL.contact}%;"><strong>L</strong> ${player.percentileRatings.hittingRatings.vsL.contact}</div>
+                      <div class="red" style="flex-basis: ${player.hittingRatings.vsL.contact}%;"><strong>L</strong> ${player.hittingRatings.vsL.contact}</div>
                     </div>
 
                     <div class="skill-bar handedness">
-                      <div class="light-red" style="flex-basis: ${player.percentileRatings.hittingRatings.vsR.contact }%;"><strong>R</strong> ${ player.percentileRatings.hittingRatings.vsR.contact }</div>
+                      <div class="light-red" style="flex-basis: ${player.hittingRatings.vsR.contact }%;"><strong>R</strong> ${ player.hittingRatings.vsR.contact }</div>
                     </div>
 
                   </div>
@@ -554,11 +554,11 @@
                     <div class="label">Gap Power</div>
 
                     <div class="skill-bar handedness">
-                      <div class="red" style="flex-basis:${ player.percentileRatings.hittingRatings.vsL.gapPower }%;"><strong>L</strong> ${player.percentileRatings.hittingRatings.vsL.gapPower }</div>
+                      <div class="red" style="flex-basis:${ player.hittingRatings.vsL.gapPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.gapPower }</div>
                     </div>
 
                     <div class="skill-bar handedness">
-                      <div class="light-red" style="flex-basis:${ player.percentileRatings.hittingRatings.vsR.gapPower }%;"><strong>R</strong> ${player.percentileRatings.hittingRatings.vsR.gapPower }</div>
+                      <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.gapPower }%;"><strong>R</strong> ${player.hittingRatings.vsR.gapPower }</div>
                     </div>
 
                   </div>
@@ -567,11 +567,11 @@
                     <div class="label">Home Run</div>
 
                     <div class="skill-bar handedness">
-                      <div class="red" style="flex-basis:${ player.percentileRatings.hittingRatings.vsL.homerunPower }%;"><strong>L</strong> ${player.percentileRatings.hittingRatings.vsL.homerunPower }</div>
+                      <div class="red" style="flex-basis:${ player.hittingRatings.vsL.homerunPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.homerunPower }</div>
                     </div>
 
                     <div class="skill-bar handedness">
-                      <div class="light-red" style="flex-basis:${ player.percentileRatings.hittingRatings.vsR.homerunPower }%;"><strong>R</strong> ${ player.percentileRatings.hittingRatings.vsR.homerunPower }</div>
+                      <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.homerunPower }%;"><strong>R</strong> ${ player.hittingRatings.vsR.homerunPower }</div>
                     </div>
 
                   </div>
@@ -581,11 +581,11 @@
                     <div class="label">Plate Discipline</div>
 
                     <div class="skill-bar handedness">
-                      <div class="red" style="flex-basis:${ player.percentileRatings.hittingRatings.vsL.plateDiscipline }%;"><strong>L</strong> ${player.percentileRatings.hittingRatings.vsL.plateDiscipline }</div>
+                      <div class="red" style="flex-basis:${ player.hittingRatings.vsL.plateDiscipline }%;"><strong>L</strong> ${player.hittingRatings.vsL.plateDiscipline }</div>
                     </div>
 
                     <div class="skill-bar handedness">
-                      <div class="light-red" style="flex-basis:${ player.percentileRatings.hittingRatings.vsR.plateDiscipline }%;"><strong>R</strong> ${player.percentileRatings.hittingRatings.vsR.plateDiscipline }</div>
+                      <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.plateDiscipline }%;"><strong>R</strong> ${player.hittingRatings.vsR.plateDiscipline }</div>
                     </div>
 
                   </div>
@@ -666,7 +666,8 @@
 
     let playerId
     let player = props.player
-    // let activeContractYear
+
+    console.log(player)
 
     let itemViewModel
 

@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 
-import { Expenses, FinanceSeason, Lineup, Revenue, RotationPitcher, Team } from "../dto/team.js";
+import { FinanceSeason, Lineup, Revenue, RotationPitcher, Team } from "../dto/team.js";
 
 import { Player } from "../dto/player.js";
 
@@ -73,24 +73,16 @@ class FinanceService {
 
     updateFinanceSeason(financeSeason:FinanceSeason, gameTeamFinance:GameTeamFinance) {
 
-        financeSeason.attendance.seasonToDate.gateTickets += gameTeamFinance.gateTickets
-        financeSeason.attendance.seasonToDate.seasonTickets += gameTeamFinance.seasonTickets
-        financeSeason.attendance.seasonToDate.totalAttendance = financeSeason.attendance.seasonToDate.gateTickets + financeSeason.attendance.seasonToDate.seasonTickets
-
-        financeSeason.expenses.seasonToDate.stadiumLease = (BigInt(financeSeason.expenses.seasonToDate.stadiumLease) + BigInt(gameTeamFinance.stadiumLease)).toString()
-        financeSeason.expenses.seasonToDate.total = BigInt(financeSeason.expenses.seasonToDate.stadiumLease).toString()
-
-        financeSeason.revenue.seasonToDate.gate = (BigInt(financeSeason.revenue.seasonToDate.gate) + BigInt(gameTeamFinance.gateTicketRevenue)).toString()
-        financeSeason.revenue.seasonToDate.localMedia = (BigInt(financeSeason.revenue.seasonToDate.localMedia) + BigInt(gameTeamFinance.localTvRevenue)).toString()
-        financeSeason.revenue.seasonToDate.nationalMedia = (BigInt(financeSeason.revenue.seasonToDate.nationalMedia) + BigInt(gameTeamFinance.nationalTvRevenue)).toString()
-        financeSeason.revenue.seasonToDate.seasonTickets = (BigInt(financeSeason.revenue.seasonToDate.seasonTickets) + BigInt(gameTeamFinance.seasonTicketRevenue)).toString()
+        // financeSeason.revenue.seasonToDate.gate = (BigInt(financeSeason.revenue.seasonToDate.gate) + BigInt(gameTeamFinance.gateTicketRevenue)).toString()
+        // financeSeason.revenue.seasonToDate.localMedia = (BigInt(financeSeason.revenue.seasonToDate.localMedia) + BigInt(gameTeamFinance.localTvRevenue)).toString()
+        // financeSeason.revenue.seasonToDate.nationalMedia = (BigInt(financeSeason.revenue.seasonToDate.nationalMedia) + BigInt(gameTeamFinance.nationalTvRevenue)).toString()
+        // financeSeason.revenue.seasonToDate.seasonTickets = (BigInt(financeSeason.revenue.seasonToDate.seasonTickets) + BigInt(gameTeamFinance.seasonTicketRevenue)).toString()
         financeSeason.revenue.seasonToDate.total = (BigInt(financeSeason.revenue.seasonToDate.gate) + 
                                                    BigInt(financeSeason.revenue.seasonToDate.localMedia) + 
                                                    BigInt(financeSeason.revenue.seasonToDate.nationalMedia) + 
                                                    BigInt(financeSeason.revenue.seasonToDate.seasonTickets)).toString()
         financeSeason.revenue.seasonToDate.perGame = BigInt(financeSeason.totalGamesPlayed) > 0 ? (BigInt(financeSeason.revenue.seasonToDate.total) / BigInt(financeSeason.totalGamesPlayed)).toString() : BigInt(0).toString()
 
-        financeSeason.profit.seasonToDate.total = (BigInt(financeSeason.revenue.seasonToDate.total) - BigInt(financeSeason.expenses.seasonToDate.total)).toString()
 
     }
 
@@ -102,78 +94,12 @@ class FinanceService {
                         ) {
 
 
-        let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
-        let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
-
-        //If we haven't sold season tickets then we do it once and don't change it for the rest of the season.
-        if (!tls.financeSeason.attendance.seasonTicketsSold) {
-            tls.financeSeason.attendance.seasonTicketsSold = this.calculateSeasonTicketSales(league.rank, tls.fanInterestShortTerm, tls.fanInterestLongTerm, city.population, stadium.capacity)
-        }
-        
-        tls.financeSeason.currentTicketPrice = this.calculateTicketPrice(league.rank, tls.fanInterestShortTerm, tls.fanInterestLongTerm, city.population, stadium.capacity).toString()
-
-        // let projectedPayrollPerGame = gamesRemaining > 0 ? projectedPayrollTotal / BigInt(gamesPerSeason) : BigInt(0)                  
-
-        let seasonTicketRevenuePerGame = this.calculateSeasonTicketRevenuePerGame(BigInt(tls.financeSeason.currentTicketPrice), tls.financeSeason.attendance.seasonTicketsSold)
-
-
-        let gateTicketsPerGame = this.calculateSingleGameTicketSales(league.rank, tls.fanInterestShortTerm, tls.fanInterestLongTerm, city.population, stadium.capacity, tls.financeSeason.attendance.seasonTicketsSold)
-        let gateRevenuePerGame = this.calculateGateRevenuePerGame(BigInt(tls.financeSeason.currentTicketPrice), gateTicketsPerGame)
-
-        let localMediaRevenuePerGame = this.calculateLocalMediaRevenuePerGame(league.rank, tls.fanInterestShortTerm, tls.fanInterestLongTerm, city.population, stadium.capacity)
-        let nationMediaRevenuePerGame = this.getNationalMediaRevenuePerGame(league.rank)
-
-        let stadiumLeaseTotal =  this.calculateStadiumLease(league.rank, stadium.capacity)
-        let stadiumLeasePerGame = stadiumLeaseTotal  / BigInt(gamesPerSeason)
-
-
-
-
-
-        //Set projected attendance remaining
-        tls.financeSeason.attendance.projectedRemaining.seasonTickets = tls.financeSeason.attendance.seasonTicketsSold * gamesRemaining
-        tls.financeSeason.attendance.projectedRemaining.gateTickets = gateTicketsPerGame * gamesRemaining
-        tls.financeSeason.attendance.projectedRemaining.totalAttendance = tls.financeSeason.attendance.projectedRemaining.gateTickets + tls.financeSeason.attendance.projectedRemaining.seasonTickets
-
-        tls.financeSeason.attendance.projectedTotal.seasonTickets = tls.financeSeason.attendance.seasonToDate.seasonTickets + tls.financeSeason.attendance.projectedRemaining.seasonTickets
-        tls.financeSeason.attendance.projectedTotal.gateTickets = tls.financeSeason.attendance.seasonToDate.gateTickets + tls.financeSeason.attendance.projectedRemaining.gateTickets
-        tls.financeSeason.attendance.projectedTotal.totalAttendance = tls.financeSeason.attendance.seasonToDate.totalAttendance + tls.financeSeason.attendance.projectedRemaining.totalAttendance
-
-        //Set projected expenses remaining
-        // tls.financeSeason.expenses.projectedRemaining.payroll = (projectedPayrollPerGame * BigInt(gamesRemaining)).toString()
-        tls.financeSeason.expenses.projectedRemaining.stadiumLease = (stadiumLeasePerGame * BigInt(gamesRemaining)).toString()
-        tls.financeSeason.expenses.projectedRemaining.total = this.calculateTotalExpenses(tls.financeSeason.expenses.projectedRemaining).toString()
-
-        //And totals
-        tls.financeSeason.expenses.projectedTotal.stadiumLease = (BigInt(tls.financeSeason.expenses.seasonToDate.stadiumLease) + BigInt(tls.financeSeason.expenses.projectedRemaining.stadiumLease)).toString()
-        tls.financeSeason.expenses.projectedTotal.total = this.calculateTotalExpenses(tls.financeSeason.expenses.projectedTotal).toString()
-
-
         //Set projected revenue remaining
-        tls.financeSeason.revenue.projectedRemaining.seasonTickets = (seasonTicketRevenuePerGame * BigInt( tls.financeSeason.homeGamesRemaining )).toString()
-        tls.financeSeason.revenue.projectedRemaining.gate = (gateRevenuePerGame * BigInt( tls.financeSeason.homeGamesRemaining )).toString()
-
-        tls.financeSeason.revenue.projectedRemaining.localMedia = (localMediaRevenuePerGame * BigInt(gamesRemaining)).toString()
-        tls.financeSeason.revenue.projectedRemaining.nationalMedia = (nationMediaRevenuePerGame * BigInt(gamesRemaining)).toString()
-
-        tls.financeSeason.revenue.projectedRemaining.total = this.calculateTotalRevenue(tls.financeSeason.revenue.projectedRemaining).toString()
+        tls.financeSeason.revenue.projectedRemaining.total = BigInt(0).toString() //this.calculateTotalRevenue(tls.financeSeason.revenue.projectedRemaining).toString()
 
 
         //And totals
-        tls.financeSeason.revenue.projectedTotal.seasonTickets = (BigInt(tls.financeSeason.revenue.seasonToDate.seasonTickets) + BigInt(tls.financeSeason.revenue.projectedRemaining.seasonTickets)).toString()
-        tls.financeSeason.revenue.projectedTotal.gate = (BigInt(tls.financeSeason.revenue.seasonToDate.gate) + BigInt(tls.financeSeason.revenue.projectedRemaining.gate)).toString()
-
-        tls.financeSeason.revenue.projectedTotal.localMedia = (BigInt(tls.financeSeason.revenue.seasonToDate.localMedia) + BigInt(tls.financeSeason.revenue.projectedRemaining.localMedia)).toString()
-        tls.financeSeason.revenue.projectedTotal.nationalMedia = (BigInt(tls.financeSeason.revenue.seasonToDate.nationalMedia) + BigInt(tls.financeSeason.revenue.projectedRemaining.nationalMedia)).toString()
-
-        tls.financeSeason.revenue.projectedTotal.total = this.calculateTotalRevenue(tls.financeSeason.revenue.projectedTotal).toString()
-
-        //Profit/loss
-        tls.financeSeason.profit.projectedRemaining.total = (BigInt(tls.financeSeason.revenue.projectedRemaining.total) - BigInt(tls.financeSeason.expenses.projectedRemaining.total)).toString()
-        tls.financeSeason.profit.projectedTotal.total = (BigInt(tls.financeSeason.revenue.projectedTotal.total) - BigInt(tls.financeSeason.expenses.projectedTotal.total)).toString()
-
-        this.setPerGameRevenue(tls.financeSeason.revenue.projectedTotal, gamesPerSeason)
-        this.setPerGameRevenue(tls.financeSeason.revenue.projectedRemaining, tls.financeSeason.totalGamesRemaining)
+        tls.financeSeason.revenue.projectedTotal.total = BigInt(0).toString() //this.calculateTotalRevenue(tls.financeSeason.revenue.projectedTotal).toString()
                     
         tls.changed('financeSeason', true)
 
@@ -327,9 +253,9 @@ class FinanceService {
         return BigInt(revenue.gate) + BigInt(revenue.localMedia) + BigInt(revenue.nationalMedia) + BigInt(revenue.seasonTickets)
     }
 
-    calculateTotalExpenses(expenses:Expenses) {
-        return  BigInt(expenses.stadiumLease)
-    }
+    // calculateTotalExpenses(expenses:Expenses) {
+    //     return  BigInt(expenses.stadiumLease)
+    // }
 
     setPerGameRevenue(revenue:Revenue, games:number) {
         let totalRevenue = this.calculateTotalRevenue(revenue)

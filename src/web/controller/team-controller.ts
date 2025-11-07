@@ -1,6 +1,8 @@
 import { inject, injectable } from 'inversify';
 
 import TeamCreateComponent from '../components/team/create.f7.html'
+import TeamMintComponent from '../components/team/mint.f7.html'
+
 import TeamIndexComponent from '../components/team/index.f7.html'
 
 import TeamOffChainActivityComponent from '../components/team/offchain-activity.f7.html'

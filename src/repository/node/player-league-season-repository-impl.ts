@@ -505,7 +505,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
-    async getFreeAgentsByPositionAndSalary(position:Position, season:Season, salary:number, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]> {
+    async getFreeAgentsByPosition(position:Position, season:Season, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]> {
 
         let s = await this.sequelize()
 
@@ -516,8 +516,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             model: PlayerLeagueSeason,
             replacements: {
                 position: position.toString(),
-                seasonId: season._id,
-                salary: salary
+                seasonId: season._id
             }
         }
 
@@ -526,8 +525,8 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
                 pls.*
             FROM player_league_season pls 
             INNER JOIN player p on pls.playerId = p._id
-            WHERE pls.primaryPosition = :position AND pls.seasonId = :seasonId AND pls.teamId is null AND pls.askingPrice <= :salary
-			ORDER BY pls.startDate DESC, pls.seasonIndex DESC, pls.askingPrice DESC, p.age DESC
+            WHERE pls.primaryPosition = :position AND pls.seasonId = :seasonId AND pls.teamId is null
+			ORDER BY pls.startDate DESC, pls.seasonIndex DESC, p.overallRating DESC
             LIMIT ${limit} OFFSET ${offset}
         `, Object.assign(queryOptions, options))
 

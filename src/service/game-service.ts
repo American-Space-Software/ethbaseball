@@ -307,40 +307,39 @@ class GameService {
         }
 
         //Home
-        game.gameFinances.home.ticketPrice = homeTLS.financeSeason.currentTicketPrice
         // game.gameFinances.home.payroll = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
-        game.gameFinances.home.stadiumLease = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
-        game.gameFinances.home.totalExpenses = BigInt(game.gameFinances.home.stadiumLease).toString()
+        // game.gameFinances.home.stadiumLease = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
+        // game.gameFinances.home.totalExpenses = BigInt(game.gameFinances.home.stadiumLease).toString()
 
-        game.gameFinances.home.seasonTickets = homeTLS.financeSeason.attendance.seasonTicketsSold
-        game.gameFinances.home.gateTickets = this.financeService.calculateSingleGameTicketSales(leagueRank, homeTLS.fanInterestShortTerm, homeTLS.fanInterestLongTerm, homeTLS.city.population, homeTLS.stadium.capacity, game.gameFinances.home.seasonTickets)
-        game.gameFinances.home.totalAttendance = game.gameFinances.home.seasonTickets + game.gameFinances.home.gateTickets
+        // game.gameFinances.home.seasonTickets = homeTLS.financeSeason.attendance.seasonTicketsSold
+        // game.gameFinances.home.gateTickets = this.financeService.calculateSingleGameTicketSales(leagueRank, homeTLS.fanInterestShortTerm, homeTLS.fanInterestLongTerm, homeTLS.city.population, homeTLS.stadium.capacity, game.gameFinances.home.seasonTickets)
+        // game.gameFinances.home.totalAttendance = game.gameFinances.home.seasonTickets + game.gameFinances.home.gateTickets
         
-        game.gameFinances.home.seasonTicketRevenue = this.financeService.calculateSeasonTicketRevenuePerGame(BigInt(homeTLS.financeSeason.currentTicketPrice), game.gameFinances.home.seasonTickets).toString()
-        game.gameFinances.home.gateTicketRevenue = this.financeService.calculateGateRevenuePerGame(BigInt(homeTLS.financeSeason.currentTicketPrice), game.gameFinances.home.gateTickets).toString()
-        game.gameFinances.home.nationalTvRevenue = this.financeService.getNationalMediaRevenuePerGame(leagueRank).toString()
-        game.gameFinances.home.localTvRevenue = this.financeService.calculateLocalMediaRevenuePerGame(leagueRank, homeTLS.fanInterestShortTerm, homeTLS.fanInterestLongTerm, homeTLS.city.population, homeTLS.stadium.capacity).toString()
+        // game.gameFinances.home.seasonTicketRevenue = this.financeService.calculateSeasonTicketRevenuePerGame(BigInt(homeTLS.financeSeason.currentTicketPrice), game.gameFinances.home.seasonTickets).toString()
+        // game.gameFinances.home.gateTicketRevenue = this.financeService.calculateGateRevenuePerGame(BigInt(homeTLS.financeSeason.currentTicketPrice), game.gameFinances.home.gateTickets).toString()
+        // game.gameFinances.home.nationalTvRevenue = this.financeService.getNationalMediaRevenuePerGame(leagueRank).toString()
+        // game.gameFinances.home.localTvRevenue = this.financeService.calculateLocalMediaRevenuePerGame(leagueRank, homeTLS.fanInterestShortTerm, homeTLS.fanInterestLongTerm, homeTLS.city.population, homeTLS.stadium.capacity).toString()
         
-        game.gameFinances.home.totalRevenue = (BigInt(game.gameFinances.home.seasonTicketRevenue) + BigInt(game.gameFinances.home.gateTicketRevenue) + BigInt(game.gameFinances.home.nationalTvRevenue) + BigInt(game.gameFinances.home.localTvRevenue)).toString()
-        game.gameFinances.home.totalProfit = (BigInt(game.gameFinances.home.totalRevenue) - BigInt(game.gameFinances.home.totalExpenses)).toString()
+        // game.gameFinances.home.totalRevenue = (BigInt(game.gameFinances.home.seasonTicketRevenue) + BigInt(game.gameFinances.home.gateTicketRevenue) + BigInt(game.gameFinances.home.nationalTvRevenue) + BigInt(game.gameFinances.home.localTvRevenue)).toString()
+        // game.gameFinances.home.totalProfit = (BigInt(game.gameFinances.home.totalRevenue) - BigInt(game.gameFinances.home.totalExpenses)).toString()
 
 
         //Away
         // game.gameFinances.away.payroll = (BigInt(awayTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(awayTLS.financeSeason.totalGamesRemaining)).toString()
-        game.gameFinances.away.stadiumLease = (BigInt(awayTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(awayTLS.financeSeason.totalGamesRemaining)).toString()
-        game.gameFinances.away.totalExpenses = (BigInt(game.gameFinances.away.stadiumLease)).toString()
+        // game.gameFinances.away.stadiumLease = (BigInt(awayTLS.financeSeason.expenses.projectedRemaining.stadiumLease) / BigInt(awayTLS.financeSeason.totalGamesRemaining)).toString()
+        // game.gameFinances.away.totalExpenses = (BigInt(game.gameFinances.away.stadiumLease)).toString()
 
-        game.gameFinances.away.seasonTickets = 0
-        game.gameFinances.away.gateTickets = 0
-        game.gameFinances.away.totalAttendance = 0
+        // game.gameFinances.away.seasonTickets = 0
+        // game.gameFinances.away.gateTickets = 0
+        // game.gameFinances.away.totalAttendance = 0
 
-        game.gameFinances.away.seasonTicketRevenue = "0"
-        game.gameFinances.away.gateTicketRevenue = "0"
-        game.gameFinances.away.nationalTvRevenue = this.financeService.getNationalMediaRevenuePerGame(leagueRank).toString()
-        game.gameFinances.away.localTvRevenue = this.financeService.calculateLocalMediaRevenuePerGame(leagueRank, awayTLS.fanInterestShortTerm, awayTLS.fanInterestLongTerm, awayTLS.city.population, awayTLS.stadium.capacity).toString()
+        // game.gameFinances.away.seasonTicketRevenue = "0"
+        // game.gameFinances.away.gateTicketRevenue = "0"
+        // game.gameFinances.away.nationalTvRevenue = this.financeService.getNationalMediaRevenuePerGame(leagueRank).toString()
+        // game.gameFinances.away.localTvRevenue = this.financeService.calculateLocalMediaRevenuePerGame(leagueRank, awayTLS.fanInterestShortTerm, awayTLS.fanInterestLongTerm, awayTLS.city.population, awayTLS.stadium.capacity).toString()
         
-        game.gameFinances.away.totalRevenue = (BigInt(game.gameFinances.away.nationalTvRevenue) + BigInt(game.gameFinances.away.localTvRevenue)).toString()
-        game.gameFinances.away.totalProfit = (BigInt(game.gameFinances.away.totalRevenue) - BigInt(game.gameFinances.away.totalExpenses)).toString()
+        // game.gameFinances.away.totalRevenue = (BigInt(game.gameFinances.away.nationalTvRevenue) + BigInt(game.gameFinances.away.localTvRevenue)).toString()
+        // game.gameFinances.away.totalProfit = (BigInt(game.gameFinances.away.totalRevenue) - BigInt(game.gameFinances.away.totalExpenses)).toString()
 
         game.changed('gameFinances', true)
 

@@ -463,16 +463,16 @@ class LadderService {
                 let plss = allPLS.filter( pls => pls.teamId == team._id)
                 let plssPlain = plss.map( pls => pls.get( { plain: true }))
 
-                let totalProfit = gameFinances.totalProfit 
+                // let totalProfit = gameFinances.totalProfit 
 
-                if (BigInt(totalProfit) != BigInt(0)) {
+                // if (BigInt(totalProfit) != BigInt(0)) {
 
-                    if (BigInt(totalProfit) > BigInt(0)) {
-                        await this.offchainEventService.createTeamMintEvent( team.tokenId, totalProfit, teamGame._id, options )
-                    } else {
-                        await this.offchainEventService.createTeamBurnEvent( team.tokenId, totalProfit, teamGame._id, options)
-                    } 
-                }
+                //     if (BigInt(totalProfit) > BigInt(0)) {
+                //         await this.offchainEventService.createTeamMintEvent( team.tokenId, totalProfit, teamGame._id, options )
+                //     } else {
+                //         await this.offchainEventService.createTeamBurnEvent( team.tokenId, totalProfit, teamGame._id, options)
+                //     } 
+                // }
 
                 //Update finances for team.
                 this.financeService.updateFinanceSeason(tls.financeSeason, gameFinances)
@@ -484,9 +484,6 @@ class LadderService {
                 //Update games remaining/played
                 tls.financeSeason.homeGamesPlayed = counts.homeGamesPlayed
                 tls.financeSeason.totalGamesPlayed = counts.totalGamesPlayed
-
-                tls.financeSeason.homeGamesRemaining = counts.homeGamesRemaining
-                tls.financeSeason.totalGamesRemaining = counts.totalGamesRemaining
 
                 tls.financeSeason.diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
 

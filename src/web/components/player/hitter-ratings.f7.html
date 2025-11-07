@@ -74,30 +74,30 @@
                   ` : $h` `}
                 </td>
 
-                <td class="numeric-cell">${p?.percentileRatings?.overallRating_pct?.toFixed(1)}</td>
+                <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
                 <td class="numeric-cell">${p?.age}</td>
                 <td>${p?.throws}</td>
                 <td>${p?.hits}</td>
 
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.defense}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.arm}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.speed}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.steals}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.defense}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.arm}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.speed}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.steals}</td>
                 <td class="numeric-cell">${statService.displayPercent(p?.hittingRatings?.contactProfile?.groundball / 1000)}</td>
                 <td class="numeric-cell">${statService.displayPercent(p?.hittingRatings?.contactProfile?.flyBall / 1000)}</td>
                 <td class="numeric-cell">${statService.displayPercent(p?.hittingRatings?.contactProfile?.lineDrive / 1000)}</td>
                 
                 <td class="handed-label" ></td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsR?.plateDiscipline}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsR?.contact}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsR?.gapPower}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsR?.homerunPower}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsR?.plateDiscipline}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsR?.contact}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsR?.gapPower}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsR?.homerunPower}</td>
                 
                 <td class="handed-label" ></td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsL?.plateDiscipline}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsL?.contact}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsL?.gapPower}</td>
-                <td class="numeric-cell">${p?.percentileRatings?.hittingRatings?.vsL?.homerunPower}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsL?.plateDiscipline}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsL?.contact}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsL?.gapPower}</td>
+                <td class="numeric-cell">${p?.hittingRatings?.vsL?.homerunPower}</td>
 
 
             </tr>

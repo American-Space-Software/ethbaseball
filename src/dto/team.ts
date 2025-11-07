@@ -75,11 +75,11 @@ interface Revenue {
     total:string
 }
 
-interface Expenses {
-    // payroll:string
-    stadiumLease:string
-    total:string
-}
+// interface Expenses {
+//     // payroll:string
+//     stadiumLease:string
+//     total:string
+// }
 
 
 interface Profit {
@@ -96,22 +96,22 @@ interface FinanceSeason {
 
     diamondBalance:string
 
-    currentTicketPrice:string
+    // currentTicketPrice:string
 
     homeGamesPlayed:number
-    homeGamesRemaining:number
+    // homeGamesRemaining:number
 
     awayGamesPlayed:number
-    awayGamesRemaining:number
+    // awayGamesRemaining:number
 
     totalGamesPlayed:number
-    totalGamesRemaining:number
+    // totalGamesRemaining:number
 
-    expenses: {
-        seasonToDate:Expenses
-        projectedRemaining:Expenses
-        projectedTotal:Expenses
-    }
+    // expenses: {
+    //     seasonToDate:Expenses
+    //     projectedRemaining:Expenses
+    //     projectedTotal:Expenses
+    // }
 
     revenue: {
         seasonToDate: Revenue
@@ -119,18 +119,18 @@ interface FinanceSeason {
         projectedTotal: Revenue
     }
     
-    profit: {
-        seasonToDate: Profit
-        projectedRemaining:Profit
-        projectedTotal: Profit
-    }
+    // profit: {
+    //     seasonToDate: Profit
+    //     projectedRemaining:Profit
+    //     projectedTotal: Profit
+    // }
 
-    attendance: {
-        seasonTicketsSold:number
-        seasonToDate: Attendance
-        projectedRemaining:Attendance
-        projectedTotal: Attendance
-    }
+    // attendance: {
+    //     seasonTicketsSold:number
+    //     seasonToDate: Attendance
+    //     projectedRemaining:Attendance
+    //     projectedTotal: Attendance
+    // }
 
 }
 
@@ -1585,7 +1585,7 @@ const TEAM_COLORS = [
 
 
 export {
-    Team, Lineup, LineupPlayer, OverallRecord, RotationPitcher, TEAM_NAMES, TEAM_COLORS, FinanceSeason, Revenue, Expenses, Colors, DiamondMintPass, TeamLogo
+    Team, Lineup, LineupPlayer, OverallRecord, RotationPitcher, TEAM_NAMES, TEAM_COLORS, FinanceSeason, Revenue, Colors, DiamondMintPass, TeamLogo
 }
 
 
