@@ -1284,7 +1284,7 @@ interface TeamCost {
 
 const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
   // scalar / joined columns
-  'overallRating_pct': 'CAST(pls.percentileRatings->>"$.overallRating_pct" AS DECIMAL(10,3))',
+  'displayRating': 'pls.displayRating',
   'age': 'pls.age',
   'throws': 'p.throws',
   'hits': 'p.hits',

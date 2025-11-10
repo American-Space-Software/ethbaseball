@@ -5,153 +5,128 @@
 
           <div class="hidden-on-load">
 
-            <div class="block">
+            <div class="fixed-width-content center">
 
-                <${StartDate} />
+                <div class="block">
 
-                <form class="list standings-selectors" id="change-standings">
+                    <${StartDate} />
 
-                    <div class="left">
+                    <form class="list standings-selectors" id="change-standings">
 
-                        <strong>League</strong> <br />
-                        <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
-                            ${viewModel?.leagues?.map( (l, index) => $h`
+                        <div class="left">
 
-                                ${l.rank == universeWebService.rank ? $h`
-                                    <option value="${l.rank}" selected>${l.name}</option>
-                                ` : $h`
-                                    <option value="${l.rank}">${l.name}</option>
-                                `}
+                            <strong>League</strong> <br />
+                            <select name="league" class="rank-dropdown" @change="${leagueChange}" id="select-league">
+                                ${viewModel?.leagues?.map( (l, index) => $h`
 
-                            `)}
-                        </select>
+                                    ${l.rank == universeWebService.rank ? $h`
+                                        <option value="${l.rank}" selected>${l.name}</option>
+                                    ` : $h`
+                                        <option value="${l.rank}">${l.name}</option>
+                                    `}
 
-                    </div>
-
-                    <div class="right">
-
-                        <strong>Season</strong> <br />
-                        <select name="startDate" class="rank-dropdown" @change="${startDateChange}" id="select-start-date">
-                            ${viewModel?.seasons?.map( (s, index) => $h`
-
-                                ${s.startDate == universeWebService.startDate ? $h`
-                                    <option value="${s.startDate}" selected>${s.startDate}</option>
-                                ` : $h`
-                                    <option value="${s.startDate}">${s.startDate}</option>
-                                `}
-
-                            `)}
-                        </select>
-
-
-                    </div>
-
-                </form>
-
-            </div>
-
-            <div class="block-title block-title-large">${viewModel?.leagueVm?.league?.name}</div>
-            <div class="block block-outline block-strong">
-                <div class="stat-table-wrapper">
-                    <table class="data-table standings">
-
-                        ${viewModel?.leagueVm?.viewModels?.length > 0 ? $h`
-
-                            <thead>
-                                <tr>
-                                    <th class="image"></th>
-                                    <th @click=${sortStandings} class="name lock-name label-cell" data-sort="city.name">Name</th>
-                                    <th @click=${sortStandings} data-sort="overallRecord.wins" class="numeric-cell">Wins</th>
-                                    <th @click=${sortStandings} data-sort="overallRecord.losses" class="numeric-cell">Losses</th>
-                                    <th @click=${sortStandings} data-sort="overallRecord.winPercent" class="numeric-cell">Win%</th>
-                                    <th @click=${sortStandings} data-sort="overallRecord.gamesBack" class="numeric-cell">GB</th>
-
-                                    <th @click=${sortStandings} data-sort="longTermRating.rating" class="numeric-cell">Rating</th>
-
-                                    <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell">Cash</th>
-                                    <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalRevenue" class="numeric-cell">Projected Revenue</th>
-                                    <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalExpenses" class="numeric-cell">Projected Expenses</th>
-                                    <th @click=${sortStandings} data-sort="financeSeasonDecimal.projectedTotalProfit" class="numeric-cell">Projected Profit</th>
-                                    <th @click=${sortStandings} data-sort="teamCost.ethCostDecimal" class="numeric-cell">Cost</th>
-
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                ${viewModel?.leagueVm.viewModels?.map( (t, index) => $h`
-                                    <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
-
-                                        <td class="image">
-                                             <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }">
-                                                <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
-                                              </a>
-                                        </td>
-
-                                        <td class="name lock-name">
-                                           
-                                            <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
-                                        </td>
-                                        <td class="numeric-cell">${t.overallRecord.wins}</td>
-                                        <td class="numeric-cell">${t.overallRecord.losses}</td>
-                                        <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                                        <td class="numeric-cell">${t.overallRecord.gamesBack}</td>
-                                        <td class="numeric-cell">${t.longTermRating.rating.toFixed(0)}</td>
-
-                                        <td class="numeric-cell">
-                                            ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
-                                        <td class="numeric-cell">
-                                            ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.revenue.projectedTotal.total)}</td>
-                                        <td class="numeric-cell">
-                                            ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.expenses.projectedTotal.total)}</td>
-                                        <td class="numeric-cell">
-                                            ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.profit.projectedTotal.total)}</td>
-                                        <td class="numeric-cell">
-                                            ${BigInt(t.teamCost?.totalDiamonds || 0) > 0 ? $h`
-                                                <a href="/t/mint/${t.tokenId}" class="link">${universeWebService.displayDiamondsNoSymbol(t.teamCost?.totalDiamonds)}</a>    
-                                            ` : $h` `}
-                                        </td>
-
-                                    </tr>
                                 `)}
+                            </select>
 
-                                <tr class="total">
-                                    <td class="numeric-cell" colspan="7"></td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.cash)}</td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.revenue)}</td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.expenses)}
-                                    </td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.profit)}</td>
-                                    <td class="numeric-cell">
-                                        ${viewModel.leagueVm.leagueFinance?.teamCostDiamonds ? $h`${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance?.teamCostDiamonds)}` : $h` `}
-                                    </td>
+                        </div>
 
-                                </tr>
-                            </tbody>
+                        <div class="right">
 
-                        ` : $h` `}
+                            <strong>Season</strong> <br />
+                            <select name="startDate" class="rank-dropdown" @change="${startDateChange}" id="select-start-date">
+                                ${viewModel?.seasons?.map( (s, index) => $h`
+
+                                    ${s.startDate == universeWebService.startDate ? $h`
+                                        <option value="${s.startDate}" selected>${s.startDate}</option>
+                                    ` : $h`
+                                        <option value="${s.startDate}">${s.startDate}</option>
+                                    `}
+
+                                `)}
+                            </select>
 
 
+                        </div>
 
-                    </table>
+                    </form>
+
                 </div>
+
+                <div class="block-title block-title-large">${viewModel?.leagueVm?.league?.name}</div>
+                <div class="block block-outline block-strong">
+                    <div class="stat-table-wrapper">
+                        <table class="data-table standings">
+
+                            ${viewModel?.leagueVm?.viewModels?.length > 0 ? $h`
+
+                                <thead>
+                                    <tr>
+                                        <th class="image"></th>
+                                        <th @click=${sortStandings} class="name lock-name label-cell" data-sort="city.name">Name</th>
+                                        <th @click=${sortStandings} data-sort="overallRecord.wins" class="numeric-cell" style="width: 30px;">Wins</th>
+                                        <th @click=${sortStandings} data-sort="overallRecord.losses" class="numeric-cell" style="width: 30px;">Losses</th>
+                                        <th @click=${sortStandings} data-sort="overallRecord.winPercent" class="numeric-cell" style="width: 30px;">Win%</th>
+                                        <!-- <th @click=${sortStandings} data-sort="overallRecord.gamesBack" class="numeric-cell" style="width: 30px;">GB</th> -->
+                                        <th @click=${sortStandings} data-sort="longTermRating.rating" class="numeric-cell" style="width: 30px;">Rating</th>
+                                        <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell" style="width: 30px;">Cash</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    ${viewModel?.leagueVm.viewModels?.map( (t, index) => $h`
+                                        <tr class="${isPromoted(t) ? $h`promoted` : $h` `} ${isRelegated(t) ? $h`relegated` : $h` `}">
+
+                                            <td class="image">
+                                                <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }">
+                                                    <img src="/image/thumbnail/${t.logoId}" class="profilePic" />
+                                                </a>
+                                            </td>
+
+                                            <td class="name lock-name">
+                                            
+                                                <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
+                                            </td>
+                                            <td class="numeric-cell">${t.overallRecord.wins}</td>
+                                            <td class="numeric-cell">${t.overallRecord.losses}</td>
+                                            <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
+                                            <!-- <td class="numeric-cell">${t.overallRecord.gamesBack}</td> -->
+                                            <td class="numeric-cell">${t.longTermRating.rating.toFixed(0)}</td>
+
+                                            <td class="numeric-cell">
+                                                ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
+                                            <td></td>
+                                        </tr>
+                                    `)}
+
+                                    <tr class="total">
+                                        <td class="numeric-cell" colspan="7"></td>
+                                        <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(viewModel.leagueVm.leagueFinance.cash)}</td>
+                                    </tr>
+                                </tbody>
+
+                            ` : $h` `}
+
+
+
+                        </table>
+                    </div>
+                </div>
+
+                <div class="block split-row-both">
+                <div>
+                    ${previousPage ? $h`
+                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${previousPage}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
+                    ` : $h` `}
+                </div>
+                <div>
+                    ${nextPage ? $h`
+                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${nextPage}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
+                    ` : $h` `}
+                </div>
+                </div>
+
             </div>
-
-
-
-            <div class="block split-row-both">
-              <div>
-                  ${previousPage ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${previousPage}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
-                  ` : $h` `}
-              </div>
-              <div>
-                  ${nextPage ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${nextPage}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
-                  ` : $h` `}
-              </div>
-            </div>
-
-
 
           </div>
 

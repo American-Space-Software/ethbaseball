@@ -14,7 +14,7 @@
             ${actions ? $h`<th class="action"></th>` : $h` `}     
             <th class="image"></th>
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="overallRating_pct">OVR</th>
+            <th @click=${sortHitters} class="numeric-cell" data-sort="displayRating">OVR</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="age">Age</th>
             <th @click=${sortHitters} data-sort="throws">Throws</th>
             <th @click=${sortHitters} data-sort="hits">Bats</th>
@@ -74,7 +74,7 @@
                   ` : $h` `}
                 </td>
 
-                <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
+                <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
                 <td class="numeric-cell">${p?.age}</td>
                 <td>${p?.throws}</td>
                 <td>${p?.hits}</td>

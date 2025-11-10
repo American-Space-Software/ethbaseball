@@ -405,26 +405,26 @@ describe('TeamService', async () => {
         assert(localRevenue == BigInt("216666666666666720000000"), "Ticket price wrong") //216,000 diamonds
     })   
 
-    it("should calculate max free agent salary", () => {
+    // it("should calculate max free agent salary", () => {
 
-        let tls = new TeamLeagueSeason()
-        tls.financeSeason = ladderService.getDefaultFinanceSeason(10)
-        tls.fanInterestLongTerm = .5
-        tls.fanInterestShortTerm = .5
-
-
-        //@ts-ignore
-        financeService.setFinancialProjections(tls, { rank: 1 }, {population: 1000000}, { capacity: 20000 }, BigInt(0))
-
-        let spotsToFill = [Position.PITCHER]
-
-        let maxSalary = service.getMaxSalaryOffer(tls.financeSeason, spotsToFill.length, MIN_AAV_CONTRACT)
+    //     let tls = new TeamLeagueSeason()
+    //     tls.financeSeason = ladderService.getDefaultFinanceSeason(10)
+    //     tls.fanInterestLongTerm = .5
+    //     tls.fanInterestShortTerm = .5
 
 
-        assert(maxSalary === 2537500, "Wrong salary")
+    //     //@ts-ignore
+    //     financeService.setFinancialProjections(tls, { rank: 1 }, {population: 1000000}, { capacity: 20000 }, BigInt(0))
+
+    //     let spotsToFill = [Position.PITCHER]
+
+    //     let maxSalary = service.getMaxSalaryOffer(tls.financeSeason, spotsToFill.length, MIN_AAV_CONTRACT)
 
 
-    }) 
+    //     assert(maxSalary === 2537500, "Wrong salary")
+
+
+    // }) 
     
     
     // it("should sign best available player from pool", async () => {

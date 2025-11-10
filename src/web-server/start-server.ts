@@ -1004,7 +1004,7 @@ let startWebServer = async () => {
         league = await leagueService.getByRank(rank)
       }
 
-      let sortColumn = req.query.sortColumn ? req.query.sortColumn.toString() : 'overallRating_pct'
+      let sortColumn = req.query.sortColumn ? req.query.sortColumn.toString() : 'displayRating'
       let sortDirection = req.query.sortDirection ? req.query.sortDirection.toString() : 'DESC'
       let playerPosition = req.query.position ? req.query.position.toString() : HitterPitcher.HITTER
 

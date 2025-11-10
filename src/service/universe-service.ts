@@ -23,7 +23,7 @@ import pluralize from "pluralize"
 import { City, SEED_DATA } from "../dto/city.js";
 import { CityRepository } from "../repository/city-repository.js";
 import { TeamService } from "./team-service.js";
-import {  Team, TEAM_COLORS, TEAM_NAMES } from "../dto/team.js";
+import {  FinanceSeason, Team, TEAM_COLORS, TEAM_NAMES } from "../dto/team.js";
 import { CityService } from "./city-service.js";
 import { SeedService } from "./seed-service.js";
 import { RollService } from "./roll-service.js";
@@ -500,7 +500,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
         for (let t of teams) {
 
-            let financeSeason = this.ladderService.getDefaultFinanceSeason(this.ladderService.getScheduleLength(teams.length, SERIES_LENGTH))
+            let financeSeason:FinanceSeason = this.ladderService.getDefaultFinanceSeason()
             let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(t.team, league, season, t.city, t.stadium, financeSeason)
 
             let logo = await this.createTeamLogo(t.city, t.team, options)
@@ -550,7 +550,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
                 let stadium = await this.stadiumService.put(teamStadium.stadium, options)
 
-                let financeSeason = this.ladderService.getDefaultFinanceSeason(this.ladderService.getScheduleLength(leagueInfo.teams.length, SERIES_LENGTH))
+                let financeSeason = this.ladderService.getDefaultFinanceSeason()
                 let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(team, league, season, city, stadium, financeSeason)
 
 

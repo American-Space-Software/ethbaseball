@@ -171,14 +171,15 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
     async updateGameFields(players: Player[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "overallRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "age", "personalityType"],
-            updateOnDuplicate: ["_id", "overallRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "age"],
+            fields: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "age", "personalityType"],
+            updateOnDuplicate: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "age"],
         }, options)
 
         let updatePlayers = players.map(p => {
             return {
                 _id: p._id,
                 overallRating: p.overallRating,
+                displayRating: p.displayRating,
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
                 careerStats: p.careerStats,

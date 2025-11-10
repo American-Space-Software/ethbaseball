@@ -492,6 +492,7 @@ class GameService {
 
         player.changed("careerStats", true)
         player.changed("overallRating", true)
+        player.changed("displayRating", true)
 
         pls.overallRating = player.overallRating
 
@@ -510,6 +511,8 @@ class GameService {
         pls.changed("stats", true)
         pls.changed("hittingRatings", true)
         pls.changed("pitchRatings", true)
+        pls.changed("displayRating", true)
+
 
     }
 

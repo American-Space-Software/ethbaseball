@@ -17,7 +17,7 @@
                     <th class="image"></th>
                     <th @click=${sortPitchers} class="name" data-sort="fullName">Name</th>
                               
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="overallRating_pct">OVR</th>
+                    <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="age">Age</th>
                     <th @click=${sortPitchers} data-sort="throws">Throws</th>
                     <th @click=${sortPitchers} data-sort="hits">Bats</th>
@@ -60,7 +60,7 @@
 
 
 
-                            <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
+                            <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
 
                             <td class="numeric-cell">${p?.age}</td>
                             <td>${p?.throws}</td>

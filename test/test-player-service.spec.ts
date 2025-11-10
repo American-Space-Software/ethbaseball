@@ -320,13 +320,12 @@ describe('PlayerService', async () => {
           vsL: { contact: 36, gapPower: 14, homerunPower: 24, plateDiscipline: 34 }
         })
 
-
         assert.deepStrictEqual(player.pitchRatings, {
-          pitches: [ { rating: 14, type: 'FF' } ],
+          pitches: [ { rating: 7, type: 'FF' } ],
           contactProfile: { groundball: 295, flyBall: 514, lineDrive: 191 },
-          power: 16,
-          vsR: { control: 17, movement: 9 },
-          vsL: { control: 18, movement: 9 }
+          power: 8,
+          vsR: { control: 9, movement: 5 },
+          vsL: { control: 9, movement: 5 }
         })
 
 
@@ -343,14 +342,15 @@ describe('PlayerService', async () => {
         assert.equal(player.throws, "R")
         assert.equal(player.hits, "L")
 
+
         assert.deepStrictEqual(player.hittingRatings, {
           contactProfile: { groundball: 386, flyBall: 287, lineDrive: 327 },
-          speed: 7,
-          steals: 15,
-          defense: 6,
-          arm: 9,
-          vsL: { contact: 14, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-          vsR: { contact: 15, gapPower: 17, homerunPower: 17, plateDiscipline: 17 }
+          speed: 3,
+          steals: 7,
+          defense: 3,
+          arm: 5,
+          vsL: { contact: 6, gapPower: 8, homerunPower: 8, plateDiscipline: 8 },
+          vsR: { contact: 7, gapPower: 9, homerunPower: 9, plateDiscipline: 9 }
         })
 
 

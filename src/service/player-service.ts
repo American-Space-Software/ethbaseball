@@ -414,6 +414,26 @@ class PlayerService {
         return pitchRatings
     }
 
+    getAverageHittingRating(hittingRatings:HittingRatings) {
+        return (hittingRatings.arm + hittingRatings.defense + hittingRatings.speed + 
+        hittingRatings.steals + hittingRatings.vsL.contact + hittingRatings.vsL.gapPower + hittingRatings.vsL.homerunPower + hittingRatings.vsL.plateDiscipline +
+        hittingRatings.vsR.contact + hittingRatings.vsR.gapPower + hittingRatings.vsR.homerunPower + hittingRatings.vsR.plateDiscipline) / 12 
+    }
+
+    getAveragePitchingRating(pitchRatings:PitchRatings) {
+
+        let pitchTotal = 0
+
+        for (let pitch of pitchRatings.pitches) {
+            pitchTotal += pitch.rating        
+        }
+
+        return (pitchRatings.power + pitchRatings.vsL.control + pitchRatings.vsL.movement + pitchRatings.vsR.control + pitchRatings.vsR.movement + pitchTotal) / (5 + pitchRatings.pitches.length)
+    
+    }
+
+
+
     normalizeRatings(numbers: number[], max: number): number[] {
 
         const ratio = Math.max(...numbers) / max
@@ -421,13 +441,7 @@ class PlayerService {
 
     }
 
-    getDisplayRating(player:Player) {
-        return this.getPlayerDisplayRating(player.overallRating, player.age)
-    }
 
-    getPlayerDisplayRating(overallRating:number, age:number) {
-        return overallRating * this.getAgeModifier(age)
-    }
 
     getAgeModifier(yearsOld: number): number {
 
@@ -822,27 +836,16 @@ class PlayerService {
         player.hittingRatings = this.calculateHittingRatings( player)
         player.pitchRatings = this.calculatePitchRatings( player)
 
-    }
 
-    updateAge(currentAge: number, gameCount: number): number {
-
-        if (gameCount < 26) {
-            return 17
-        } else if (gameCount >= 26 && gameCount < 51) {
-            return 18
-        } else if (gameCount >= 51 && gameCount < 76) {
-            return 19
-        } else if (gameCount >= 76 && gameCount < 101) {
-            return 20
-        } else if (gameCount >= 101 && gameCount < 126) {
-            return 21
-        } else if (gameCount >= 126) {
-            const extraYears = Math.floor((gameCount - 126) / 162); // Number of 162-game cycles
-            return 22 + extraYears
+        if (player.primaryPosition == Position.PITCHER) {
+            player.displayRating = this.getAveragePitchingRating(player.pitchRatings)
+        } else {
+            player.displayRating = this.getAverageHittingRating(player.hittingRatings)
         }
-    
-        return currentAge
+
     }
+
+
 
     updateOverallRating(currentRating:number, hadGoodGame: boolean, age:number, isPitcher:boolean) : number {
 
@@ -1541,7 +1544,7 @@ class PlayerService {
 
             let vm:any = {
                 _id: p.player._id,
-                overallRating: p.player.overallRating,
+                displayRating: p.player.displayRating,
                 coverImageCid: p.player.coverImageCid,
                 fullName: `${p.player.firstName} ${p.player.lastName}`,
                 firstName: p.player.firstName,

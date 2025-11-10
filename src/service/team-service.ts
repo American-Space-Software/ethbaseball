@@ -33,7 +33,6 @@ import { GameService } from "./game-service.js";
 import { User } from "../dto/user.js";
 
 const MAX_ROSTER_SIZE = 13
-const HIGHEST_CITY_POPULATION = 8804190
 
 @injectable()
 class TeamService {
@@ -142,7 +141,7 @@ class TeamService {
 
     async getTeamViewModel(team: Team, season: Season, currentDate:Date, userOwner:User, options?: any): Promise<TeamViewModel> {
 
-        let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)
+        // let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)
 
         let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
         let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
@@ -188,26 +187,25 @@ class TeamService {
                 longTermRating: t.longTermRating,
                 fanInterestShortTerm: t.fanInterestShortTerm,
                 fanInterestLongTerm: t.fanInterestLongTerm,
-                marketSizePercent: t.city.population / HIGHEST_CITY_POPULATION,
                 hasValidLineup: t.hasValidLineup,
                 leagueRank: t.league.rank,
                 overallRank: t.overallRecord.rank + ((t.league.rank - 1) * TEAMS_PER_TIER),
                 overallRecord: t.overallRecord,
                 financeSeason: t.financeSeason,
                 diamondMintPasses: diamondMintPasses,
-                seasonHistory: tlss.map(tls => {
+                // seasonHistory: tlss.map(tls => {
 
-                    let t: TeamLeagueSeason = tls.get({ plain: true })
+                //     let t: TeamLeagueSeason = tls.get({ plain: true })
 
-                    return {
-                        overallRecord: t.overallRecord,
-                        startDate: t.season?.startDate,
-                        endDate: t.season?.endDate,
-                        leagueRank: t.league.rank,
-                        rating: t.seasonRating,
-                        financeSeason: t.financeSeason
-                    }
-                }),
+                //     return {
+                //         overallRecord: t.overallRecord,
+                //         startDate: t.season?.startDate,
+                //         endDate: t.season?.endDate,
+                //         leagueRank: t.league.rank,
+                //         rating: t.seasonRating,
+                //         financeSeason: t.financeSeason
+                //     }
+                // }),
                 owner: {
                     _id: team.ownerId,
                     discordId: userOwner?.discordId,
@@ -224,7 +222,7 @@ class TeamService {
                 return {
                     _id: p.playerId,
                     coverImageCid: p.player.coverImageCid,
-                    overallRating: p.player.overallRating,
+                    displayRating: p.player.displayRating,
                     fullName: `${p.player.firstName} ${p.player.lastName}`,
                     firstName: p.player.firstName,
                     lastName: p.player.lastName,
@@ -407,7 +405,6 @@ class TeamService {
             rank: rank,
             fanInterestShortTerm: tls.fanInterestShortTerm,
             fanInterestLongTerm: tls.fanInterestLongTerm,
-            marketSizePercent: tls.city.population / HIGHEST_CITY_POPULATION,
             hasValidLineup: tls.hasValidLineup,
             overallRecord: tls.overallRecord,
             financeSeason: tls.financeSeason,
@@ -1476,12 +1473,11 @@ interface TeamViewModel {
         }
         fanInterestLongTerm: number
         fanInterestShortTerm: number
-        marketSizePercent: number
         winPercent?: number
         hasValidLineup?: boolean
 
         financeSeason: FinanceSeason
-        seasonHistory: SeasonHistory[]
+        // seasonHistory: SeasonHistory[]
         // teamCost
 
         diamondMintPasses: DiamondMintPass[]

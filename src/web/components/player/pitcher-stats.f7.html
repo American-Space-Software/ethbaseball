@@ -15,7 +15,7 @@
                     ${actions ? $h`<th class="action"></th>` : $h` `} 
                     <th class="image"></th>
                     <th @click=${sortRows}  class="name">Name</th>
-                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'overallRating_pct' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="overallRating_pct">OVR</th>                    
+                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'displayRating' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="displayRating">OVR</th>                    
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'age' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="age">Age</th>
                     <th @click=${sortRows} data-sort="throws" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'throws' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Throws</th>
                     <th @click=${sortRows} data-sort="hits" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'bats' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" >Bats</th>
@@ -66,7 +66,7 @@
                                 ` : $h` `}
                             </td>
                             
-                            <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
+                            <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
 
                             <td class="numeric-cell">${p?.age}</td>
                             <td>${p?.throws}</td>

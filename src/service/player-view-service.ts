@@ -62,7 +62,7 @@ class PlayerViewService {
 
         let result:PlayerViewModel = {
             _id: player._id,
-            overallRating: player.overallRating,
+            displayRating: player.displayRating,
             isRetired: player.isRetired,
             askingPrice: currentPls?.askingPrice ? ethers.parseUnits(currentPls?.askingPrice.toString(), 'ether').toString() : undefined,
             team: currentPls?.team,
@@ -88,7 +88,6 @@ class PlayerViewService {
                     team: { _id: plain.team._id, tokenId: plain.team.tokenId, abbrev: plain.team.abbrev }, 
                     season: { _id: plain.season._id, startDate: plain.season.startDate},
                     age: plain.age,
-                    displayRating: this.playerService.getPlayerDisplayRating(plain.overallRating, plain.age)
                 }, p.stats.hitting)
 
             }),
@@ -100,7 +99,6 @@ class PlayerViewService {
                     team: { _id: plain.team._id, tokenId: plain.team.tokenId, abbrev: plain.team.abbrev }, 
                     season: { _id: plain.season._id, startDate: plain.season.startDate},
                     age: plain.age,
-                    displayRating: this.playerService.getPlayerDisplayRating(plain.overallRating, plain.age)
                 }, p.stats.pitching)
 
             }),
@@ -160,7 +158,7 @@ interface PlayerViewModel {
     pitchRatings:PitchRatings
     percentileRatings:PlayerPercentileRatings
     askingPrice:string
-    overallRating:number
+    displayRating:number
 
     careerHitterStats: HitterStatLine
     careerPitcherStats: PitcherStatLine

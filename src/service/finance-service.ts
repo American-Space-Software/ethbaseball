@@ -77,10 +77,8 @@ class FinanceService {
         // financeSeason.revenue.seasonToDate.localMedia = (BigInt(financeSeason.revenue.seasonToDate.localMedia) + BigInt(gameTeamFinance.localTvRevenue)).toString()
         // financeSeason.revenue.seasonToDate.nationalMedia = (BigInt(financeSeason.revenue.seasonToDate.nationalMedia) + BigInt(gameTeamFinance.nationalTvRevenue)).toString()
         // financeSeason.revenue.seasonToDate.seasonTickets = (BigInt(financeSeason.revenue.seasonToDate.seasonTickets) + BigInt(gameTeamFinance.seasonTicketRevenue)).toString()
-        financeSeason.revenue.seasonToDate.total = (BigInt(financeSeason.revenue.seasonToDate.gate) + 
-                                                   BigInt(financeSeason.revenue.seasonToDate.localMedia) + 
-                                                   BigInt(financeSeason.revenue.seasonToDate.nationalMedia) + 
-                                                   BigInt(financeSeason.revenue.seasonToDate.seasonTickets)).toString()
+        financeSeason.revenue.seasonToDate.total = (BigInt(financeSeason.revenue.seasonToDate.total) + 
+                                                   BigInt(gameTeamFinance.totalRevenue)).toString()
         financeSeason.revenue.seasonToDate.perGame = BigInt(financeSeason.totalGamesPlayed) > 0 ? (BigInt(financeSeason.revenue.seasonToDate.total) / BigInt(financeSeason.totalGamesPlayed)).toString() : BigInt(0).toString()
 
 
@@ -250,7 +248,7 @@ class FinanceService {
     }
 
     calculateTotalRevenue(revenue:Revenue) {
-        return BigInt(revenue.gate) + BigInt(revenue.localMedia) + BigInt(revenue.nationalMedia) + BigInt(revenue.seasonTickets)
+        return BigInt(revenue.total)//BigInt(revenue.gate) + BigInt(revenue.localMedia) + BigInt(revenue.nationalMedia) + BigInt(revenue.seasonTickets)
     }
 
     // calculateTotalExpenses(expenses:Expenses) {

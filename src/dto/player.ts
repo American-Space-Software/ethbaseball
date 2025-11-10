@@ -101,6 +101,10 @@ class Player extends Model {
     declare overallRating:number
 
     @AllowNull(false)
+    @Column(DataType.DECIMAL(10,2))
+    declare displayRating:number
+
+    @AllowNull(false)
     @Is('CompletePitchRatings', validatePitchRatings)
     @Column(DataType.JSON)
     declare pitchRatings:PitchRatings

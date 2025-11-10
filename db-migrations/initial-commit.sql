@@ -438,6 +438,7 @@ CREATE TABLE `player` (
   `coverImageCid` varchar(255) DEFAULT NULL,
   `age` int NOT NULL,
   `overallRating` decimal(10,2) NOT NULL,
+  `displayRating` decimal(10,2) NOT NULL,
 
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
@@ -482,6 +483,8 @@ CREATE TABLE `player_league_season` (
   `startDate` date DEFAULT NULL,
   `endDate` date DEFAULT NULL,
   `overallRating` decimal(10,2) NOT NULL,
+  `displayRating` decimal(10,2) NOT NULL,
+
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
 

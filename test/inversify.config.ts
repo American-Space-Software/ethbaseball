@@ -217,7 +217,6 @@ import { TeamLeagueSeasonService } from "../src/service/team-league-season-servi
 import { PlayerLeagueSeasonService } from "../src/service/player-league-season-service.js"
 import { LadderService } from "../src/service/ladder-service.js"
 import { PlayerLeagueSeason } from "../src/dto/player-league-season.js"
-import { GameTransaction } from "../src/dto/game-transaction.js"
 import { ChatGPTAPI } from 'chatgpt'
 import { OpenAI } from 'openai'
 import { Post } from "../src/dto/post.js"
@@ -292,7 +291,7 @@ function getContainer(command?: GetContainerCommand) {
           connectTimeout: process.env.MYSQL_TIMEOUT,
           multipleStatements: true        
          },
-         models: [ TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, GameTransaction, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
+         models: [ TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
           DiamondMintPass, Universe, Animation, Image, ConnectLink,
           Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
           ]

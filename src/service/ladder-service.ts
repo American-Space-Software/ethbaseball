@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify"
 import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./player-service.js"
 
 import { GameService } from "./game-service.js"
-import { RotationPitcher, Team } from "../dto/team.js"
+import { FinanceSeason, RotationPitcher, Team } from "../dto/team.js"
 import {  GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./team-service.js"
@@ -917,7 +917,7 @@ class LadderService {
                 let team:Team = await this.teamService.get(teamId, options)
                 let lastSeason:TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
 
-                let financeSeason = this.getDefaultFinanceSeason(this.getScheduleLength(teamIds.length, SERIES_LENGTH))
+                let financeSeason:FinanceSeason = this.getDefaultFinanceSeason()
                 financeSeason.diamondBalance = lastSeason.financeSeason.diamondBalance
 
                 let tls:TeamLeagueSeason =  this.teamLeagueSeasonService.init(lastSeason, team, financeSeason)
@@ -1318,100 +1318,34 @@ class LadderService {
 
     }
 
-    getDefaultFinanceSeason(games:number) {
+    getDefaultFinanceSeason() {
 
         return {
 
             diamondBalance: "0",
 
-            diamondsForFreeAgents: "0",
-            currentTicketPrice: "0",
-
             homeGamesPlayed: 0,
-            homeGamesRemaining: games / 2,
 
             awayGamesPlayed: 0,
-            awayGamesRemaining: games / 2,
 
             totalGamesPlayed: 0,
-            totalGamesRemaining: games,
-
-            profit: {
-                projectedRemaining: { total : "0"},
-                projectedTotal: { total : "0"},
-                seasonToDate: { total : "0"},
-            },
-
-            expenses: {
-                seasonToDate: {
-                    payroll: "0",
-                    stadiumLease: "0",
-                    total: "0"
-                },
-
-                projectedRemaining: {
-                    payroll: "0",
-                    stadiumLease: "0",
-                    total: "0"
-                },
-
-                projectedTotal: {
-                    payroll: "0",
-                    stadiumLease: "0",
-                    total: "0"
-                }
-            },
 
             revenue: {
                 seasonToDate: {
-                    seasonTickets: "0",
-                    gate: "0",
-                    localMedia: "0",
-                    nationalMedia: "0",
                     total: "0",
                     perGame: "0"
                 },
 
                 projectedRemaining: {
-                    seasonTickets: "0",
-                    gate: "0",
                     perGame: "0",
-                    localMedia: "0",
-                    nationalMedia: "0",
                     total: "0"
                 },
 
                 projectedTotal: {
-                    seasonTickets: "0",
-                    gate: "0",
                     perGame: "0",
-                    localMedia: "0",
-                    nationalMedia: "0",
                     total: "0"
                 }
-            },
-
-            attendance: {
-                seasonTicketsSold: 0,
-
-                projectedRemaining: {
-                    gateTickets: 0,
-                    seasonTickets: 0,
-                    totalAttendance: 0
-                },
-
-                projectedTotal: {
-                    gateTickets: 0,
-                    seasonTickets: 0,
-                    totalAttendance: 0
-                },
-
-                seasonToDate: {
-                    gateTickets: 0,
-                    seasonTickets: 0,
-                    totalAttendance: 0
-                }
-            },
+            }
 
         }
     }

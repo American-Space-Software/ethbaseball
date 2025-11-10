@@ -67,10 +67,6 @@ interface TeamLogo {
 }
 
 interface Revenue {
-    seasonTickets:string
-    gate:string
-    localMedia:string
-    nationalMedia:string
     perGame:string
     total:string
 }

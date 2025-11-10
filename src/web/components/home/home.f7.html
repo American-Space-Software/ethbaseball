@@ -69,14 +69,11 @@
                       <p>
                         
                         Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                        where teams and Diamonds are bought, sold, and earned.
+                        where players and Diamonds are bought, sold, and earned.
 
                         <ul>
-                          <li>Own a franchise as an NFT (ERC-721) on Ethereum.</li>
-                          <li>10 leagues · 280 teams · 162-day seasons with a 30-day offseason.</li>
-                          <li>Daily simulated games with live box scores and play-by-play.</li>
-                          <li>Diamonds (ERC-20) fund contracts, payroll, and operations.</li>
-                          <li>Promotion & relegation — climb to the Apex League or fall behind.</li>
+                          <li>Own players as an NFTs (ERC-721) on Ethereum.</li>
+                          <li>Live simulated games with box scores and play-by-play.</li>
                           <li>100% open source (MIT) — fork and run your own custom universe.</li>
                         </ul>
 
@@ -191,9 +188,6 @@
                                   <th>Win%</th>
                                   <th>GB</th>
                                   <th class="numeric-cell">Cash</th>
-                                  <th class="numeric-cell">Projected Revenue</th>
-                                  <th class="numeric-cell">Projected Expenses</th>
-                                  <th class="numeric-cell">Projected Profit</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -209,10 +203,6 @@
                                       <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
                                       <td>${t.overallRecord.gamesBack}</td>
                                       <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
-                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.revenue.projectedTotal.total)}</td>
-                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.expenses.projectedTotal.total)}</td>
-                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.profit.projectedTotal.total)}</td>
-
                                   </tr>
                               `)}
                             </tbody>
