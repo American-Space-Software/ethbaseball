@@ -53,7 +53,7 @@ class OffchainEventService {
         await this.put(offChainEvent, options)
     }
 
-    async createTeamMintEvent(toTokenId:number, amount:string, gameId:string, options?:any) {
+    async createTeamMintEvent(toTeamId:string, amount:string, gameId:string, options?:any) {
 
         if (BigInt(amount) <= 0) throw new Error("Mint amount can not be negative.")
 
@@ -62,7 +62,7 @@ class OffchainEventService {
         offChainEvent.contractType = ContractType.DIAMONDS
         offChainEvent.event = "Transfer"
         offChainEvent.fromAddress = "0x0000000000000000000000000000000000000000"
-        offChainEvent.toTokenId = toTokenId
+        offChainEvent.toTeamId = toTeamId
         offChainEvent.amount = amount
         offChainEvent.gameId = gameId
 
@@ -72,7 +72,7 @@ class OffchainEventService {
     }
 
 
-    async createTeamBurnEvent(fromTokenId:number, amount:string, gameId:string, options?:any) {
+    async createTeamBurnEvent(fromTeamId:string, amount:string, gameId:string, options?:any) {
 
         if (BigInt(amount) >= 0) throw new Error("Burn amount can not be positive.")
 
@@ -81,7 +81,7 @@ class OffchainEventService {
         offChainEvent.contractType = ContractType.DIAMONDS
         offChainEvent.event = "Transfer"
         offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
-        offChainEvent.fromTokenId = fromTokenId
+        offChainEvent.fromTeamId = fromTeamId
         offChainEvent.amount = (BigInt(0) - BigInt(amount)).toString()
         offChainEvent.gameId = gameId
 
@@ -103,8 +103,8 @@ class OffchainEventService {
         return this.offchainEventRepository.getByOwner(contractType, owner, options)
     }
 
-    async getByTokenId(contractType:string, tokenId:number, options?:any) : Promise<OffchainEvent[]> {
-        return this.offchainEventRepository.getByTokenId(contractType, tokenId, options)
+    async getByTeamId(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]> {
+        return this.offchainEventRepository.getByTeamId(contractType, teamId, options)
     }
 
     async getBalanceForOwner(contractType:string, owner:Owner, options?:any) {
@@ -138,9 +138,9 @@ class OffchainEventService {
 
 
 
-    async getBalanceForTokenId(contractAddress:string, tokenId:number, options?:any) {
+    async getBalanceForTeamId(contractAddress:string, teamId:string, options?:any) {
 
-        let events:OffchainEvent[] = await this.offchainEventRepository.getByTokenId(contractAddress, tokenId, options)
+        let events:OffchainEvent[] = await this.offchainEventRepository.getByTeamId(contractAddress, teamId, options)
 
         let diamondBalance = "0"
 
@@ -148,9 +148,9 @@ class OffchainEventService {
         for (let event of events) {
 
             if (event.amount) {
-                if (event.toTokenId == tokenId) {
+                if (event.toTeamId == teamId) {
                     diamondBalance = (  BigInt(diamondBalance || 0) + BigInt(event.amount) ).toString() 
-                } else if (event.fromTokenId == tokenId) {
+                } else if (event.fromTeamId == teamId) {
                     diamondBalance = (  BigInt(diamondBalance || 0) - BigInt(event.amount) ).toString() 
                 }
 
@@ -170,14 +170,14 @@ class OffchainEventService {
 
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {
 
-        let teamIds = oce.flatMap( e => [e.fromTokenId, e.toTokenId])
+        let teamIds = oce.flatMap( e => [e.fromTeamId, e.toTeamId])
         let uniqueTokenIds = Array.from(new Set(teamIds.filter( i => i != null)))
 
         let tlssPlain:TeamLeagueSeason[] = []
 
         if (uniqueTokenIds?.length > 0) {
 
-            let teams:Team[] = await this.teamRepository.getByTokenIds(uniqueTokenIds, options)
+            let teams:Team[] = await this.teamRepository.getByIds(uniqueTokenIds, options)
 
             let teamSeasonIds:TeamSeasonId[] = teams.map( t => { return { teamId: t._id, seasonId: season._id } })
 
@@ -189,7 +189,7 @@ class OffchainEventService {
 
         return {
             events:oce,
-            teams: tlssPlain.map( tls => { return { tokenId: tls.team.tokenId, name: tls.team.name, cityName: tls.city.name } })
+            teams: tlssPlain.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city.name } })
         }
     }
 

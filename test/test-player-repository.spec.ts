@@ -50,6 +50,7 @@ describe('PlayerRepository', async () => {
         let player:Player = new Player()
 
         player._id = "1"
+        player.displayRating = 40
         player.firstName = "Bob"
         player.lastName = "Smith"
         player.zodiacSign = "ZOD"

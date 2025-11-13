@@ -407,7 +407,7 @@ class LadderService {
                     added.plss.forEach(p => allPLS.find(x => x._id === p._id) ? null : allPLS.push(p))
 
                     //Optimize computer lineups
-                    if (!team.ownerId) {
+                    if (!team.userId) {
                         this.teamService.optimizeLineup(team, tls, teamPlss.map( pls => pls.get({ plain: true })), date)
                     }
 
@@ -485,7 +485,7 @@ class LadderService {
                 tls.financeSeason.homeGamesPlayed = counts.homeGamesPlayed
                 tls.financeSeason.totalGamesPlayed = counts.totalGamesPlayed
 
-                tls.financeSeason.diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
+                tls.financeSeason.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
 
                 this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium)   
 

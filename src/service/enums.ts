@@ -600,7 +600,6 @@ interface HalfInning {
 interface TeamInfo {
 
     _id?:string
-    tokenId:number
     logoId:string
 
     cityName?:string

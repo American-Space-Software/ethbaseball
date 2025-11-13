@@ -8,7 +8,82 @@
 
         <div class="hidden-on-load">
 
-          
+          ${authInfo?._id ? $h`
+            <div class="card card-outline card-header-divider">
+              <div class="card-header">Create Team</div>
+              <div class="card-content card-content-padding">
+
+                <form @submit="${saveClick}" @change="${createChange}" id="create-team-form">
+                  <div class="list">
+                    <ul>
+                      <li>
+                        <a class="item-link smart-select" data-open-in="popup" data-searchbar="true" data-virtual-list="true" data-searchbar-placeholder="Search cities..." data-close-on-select="true" id="city-select">
+                          
+                          <select name="cityId">
+                            <option value="">Choose a city</option>
+
+                            ${cities?.map( c => $h`
+                              <option value="${c._id}">${c.name}, ${c.state}</option>
+                            `)}
+                          </select>
+                          <div class="item-content">
+                            <div class="item-inner">
+                              <div class="item-title">City</div>
+                              <div class="item-after">Choose a city</div>
+                            </div>
+                          </div>
+                        </a>
+                      </li> 
+    
+                      <li class="item-content item-input" style="margin-top: 25px;">
+                        <div class="item-inner">
+                          <div class="item-title item-label">Enter a team nickname</div>
+                          <div class="item-input-wrap">
+                            <input type="text" placeholder="Nickname" name="name"/>
+                            <span class="input-clear-button"></span>
+                            <div class="item-input-info">Do NOT use a nickname associated with a real world sports team (any sport). Nicknames must be work safe.</div>
+                          </div>
+                        </div>
+                      </li>
+
+                      <li class="item-content item-input" style="margin-top: 25px;">
+                        <div class="item-inner">
+                          <div class="item-title item-label">Abbreviation (3 characters)</div>
+                          <div class="item-input-wrap">
+                            <input type="text" placeholder="Abbreviation" name="abbrev" required validate minlength="3" maxlength="3" />
+                            <span class="input-clear-button"></span>
+                          </div>
+                        </div>
+                      </li>
+
+    
+                    </ul>
+                  </div>
+
+                  
+                  <div class="list">
+                    <ul>
+    
+                      <li class="item-content" style="display: block;">
+                        <button type="submit" class="button button-fill small-button save-button disabled">Create</button>
+                      </li>
+    
+                    </ul>
+                  </div>
+                </form>
+
+              </div>
+            </div>
+          ` : $h`
+            <div class="card card-outline card-header-divider">
+              <div class="card-content card-content-padding">
+                You must be logged in to create a team. <br /><br />
+                
+                <a class="button button-fill small-button popup-open" data-popup=".login-popup"  href="#">Login</a>
+
+              </div>
+            </div>
+          `}
 
         </div>
 
@@ -57,12 +132,72 @@
     let eventTarget = ContainerService.getInstance("eventTarget")
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let cityWebService = ContainerService.getInstance(CityWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
 
     let team
     let authInfo
 
     let cities
 
+
+    let formData = {}
+    let formValid = false
+    let selectedCity = null
+
+    const createChange = (e) => {
+
+      formData = $f7.form.convertToData('#create-team-form')
+
+      updateForm(formData)
+
+    }
+
+    const updateForm = (formData) => {
+
+      formValid = /*formData?.cityId &&*/ formData?.name?.length > 3 && formData.abbrev?.length == 3
+
+      if (formValid) {
+        $('.save-button').removeClass('disabled')
+      } else {
+        $('.save-button').addClass('disabled')
+      }
+      
+      $update()
+
+    }
+
+
+    $f7.on('smartSelectClose', async (e) => {
+
+      formData = $f7.form.convertToData('#create-team-form')
+
+      selectedCity = cities.find( c => c._id == formData.cityId)
+
+      updateForm(formData)
+
+    })
+
+    const saveClick = async (e) => {
+
+      e.preventDefault()
+
+      let team = $f7.form.convertToData(e.srcElement)
+
+      console.log(team)
+
+      // if (team.cityId?.length == 0) {
+      //   $f7.dialog.alert("Choose city where the team is located.", "")
+      //   return
+      // }
+
+      // $f7.preloader.show()
+
+      // let result = await teamWebService.create(team)
+      
+      // $f7.views.main.router.navigate(`/t/?id=${result._id}`)
+
+    }
 
 
 
@@ -78,15 +213,14 @@
 
         $f7.preloader.show()
 
-        // await load()
+        authInfo = await loginWebService.getAuthInfo()
+        cities = await cityWebService.list()
+
 
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {
             tabLink: "/l/standings", breadcrumbs: [
-              {
-                text: "Standings",
-                path: universeWebService.startDateLink(`/l/standings/1/1`)
-              },
+              { text: "Home", path: "/" },
               { text: "Create Team"}]
           }
         }))

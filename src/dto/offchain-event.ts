@@ -29,11 +29,11 @@ class OffchainEvent extends Model {
     declare toAddress?:string
 
 
-    @Column(DataType.INTEGER)
-    declare fromTokenId?:number
+    @Column(DataType.STRING)
+    declare fromTeamId?:string
 
-    @Column(DataType.INTEGER)
-    declare toTokenId?:number
+    @Column(DataType.STRING)
+    declare toTeamId?:string
     
     @Column(DataType.STRING)
     declare event?:string 

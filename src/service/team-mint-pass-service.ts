@@ -20,8 +20,8 @@ class TeamMintPassService {
         return this.teamMintPassRepository.delete(dmp, options)
     }
 
-    async getByAddressAndToken(address:string, tokenId:number, options?:any): Promise<TeamMintPass[]> {
-        return this.teamMintPassRepository.getByAddressAndToken(address, tokenId, options)
+    async getByAddressAndTeamId(address:string, teamId:string, options?:any): Promise<TeamMintPass[]> {
+        return this.teamMintPassRepository.getByAddressAndTeamId(address, teamId, options)
     }
 
     async generateTeamMintPass(to:string, tokenId:number, ethCost:string, totalDiamonds:string, options?:any): Promise<TeamMintPass> {
@@ -53,8 +53,8 @@ class TeamMintPassService {
         return this.teamMintPassRepository.put(dmp, options)
     }
 
-    async getByTokenId(tokenId:number, options?:any): Promise<TeamMintPass[]> {
-        return this.teamMintPassRepository.getByTokenId(tokenId, options)
+    async getByTeamId(teamId:string, options?:any): Promise<TeamMintPass[]> {
+        return this.teamMintPassRepository.getByTeamId(teamId, options)
     }
 
     async getByAddress(address:string, options?:any): Promise<TeamMintPass[]> {

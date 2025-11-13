@@ -19,11 +19,11 @@ class DiamondMintPassService {
         return this.diamondMintPassRepository.getUnmintedByAddress(address, options)
     }
 
-    async getUnmintedByTokenId(tokenId:number, options?:any): Promise<DiamondMintPass[]> {
-        return this.diamondMintPassRepository.getUnmintedByTokenId(tokenId, options)
+    async getUnmintedByTeamId(teamId:string, options?:any): Promise<DiamondMintPass[]> {
+        return this.diamondMintPassRepository.getUnmintedByTeamId(teamId, options)
     }
 
-    async generateWithdrawPass(to:string, tokenId:number, amount:string, options?:any): Promise<DiamondMintPass> {
+    async generateWithdrawPass(toUserId:string, teamId:string, amount:string, options?:any): Promise<DiamondMintPass> {
 
         let expires = dayjs(new Date(new Date().toUTCString())).add(1, 'year').toDate().getTime() / 1000
 
@@ -31,8 +31,8 @@ class DiamondMintPassService {
 
         Object.assign(mintPass, {
             _id: random(256).toString(),
-            to:to,
-            tokenId: tokenId,
+            to:toUserId,
+            teamId: teamId,
             amount: amount,
             expires: expires
         })
@@ -42,7 +42,7 @@ class DiamondMintPassService {
         return mintPass
     }
 
-    async generateMintPass(to:string, amount:string, options?:any): Promise<DiamondMintPass> {
+    async generateMintPass(toUserId:string, amount:string, options?:any): Promise<DiamondMintPass> {
 
         let expires = dayjs(new Date(new Date().toUTCString())).add(1, 'year').toDate().getTime() / 1000
 
@@ -50,7 +50,7 @@ class DiamondMintPassService {
 
         Object.assign(mintPass, {
             _id: random(256).toString(),
-            to:to,
+            toUserId:toUserId,
             amount: amount,
             expires: expires
         })

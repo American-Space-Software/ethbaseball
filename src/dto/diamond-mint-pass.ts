@@ -14,10 +14,10 @@ class DiamondMintPass extends Model {
     declare _id?:string
     
     @Column(DataType.STRING)
-    declare to:string
+    declare toUserId:string
     
-    @Column(DataType.BIGINT)
-    declare tokenId:number 
+    @Column(DataType.STRING)
+    declare teamId:string 
     
     @Column(DataType.STRING)
     declare amount:string 

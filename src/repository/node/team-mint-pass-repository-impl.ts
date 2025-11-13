@@ -13,13 +13,13 @@ class TeamMintPassRepositoryNodeImpl implements TeamMintPassRepository {
     }
 
    
-    async getByAddressAndToken(address:string, tokenId:number, options?:any): Promise<TeamMintPass[]> {
+    async getByAddressAndTeamId(address:string, teamId:string, options?:any): Promise<TeamMintPass[]> {
 
         let queryOptions = {
             where: {
                 [Op.and]: {
                     to: address,
-                    tokenId: tokenId
+                    teamId: teamId
                 }
                 
             },
@@ -45,11 +45,11 @@ class TeamMintPassRepositoryNodeImpl implements TeamMintPassRepository {
     }
 
 
-    async getByTokenId(tokenId:number, options?:any): Promise<TeamMintPass[]> {
+    async getByTeamId(teamId:string, options?:any): Promise<TeamMintPass[]> {
 
         let queryOptions = {
             where: {
-                tokenId: tokenId
+                teamId: teamId
             },
             order: [['_id', 'DESC']]
         }

@@ -113,7 +113,7 @@ class PlayerViewService {
             let season:Season = await this.seasonService.get(currentPls.seasonId)
             let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season )
 
-            let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId)
+            let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
             
             tls = tls.get({ plain: true })
 
@@ -121,8 +121,7 @@ class PlayerViewService {
                 name: tls.team?.name,
                 cityName: tls.city?.name,
                 _id: tls.team?._id,
-                tokenId: tls.team?.tokenId,
-                ownerId: tls.team.ownerId,
+                userId: tls.team.userId,
                 diamondBalance: diamondBalance
             }
 
@@ -168,10 +167,9 @@ interface PlayerViewModel {
 
     team?: {
         _id?:string
-        tokenId:number
         name?:string
         cityName?:string
-        ownerId?:string
+        userId?:string
 
         diamondBalance:string
     }

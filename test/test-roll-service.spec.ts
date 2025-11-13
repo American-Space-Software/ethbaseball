@@ -830,7 +830,6 @@ describe('RollService', async () => {
 
             offense: {
                 name: "Offense",
-                tokenId: 1,
                 players: offensePlayers,
                 lineupIds: offensePlayers.map(p => p._id),
                 currentHitterIndex: 0,
@@ -859,7 +858,6 @@ describe('RollService', async () => {
             },
             defense: {
                 name: "Defense",
-                tokenId: 2,
                 players: defensePlayers,
                 lineupIds: defensePlayers.map(p => p._id),
                 currentHitterIndex: 0,

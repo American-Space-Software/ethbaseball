@@ -47,11 +47,10 @@
                       </div>
                       
                       <div class="description">
-                        A competitive PvP baseball ownership and business simulator powered by Ethereum.
+                        A competitive PvP baseball ownership and business sim powered by Ethereum.
                       </div>
 
-                      <a class="button button-outline main-button color-white"  href="/about">Learn More</a>
-                      <a class="button button-fill main-button color-red" href="/t/create/index">Start Playing</a>
+                      <a data-popup=".login-popup" href="#" class="button button-fill main-button color-green popup-open">Get Started</a>
 
                       <p>
                         Join the community on <a class="link external" href="${discord}" target="_blank">Discord</a>. 
@@ -78,152 +77,117 @@
                         </ul>
 
                       </p>
+
+                      <a class="button button-outline main-button color-white"  href="/about">Learn More</a>
+
+
                   </div>
 
 
-              ` : $h` `}
+              ` : $h`
+
+                      <div class="list list-outline list-dividers">
+                          <ul>
+                            <li>
+                              <a class="item-link item-content" href="/t/create/index">
+                                  <div class="item-inner">
+                                      <div class="item-title-row">
+                                          <div class="item-title">Create a team</div>
+                                      </div>
+                                  </div>
+                              </a>
+                            </li>
+
+                          </ul>
+                      </div>
 
 
-              ${authInfo?.address ? $h`
+                      ${vm.teams?.length > 0 ? $h`
+                          
+                          <div class="block-title block-title-small">Your Teams</div>
+                          <div class="block block-outline block-strong">
 
-                ${vm.teams?.length > 0 ? $h`
+                              <div class="stat-table-wrapper">
+                                  <table class="data-table">
+                                      <thead>
+                                          <tr>
+                                              <th class="image"></th>
+                                              <th class="label-cell name">Name</th>
+                                              <th class="numeric-cell">Wins</th>
+                                              <th class="numeric-cell">Losses</th>
+                                              <th class="numeric-cell">Win%</th>
+                              
+                                              <th class="numeric-cell">Rating</th>
+                                              <th class="numeric-cell">Cash</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
 
-                    <div class="block-title block-title-small">Your Teams</div>
-                    <div class="block block-outline block-strong teams">
+                                          ${vm.teams?.map(t => $h`
+                                              <tr>
 
-                        <div class="stat-table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th class="image"></th>
-                                        <th class="label-cell name">Name</th>
-                                        <th class="numeric-cell">Wins</th>
-                                        <th class="numeric-cell">Losses</th>
-                                        <th class="numeric-cell">Win%</th>
-                                        <th class="numeric-cell">GB</th>
-                        
-                                        <th class="numeric-cell">Rating</th>
-                                        <th class="numeric-cell">Cash</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                                                  <td class="image">
+                                                      <img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" />
+                                                  </td>
+                                                  <td class="name">
+                                                      <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
+                                                  </td>
 
-                                    ${vm.teams?.map(t => $h`
+                                                  <td class="numeric-cell">${t.overallRecord.wins}</td>
+                                                  <td class="numeric-cell">${t.overallRecord.losses}</td>
+                                                  <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
+                                                  <td class="numeric-cell diamonds">${t.seasonRating.rating.toFixed(0)}</td>
+                                                  <td class="numeric-cell diamonds" >${universeWebService.displayDiamonds(t.financeSeason.diamondBalance)}</td>         
+                                              </tr>
+                                          `)}
 
-                                        <tr>
+                                      </tbody>
+                                  </table>
+                              </div>
 
-                                            <td class="image">
-                                                <img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" />
-                                            </td>
-                                            <td class="name">
-                                                <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
-                                            </td>
+                          </div>
 
-                                            <td class="numeric-cell">${t.overallRecord.wins}</td>
-                                            <td class="numeric-cell">${t.overallRecord.losses}</td>
-                                            <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                                            <td class="numeric-cell">${t.overallRecord.gamesBack}</td>
-                                            <td class="numeric-cell diamonds">${t.seasonRating.rating.toFixed(0)}</td>
-                                            <td class="numeric-cell diamonds" >${universeWebService.displayDiamonds(t.financeSeason.diamondBalance)}</td>         
-                                        </tr>
-
-
-                                    `)}
-
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-
-            
-                    ${vm.games?.length > 0 ? $h`
-
-                        <div class="block-title block-title-small">Today's Games</div>
-                        <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
-                            <ul style="padding: 15px;">
-                
-                                ${vm.games.map( game => $h`
-                            
-                                    ${!game.isStarted ? $h`
-                                        <${Scheduled} game=${game} /> 
-                                    ` : $h` `}
-
-                                    ${game.isStarted && !game.isFinished ? $h`
-                                        <${InProgress} game=${game} />
-                                    ` : $h` `}
-
-                                    ${game.isStarted && game.isFinished ? $h`
-                                        <${Result} game=${game} />
-                                    ` : $h` `}
-
-                                
-                                `)}
-                
-                            </ul>
-                
-                        </div>
-
-                    ` : $h` `}
-            
-                ` : $h` `}
-
-              ` : $h` `}
+                      ` : $h` `}
 
 
+        
+                      ${vm.games?.length > 0 ? $h`
 
-              ${vm?.topTeams?.length > 0 ? $h`
-
-                  <div class="block-title block-title-small">Top 10 Teams</div>
-
-                  <div class="block block-outline block-strong">
-                    <div class="stat-table-wrapper">
-                        <table class="data-table home-standings standings">
-                            <thead>
-                              <tr>
-                                  <th class="image"></th>
-                                  <th class="name">Name</th>
-                                  <th>Wins</th>
-                                  <th>Losses</th>
-                                  <th>Win%</th>
-                                  <th>GB</th>
-                                  <th class="numeric-cell">Cash</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              ${vm?.topTeams?.map( (t, index) => $h`
-                                  <tr>
-                                      <td class="image"><img src="/image/thumbnail/${t.logoId}" class="profilePic" alt="${t.city.name} ${t.name} Logo" /></td>
-                                      <td class="name">
-                                          
-                                          <a href="${ universeWebService.startDateLink(`/t/${t.tokenId}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
-                                      </td>
-                                      <td>${t.overallRecord.wins}</td>
-                                      <td>${t.overallRecord.losses}</td>
-                                      <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                                      <td>${t.overallRecord.gamesBack}</td>
-                                      <td class="numeric-cell">${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
-                                  </tr>
-                              `)}
-                            </tbody>
-                        </table>
-                    </div>
-                  </div>
-
-              ` : $h` `}
-
-
-              ${vm?.onChainTransactions.transactions?.length > 0 ? $h`
-
-                  <div class="block-title block-title-small">On-chain Transactions</div>
-                  <div class="block block-outline block-strong">
-                    <${OnChainEvents} events="${vm?.onChainTransactions}" />
-
-                    <a class="button button-outline small-button" href="/activity">View All</a>
-
-                  </div>
+                          <div class="block-title block-title-small">Today's Games</div>
+                          <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
+                              <ul style="padding: 15px;">
                   
-              ` : $h` `}
+                                  ${vm.games.map( game => $h`
+                              
+                                      ${!game.isStarted ? $h`
+                                          <${Scheduled} game=${game} /> 
+                                      ` : $h` `}
+
+                                      ${game.isStarted && !game.isFinished ? $h`
+                                          <${InProgress} game=${game} />
+                                      ` : $h` `}
+
+                                      ${game.isStarted && game.isFinished ? $h`
+                                          <${Result} game=${game} />
+                                      ` : $h` `}
+
+                                  
+                                  `)}
+                  
+                              </ul>
+                  
+                          </div>
+
+                      ` : $h` `}
+              
+              
+              
+              `}
+
+
+
+
+
 
 
         </div>

@@ -52,6 +52,7 @@ import { TeamMintPassService } from '../service/team-mint-pass-service.js'
 import { TeamMintPass } from '../dto/team-mint-pass.js'
 
 import { Eta } from "eta"
+import { CityService } from '../service/city-service.js'
 
 const TWITTER = "@ethbaseball"
 
@@ -109,7 +110,7 @@ let startWebServer = async () => {
   let signatureTokenService: SignatureTokenService = container.get(SignatureTokenService)
   let leagueService: LeagueService = container.get(LeagueService)
   let seasonService: SeasonService = container.get(SeasonService)
-  let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
+  let cityService:CityService = container.get(CityService)
   let teamLeagueSeasonService:TeamLeagueSeasonService = container.get(TeamLeagueSeasonService)
   let diamondMintPassService:DiamondMintPassService = container.get(DiamondMintPassService)
   let teamMintPassService:TeamMintPassService = container.get(TeamMintPassService)
@@ -365,7 +366,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/t/schedule/:tokenId", async function (req, res) {
+  app.get("/t/results/:tokenId", async function (req, res) {
 
       try {
 
@@ -899,7 +900,7 @@ let startWebServer = async () => {
       let season: Season = await seasonService.getByDate(startDate)
       let leagueOne:League = await leagueService.getByRank(1)
 
-      let tlss: TeamLeagueSeason[] = await teamLeagueSeasonService.listByLeagueAndSeason(leagueOne, season, { limit: 10 })
+      // let tlss: TeamLeagueSeason[] = await teamLeagueSeasonService.listByLeagueAndSeason(leagueOne, season, { limit: 10 })
 
       // let featuredPost:Post = await postService.getFeatured()
 
@@ -909,11 +910,12 @@ let startWebServer = async () => {
       let vm = {
         // featuredPost: featuredPost,
         todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
-        onChainTransactions: await processedTransactionService.listWithEvents({ limit: 10, offset: 0 }),
-        topTeams: tlss.map((t, index) => {
-          t = t.get({ plain: true })
-          return teamService.getTeamStandingsViewModel(t, index + 1)
-      }),
+        // onChainTransactions: await processedTransactionService.listWithEvents({ limit: 10, offset: 0 }),
+        // topTeams: tlss.map((t, index) => {
+        //   t = t.get({ plain: true })
+        //   return teamService.getTeamStandingsViewModel(t, index + 1)
+        // }
+    // ),
         topNews:[]
       }
 
@@ -1160,17 +1162,17 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/game-transaction/team/off-chain/:teamTokenId/:page', async function (req, res) {
+  app.get('/api/game-transaction/team/off-chain/:teamId/:page', async function (req, res) {
 
     try {
 
       let perPage = 25
       let page = parseIntWithException(req.params.page)
       let options = { limit: perPage, offset: (page - 1) * perPage }
-      let tokenId = parseIntWithException(req.params.teamTokenId)
+      let teamId = req.params.teamId
 
       let season:Season = await seasonService.getMostRecent()
-      let events = await offchainEventService.getByTokenId(ContractType.DIAMONDS, tokenId, options)
+      let events = await offchainEventService.getByTeamId(ContractType.DIAMONDS, teamId, options)
 
       return res.json(await offchainEventService.getOffChainEventViewModels(events, season))
 
@@ -1235,13 +1237,13 @@ let startWebServer = async () => {
 
 
 
-  app.get('/api/team/date/:tokenId/:startDate', async function (req, res) {
+  app.get('/api/team/date/:teamId/:startDate', async function (req, res) {
 
     try {
 
-      let tokenId = parseIntWithException(req.params.tokenId)
+      let teamId = req.params.teamId
 
-      let team: Team = await teamService.getByTokenId(tokenId)
+      let team: Team = await teamService.get(teamId)
 
       let startDate = dayjs(req.params.startDate).toDate()
 
@@ -1249,8 +1251,8 @@ let startWebServer = async () => {
 
       let user:User 
 
-      if (team.ownerId) {
-          user = await userService.getByAddress(team.ownerId)
+      if (team.userId) {
+          user = await userService.get(team.userId)
       }
 
       return res.json(await teamService.getTeamViewModel(team, season, universe.currentDate, user))
@@ -1262,50 +1264,14 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/team/mint-info/:tokenId', async function (req, res) {
+
+  app.get('/api/team/games/:teamId/:start', async function (req, res) {
 
     try {
 
-      let tokenId = parseIntWithException(req.params.tokenId)
+      let teamId = req.params.teamId
 
-      let team:Team = await teamService.getByTokenId(tokenId)
-      let season:Season = await seasonService.getMostRecent()
-
-      let vm:any = {
-        team: await teamService.getBasicTeamViewModel(team, season)
-      }
-
-      //@ts-ignore
-      let userId = req.session?.passport?.user
-
-      if (!userId) {
-        return res.json(vm)
-      }
-
-      let user: User = await userService.get(userId)
-
-      if (user.address && !team.ownerId) {
-
-        let mintKey:string = req.query.mintKey as string
-        vm.mintInfo = await teamService.getMintInfo(user.address, team, season, mintKey)
-      }
-
-      return res.json(vm)
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(500)
-    }
-
-  })
-
-  app.get('/api/team/games/:tokenId/:start', async function (req, res) {
-
-    try {
-
-      let tokenId = parseIntWithException(req.params.tokenId)
-
-      let team: Team = await teamService.getByTokenId(tokenId)
+      let team: Team = await teamService.get(teamId)
 
       let start = dayjs(req.params.start).startOf('month').toDate()
       let end = dayjs(req.params.start).endOf('month').toDate()
@@ -1321,7 +1287,7 @@ let startWebServer = async () => {
 
   
 
-  app.post('/api/team/roster/:tokenId', async function (req, res) {
+  app.post('/api/team/roster/:teamId', async function (req, res) {
 
     try {
 
@@ -1333,10 +1299,10 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(loggedInUser)
-      let owner: Owner = await ownerService.get(user.address)
-      let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
+      // let owner: Owner = await ownerService.get(user.address)
+      let team: Team = await teamService.get(req.params.teamId)
 
-      if (team == undefined || owner._id != team.ownerId) {
+      if (team == undefined || user._id != team.userId) {
         return res.sendStatus(401)
       }
 
@@ -1360,7 +1326,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/team/withdraw/:tokenId', async function (req, res) {
+  app.get('/api/team/withdraw/:teamId', async function (req, res) {
 
     try {
 
@@ -1372,15 +1338,15 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(loggedInUser)
-      let owner: Owner = await ownerService.get(user.address)
-      let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
+      // let owner: Owner = await ownerService.get(user.address)
+      let team: Team = await teamService.get(req.params.teamId)
       let season:Season = await seasonService.getMostRecent()
 
-      if (team == undefined || owner._id != team.ownerId) {
+      if (team == undefined || user._id != team.userId) {
         return res.sendStatus(401)
       }
 
-      let balance = await offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId)
+      let balance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
 
       if (BigInt(balance) <= BigInt(0)) {
         return res.sendStatus(400)
@@ -1393,9 +1359,9 @@ let startWebServer = async () => {
         
         let options = { transaction: t1 }
 
-        mintPass = await diamondMintPassService.generateWithdrawPass(team.ownerId, team.tokenId, BigInt(balance).toString(), options)
+        mintPass = await diamondMintPassService.generateWithdrawPass(team.userId, team._id, BigInt(balance).toString(), options)
 
-        await offchainEventService.createTeamBurnEvent(team.tokenId, `-${balance}`, undefined, options)
+        await offchainEventService.createTeamBurnEvent(team._id, `-${balance}`, undefined, options)
 
         //Refetch tls so it's part of this transaction
         let tls = await teamLeagueSeasonService.getByTeamSeason(team, season, options)
@@ -1418,7 +1384,8 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/team/mint/:tokenId', async function (req, res) {
+
+  app.get('/api/team/team-mint-pass/:teamId', async function (req, res) {
 
     try {
 
@@ -1429,68 +1396,7 @@ let startWebServer = async () => {
         return res.sendStatus(401)
       }
 
-      let user: User = await userService.get(loggedInUser)
-
-      if (!user.address) {
-        return res.sendStatus(401)
-      }
-
-      let tokenId = parseIntWithException(req.params.tokenId)
-
-      let team:Team = await teamService.getByTokenId(tokenId)
-      let season = await seasonService.getMostRecent()
-
-
-      let mintKey:string = req.query.mintKey as string
-      let mintInfo = await teamService.getMintInfo(user.address, team, season, mintKey)
-
-      if (mintInfo.error) {
-        return res.sendStatus(401)
-      }
-
-
-      //Generate a mint pass
-      await sequelize.transaction(async (t1) => {
-        
-        let options = { transaction: t1 }
-
-        let existing:TeamMintPass[] = await teamMintPassService.getByAddressAndToken(user.address, tokenId, options)
-
-        //Delete any existing
-        for (let e of existing) {
-          await teamMintPassService.delete(e, options)
-        }
-
-        let diamondMintPass:TeamMintPass = await teamMintPassService.generateTeamMintPass(user.address, team.tokenId, undefined, mintInfo.diamonds.totalDiamonds, options)
-        let ethMintPass:TeamMintPass = await teamMintPassService.generateTeamMintPass(user.address, team.tokenId, mintInfo.eth?.ethCost || "0", undefined, options)
-
-        return res.json({
-          eth: ethMintPass,
-          diamond: diamondMintPass
-        })
-
-      })
-
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(404)
-    }
-
-  })
-
-  app.get('/api/team/team-mint-pass/:tokenId', async function (req, res) {
-
-    try {
-
-      //@ts-ignore
-      let loggedInUser = req.session?.passport?.user
-
-      if (!loggedInUser) {
-        return res.sendStatus(401)
-      }
-
-      let tokenId = parseIntWithException(req.params.tokenId)
+      let teamId = req.params.teamId
 
       let user: User = await userService.get(loggedInUser)
 
@@ -1498,7 +1404,7 @@ let startWebServer = async () => {
         return res.sendStatus(401)
       }
 
-      let teamMintPasses = await teamMintPassService.getByAddressAndToken(user.address, tokenId)
+      let teamMintPasses = await teamMintPassService.getByAddressAndTeamId(user.address, teamId)
 
       let diamondPass = teamMintPasses.find( mp => mp.totalDiamonds != undefined)
       let ethPass = teamMintPasses.find( mp => mp.ethCost != undefined)
@@ -1693,41 +1599,17 @@ let startWebServer = async () => {
 
   })
 
+
+  app.get('/api/cities', cacheService.cacheResponse(), async function(req, res) {
+    return res.json(await cityService.list(1000, 0))
+  })
+
+
+
   /**
    * END GAMES
    */
 
-
-
-  // app.get('/l/info', async function (req, res) {
-
-  //   try {
-
-  //     let leagues: League[] = await leagueService.listByRankAsc()
-
-  //     let season = await seasonService.getMostRecent()
-
-  //     return res.json(await teamService.listBasicViewModels(leagues, season))
-
-
-  //   } catch (ex) {
-  //     console.log(ex)
-  //     res.sendStatus(404)
-  //   }
-
-  // })
-
-
-
-  // app.get('/post/:id', async function (req, res) {
-
-  //   try {
-  //     return res.json(await postService.get(req.params.id))
-  //   } catch (ex) {
-  //     res.sendStatus(404)
-  //   }
-
-  // })
 
   
 
@@ -1889,22 +1771,22 @@ let startWebServer = async () => {
 
   })
 
-  app.post('/auth/ethereum', passport.authenticate('ethereum'), async (req, res) => {
+  // app.post('/auth/ethereum', passport.authenticate('ethereum'), async (req, res) => {
 
-    try {
+  //   try {
 
-      //@ts-ignore
-      let userId = req.session?.passport?.user
-      res.json({ _id: userId })
+  //     //@ts-ignore
+  //     let userId = req.session?.passport?.user
+  //     res.json({ _id: userId })
 
-    } catch (ex) {
-      res.status(500)
-      res.send(ex.message);
-    }
+  //   } catch (ex) {
+  //     res.status(500)
+  //     res.send(ex.message);
+  //   }
 
 
 
-  })
+  // })
 
   app.get('/auth/discord', passport.authenticate('discord'))
 

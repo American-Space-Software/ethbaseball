@@ -151,8 +151,8 @@ class TeamService {
         let nextStartDate = this.getNextStartDate(team)
         let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, nextStartDate)
 
-        let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTokenId(team.tokenId, options)
-        let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
+        let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id, options)
+        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
 
         let start = dayjs(currentDate).subtract(3, 'days').toDate()
         let end = dayjs(currentDate).add(3, 'days').toDate()
@@ -174,7 +174,6 @@ class TeamService {
         return {
             team: {
                 _id: team._id,
-                tokenId: team.tokenId,
                 diamondBalance: diamondBalance,
                 logoId: tls.logoId,
                 name: team.name,
@@ -207,7 +206,7 @@ class TeamService {
                 //     }
                 // }),
                 owner: {
-                    _id: team.ownerId,
+                    _id: team.userId,
                     discordId: userOwner?.discordId,
                     discordUsername: userOwner?.discordProfile?.username
                 }
@@ -260,14 +259,13 @@ class TeamService {
         return {
             _id: team._id,
             logoId: tlsPlain.logoId,
-            tokenId: team.tokenId,
             name: team.name,
             colors: team.colors,
             abbrev: team.abbrev,
             city: tlsPlain.city,
             stadium: tlsPlain.stadium,
             leagueRank: tlsPlain.league.rank,
-            ownerId: team.ownerId,
+            userId: team.userId,
             overallRank: tls.overallRecord.rank + ((tlsPlain.league.rank - 1) * TEAMS_PER_TIER),
             overallRecord: tls.overallRecord,
             financeSeason: tls.financeSeason
@@ -342,7 +340,6 @@ class TeamService {
 
             team: {
                 _id: teamInfo._id,
-                tokenId: teamInfo.tokenId,
                 abbrev: teamInfo.abbrev,
                 name: teamInfo.name,
                 ratingBefore: teamInfo.seasonRating.before,
@@ -357,7 +354,6 @@ class TeamService {
             },
             opp: {
                 _id: oppTeamInfo._id,
-                tokenId: oppTeamInfo.tokenId,
                 abbrev: oppTeamInfo.abbrev,
                 name: oppTeamInfo.name,
                 ratingBefore: oppTeamInfo.seasonRating.before,
@@ -376,30 +372,15 @@ class TeamService {
 
     getTeamStandingsViewModel(tls:TeamLeagueSeason, rank:number) {
     
-        let cost
-
-        if (!tls.team.ownerId) {
-
-            cost = this.getTeamCost(tls.financeSeason)
-
-        } else {
-
-            cost = {
-                totalDiamonds: "0",
-                ethCost: "0",
-                ethCostDecimal: 0
-            }
-        }
 
         return {
             _id: tls.team._id,
-            tokenId: tls.team.tokenId,
             logoId: tls.logoId,
             name: tls.team.name,
             abbrev: tls.team.abbrev,
             city: tls.city,
             // stadium: t.stadium,
-            ownerId: tls.team.ownerId,
+            userId: tls.team.userId,
             seasonRating: tls.seasonRating,
             longTermRating: tls.longTermRating,
             rank: rank,
@@ -412,8 +393,7 @@ class TeamService {
                 diamondBalance: parseFloat(ethers.formatUnits(tls.financeSeason.diamondBalance, "ether")),
                 revenue: parseFloat(ethers.formatUnits(tls.financeSeason.revenue.seasonToDate.total, "ether")),
                 projectedTotalRevenue: parseFloat(ethers.formatUnits(tls.financeSeason.revenue.projectedTotal.total, "ether")),
-            },
-            teamCost: cost
+            }
         }
 
 
@@ -447,11 +427,6 @@ class TeamService {
             leagueFinance.cash = (BigInt(leagueFinance.cash) + BigInt(vm.financeSeason.diamondBalance)).toString()
             leagueFinance.revenue = (BigInt(leagueFinance.revenue) + BigInt(vm.financeSeason.revenue.seasonToDate.total)).toString()
             leagueFinance.projectedTotalRevenue = (BigInt(leagueFinance.projectedTotalRevenue) + BigInt(vm.financeSeason.revenue.projectedTotal.total)).toString()
-
-            if (vm.teamCost) {
-                leagueFinance.teamCostETH = (BigInt(leagueFinance.teamCostETH) + BigInt(vm.teamCost.ethCost )).toString()
-                leagueFinance.teamCostDiamonds = (BigInt(leagueFinance.teamCostDiamonds) + BigInt(vm.teamCost.totalDiamonds )).toString()
-            }
             
         }
 
@@ -603,7 +578,7 @@ class TeamService {
                 t = t.get({ plain: true })
 
                 return {
-                    tokenId: t.team.tokenId,
+                    _id: t.team._id,
                     name: t.team.name,
                     city: {
                         name: t.city.name,
@@ -639,7 +614,7 @@ class TeamService {
         return this.teamRepository.countByLeague(league, options)
     }
 
-    validateRoster(team: Team, players: Player[]) {
+    validateRoster(owner:User, players: Player[]) {
 
         //Make sure there's the right number of players
         if (players.length > MAX_ROSTER_SIZE) {
@@ -649,7 +624,7 @@ class TeamService {
         //Make sure they're owned by the right owner and eligible
         for (let player of players) {
 
-            if (player.ownerId != team.ownerId) {
+            if (player.ownerId != owner.address) {
                 throw new Error(`Can not add unowned player to team roster.`)
             }
 
@@ -1044,75 +1019,75 @@ class TeamService {
 
     }
 
-    async getMintInfo(ownerId:string, team:Team, season:Season, mintKey?:string) : Promise<TokenMintInfo> {
+    // async getMintInfo(ownerId:string, team:Team, season:Season, mintKey?:string) : Promise<TokenMintInfo> {
         
-        let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
+    //     let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
 
-        //Buying with Diamonds, reserved.
-        if (team.mintKey) {
+    //     //Buying with Diamonds, reserved.
+    //     if (team.mintKey) {
 
-            if (team.mintKey == mintKey) {
-                return {
-                    diamonds: await this.getBuyWithDiamondsMintInfo(tls, team, ownerId, "0")
-                }
-            } else {
-                return {
-                    error: "Missing mint key."
-                }
-            }
+    //         if (team.mintKey == mintKey) {
+    //             return {
+    //                 diamonds: await this.getBuyWithDiamondsMintInfo(tls, team, ownerId, "0")
+    //             }
+    //         } else {
+    //             return {
+    //                 error: "Missing mint key."
+    //             }
+    //         }
 
-        } else {
+    //     } else {
 
-            return {
-                //MINT: Buying with ETH, not reserved.
-                eth: await this.getBuyWithETHMintInfo(tls, team, ownerId),
-                //MINT_DIAMONDS: Minting with Diamonds, not reserved.
-                diamonds: await this.getBuyWithDiamondsMintInfo(tls, team, ownerId)
-                //FORCLOSURE: Forclosure...maybe later
-            }
+    //         return {
+    //             //MINT: Buying with ETH, not reserved.
+    //             eth: await this.getBuyWithETHMintInfo(tls, team, ownerId),
+    //             //MINT_DIAMONDS: Minting with Diamonds, not reserved.
+    //             diamonds: await this.getBuyWithDiamondsMintInfo(tls, team, ownerId)
+    //             //FORCLOSURE: Forclosure...maybe later
+    //         }
 
-        }
+    //     }
 
-    }
+    // }
 
-    async getBuyWithETHMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string) {
+    // async getBuyWithETHMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string) {
 
-        let cost = this.getTeamCost(tls.financeSeason)
+    //     let cost = this.getTeamCost(tls.financeSeason)
 
-        return {
-            revenueWithMultiplier: cost.revenueWithMultiplier,
-            to:ownerId,
-            tokenId: team.tokenId,
-            ethCost: cost.ethCost,
-        }
-    }
+    //     return {
+    //         revenueWithMultiplier: cost.revenueWithMultiplier,
+    //         to:ownerId,
+    //         tokenId: team.tokenId,
+    //         ethCost: cost.ethCost,
+    //     }
+    // }
 
-    async getForeclosureETHMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string) {
+    // async getForeclosureETHMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string) {
 
-        let cost = this.getTeamCost(tls.financeSeason)
+    //     let cost = this.getTeamCost(tls.financeSeason)
 
-        return {
-            revenueWithMultiplier: cost.revenueWithMultiplier,
-            totalDiamonds: cost.totalDiamonds,
-            to:ownerId,
-            tokenId: team.tokenId,
-            ethCost: cost.ethCost
-        }
-    }
+    //     return {
+    //         revenueWithMultiplier: cost.revenueWithMultiplier,
+    //         totalDiamonds: cost.totalDiamonds,
+    //         to:ownerId,
+    //         tokenId: team.tokenId,
+    //         ethCost: cost.ethCost
+    //     }
+    // }
 
-    async getBuyWithDiamondsMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string, totalOverride?:string) {
+    // async getBuyWithDiamondsMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string, totalOverride?:string) {
 
-        let cost = this.getTeamCost(tls.financeSeason)
+    //     let cost = this.getTeamCost(tls.financeSeason)
 
-        let totalDiamonds = totalOverride ? totalOverride : cost.totalDiamonds
+    //     let totalDiamonds = totalOverride ? totalOverride : cost.totalDiamonds
 
-        return {
-            revenueWithMultiplier: cost.revenueWithMultiplier,
-            totalDiamonds: totalDiamonds,
-            to:ownerId,
-            tokenId: team.tokenId
-        }
-    }
+    //     return {
+    //         revenueWithMultiplier: cost.revenueWithMultiplier,
+    //         totalDiamonds: totalDiamonds,
+    //         to:ownerId,
+    //         tokenId: team.tokenId
+    //     }
+    // }
 
     // async dropPlayerWithSignature(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, message:string, signature:string) {
 
@@ -1390,37 +1365,37 @@ class TeamService {
 
     }
 
-    createNFTMetadata(city:City, team: Team, imagePath:string) {
+    // createNFTMetadata(city:City, team: Team, imagePath:string) {
 
-        let result: NFTMetadata = {
-            tokenId: team.tokenId,
-            name: `${city.name} ${team.name}`,
-            description: ''
-        }
+    //     let result: NFTMetadata = {
+    //         tokenId: team.tokenId,
+    //         name: `${city.name} ${team.name}`,
+    //         description: ''
+    //     }
 
-        result.image = `ipfs://${imagePath}`
+    //     result.image = `ipfs://${imagePath}`
 
-        result.attributes = [
-            {
-                trait_type: "Token ID",
-                value: team.tokenId.toString()
-            },
-            {
-                trait_type: "City",
-                value: city.name
-            },
-            {
-                trait_type: "Name",
-                value: team.name
-            }
+    //     result.attributes = [
+    //         {
+    //             trait_type: "Token ID",
+    //             value: team.tokenId.toString()
+    //         },
+    //         {
+    //             trait_type: "City",
+    //             value: city.name
+    //         },
+    //         {
+    //             trait_type: "Name",
+    //             value: team.name
+    //         }
             
-        ]
+    //     ]
 
 
 
-        return result
+    //     return result
 
-    }
+    // }
 
     async changeName(team:Team, options?:any) {
 
@@ -1453,7 +1428,6 @@ interface TeamViewModel {
 
     team: {
         _id: string
-        tokenId:number
         logoId:string
         name: string
         leagueRank: number

@@ -11,7 +11,7 @@ class CityWebService {
         
         try {
             //Download it.
-            let result = await axios.get(`/cities`)
+            let result = await axios.get(`/api/cities`)
             return result.data
         } catch(ex) {
             console.log(ex)

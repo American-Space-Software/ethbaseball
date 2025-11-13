@@ -6,7 +6,7 @@ interface OffchainEventRepository {
     get(id:string, options?:any): Promise<OffchainEvent> 
     put(offchainEvent:OffchainEvent, options?:any): Promise<OffchainEvent>
     getByOwner(contractAddress:string, owner:Owner, options?:any) : Promise<OffchainEvent[]>
-    getByTokenId(contractAddress:string, tokenId:number, options?:any) : Promise<OffchainEvent[]>
+    getByTeamId(contractAddress:string, teamId:string, options?:any) : Promise<OffchainEvent[]>
     list(contractType:string, options?:any) : Promise<OffchainEvent[]>
 
 }

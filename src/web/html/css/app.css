@@ -1749,7 +1749,6 @@ h1 {
 .main-card .logo-wrapper {
 
   width: 300px;
-  margin: auto auto;
 }
 
 .main-card .left img {
@@ -1764,12 +1763,10 @@ h1 {
 .main-card .description {
   font-size: 27px;
   font-weight: bold;
-  padding: 10px;
 }
 
 .main-card .left {
   flex: 0 0 50%;
-  text-align: center;
 }
 
 .main-card .right {
@@ -1788,7 +1785,6 @@ h1 {
   font-size: 15px;
   margin-top: 20px;
   margin-bottom: 20px;
-  margin-left: 20px;
 }
 
 
@@ -2687,6 +2683,7 @@ td.action, th.action {
 
 .footer {
   text-align: center;
+
 }
 
 .footer ul {

@@ -140,7 +140,7 @@
             <div class="navbar-bg"></div>
             <div class="navbar-inner">
               <div class="title">
-                Login
+                Create or login to your account
               </div>
               <div class="right">
                 <!-- Link to close popup -->
@@ -152,14 +152,14 @@
 
             <div class="list links-list list-outline list-strong">
               <ul>
-                ${window?.ethereum != undefined ? $h`
+                <!-- ${window?.ethereum != undefined ? $h`
                   <li>
                     <a @click="${loginWithWallet}" class="list-button popover-close">Wallet</a>
                   </li>
-                ` : $h``}
+                ` : $h``} -->
 
                 <li>
-                  <a href="/auth/discord" class="list-button popover-close external">Discord</a>
+                  <a href="/auth/discord" class="list-button popover-close external">Continue with Discord</a>
                 </li>
               </ul>
             </div>

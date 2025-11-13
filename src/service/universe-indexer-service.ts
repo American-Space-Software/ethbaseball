@@ -242,29 +242,29 @@ class UniverseIndexerService {
 
     private async processDeposit(unprocessedDeposit:ProcessedEvent, options?:any) {
 
-        //Process the deposit
-        let offChainEvent = await this.offChainEventService.createTeamMintEvent(unprocessedDeposit.tokenId, unprocessedDeposit.amount, undefined, options)
+        // //Process the deposit
+        // let offChainEvent = await this.offChainEventService.createTeamMintEvent(unprocessedDeposit.tokenId, unprocessedDeposit.amount, undefined, options)
         
 
-        //Make note of the offchain event associated with this event.
-        unprocessedDeposit.offChainEventId = offChainEvent._id
+        // //Make note of the offchain event associated with this event.
+        // unprocessedDeposit.offChainEventId = offChainEvent._id
         
-        //make the offchain event aware of the processed event it was based on
-        offChainEvent.processedEventId = unprocessedDeposit._id
+        // //make the offchain event aware of the processed event it was based on
+        // offChainEvent.processedEventId = unprocessedDeposit._id
 
-        await this.processedTransactionService.putEvent(unprocessedDeposit, options)
-        await this.offChainEventService.put(offChainEvent, options)
+        // await this.processedTransactionService.putEvent(unprocessedDeposit, options)
+        // await this.offChainEventService.put(offChainEvent, options)
 
 
-        //Update team's balance.
-        let team:Team = await this.teamService.getByTokenId(unprocessedDeposit.tokenId, options)
-        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
+        // //Update team's balance.
+        // let team:Team = await this.teamService.getByTokenId(unprocessedDeposit.tokenId, options)
+        // let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
 
-        tls.financeSeason.diamondBalance = await this.offChainEventService.getBalanceForTokenId(ContractType.DIAMONDS, unprocessedDeposit.tokenId, options)
+        // tls.financeSeason.diamondBalance = await this.offChainEventService.getBalanceForTokenId(ContractType.DIAMONDS, unprocessedDeposit.tokenId, options)
 
-        tls.changed("financeSeason", true)
+        // tls.changed("financeSeason", true)
 
-        await this.teamLeagueSeasonService.put(tls, options)
+        // await this.teamLeagueSeasonService.put(tls, options)
 
     }
 
@@ -377,7 +377,7 @@ class UniverseIndexerService {
                             let token:Team = await this._getToken(tokenId, result, options)
 
                             if (ercEvent.isTransfer) {
-                                token.ownerId = toOwner._id
+                                // token.ownerId = toOwner._id
                             }
 
                         }

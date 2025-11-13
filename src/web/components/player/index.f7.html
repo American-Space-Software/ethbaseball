@@ -29,10 +29,10 @@
               <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
               <span><strong>Overall Rating:</strong> ${player.displayRating.toFixed(0)}</span><br />     
 
-
+<!-- 
               ${authInfo?.address != undefined && authInfo.address == player.team?.ownerId ? $h`
                 <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
-              ` : $h` `}
+              ` : $h` `} -->
                   
               <!-- ${player.askingPrice ? $h`
                 <a data-popup=".sign-popup" class="button button-fill color-green sign-button popup-open">Sign Player</a>  
@@ -44,7 +44,7 @@
           </div>
 
 
-          <div class="block-title block-title-small">Ratings</div>
+          <div class="block-title block-title-small">${ player.primaryPosition != "P" ? "Hitting Ratings" : "Pitching Ratings" }</div>
           <div class="block block-outline block-strong">
             <div class="stat-table-wrapper">
               ${player.primaryPosition != "P" ? $h`
@@ -55,9 +55,7 @@
                       <th class="numeric-cell" >ARM</th>
                       <th class="numeric-cell" >SPD</th>
                       <th  class="numeric-cell" >STL</th>
-                      <th  class="numeric-cell" >GB</th>
-                      <th  class="numeric-cell" >FB</th>
-                      <th  class="numeric-cell" >LD</th>
+
                       <th class="handed-label">vsR</th>
                       <th  class="numeric-cell" >EYE</th>
                       <th  class="numeric-cell" >CON</th>
@@ -68,6 +66,10 @@
                       <th  class="numeric-cell" >CON</th>
                       <th  class="numeric-cell" >GAP</th>
                       <th  class="numeric-cell">HR</th>
+
+                      <th  class="numeric-cell" >GB</th>
+                      <th  class="numeric-cell" >FB</th>
+                      <th  class="numeric-cell" >LD</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -76,9 +78,6 @@
                         <td class="numeric-cell">${player?.hittingRatings?.arm}</td>
                         <td class="numeric-cell">${player?.hittingRatings?.speed}</td>
                         <td class="numeric-cell">${player?.hittingRatings?.steals}</td>
-                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.groundball / 1000)}</td>
-                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.flyBall / 1000)}</td>
-                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.lineDrive / 1000)}</td>
                         
                         <td class="handed-label" ></td>
                         <td class="numeric-cell">${player?.hittingRatings?.vsR?.plateDiscipline}</td>
@@ -91,6 +90,11 @@
                         <td class="numeric-cell">${player?.hittingRatings?.vsL?.contact}</td>
                         <td class="numeric-cell">${player?.hittingRatings?.vsL?.gapPower}</td>
                         <td class="numeric-cell">${player?.hittingRatings?.vsL?.homerunPower}</td>
+
+                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.groundball / 1000)}</td>
+                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.flyBall / 1000)}</td>
+                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.lineDrive / 1000)}</td>
+
                       </tr>
                   </tbody>
 
@@ -535,7 +539,7 @@
 
           `}
 
-          ${player.team ? $h`
+          <!-- ${player.team ? $h`
             <div class="popup drop-popup">
               <div class="view">
                 <div class="page">
@@ -555,7 +559,7 @@
                 </div>
               </div>
             </div>
-          ` : $h` `}
+          ` : $h` `} -->
 
 
 

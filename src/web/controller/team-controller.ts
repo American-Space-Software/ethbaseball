@@ -187,16 +187,16 @@ class TeamController {
 
 
 
-    @routeMap("/t/mint/:tokenId")
-    async showMint(): Promise<ModelView> {
+    // @routeMap("/t/mint/:tokenId")
+    // async showMint(): Promise<ModelView> {
         
-        return new ModelView(async () => {
-            return {
-                discord: this.discord
-            }
-        }, TeamMintComponent)
+    //     return new ModelView(async () => {
+    //         return {
+    //             discord: this.discord
+    //         }
+    //     }, TeamMintComponent)
 
-    }
+    // }
 
     @routeMap("/t/create/index")
     async showCreate(): Promise<ModelView> {

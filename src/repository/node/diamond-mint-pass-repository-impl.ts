@@ -41,11 +41,11 @@ class DiamondMintPassRepositoryNodeImpl implements DiamondMintPassRepository {
 
     }
 
-    async getUnmintedByTokenId(tokenId:number, options?:any): Promise<DiamondMintPass[]> {
+    async getUnmintedByTeamId(teamId:string, options?:any): Promise<DiamondMintPass[]> {
 
         let queryOptions = {
             where: {
-                tokenId: tokenId,
+                teamId: teamId,
                 processedTransactionId: null
             },
             order: [['dateCreated', 'DESC']]

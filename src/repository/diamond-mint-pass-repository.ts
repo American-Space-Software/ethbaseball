@@ -7,7 +7,7 @@ interface DiamondMintPassRepository {
     getByTokenId(tokenId:number, options?:any): Promise<DiamondMintPass[]>
     getByAddress(address:string, options?:any): Promise<DiamondMintPass[]>
     getUnmintedByAddress(address:string, options?:any): Promise<DiamondMintPass[]>
-    getUnmintedByTokenId(tokenId:number, options?:any): Promise<DiamondMintPass[]>
+    getUnmintedByTeamId(teamId:string, options?:any): Promise<DiamondMintPass[]>
 
     getUnsigned(options?:any): Promise<DiamondMintPass[]>
 }

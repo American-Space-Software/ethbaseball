@@ -497,6 +497,7 @@ CREATE TABLE `player_league_season` (
 
   PRIMARY KEY (`_id`),
 
+  KEY `displayRating` (`displayRating`),
   KEY `playerId` (`playerId`),
   KEY `leagueId` (`leagueId`),
   KEY `seasonId` (`seasonId`),
@@ -520,10 +521,6 @@ ALTER TABLE player_league_season
     (leagueId, seasonId, primaryPosition, teamId, overallRating),
   ADD INDEX idx_cov_league_season_pos_team__age
     (leagueId, seasonId, primaryPosition, teamId, age),
-
-  ADD INDEX idx_sort_ovr_pct
-    (seasonId, primaryPosition, teamId,
-     (CAST(percentileRatings->>"$.overallRating_pct" AS DECIMAL(10,3)))),
 
   ADD INDEX idx_sort_hit_ops
     (seasonId, primaryPosition, teamId, (CAST(stats->>"$.hitting.ops" AS DECIMAL(10,3)))),
@@ -627,8 +624,8 @@ CREATE TABLE `offchain_event` (
   `fromAddress` varchar(255) DEFAULT NULL,
   `toAddress` varchar(255) DEFAULT NULL,
 
-  `fromTokenId` int DEFAULT NULL,
-  `toTokenId` int DEFAULT NULL,
+  `fromTeamId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `toTeamId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
 
   `event` varchar(255) DEFAULT NULL,
 
@@ -638,7 +635,7 @@ CREATE TABLE `offchain_event` (
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
   PRIMARY KEY (`_id`),
-  UNIQUE(`gameId`, `toTokenId`),
+  UNIQUE(`gameId`, `toTeamId`),
   UNIQUE(`processedEventId`),
   CONSTRAINT `offchain_event_ibfk_1` FOREIGN KEY (`gameId`) REFERENCES `game` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `offchain_event_ibfk_2` FOREIGN KEY (`processedEventId`) REFERENCES `processed_event` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -803,20 +800,18 @@ CREATE TABLE `team` (
   `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `name` varchar(100) DEFAULT NULL,
   `abbrev` varchar(36) DEFAULT NULL,
-  `tokenId` int NOT NULL,
   `mintKey` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
 
   `longTermRating` json NOT NULL,
   `seasonRating` json NOT NULL,
 
-  `ownerId` varchar(255) DEFAULT NULL,
+  `userId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `colors` json NOT NULL,
 
   `lastGamePlayed` datetime DEFAULT NULL,
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
-  PRIMARY KEY (`_id`),
-  KEY `tokenId` (`tokenId`)
+  PRIMARY KEY (`_id`)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -962,8 +957,8 @@ DROP TABLE IF EXISTS `diamond_mint_pass`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `diamond_mint_pass` (
   `_id` varchar(255) NOT NULL,
-  `to` varchar(255) NOT NULL,
-  `tokenId` int DEFAULT NULL,
+  `toUserId` varchar(255) NOT NULL,
+  `teamId` int DEFAULT NULL,
   `amount` varchar(255) NOT NULL,
   `expires` int DEFAULT NULL,
   `r` varchar(255) DEFAULT NULL,

@@ -198,7 +198,7 @@ class ProcessedTransactionService {
                     events: events.filter( e => e.processedTransactionId == t._id ),
                 }
             }),
-            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId, tokenId: tls.team.tokenId } })
+            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId } })
         }
 
     }

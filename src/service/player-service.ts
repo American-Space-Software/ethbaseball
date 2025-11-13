@@ -1910,6 +1910,26 @@ class PlayerService {
 
     }
 
+    updateAge(currentAge: number, gameCount: number): number {
+
+        if (gameCount < 26) {
+            return 17
+        } else if (gameCount >= 26 && gameCount < 51) {
+            return 18
+        } else if (gameCount >= 51 && gameCount < 76) {
+            return 19
+        } else if (gameCount >= 76 && gameCount < 101) {
+            return 20
+        } else if (gameCount >= 101 && gameCount < 126) {
+            return 21
+        } else if (gameCount >= 126) {
+            const extraYears = Math.floor((gameCount - 126) / 162); // Number of 162-game cycles
+            return 22 + extraYears
+        }
+    
+        return currentAge
+    }
+
 }
 
 

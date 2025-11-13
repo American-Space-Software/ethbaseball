@@ -33,13 +33,13 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
     }
 
-    async getByTokenId(contractType:string, tokenId:number, options?:any) : Promise<OffchainEvent[]>  {
+    async getByTeamId(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]>  {
 
         return OffchainEvent.findAll(Object.assign({
             where: {
                 [Op.and]: {
                     contractType: contractType, 
-                    [Op.or]: [{ fromTokenId: tokenId }, { toTokenId: tokenId }]
+                    [Op.or]: [{ fromTeamId: teamId }, { toTeamId: teamId }]
                 }
             },
             order: [ ['dateCreated', 'DESC'] ]

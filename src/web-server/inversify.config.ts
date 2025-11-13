@@ -489,45 +489,45 @@ async function getContainer(command?:GetContainerCommand) {
     let userService:UserService = container.get(UserService)
 
 
-    class EthereumStrategy extends passport.Strategy {
-        name?: string;
+    // class EthereumStrategy extends passport.Strategy {
+    //     name?: string;
       
-        async authenticate(
-          this: passport.StrategyCreated<this, this & passport.StrategyCreatedStatic>,
-          _req: Request,
-          _options?: any,
-        ) {
+    //     async authenticate(
+    //       this: passport.StrategyCreated<this, this & passport.StrategyCreatedStatic>,
+    //       _req: Request,
+    //       _options?: any,
+    //     ) {
     
-          let body:any = _req.body
+    //       let body:any = _req.body
     
-          try {
+    //       try {
             
-            let recoveredAddress = await connectService.validateSignature(body.message, body.signature)
+    //         let recoveredAddress = await connectService.validateSignature(body.message, body.signature)
             
-            let user:User = await userService.getByAddress(recoveredAddress)
+    //         let user:User = await userService.getByAddress(recoveredAddress)
 
-            if (!user) {
-                user = new User()
-                user._id = uuidv4()
-                user.address = recoveredAddress
-                await user.save()
-            }
+    //         if (!user) {
+    //             user = new User()
+    //             user._id = uuidv4()
+    //             user.address = recoveredAddress
+    //             await user.save()
+    //         }
 
-            this.success(user)
+    //         this.success(user)
 
-          } catch(ex) {
+    //       } catch(ex) {
 
-            this.fail('Invalid login.')
+    //         this.fail('Invalid login.')
 
-          }
+    //       }
 
-        }
-    }
+    //     }
+    // }
 
 
-    let ethereumStrategy = new EthereumStrategy()
-    ethereumStrategy.name = "ethereum"
-    passport.use(ethereumStrategy)
+    // let ethereumStrategy = new EthereumStrategy()
+    // ethereumStrategy.name = "ethereum"
+    // passport.use(ethereumStrategy)
 
 
 

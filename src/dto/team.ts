@@ -2,6 +2,7 @@ import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryK
 import { Owner } from './owner.js'
 import { Position, Rating } from '../service/enums.js'
 import { DiamondMintPass } from './diamond-mint-pass.js'
+import { User } from './user.js'
 
 
 
@@ -24,9 +25,6 @@ class Team extends Model {
     @Column(DataType.UUID)
     declare mintKey?:string
 
-    @AllowNull(false)
-    @Column(DataType.INTEGER)
-    declare tokenId:number
 
     @Column(DataType.STRING(100))
     declare name?: string
@@ -34,10 +32,10 @@ class Team extends Model {
     @Column(DataType.STRING(36))
     declare abbrev?: string
 
-    @ForeignKey(() => Owner)
+    @ForeignKey(() => User)
     @AllowNull(true)	
     @Column(DataType.STRING)
-    declare ownerId?:string 
+    declare userId?:string 
 
     @AllowNull(false)
     @Column(DataType.JSON)

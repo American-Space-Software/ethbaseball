@@ -243,7 +243,6 @@ class GameService {
         let pitcherGP = gamePlayer.find( gp => gp.playerId == startingPitcher._id)
 
         let teamInfo:TeamInfo = {
-            tokenId: tls.team.tokenId,
             logoId: tls.logoId,
             _id: tls.team._id,
             name: tls.team.name,
@@ -706,7 +705,6 @@ class GameService {
 
         let teamInfo:TeamInfo = {
             logoId: undefined,
-            tokenId: undefined,
             name: name,
             abbrev: name,
             players: gamePlayer,
@@ -1321,7 +1319,6 @@ class GameService {
             score: game.score,
             away: {
                 _id: game.away._id,
-                tokenId: game.away.tokenId,
                 logoId: game.away.logoId,
                 name: game.away.name,
                 cityName: game.away.cityName,
@@ -1337,7 +1334,6 @@ class GameService {
 
             home: {
                 _id: game.home._id,
-                tokenId: game.home.tokenId,
                 logoId: game.home.logoId,
                 name: game.home.name,
                 cityName: game.home.cityName,
@@ -1635,7 +1631,6 @@ class GameService {
     buildTeamInfo(tls:TeamLeagueSeason, color1:string, color2:string, homeAway:HomeAway) : TeamInfo {
 
         let teamInfo:TeamInfo = {
-            tokenId: tls.team.tokenId,
             logoId: tls.logoId,
             _id: tls.team._id,
             name: tls.team.name,
@@ -1839,7 +1834,6 @@ interface GamesViewModel {
 
 interface TeamSummary {
     _id:string
-    tokenId:number
     logoId:string
     name:string
     abbrev:string

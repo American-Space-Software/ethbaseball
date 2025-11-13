@@ -136,21 +136,21 @@ class UniverseService {
 
     }
 
-    async exportTeamIPFS(ipfsDirectory:string, team:Team, metadata:NFTMetadata) {
+    // async exportTeamIPFS(ipfsDirectory:string, team:Team, metadata:NFTMetadata) {
 
-        //Write to IPFS
-        let metadataContent = JSON.stringify(metadata)
-        let metadataCid = await Hash.of(metadataContent)
+    //     //Write to IPFS
+    //     let metadataContent = JSON.stringify(metadata)
+    //     let metadataCid = await Hash.of(metadataContent)
 
-        await this.exportSVGIfChanged(`${ipfsDirectory}/metadata/${team.tokenId}.json`, metadataCid, metadataContent)
+    //     await this.exportSVGIfChanged(`${ipfsDirectory}/metadata/${team.tokenId}.json`, metadataCid, metadataContent)
 
-        // if (image.svg) {
-        //     await this.exportSVGIfChanged(`${ipfsDirectory}/images/${image.cid}.svg`, image.cid, image.svg)
-        // } else {
-        //     await this.exportBufferIfChanged(`${ipfsDirectory}/images/${image.cid}.png`, image.cid, image.data1024x1024)
-        // }
+    //     // if (image.svg) {
+    //     //     await this.exportSVGIfChanged(`${ipfsDirectory}/images/${image.cid}.svg`, image.cid, image.svg)
+    //     // } else {
+    //     //     await this.exportBufferIfChanged(`${ipfsDirectory}/images/${image.cid}.png`, image.cid, image.data1024x1024)
+    //     // }
 
-    }
+    // }
 
 
     async exportImageIPFS(ipfsDirectory:string, image:Image) : Promise<string> {
@@ -326,10 +326,10 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             console.time(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
-            let metadata = await this.teamService.createNFTMetadata(tlsPlain.city, tlsPlain.team, `${imagesCid}/${pathMap[tls.teamId]}` )
+            // let metadata = await this.teamService.createNFTMetadata(tlsPlain.city, tlsPlain.team, `${imagesCid}/${pathMap[tls.teamId]}` )
 
             //Export to IPFS
-            await this.exportTeamIPFS(ipfsDirectory, tlsPlain.team, metadata)
+            // await this.exportTeamIPFS(ipfsDirectory, tlsPlain.team, metadata)
 
             console.timeEnd(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
@@ -373,7 +373,6 @@ Join us at [https://playebl.com](https://playebl.com)`,
         let team:Team = new Team()
         team._id = uuidv4()
         team.name = name
-        team.tokenId = tokenId
         team.abbrev = city.name[0] + team.name.split(' ').map(word => word[0].toUpperCase()).join("")
 
         //Create a stadium for them to play at.
@@ -410,7 +409,6 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             let team:Team = new Team()
             team._id = uuidv4()
-            team.tokenId = tokenId++
 
             let city:City
 
@@ -556,37 +554,37 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
                 //Try to load custom logo
                 
-                let logo:Image
+                // let logo:Image
 
-                try {
+                // try {
 
-                    let logoData = fs.readFileSync(`${config.runDir}/logos/${team.tokenId}.png`) 
+                //     let logoData = fs.readFileSync(`${config.runDir}/logos/${team.tokenId}.png`) 
 
-                    const image = await Jimp.read(logoData)
+                //     const image = await Jimp.read(logoData)
 
-                    image.resize({ w: 1024, h: 1024 })
+                //     image.resize({ w: 1024, h: 1024 })
 
-                    let thumbnail1024Data = await image.getBuffer("image/png")
+                //     let thumbnail1024Data = await image.getBuffer("image/png")
 
-                    image.resize({ w: 100, h: 100 })
+                //     image.resize({ w: 100, h: 100 })
 
-                    let thumbnail100Data = await image.getBuffer("image/png")
+                //     let thumbnail100Data = await image.getBuffer("image/png")
 
-                    image.resize({ w: 60, h: 60 })
+                //     image.resize({ w: 60, h: 60 })
 
-                    let thumbnail60Data = await image.getBuffer("image/png")
+                //     let thumbnail60Data = await image.getBuffer("image/png")
 
                     
-                    logo = await this.imageService.createImageFromContent(logoData,thumbnail60Data, thumbnail100Data, thumbnail1024Data, options)
-                } catch(ex) {}
+                //     logo = await this.imageService.createImageFromContent(logoData,thumbnail60Data, thumbnail100Data, thumbnail1024Data, options)
+                // } catch(ex) {}
 
 
-                if (!logo) {
-                    logo = await this.createTeamLogo(city, team, options)
-                }
+                // if (!logo) {
+                //     logo = await this.createTeamLogo(city, team, options)
+                // }
                 
                 
-                tls.logoId = logo._id
+                // tls.logoId = logo._id
 
                 await this.teamLeagueSeasonService.put(tls, options)
 
