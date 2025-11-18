@@ -1,4 +1,5 @@
 import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryKey, Unique } from 'sequelize-typescript'
+import { HittingRatings, LeagueAverageRatings, PitchRatings } from '../service/enums.js'
 
 
 
@@ -23,6 +24,9 @@ class League extends Model {
 
     @Column(DataType.STRING)
     declare name?: string
+
+    @Column(DataType.JSON)
+    declare averageRating?:LeagueAverageRatings
 
     @Column(DataType.DATE)
     declare lastUpdated?:Date 

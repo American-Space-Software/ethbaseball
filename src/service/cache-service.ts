@@ -38,7 +38,7 @@ const OWNERS = "owners"
 const IMAGES = "images"
 const ENV_TAG = "env"
 
-let lastPlayersUpdate:Date
+// let lastPlayersUpdate:Date
 let lastOwnersUpdate:Date
 let lastTeamssUpdate:Date
 let mostRecentSeasonUpdate:Date
@@ -66,7 +66,7 @@ class CacheService {
 
         let past = dayjs('1903-01-01').toDate()
 
-        let updatedPlayers:Player[] = await this.playerService.getUpdatedLastGameSince(past, { limit: 1 })
+        // let updatedPlayers:Player[] = await this.playerService.getUpdatedLastGameSince(past, { limit: 1 })
         let updatedTeams:Team[] = await this.teamService.getUpdatedSince(past, { limit: 1 })
         let updatedOwners:Owner[] = await this.ownerService.getUpdatedSince(past, { limit: 1 })
         let mostRecentSeason:Season = await this.seasonService.getMostRecent()
@@ -74,7 +74,7 @@ class CacheService {
         let universe:Universe = this.getUniverse()
 
         mostRecentSeasonUpdate = mostRecentSeason?.lastUpdated  || new Date(new Date().toUTCString())
-        lastPlayersUpdate = updatedPlayers[0]?.lastGameUpdate || new Date(new Date().toUTCString())
+        // lastPlayersUpdate = updatedPlayers[0]?.lastGameUpdate || new Date(new Date().toUTCString())
         lastOwnersUpdate = updatedOwners[0]?.lastUpdated || new Date(new Date().toUTCString())
         lastTeamssUpdate = updatedTeams[0]?.lastUpdated || new Date(new Date().toUTCString())
         lastUniverseDate = universe.currentDate
@@ -83,13 +83,13 @@ class CacheService {
     async clearPlayersTag() {
 
         //Clear 'players' tag if there's been an update
-        let updatedPlayers:Player[] = await this.playerService.getUpdatedLastGameSince(lastPlayersUpdate, { limit: 1 })
+        // let updatedPlayers:Player[] = await this.playerService.getUpdatedLastGameSince(lastPlayersUpdate, { limit: 1 })
 
-        if (updatedPlayers?.length > 0) {
+        // if (updatedPlayers?.length > 0) {
             console.log("Clearing 'players' cache.")
             this.clearTag(PLAYERS)
-            lastPlayersUpdate = updatedPlayers[0].lastGameUpdate
-        }
+            // lastPlayersUpdate = updatedPlayers[0].lastGameUpdate
+        // }
     }
 
     async clearTeamsTag() {

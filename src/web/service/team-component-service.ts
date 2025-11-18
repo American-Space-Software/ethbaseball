@@ -95,20 +95,20 @@ class TeamComponentService {
     }
 
     isTeamOwner() {
-        return (this.authInfo?.address == this.team?.owner?._id && this.team?.owner?._id != undefined)
+        return (this.authInfo?._id == this.team?.owner?._id && this.team?.owner?._id != undefined)
     }
 
-    async loadTeam(tokenId:number, startDate:string, options?:any) {
+    async loadTeam(teamId:string, startDate:string, options?:any) {
 
-        if ( (options?.forceRefresh || tokenId != this.team?.tokenId || startDate != this.startDate) && this.loading == false) {
+        if ( (options?.forceRefresh || teamId != this.team?._id || startDate != this.startDate) && this.loading == false) {
             
-            console.log(`Loading team ${tokenId}/${startDate}`)
+            console.log(`Loading team ${teamId}/${startDate}`)
 
             this.loading = true
 
             this.authInfo = await this.loginWebService.getAuthInfo()
-            let teamViewModel = await this.teamWebService.getByDate(tokenId, startDate)
-            console.log(teamViewModel)
+            let teamViewModel = await this.teamWebService.getByDate(teamId, startDate)
+
             this.team = teamViewModel.team
             this.startDate = startDate
            
@@ -222,7 +222,6 @@ class TeamComponentService {
     
 
     moveToRoster(selectedId, currentPlayerId, spot, lineupIndex) {
-
         this.hasChanges = true
 
         let lineup = this.team.lineups[lineupIndex]
@@ -388,7 +387,7 @@ class TeamComponentService {
     }
 
     async save() {
-        await this.teamWebService.setRoster( this.team.tokenId, this.team.lineups )
+        await this.teamWebService.setRoster( this.team._id, this.team.lineups )
         this.hasChanges = false
     }
 

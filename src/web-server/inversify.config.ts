@@ -433,24 +433,56 @@ async function getContainer(command?:GetContainerCommand) {
         async (accessToken, refreshToken, profile, done) => {
             
             try {
-                
-                let existingUser = await User.findOne({ 
-                    where: {
-                        discordId: profile.id
+            
+                let s = container.get("sequelize")
+                let sequelize = await s()
+
+                let teamService:TeamService = container.get(TeamService)
+                let userService:UserService = container.get(UserService)
+                let leagueService:LeagueService = container.get(LeagueService)
+                let seasonService:SeasonService = container.get(SeasonService)
+                let financeService:FinanceService = container.get(FinanceService)
+
+
+                let existingUser:User
+
+                await sequelize.transaction(async (t1) => {
+
+                    let options = { transaction: t1 }
+
+                    existingUser = await userService.getByDiscordId(profile.id, options)
+            
+                    if (!existingUser) {
+                        existingUser = new User()
+                        existingUser._id = uuidv4()
+                        existingUser.discordId = profile.id   
                     }
-                })
         
-                if (!existingUser) {
-                    existingUser = new User()
-                    existingUser._id = uuidv4()
-                    existingUser.discordId = profile.id                
-                }
-    
-                existingUser.discordAccessToken = accessToken
-                existingUser.discordRefreshToken = refreshToken
-                existingUser.discordProfile = profile
-    
-                await existingUser.save()
+                    existingUser.discordAccessToken = accessToken
+                    existingUser.discordRefreshToken = refreshToken
+                    existingUser.discordProfile = profile
+        
+                    await userService.put(existingUser, options)
+
+
+                    let teams:Team[] = await teamService.getByUser(existingUser, options)
+
+
+                    if (teams?.length == 0) {
+
+                        let season:Season = await seasonService.getMostRecent(options)
+                        let league:League = await leagueService.getByRank(1, options)
+
+                        let financeSeason = financeService.getDefaultFinanceSeason()
+
+                        let teamResult = await teamService.createForUser(existingUser, league, season, financeSeason, options)
+
+                        await teamService.fillAndValidateRoster(league, teamResult.team, teamResult.tls, [], season, undefined, true, options)
+
+                    }
+
+                })
+
     
                 done(undefined, existingUser)
             } catch(ex) {
@@ -485,8 +517,8 @@ async function getContainer(command?:GetContainerCommand) {
     passport.use(discordStrategy)
     refresh.use('discord', discordStrategy)
     
-    let connectService:ConnectService = container.get(ConnectService)
-    let userService:UserService = container.get(UserService)
+    // let connectService:ConnectService = container.get(ConnectService)
+    // let userService:UserService = container.get(UserService)
 
 
     // class EthereumStrategy extends passport.Strategy {

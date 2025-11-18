@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 
-import TeamCreateComponent from '../components/team/create.f7.html'
-import TeamMintComponent from '../components/team/mint.f7.html'
+// import TeamCreateComponent from '../components/team/create.f7.html'
+// import TeamMintComponent from '../components/team/mint.f7.html'
 
 import TeamIndexComponent from '../components/team/index.f7.html'
 
@@ -40,7 +40,7 @@ class TeamController {
 
 
 
-    @routeMap("/t/:tokenId")
+    @routeMap("/t/index/:teamId")
     async showIndex(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
@@ -48,11 +48,11 @@ class TeamController {
             let authInfo = await this.loginWebService.getAuthInfo()
 
             let startDate = routeTo?.query?.startDate
-            let tokenId = routeTo?.params?.tokenId
+            let teamId = routeTo?.params?.teamId
 
             this.universeWebService.setStartDate(startDate, routeTo)
 
-            let team = await this.teamComponentService.loadTeam(tokenId, this.universeWebService.getStartDate(), { forceRefresh: true })
+            let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
             this.universeWebService.setRank(team.leagueRank)
 
@@ -67,18 +67,18 @@ class TeamController {
 
     }
 
-    @routeMap("/t/results/:tokenId")
+    @routeMap("/t/results/:teamId")
     async showResults(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
 
             let startDate = routeTo?.query?.startDate
-            let tokenId = routeTo?.params?.tokenId
+            let teamId = routeTo?.params?.teamId
             let date = routeTo?.query?.date
 
             this.universeWebService.setStartDate(startDate, routeTo)
 
-            let team = await this.teamComponentService.loadTeam(tokenId, this.universeWebService.getStartDate(), { forceRefresh: true })
+            let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
             this.universeWebService.setRank(team.leagueRank)
 
@@ -88,11 +88,10 @@ class TeamController {
                 date = this.universeWebService.startDate
             }
 
-            let gameLogs = await this.teamWebService.getGameLog(tokenId, date)
-
+            let gameLogs = await this.teamWebService.getGameLog(teamId, date)
 
             return {
-                tokenId: tokenId,
+                teamId: teamId,
                 date: date,
                 gameLogs: gameLogs,
                 discord: this.discord
@@ -102,24 +101,24 @@ class TeamController {
     }
 
 
-    @routeMap("/t/activity/:tokenId")
+    @routeMap("/t/activity/index/:teamId")
     async showActivity(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
 
             let startDate = routeTo?.query?.startDate
-            let tokenId = routeTo?.params?.tokenId
+            let teamId = routeTo?.params?.teamId
             let page = parseInt(routeTo?.query?.page || 1)
 
             this.universeWebService.setStartDate(startDate, routeTo)
 
-            let team = await this.teamComponentService.loadTeam(tokenId, this.universeWebService.getStartDate(), { forceRefresh: true })
+            let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
             this.universeWebService.setRank(team.leagueRank)
 
 
 
-            let onChainEvents = await this.gameTransactionWebService.getOnChainByTeam(tokenId, page)
+            let onChainEvents = await this.gameTransactionWebService.getOnChainByTeam(teamId, page)
 
             let previousPage
             let nextPage
@@ -137,7 +136,7 @@ class TeamController {
                 page: page,
                 previousPage: previousPage,
                 nextPage: nextPage, 
-                tokenId: tokenId,
+                teamId: teamId,
                 discord: this.discord
             }
 
@@ -145,22 +144,22 @@ class TeamController {
 
     }
 
-    @routeMap("/t/activity/off/:tokenId")
+    @routeMap("/t/activity/off/:teamId")
     async showOffchainActivity(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
 
             let startDate = routeTo?.query?.startDate
-            let tokenId = routeTo?.params?.tokenId
+            let teamId = routeTo?.params?.teamId
             let page = parseInt(routeTo?.query?.page || 1)
 
             this.universeWebService.setStartDate(startDate, routeTo)
 
-            let team = await this.teamComponentService.loadTeam(tokenId, this.universeWebService.getStartDate(), { forceRefresh: true })
+            let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
             this.universeWebService.setRank(team.leagueRank)
 
-            let eventsViewModel = await this.gameTransactionWebService.getOffChainByTeam(tokenId, page)
+            let eventsViewModel = await this.gameTransactionWebService.getOffChainByTeam(teamId, page)
             let previousPage
             let nextPage
 
@@ -174,7 +173,7 @@ class TeamController {
 
 
             return {
-                tokenId: tokenId,
+                teamId: teamId,
                 eventsViewModel: eventsViewModel,
                 page: page,
                 previousPage: previousPage,
@@ -198,17 +197,17 @@ class TeamController {
 
     // }
 
-    @routeMap("/t/create/index")
-    async showCreate(): Promise<ModelView> {
+    // @routeMap("/t/create/index")
+    // async showCreate(): Promise<ModelView> {
         
-        return new ModelView(async () => {
+    //     return new ModelView(async () => {
 
-            return {
-                discord: this.discord
-            }
-        }, TeamCreateComponent)
+    //         return {
+    //             discord: this.discord
+    //         }
+    //     }, TeamCreateComponent)
 
-    }
+    // }
 
 
 }

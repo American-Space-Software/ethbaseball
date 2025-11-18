@@ -20,17 +20,13 @@
 
               <div class="name">${player.fullName}</div>
 
-              ${player.team?._id ? $h`
-                <span><a href="${universeWebService.startDateLink(`/t/${player.team.tokenId}`)}">${player.team.cityName} ${player.team.name}</a></span><br />
-              ` : $h` `}
-
               <span><strong>Position:</strong> ${player.primaryPosition}</span><br />
               <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
               <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
               <span><strong>Overall Rating:</strong> ${player.displayRating.toFixed(0)}</span><br />     
 
 <!-- 
-              ${authInfo?.address != undefined && authInfo.address == player.team?.ownerId ? $h`
+              ${authInfo?._id != undefined && authInfo._id == player.team?.userId ? $h`
                 <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
               ` : $h` `} -->
                   
@@ -43,8 +39,203 @@
 
           </div>
 
+          ${player.primaryPosition == Position.PITCHER ? $h`
+            
+            <div class="block-title block-title-small">Pitching Ratings</div>
+            <div class="block block-outline block-strong">
+                <div class="rating-table">
 
-          <div class="block-title block-title-small">${ player.primaryPosition != "P" ? "Hitting Ratings" : "Pitching Ratings" }</div>
+                  <div class="left">
+                    <div class="skill-wrapper">
+                      <div class="label">Power</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${player.pitchRatings.power }%;">${ player.pitchRatings.power }</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Control</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.pitchRatings.vsL.control}%;"><strong>L</strong> ${ player.pitchRatings.vsL.control }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.control }%;"> <strong>R</strong> ${ player.pitchRatings.vsR.control }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Movement</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.pitchRatings.vsL.movement }%;"> <strong>L</strong> ${ player.pitchRatings.vsL.movement }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.movement}%;"> <strong>R</strong> ${ player.pitchRatings.vsR.movement }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+
+                      <div class="label">Contact Profile</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.pitchRatings.contactProfile.groundball / 10 }%;"><strong>GB</strong> ${player.pitchRatings.contactProfile.groundball / 10 }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="blue" style="flex-basis:${ player.pitchRatings.contactProfile.flyBall / 10 }%;"> <strong>FB</strong> ${player.pitchRatings.contactProfile.flyBall / 10 }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="green" style="flex-basis:${ player.pitchRatings.contactProfile.lineDrive  / 10 }%;"><strong>LD</strong> ${player.pitchRatings.contactProfile.lineDrive / 10 }</div>
+                      </div>
+
+                    </div>
+                  </div>
+                  <div class="right">
+
+                    <h4>Pitches</h4>
+
+                    ${player.pitchRatings.pitches?.map(p => $h`
+                      <div class="skill-wrapper">
+                        <div class="label">${ p.type }</div>
+                        <div class="skill-bar">
+                          <div class="red" style="flex-basis:${ p.rating }%;">${ p.rating }</div>
+                        </div>
+                      </div>
+                    `)}
+
+                  </div>
+
+
+                  
+
+
+                </div>
+            </div>
+          ` : $h` ` }
+
+          ${player.primaryPosition != Position.PITCHER ? $h`
+            
+            <div class="block-title block-title-small">Hitting Ratings</div>
+            <div class="block block-outline block-strong">
+                <div class="rating-table">
+                  <div class="left">
+
+                    <div class="skill-wrapper">
+                      <div class="label">Speed</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${player.hittingRatings.speed }%;">${player.hittingRatings.speed}</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Steals</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${ player.hittingRatings.steals }%;">${player.hittingRatings.steals}</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Defense</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${ player.hittingRatings.defense }%;">${player.hittingRatings.defense}</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Arm</div>
+                      <div class="skill-bar">
+                        <div class="red" style="flex-basis: ${player.hittingRatings.arm }%;">${player.hittingRatings.arm }</div>
+                      </div>
+                    </div>
+
+                    <div class="skill-wrapper">
+
+                      <div class="label">Contact Profile</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.contactProfile.groundball / 10 }%;"><strong>GB</strong> ${player.hittingRatings.contactProfile.groundball / 10}</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="blue" style="flex-basis:${ player.hittingRatings.contactProfile.flyBall / 10 }%;"><strong>FB</strong> ${player.hittingRatings.contactProfile.flyBall / 10 }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="green" style="flex-basis:${ player.hittingRatings.contactProfile.lineDrive / 10 }%;"><strong>LD</strong> ${player.hittingRatings.contactProfile.lineDrive / 10 }</div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  <div class="right">
+
+                    <div class="skill-wrapper">
+                      <div class="label">Contact</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis: ${player.hittingRatings.vsL.contact}%;"><strong>L</strong> ${player.hittingRatings.vsL.contact}</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis: ${player.hittingRatings.vsR.contact }%;"><strong>R</strong> ${ player.hittingRatings.vsR.contact }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Gap Power</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.gapPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.gapPower }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.gapPower }%;"><strong>R</strong> ${player.hittingRatings.vsR.gapPower }</div>
+                      </div>
+
+                    </div>
+
+                    <div class="skill-wrapper">
+                      <div class="label">Home Run</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.homerunPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.homerunPower }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.homerunPower }%;"><strong>R</strong> ${ player.hittingRatings.vsR.homerunPower }</div>
+                      </div>
+
+                    </div>
+
+
+                    <div class="skill-wrapper">
+                      <div class="label">Plate Discipline</div>
+
+                      <div class="skill-bar handedness">
+                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.plateDiscipline }%;"><strong>L</strong> ${player.hittingRatings.vsL.plateDiscipline }</div>
+                      </div>
+
+                      <div class="skill-bar handedness">
+                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.plateDiscipline }%;"><strong>R</strong> ${player.hittingRatings.vsR.plateDiscipline }</div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+            </div>
+          ` : $h` ` }
+
+
+          <!-- <div class="block-title block-title-small">${ player.primaryPosition != "P" ? "Hitting Ratings" : "Pitching Ratings" }</div>
           <div class="block block-outline block-strong">
             <div class="stat-table-wrapper">
               ${player.primaryPosition != "P" ? $h`
@@ -167,7 +358,7 @@
                 </table>
               `} 
             </div>
-          </div>
+          </div> -->
 
 
 
@@ -315,7 +506,7 @@
 
                     ${player.careerSeasonsHitterStats?.map( hitResult => $h`
                       <tr>
-                        <td><a href="/t/${ hitResult.team.tokenId }?startDate=${dayjs(hitResult.season.startDate).format('YYYY-MM-DD')}" class="link">${ hitResult.team.abbrev }</a></td>
+                        <td><a href="/t/index/${ hitResult.team._id }?startDate=${dayjs(hitResult.season.startDate).format('YYYY-MM-DD')}" class="link">${ hitResult.team.name }</a></td>
                         <td>${ hitResult.age }</td>
                         <td>${ dayjs(hitResult.season.startDate).format("YYYY-MM") }</td>
                         <td>${ hitResult.games }</td>
@@ -382,7 +573,7 @@
 
                     ${player.careerSeasonsPitcherStats?.map( pitchResult => $h`
                       <tr>
-                        <td><a href="/t/${ pitchResult.team.tokenId }?startDate=${dayjs(pitchResult.season.startDate).format('YYYY-MM-DD')}">${ pitchResult.team.abbrev }</a></td>
+                        <td><a href="/t/index/${ pitchResult.team._id }?startDate=${dayjs(pitchResult.season.startDate).format('YYYY-MM-DD')}">${ pitchResult.team.name }</a></td>
                         <td>${ pitchResult.age }</td>
                         <td>${ dayjs(pitchResult.season.startDate).format("YYYY-MM") }</td>
 
@@ -539,7 +730,7 @@
 
           `}
 
-          <!-- ${player.team ? $h`
+          ${player.team ? $h`
             <div class="popup drop-popup">
               <div class="view">
                 <div class="page">
@@ -555,11 +746,19 @@
                   </div>
                   <div class="page-content">
 
+                        <div class="block">
+                          <p>
+                            Are you sure you want to drop ${player.fullName}? They will become a free agent that can be signed by any team.
+                          </p>
+                          
+                          <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
+                        </div>
+
                   </div>
                 </div>
               </div>
             </div>
-          ` : $h` `} -->
+          ` : $h` `}
 
 
 
@@ -688,7 +887,7 @@
       ]
 
       if (player.team?._id) {
-          breadcrumbs.push({ text: `${player.team.cityName} ${player.team.name}`, path: universeWebService.startDateLink(`/t/${player.team.tokenId}`) })
+          breadcrumbs.push({ text: `${player.team.cityName ? player.team.cityName : ''} ${player.team.name}`, path: universeWebService.startDateLink(`/t/index/${player.team._id}`) })
       }
 
       breadcrumbs.push({ text: player.fullName })

@@ -10,6 +10,8 @@ import { Player } from "../dto/player.js"
 import { toSvg } from "jdenticon"
 
 import invert, { RGB, RgbArray, HexColor, BlackWhite } from 'invert-color';
+import { City } from "../dto/city.js"
+import { Team } from "../dto/team.js"
 
 
 
@@ -243,9 +245,11 @@ class ImageService {
   }
 
 
-  getTeamLogoSVG(city, team) {
-    const leftLetter = city.name[0].toUpperCase();
-    const rightLetter = team.name[0].toUpperCase();
+  getCityTeamLogoSVG(city, team) {
+
+    const leftLetter = city.name[0].toUpperCase()
+    const rightLetter = team.name[0].toUpperCase()
+    
     const color1 = team.colors.color1; // Left background
     const color2 = team.colors.color2; // Right background
   
@@ -276,9 +280,68 @@ class ImageService {
     `;
   }
   
+  getTeamLogoSVG( team) {
+
+    const leftLetter = team.name[0].toUpperCase()
+    
+    const color1 = team.colors.color1; // Left background
+    const color2 = team.colors.color2; // Right background
   
+    return `
+      <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background split vertically -->
+        <rect x="0" y="0" width="100" height="100" fill="${color1}" />  
+        
+        <!-- Left letter: white fill, gray stroke -->
+        <text x="50" y="75" text-anchor="middle"
+              font-family="Arial Black, sans-serif"
+              font-size="75" font-weight="900"
+              fill="${color2}"
+              stroke="#7a7a7a" stroke-width="1.5">
+          ${leftLetter}
+        </text>
+
+      </svg>
+    `;
+  }
+
   
+  async createCityTeamLogo(city:City, team:Team, options?:any) {
+
+    let logo = new Image()
+
+    logo.svg = this.getCityTeamLogoSVG(city, team)
+    logo.cid = await Hash.of(logo.svg)
+    logo._id = logo.cid
+
+    let existing = await this.get(logo._id, options)
+
+    if (!existing) {
+        existing = await this.put(logo, options)
+    }
+
+    return existing
+  }
+
   
+  async createTeamLogo(team:Team, options?:any) {
+
+    let logo = new Image()
+
+    logo.svg = this.getTeamLogoSVG(team)
+    logo.cid = await Hash.of(logo.svg)
+    logo._id = logo.cid
+
+    let existing = await this.get(logo._id, options)
+
+    if (!existing) {
+        existing = await this.put(logo, options)
+    }
+
+    return existing
+  }
+
+
 
 }
 

@@ -609,12 +609,10 @@ interface TeamInfo {
     
     seasonRating?: {
         before?:number
-        after?:number
     }
 
     longTermRating?: {
         before?:number
-        after?:number
     }
 
     overallRecord?: {

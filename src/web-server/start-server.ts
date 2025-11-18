@@ -24,7 +24,7 @@ import { OwnerService } from "../service/owner-service.js"
 import connectSessionSequelize from "connect-session-sequelize"
 import { UserService } from "../service/user-service.js"
 import { User } from "../dto/user.js"
-import { DiamondMintPass, Team } from "../dto/team.js"
+import { DiamondMintPass, RotationPitcher, Team } from "../dto/team.js"
 import { TeamService } from "../service/team-service.js"
 import { GameService } from "../service/game-service.js"
 import { UniverseService } from "../service/universe-service.js"
@@ -53,6 +53,7 @@ import { TeamMintPass } from '../dto/team-mint-pass.js'
 
 import { Eta } from "eta"
 import { CityService } from '../service/city-service.js'
+import { Game } from '../dto/game.js'
 
 const TWITTER = "@ethbaseball"
 
@@ -112,6 +113,7 @@ let startWebServer = async () => {
   let seasonService: SeasonService = container.get(SeasonService)
   let cityService:CityService = container.get(CityService)
   let teamLeagueSeasonService:TeamLeagueSeasonService = container.get(TeamLeagueSeasonService)
+  let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
   let diamondMintPassService:DiamondMintPassService = container.get(DiamondMintPassService)
   let teamMintPassService:TeamMintPassService = container.get(TeamMintPassService)
 
@@ -339,11 +341,11 @@ let startWebServer = async () => {
 
 
 
-  app.get("/t/:tokenId", async function (req, res) {
+  app.get("/t/index/:teamId", async function (req, res) {
 
       try {
 
-        let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
+        let team: Team = await teamService.get(req.params.teamId)
         let season:Season = await seasonService.getMostRecent()
         let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
 
@@ -352,8 +354,8 @@ let startWebServer = async () => {
 
         await renderIndex(res,{ 
           twitter: TWITTER,
-          title: `${tlsPlain.city.name} ${tlsPlain.team.name} - Ethereum Baseball League`,
-          description: `${tlsPlain.city.name} ${tlsPlain.team.name} is a franchise in Ethereum Baseball League.`,
+          title: `${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} - Ethereum Baseball League`,
+          description: `${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} is a franchise in Ethereum Baseball League.`,
           VERSION: version,
           image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
           url: req.originalUrl
@@ -366,11 +368,11 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/t/results/:tokenId", async function (req, res) {
+  app.get("/t/results/:teamId", async function (req, res) {
 
       try {
 
-        let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
+        let team: Team = await teamService.get(req.params.teamId)
         let season:Season = await seasonService.getMostRecent()
         let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
 
@@ -379,8 +381,8 @@ let startWebServer = async () => {
 
         await renderIndex(res,{ 
           twitter: TWITTER,
-          title: `${tlsPlain.city.name} ${tlsPlain.team.name} Schedule - Ethereum Baseball League`,
-          description: `View the schedule for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
+          title: `${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} Schedule - Ethereum Baseball League`,
+          description: `View the schedule for ${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} in Ethereum Baseball League.`,
           VERSION: version,
           image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
           url: req.originalUrl
@@ -393,11 +395,63 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/t/activity/:tokenId", async function (req, res) {
+  app.get("/t/activity/index/:teamId", async function (req, res) {
 
       try {
 
-        let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
+        let team: Team = await teamService.get(req.params.teamId)
+        let season:Season = await seasonService.getMostRecent()
+        let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        let tlsPlain = tls.get({ plain: true })
+
+        await renderIndex(res,{ 
+          twitter: TWITTER,
+          title: `${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
+          description: `View the activity for ${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} in Ethereum Baseball League.`,
+          VERSION: version,
+          image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
+          url: req.originalUrl
+
+        })
+
+      } catch (ex) {
+        res.sendStatus(500)
+      }
+
+  })
+
+  app.get("/t/activity/off/:teamId", async function (req, res) {
+
+      try {
+
+        let team: Team = await teamService.get(req.params.teamId)
+        let season:Season = await seasonService.getMostRecent()
+        let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        let tlsPlain = tls.get({ plain: true })
+
+        await renderIndex(res,{ 
+          twitter: TWITTER,
+          title: `${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
+          description: `View the activity for ${tlsPlain.city?.name ? tlsPlain.city.name : ''} ${tlsPlain.team.name} in Ethereum Baseball League.`,
+          VERSION: version,
+          image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
+          url: req.originalUrl
+
+        })
+
+      } catch (ex) {
+        res.sendStatus(500)
+      }
+
+  })
+
+  app.get("/t/activity/game/:teamId", async function (req, res) {
+
+      try {
+
+        let team: Team = await teamService.get(req.params.teamId)
         let season:Season = await seasonService.getMostRecent()
         let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
 
@@ -419,83 +473,31 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/t/activity/off/:tokenId", async function (req, res) {
+  // app.get("/t/mint/:tokenId", async function (req, res) {
 
-      try {
+  //     try {
 
-        let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
-        let season:Season = await seasonService.getMostRecent()
-        let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+  //       let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
+  //       let season:Season = await seasonService.getMostRecent()
+  //       let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
 
-        let tlsPlain = tls.get({ plain: true })
+  //       let tlsPlain = tls.get({ plain: true })
 
-        await renderIndex(res,{ 
-          twitter: TWITTER,
-          title: `${tlsPlain.city.name} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
-          description: `View the activity for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
-          VERSION: version,
-          image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
-          url: req.originalUrl
+  //       await renderIndex(res,{ 
+  //         twitter: TWITTER,
+  //         title: `Mint ${tlsPlain.city.name} ${tlsPlain.team.name} - Ethereum Baseball League`,
+  //         description: `Mint the ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
+  //         VERSION: version,
+  //         image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
+  //         url: req.originalUrl
 
-        })
+  //       })
 
-      } catch (ex) {
-        res.sendStatus(500)
-      }
+  //     } catch (ex) {
+  //       res.sendStatus(500)
+  //     }
 
-  })
-
-  app.get("/t/activity/game/:tokenId", async function (req, res) {
-
-      try {
-
-        let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
-        let season:Season = await seasonService.getMostRecent()
-        let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        let tlsPlain = tls.get({ plain: true })
-
-        await renderIndex(res,{ 
-          twitter: TWITTER,
-          title: `${tlsPlain.city.name} ${tlsPlain.team.name} Activity - Ethereum Baseball League`,
-          description: `View the activity for ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
-          VERSION: version,
-          image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
-          url: req.originalUrl
-
-        })
-
-      } catch (ex) {
-        res.sendStatus(500)
-      }
-
-  })
-
-  app.get("/t/mint/:tokenId", async function (req, res) {
-
-      try {
-
-        let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
-        let season:Season = await seasonService.getMostRecent()
-        let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        let tlsPlain = tls.get({ plain: true })
-
-        await renderIndex(res,{ 
-          twitter: TWITTER,
-          title: `Mint ${tlsPlain.city.name} ${tlsPlain.team.name} - Ethereum Baseball League`,
-          description: `Mint the ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
-          VERSION: version,
-          image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
-          url: req.originalUrl
-
-        })
-
-      } catch (ex) {
-        res.sendStatus(500)
-      }
-
-  })
+  // })
 
 
   app.get("/l/list/:leagueRank", async function (req, res) {
@@ -898,7 +900,7 @@ let startWebServer = async () => {
 
       let startDate = dayjs(req.params.startDate).toDate()
       let season: Season = await seasonService.getByDate(startDate)
-      let leagueOne:League = await leagueService.getByRank(1)
+      // let leagueOne:League = await leagueService.getByRank(1)
 
       // let tlss: TeamLeagueSeason[] = await teamLeagueSeasonService.listByLeagueAndSeason(leagueOne, season, { limit: 10 })
 
@@ -909,14 +911,14 @@ let startWebServer = async () => {
 
       let vm = {
         // featuredPost: featuredPost,
-        todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
+        // todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
         // onChainTransactions: await processedTransactionService.listWithEvents({ limit: 10, offset: 0 }),
         // topTeams: tlss.map((t, index) => {
         //   t = t.get({ plain: true })
         //   return teamService.getTeamStandingsViewModel(t, index + 1)
         // }
     // ),
-        topNews:[]
+        // topNews:[]
       }
 
 
@@ -1044,6 +1046,57 @@ let startWebServer = async () => {
     return
   })
 
+
+  // app.post('/api/player/drop/:playerId', async function (req, res) {
+
+  //   try {
+
+  //     let playerId = req.params.playerId
+
+  //     //@ts-ignore
+  //     let userId = req.session?.passport?.user
+  //     if (!userId) {
+  //       res.status(401)
+  //       return res.send("Not authorized.")
+  //     }
+
+  //     let user: User = await userService.get(userId)
+
+  //     //Make sure this user owns this player
+  //     let player:Player = await playerService.get(playerId)
+  //     let season:Season = await seasonService.getMostRecent()
+      
+  //     let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+      
+  //     if (!pls.teamId) {
+  //       throw new Error("Player is not rostered.")
+  //     }
+      
+  //     let team:Team = await teamService.get(pls.teamId)
+      
+  //     //Must be team owner
+  //     if (user._id != team.userId) {
+  //       res.status(401)
+  //       return res.send("Not authorized.")
+  //     }
+
+  //     await refreshUniverse()
+
+  //     await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
+
+  //     //Clear cache 
+  //     await cacheService.clearPlayersTag()
+  //     await cacheService.clearTeamsTag()
+
+  //     res.send("success")
+
+  //   } catch (ex) {
+  //     res.status(500)
+  //     res.send(ex.message);
+  //   }
+
+  // })
+
 /**
  * End Players
  */
@@ -1141,19 +1194,16 @@ let startWebServer = async () => {
 
   })
 
-
-
-
-  app.get('/api/game-transaction/team/on-chain/:teamTokenId/:page', async function (req, res) {
+  app.get('/api/game-transaction/team/on-chain/:teamId/:page', async function (req, res) {
 
     try {
 
       let perPage = 25
       let page = parseIntWithException(req.params.page)
       let options = { limit: perPage, offset: (page - 1) * perPage }
-      let tokenId = parseIntWithException(req.params.teamTokenId)
+      let teamId = req.params.teamId
 
-      return res.json(await processedTransactionService.listWithEventsByToken(tokenId, options))
+      return res.json(/**await processedTransactionService.listWithEventsByToken(teamId, options)**/)
 
     } catch (ex) {
       console.log(ex)
@@ -1182,11 +1232,6 @@ let startWebServer = async () => {
     }
 
   })
-
-
-
-
-
 
   app.get('/api/game-transaction/owner/:address/:page', async function (req, res) {
 
@@ -1598,6 +1643,159 @@ let startWebServer = async () => {
     }
 
   })
+
+  app.post('/api/game/play/bot', async function (req, res) {
+
+      try {
+
+          //@ts-ignore
+          let userId = req.session?.passport?.user
+
+          if (!userId) {
+            res.status(401)
+            return res.send("Not authorized.")
+          }
+
+          let user:User = await userService.get(userId)
+          let teams:Team[] = await teamService.getByUser(user)
+          let team = teams[0]
+
+          let inProgressGames:Game[] = await gameService.getInProgressByTeam(team)
+
+          if (inProgressGames.length > 0) {
+            res.status(500)
+            return res.send("Game in progress")
+          }
+
+          let season:Season = await seasonService.getMostRecent()
+
+          let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+          let tlsPlain = tls.get( { plain: true })
+
+          let lineup = tls.lineups[0]
+
+          let currentPLS: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(team)
+          let currentPLSPlain = currentPLS.map( pls => pls.get({ plain: true}))
+
+          let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, currentPLSPlain, universe.currentDate)
+
+
+          //Validate roster and lineup.
+          teamService.validateLineup(team, lineup, currentPLSPlain, startingPitcher, universe.currentDate)
+
+          //Find bot match.
+          let bot:Team = await teamService.getClosetRatedBot(team.longTermRating.rating)
+          let botTLS:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(bot, season)
+
+          let isHome = Math.random() >= .5
+
+          let awayTLS = isHome ? botTLS : tls
+          let homeTLS = isHome ? tls: botTLS
+
+          let game = await gameService.scheduleGame({
+            league: tlsPlain.league,
+            season: season,
+            awayTLS: awayTLS,
+            homeTLS: homeTLS,
+            startDate: new Date(new Date().toUTCString())
+          })
+
+
+          //Connect the game and the player 
+          // for (let player of players) {
+          //     let gp = new GP()
+          //     gp.gameId = game._id
+          //     gp.playerId = player._id
+          //     saveGPs.push(gp)
+          // }
+
+          // let homePlssPlain = homePlss.map( p => p.get({ plain: true}))
+          // let awayPlssPlain = awayPlss.map( p => p.get({ plain: true}))
+
+          // let homeTlsPlain = homeTLS.get( { plain: true })
+          // let awayTlsPlain = awayTLS.get( { plain: true })
+
+          // let homeRotationIds = homeTLS.lineups[0].rotation.map( r => r._id)
+          // let homeRotation:Player[] = players.filter( p => homeRotationIds.indexOf(p._id) > -1)
+
+          // let awayRotationIds = awayTLS.lineups[0].rotation.map( r => r._id)
+          // let awayRotation:Player[] = players.filter( p => awayRotationIds.indexOf(p._id) > -1)
+
+          // let homeStartingPitcher:RotationPitcher = this.teamService.getStartingPitcher(homeRotation, date)
+          // let awayStartingPitcher:RotationPitcher = this.teamService.getStartingPitcher(awayRotation, date)
+
+          // this.gameService.startGame(game, league.rank, home, homeTlsPlain, homePlssPlain, homeStartingPitcher, away, awayTlsPlain, awayPlssPlain, awayStartingPitcher, leagueAverage, date)
+
+
+          // //Update players last game date
+          // for (let player of players) {
+          //     player.lastGamePlayed = date
+          // }
+
+          // //Updated pitch dates for starting pitchers
+          // let homePitcher = players.find( p => p._id == homeStartingPitcher._id)
+          // homePitcher.lastGamePitched = date
+
+
+          // let awayPitcher = players.find( p => p._id == awayStartingPitcher._id)
+          // awayPitcher.lastGamePitched = date
+
+
+
+        // if (allGamePlayers?.length > 0) {
+        //     await this.gamePlayerRepository.insertAll(allGamePlayers, options)
+        // }
+
+
+          return res.send("success")
+
+
+      } catch (ex) {
+        console.log(ex)
+        res.sendStatus(404)
+      }
+
+
+
+  })
+
+  app.post('/api/game/play/pvp', async function (req, res) {
+
+      try {
+
+        //@ts-ignore
+        let userId = req.session?.passport?.user
+
+        if (!userId) {
+          res.status(401)
+          return res.send("Not authorized.")
+        }
+
+        let user:User = await userService.get(userId)
+        let teams:Team[] = await teamService.getByUser(user)
+        let team = teams[0]
+
+        let inProgressGames:Game[] = await gameService.getInProgressByTeam(team)
+
+        if (inProgressGames.length > 0) {
+          res.status(500)
+          return res.send("Game in progress")
+        }
+
+        //Check if they are already in the queue.
+
+        // return res.json(vm)
+
+      } catch (ex) {
+        console.log(ex)
+        res.sendStatus(404)
+      }
+    
+
+
+
+  })
+
 
 
   app.get('/api/cities', cacheService.cacheResponse(), async function(req, res) {

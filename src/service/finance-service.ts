@@ -85,10 +85,7 @@ class FinanceService {
     }
 
     setFinancialProjections(
-                          tls:TeamLeagueSeason,
-                          league:League,
-                          city:City,
-                          stadium:Stadium
+                          tls:TeamLeagueSeason
                         ) {
 
 
@@ -259,6 +256,39 @@ class FinanceService {
         let totalRevenue = this.calculateTotalRevenue(revenue)
         revenue.perGame = games > 0 ? BigInt(totalRevenue / BigInt(games)).toString() : BigInt(0).toString()
     }
+
+    getDefaultFinanceSeason() {
+
+        return {
+
+            diamondBalance: "0",
+
+            homeGamesPlayed: 0,
+
+            awayGamesPlayed: 0,
+
+            totalGamesPlayed: 0,
+
+            revenue: {
+                seasonToDate: {
+                    total: "0",
+                    perGame: "0"
+                },
+
+                projectedRemaining: {
+                    perGame: "0",
+                    total: "0"
+                },
+
+                projectedTotal: {
+                    perGame: "0",
+                    total: "0"
+                }
+            }
+
+        }
+    }
+
 
     // calculateProjectedPayroll(plss:PlayerLeagueSeason[]) : bigint {
 

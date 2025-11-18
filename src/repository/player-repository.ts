@@ -59,7 +59,7 @@ interface PlayerRepository {
     getFreeAgentIdsByPositionAndSalary(position:Position, salary:bigint, date:Date, limit:number, offset:number , options?:any): Promise<string[]>
     getFreeAgentsAfterSeason(season:Season, options?:any) : Promise<PlayerFinalContract[]>
 
-    getPurgeable(options?: any) : Promise<Player[]>
+    // getPurgeable(options?: any) : Promise<Player[]>
     getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]>
 }
 

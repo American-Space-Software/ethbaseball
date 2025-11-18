@@ -171,8 +171,8 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
     async updateGameFields(players: Player[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "age", "personalityType"],
-            updateOnDuplicate: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "lastGameUpdate", "age"],
+            fields: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched",  "age", "personalityType"],
+            updateOnDuplicate: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "age"],
         }, options)
 
         let updatePlayers = players.map(p => {
@@ -183,7 +183,6 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
                 careerStats: p.careerStats,
-                lastGameUpdate: p.lastGameUpdate,
                 firstName: p.firstName,
                 lastName: p.lastName,
                 primaryPosition: p.primaryPosition,
@@ -1063,28 +1062,28 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getPurgeable(options?: any): Promise<Player[]> {
+    // async getPurgeable(options?: any): Promise<Player[]> {
 
-        let s = await this.sequelize()
-
-
-        let queryOptions = {
-            type: QueryTypes.RAW,
-            plain: false,
-            mapToModel: false
-        }
-
-        const [queryResults, metadata] = await s.query(`
-            SELECT  
-                p._id
-			FROM player as p
-            WHERE p.overallRating = 40 AND p.age > 20
-        `, Object.assign(queryOptions, options))
-
-        return this.getByIds(queryResults.map(qr => qr._id), options)
+    //     let s = await this.sequelize()
 
 
-    }
+    //     let queryOptions = {
+    //         type: QueryTypes.RAW,
+    //         plain: false,
+    //         mapToModel: false
+    //     }
+
+    //     const [queryResults, metadata] = await s.query(`
+    //         SELECT  
+    //             p._id
+	// 		FROM player as p
+    //         WHERE p.overallRating = 40 AND p.age > 20
+    //     `, Object.assign(queryOptions, options))
+
+    //     return this.getByIds(queryResults.map(qr => qr._id), options)
+
+
+    // }
 
 
     async getPlayerPercentileRatings(options?: any): Promise<PlayerPercentileRatings[]> {

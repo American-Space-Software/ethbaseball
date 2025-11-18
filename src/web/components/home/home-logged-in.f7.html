@@ -7,53 +7,74 @@
 
         <div class="fixed-width-content center">
 
-          <div class="block block-strong block-outline main-card">
+          <div class="block">
+              <div class="team-info">
 
-            <div class="left">
+                  <div class="left">
+                      <img src="/image/thumbnail/100/${vm.team.logoId}" class="profilePic" height="100" width="100" />
+                  </div>
 
-              <div class="logo-wrapper">
-                <img src="${logo}" />
+                  <div class="right">
+
+                      <span class="name"><a class="link" href="/t/index/${vm.team._id}">${teamWebService.getTeamName(vm.team)}</a></span> 
+
+                      <div class="team-record">
+                          <span class="label">Ranked: </span> ${ vm.team.overallRecord.rank } <br />
+                          <span class="label">Record: </span> ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(vm.team.overallRecord.winPercent)}<br />
+                          <span class="label">Cash: </span> ${universeWebService.displayDiamonds(vm.team.diamondBalance)}<br /><br />
+                      </div>
+
+                      
+
+                  </div>
+
               </div>
+          </div>
+
+          <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
+              <ul>
+                  <li><a class="link" href="/t/index/${vm.team._id}">✏️ Manage Team</a></li>
+                  <li><a class="link" href="/t/index/${vm.team._id}">🤖 Play Bot</a></li>
+                  <li><a class="link" href="/t/index/${vm.team._id}">🏆 Play</a></li>
+              </ul>
+          </div>
+
+
+          ${vm.games?.length > 0 ? $h`
+
+              <div class="block-title block-title-small">Today's Games</div>
+              <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
+                  <ul style="padding: 15px;">
+      
+                      ${vm.games.map( game => $h`
+                  
+                          ${!game.isStarted ? $h`
+                              <${Scheduled} game=${game} /> 
+                          ` : $h` `}
+
+                          ${game.isStarted && !game.isFinished ? $h`
+                              <${InProgress} game=${game} />
+                          ` : $h` `}
+
+                          ${game.isStarted && game.isFinished ? $h`
+                              <${Result} game=${game} />
+                          ` : $h` `}
+
+                      
+                      `)}
+      
+                  </ul>
+      
+              </div>
+
+          ` : $h` `}
               
-              <div class="description">
-                A competitive PvP baseball ownership and business sim powered by Ethereum.
-              </div>
-
-              <a data-popup=".login-popup" href="#" class="button button-fill main-button color-green popup-open">Get Started</a>
-
-              <p>
-                Join the community on <a class="link external" href="${discord}" target="_blank">Discord</a>. 
-              </p>
-
-            </div>
-
-            <div class="right">
-              <img src="${gameShot}" />
-            </div>
-
-          </div>
-
-          <div class="block block-strong block-outline">
-              <p>
-                
-                Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                where players and Diamonds are bought, sold, and earned.
-
-                <ul>
-                  <li>Own players as an NFTs (ERC-721) on Ethereum.</li>
-                  <li>Live simulated games with box scores and play-by-play.</li>
-                  <li>100% open source (MIT) — fork and run your own custom universe.</li>
-                </ul>
-
-              </p>
-
-              <a class="button button-outline main-button color-white"  href="/about">Learn More</a>
-
-
-          </div>
-
         </div>
 
+
+
+
+        
         <${Footer} />
 
     </div>
@@ -82,6 +103,7 @@
 
   import { ContainerService } from "../../../service/container-service"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
 
   import { StatService } from "../../../service/stat-service.ts"
   import { Position } from "../../../service/enums.ts"
@@ -103,7 +125,7 @@
     let eventTarget = ContainerService.getInstance("eventTarget")
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let walletService = ContainerService.getInstance("WalletService")
-
+    let teamWebService = ContainerService.getInstance(TeamWebService)
     let statService = ContainerService.getInstance(StatService)
 
     let authInfo = props.authInfo

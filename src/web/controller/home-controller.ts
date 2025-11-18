@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify';
 
 import HomeComponent from '../components/home/home.f7.html'
+import HomeLoggedInComponent from '../components/home/home-logged-in.f7.html'
 
 import ConnectComponent from '../components/connect.f7.html'
 import DraftComponent from '../components/draft.f7.html'
@@ -30,12 +31,19 @@ class HomeController {
     @routeMap("/")
     async showIndex(): Promise<ModelView> {
         
+        let authInfo = await this.loginWebService.getAuthInfo()
+
+        let component = HomeComponent
+
+        if (authInfo?._id) {
+            component = HomeLoggedInComponent
+        }
+
         return new ModelView(async (routeTo) => {
 
             this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
 
             let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
-            let authInfo = await this.loginWebService.getAuthInfo()
 
             let contractBalance
 
@@ -52,7 +60,7 @@ class HomeController {
                 discord: this.discord
             }
 
-        }, HomeComponent)
+        }, component)
 
     }
 

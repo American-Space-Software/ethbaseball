@@ -36,18 +36,18 @@ class GameTransactionWebService {
 
 
 
-    async getOffChainByTeam(tokenId:number, page:number) {
+    async getOffChainByTeam(teamId:string, page:number) {
 
-      let result = await axios.get(`/api/game-transaction/team/off-chain/${tokenId}/${page}`)
+      let result = await axios.get(`/api/game-transaction/team/off-chain/${teamId}/${page}`)
 
       return result.data
 
     }
 
 
-    async getOnChainByTeam(tokenId:number, page:number) {
+    async getOnChainByTeam(teamId:string, page:number) {
 
-      let result = await axios.get(`/api/game-transaction/team/on-chain/${tokenId}/${page}`)
+      let result = await axios.get(`/api/game-transaction/team/on-chain/${teamId}/${page}`)
 
       return result.data
 

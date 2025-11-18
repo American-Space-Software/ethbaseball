@@ -8,33 +8,33 @@ class TeamWebService {
 
     constructor() {}
 
-    async getByDate(tokenId:number, startDate:string) {
+    async getByDate(teamId:string, startDate:string) {
         //Download it.
-        let result = await axios.get(`/api/team/date/${tokenId}/${startDate}`)
+        let result = await axios.get(`/api/team/date/${teamId}/${startDate}`)
         return result.data
 
     }
 
 
-    async getMintInfo(teamId:string, mintKey?:string) {
+    // async getMintInfo(teamId:string, mintKey?:string) {
         
-        let queryString = mintKey ? `?mintKey=${mintKey}` : ''
+    //     let queryString = mintKey ? `?mintKey=${mintKey}` : ''
 
-        //Download it.
-        let result = await axios.get(`/api/team/mint-info/${teamId}${queryString}`)
-        return result.data
+    //     //Download it.
+    //     let result = await axios.get(`/api/team/mint-info/${teamId}${queryString}`)
+    //     return result.data
 
-    }
+    // }
 
-    async getMint(teamId:string, mintKey?:string) {
+    // async getMint(teamId:string, mintKey?:string) {
         
-        let queryString = mintKey ? `?mintKey=${mintKey}` : ''
+    //     let queryString = mintKey ? `?mintKey=${mintKey}` : ''
 
-        //Download it.
-        let result = await axios.get(`/api/team/mint/${teamId}${queryString}`)
-        return result.data
+    //     //Download it.
+    //     let result = await axios.get(`/api/team/mint/${teamId}${queryString}`)
+    //     return result.data
 
-    }
+    // }
 
     async getTeamMintPass(tokenId:number) {
         
@@ -45,9 +45,9 @@ class TeamWebService {
     }
 
 
-    async getGameLog(tokenId:number, date:Date) {
+    async getGameLog(teamId:string, date:Date) {
         //Download it.
-        let result = await axios.get(`/api/team/games/${tokenId}/${dayjs(date).format("YYYY-MM-DD")}`)
+        let result = await axios.get(`/api/team/games/${teamId}/${dayjs(date).format("YYYY-MM-DD")}`)
         return result.data
 
     }
@@ -59,10 +59,10 @@ class TeamWebService {
         return result.data
 
     }
-    async setRoster(tokenId:number, lineups) {
+    async setRoster(teamId:string, lineups) {
         
         //Download it.
-        let result = await axios.post(`/api/team/roster/${tokenId}`, { lineups: lineups })
+        let result = await axios.post(`/api/team/roster/${teamId}`, { lineups: lineups })
         return result.data
 
     }
@@ -70,7 +70,15 @@ class TeamWebService {
 
 
     getTeamName(tls) {
-        return `${tls.city.name} ${tls.name}`
+
+        let isBot = tls.owner?._id == undefined
+
+        if (tls.city) {
+            return `${tls.city.name} ${tls.name}${isBot ? ' 🤖' : ''}`
+        }
+
+        
+        return `${tls.name}${isBot ? ' 🤖' : ''}`
     }
 
     getOverallRank(rank:number, leagueRank:number, teams:number) {

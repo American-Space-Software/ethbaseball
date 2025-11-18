@@ -1,12 +1,10 @@
 import { inject, injectable } from "inversify";
 
-import { Colors, DiamondMintPass, FinanceSeason, Lineup, RotationPitcher, Team } from "../dto/team.js";
+import { Colors, DiamondMintPass, FinanceSeason, Lineup, RotationPitcher, Team, TEAM_COLORS } from "../dto/team.js";
 import { TeamRepository } from "../repository/team-repository.js";
-import { Owner } from "../dto/owner.js";
-import { Image } from "../dto/image.js";
 
 import { Player } from "../dto/player.js";
-import { NFTMetadata, PlayerRowViewModel, PlayerService } from "./player-service.js";
+import { GLICKO_SETTINGS, NFTMetadata, PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../dto/city.js";
 import { ContractType, MAX_AAV_CONTRACT, MIN_AAV_CONTRACT, Position, Rating, TeamInfo, TEAMS_PER_TIER } from "./enums.js";
 import { TeamRating, TeamRecord } from "../repository/node/team-repository-impl.js";
@@ -22,15 +20,13 @@ import { TeamLeagueSeason } from "../dto/team-league-season.js";
 import { TeamLeagueSeasonService } from "./team-league-season-service.js";
 import { PlayerLeagueSeason } from "../dto/player-league-season.js";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
-import { SignatureTokenRepository } from "../repository/signature-token-repository.js";
-import { LineupService } from "./lineup-service.js";
-import { LeagueService } from "./league-service.js";
-import { RollService } from "./roll-service.js";
-import { StatService } from "./stat-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { GameService } from "./game-service.js";
 import { User } from "../dto/user.js";
+import { v4 as uuidv4 } from 'uuid';
+import { ImageService } from "./image-service.js";
+
 
 const MAX_ROSTER_SIZE = 13
 
@@ -42,25 +38,18 @@ class TeamService {
 
     @inject("GameRepository")
     private gameRepository: GameRepository
-
-    @inject("SignatureTokenRepository")
-    private signatureTokenRepository:SignatureTokenRepository
-
-    @inject("sequelize")
-    private sequelize:Function
+n
 
     constructor(
         private playerService: PlayerService,
         private teamLeagueSeasonService: TeamLeagueSeasonService,
         private playerLeagueSeasonService: PlayerLeagueSeasonService,
         private financeService: FinanceService,
-        private lineupService:LineupService,
-        private leagueService:LeagueService,
-        private rollService:RollService,
-        private statService:StatService,
+
         private offchainEventService:OffchainEventService,
         private diamondMintPassService:DiamondMintPassService,
-        private gameService:GameService
+        private gameService:GameService,
+        private imageService:ImageService
     ) { }
 
 
@@ -80,8 +69,8 @@ class TeamService {
         return this.teamRepository.put(team, options)
     }
 
-    async getByOwner(owner: Owner, options?: any): Promise<Team[]> {
-        return this.teamRepository.getByOwner(owner, options)
+    async getByUser(user: User, options?: any): Promise<Team[]> {
+        return this.teamRepository.getByUser(user, options)
     }
 
     async getRatings(options?: any) {
@@ -114,6 +103,18 @@ class TeamService {
 
     async list(limit: number, offset: number, options?: any) {
         return this.teamRepository.list(limit, offset, options)
+    }
+
+    async count(options?: any): Promise<number> {
+        return this.teamRepository.count(options)
+    }
+
+    async countByLeague(league: League, options?: any): Promise<number> {
+        return this.teamRepository.countByLeague(league, options)
+    }
+
+    async getClosetRatedBot(rating:number, options?:any): Promise<Team> {
+        return this.teamRepository.getClosetRatedBot(rating, options)
     }
 
     async addToLeagueSeason(team: Team, league: League, season: Season, options?: any) {
@@ -273,9 +274,6 @@ class TeamService {
 
     }
 
-
-
-
     async getTeamGameLogViewModels(team: Team, start: Date, end: Date, options?: any): Promise<TeamGame[]> {
 
         let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
@@ -343,7 +341,6 @@ class TeamService {
                 abbrev: teamInfo.abbrev,
                 name: teamInfo.name,
                 ratingBefore: teamInfo.seasonRating.before,
-                ratingAfter: teamInfo.seasonRating.after,
                 wins: g.isComplete ? teamInfo.overallRecord.after?.wins : teamInfo.overallRecord.before?.wins,
                 losses: g.isComplete ? teamInfo.overallRecord.after?.losses : teamInfo.overallRecord.before?.losses,
                 runs: g.home._id == team._id ? g.score.home : g.score.away,
@@ -357,7 +354,6 @@ class TeamService {
                 abbrev: oppTeamInfo.abbrev,
                 name: oppTeamInfo.name,
                 ratingBefore: oppTeamInfo.seasonRating.before,
-                ratingAfter: oppTeamInfo.seasonRating.after,
                 wins: g.isComplete ? oppTeamInfo.overallRecord.after?.wins : oppTeamInfo.overallRecord.before?.wins,
                 losses: g.isComplete ? oppTeamInfo.overallRecord.after?.losses : oppTeamInfo.overallRecord.before?.losses,
                 runs: g.home._id == team._id ? g.score.away : g.score.home,
@@ -369,7 +365,6 @@ class TeamService {
         }
     }
 
-
     getTeamStandingsViewModel(tls:TeamLeagueSeason, rank:number) {
     
 
@@ -379,8 +374,9 @@ class TeamService {
             name: tls.team.name,
             abbrev: tls.team.abbrev,
             city: tls.city,
-            // stadium: t.stadium,
-            userId: tls.team.userId,
+            owner: {
+                _id: tls.team.userId
+            },
             seasonRating: tls.seasonRating,
             longTermRating: tls.longTermRating,
             rank: rank,
@@ -478,94 +474,6 @@ class TeamService {
 
     }
 
-
-    // async listViewModels(seasons: Season[], leagues: League[], season: Season, options?: any) {
-
-    //     let leagueVms = []
-
-    //     for (let league of leagues) {
-
-    //         let teams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
-
-    //         let viewModels = teams.map((t, index) => {
-    //             t = t.get({ plain: true })
-    //             return this.getTeamStandingsViewModel(t, index + 1)
-    //         })
-
-    //         let leagueFinance = {
-    //             cash: "0",
-    //             revenue: "0",
-    //             expenses: "0",
-    //             profit: "0",
-    //             teamCostETH: "0",
-    //             teamCostDiamonds: "0",
-
-    //             projectedTotalRevenue: "0",
-    //             projectedTotalExpenses: "0",
-    //             projectedTotalProfit: "0"
-    //         }
-    
-    //         for (let vm of viewModels) {
-    //             leagueFinance.cash = (BigInt(leagueFinance.cash) + BigInt(vm.financeSeason.diamondBalance)).toString()
-    //             leagueFinance.revenue = (BigInt(leagueFinance.revenue) + BigInt(vm.financeSeason.revenue.seasonToDate.total)).toString()
-    //             leagueFinance.expenses = (BigInt(leagueFinance.expenses) + BigInt(vm.financeSeason.expenses.seasonToDate.total)).toString()
-    //             leagueFinance.profit = (BigInt(leagueFinance.profit) + BigInt(vm.financeSeason.profit.seasonToDate.total)).toString()
-
-    //             leagueFinance.projectedTotalRevenue = (BigInt(leagueFinance.projectedTotalRevenue) + BigInt(vm.financeSeason.revenue.projectedTotal.total)).toString()
-    //             leagueFinance.projectedTotalExpenses = (BigInt(leagueFinance.projectedTotalExpenses) + BigInt(vm.financeSeason.expenses.projectedTotal.total)).toString()
-    //             leagueFinance.projectedTotalProfit = (BigInt(leagueFinance.projectedTotalProfit) + BigInt(vm.financeSeason.profit.projectedTotal.total)).toString()
-
-    //             if (vm.teamCost) {
-    //                 leagueFinance.teamCostETH = (BigInt(leagueFinance.teamCostETH) + BigInt(vm.teamCost.ethCost )).toString()
-    //                 leagueFinance.teamCostDiamonds = (BigInt(leagueFinance.teamCostDiamonds) + BigInt(vm.teamCost.totalDiamonds )).toString()
-    //             }
-                
-    //         }
-
-    //         leagueVms.push({
-    //             league: league,
-    //             viewModels: viewModels,
-    //             leagueFinance: leagueFinance
-    //         })
-
-    //     }
-
-    //     let financeTotals = {
-    //         cash: "0",
-    //         expenses:  "0",
-    //         profit:  "0",
-    //         revenue: "0",
-    //         projectedTotalRevenue: "0",
-    //         projectedTotalExpenses: "0",
-    //         projectedTotalProfit: "0"
-    //       }
-
-    //       for (let lf of leagueVms.map( l => l.leagueFinance)) {
-    //         financeTotals.cash = (BigInt(financeTotals.cash) + BigInt(lf.cash)).toString()
-    //         financeTotals.expenses = (BigInt(financeTotals.expenses) + BigInt(lf.expenses)).toString()
-    //         financeTotals.profit = (BigInt(financeTotals.profit) + BigInt(lf.profit)).toString()
-    //         financeTotals.revenue = (BigInt(financeTotals.revenue) + BigInt(lf.revenue)).toString()
-    //         financeTotals.projectedTotalRevenue = (BigInt(financeTotals.projectedTotalRevenue) + BigInt(lf.projectedTotalRevenue)).toString()
-    //         financeTotals.projectedTotalExpenses = (BigInt(financeTotals.projectedTotalExpenses) + BigInt(lf.projectedTotalExpenses)).toString()
-    //         financeTotals.projectedTotalProfit = (BigInt(financeTotals.projectedTotalProfit) + BigInt(lf.projectedTotalProfit)).toString()
-
-    //       }
-
-
-    //     return {
-    //         season: season,
-    //         seasons: seasons.map(s => {
-    //             return {
-    //                 _id: s._id,
-    //                 startDate: dayjs(s.startDate).format("YYYY-MM-DD")
-    //             }
-    //         }),
-    //         leagueVms: leagueVms,
-    //         financeTotals: financeTotals
-    //     }
-
-    // }
-
     async listBasicViewModels(leagues: League[], season: Season, options?: any) {
 
         let leagueVms = []
@@ -603,15 +511,6 @@ class TeamService {
 
         return leagueVms
 
-    }
-
-
-    async count(options?: any): Promise<number> {
-        return this.teamRepository.count(options)
-    }
-
-    async countByLeague(league: League, options?: any): Promise<number> {
-        return this.teamRepository.countByLeague(league, options)
     }
 
     validateRoster(owner:User, players: Player[]) {
@@ -854,8 +753,6 @@ class TeamService {
 
     }
 
-
-
     listRequiredRosterSpots(roster: PlayerLeagueSeason[]): Position[] {
 
         let rosterPlain = roster.map(r => r.get({ plain: true }))
@@ -1019,310 +916,6 @@ class TeamService {
 
     }
 
-    // async getMintInfo(ownerId:string, team:Team, season:Season, mintKey?:string) : Promise<TokenMintInfo> {
-        
-    //     let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
-
-    //     //Buying with Diamonds, reserved.
-    //     if (team.mintKey) {
-
-    //         if (team.mintKey == mintKey) {
-    //             return {
-    //                 diamonds: await this.getBuyWithDiamondsMintInfo(tls, team, ownerId, "0")
-    //             }
-    //         } else {
-    //             return {
-    //                 error: "Missing mint key."
-    //             }
-    //         }
-
-    //     } else {
-
-    //         return {
-    //             //MINT: Buying with ETH, not reserved.
-    //             eth: await this.getBuyWithETHMintInfo(tls, team, ownerId),
-    //             //MINT_DIAMONDS: Minting with Diamonds, not reserved.
-    //             diamonds: await this.getBuyWithDiamondsMintInfo(tls, team, ownerId)
-    //             //FORCLOSURE: Forclosure...maybe later
-    //         }
-
-    //     }
-
-    // }
-
-    // async getBuyWithETHMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string) {
-
-    //     let cost = this.getTeamCost(tls.financeSeason)
-
-    //     return {
-    //         revenueWithMultiplier: cost.revenueWithMultiplier,
-    //         to:ownerId,
-    //         tokenId: team.tokenId,
-    //         ethCost: cost.ethCost,
-    //     }
-    // }
-
-    // async getForeclosureETHMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string) {
-
-    //     let cost = this.getTeamCost(tls.financeSeason)
-
-    //     return {
-    //         revenueWithMultiplier: cost.revenueWithMultiplier,
-    //         totalDiamonds: cost.totalDiamonds,
-    //         to:ownerId,
-    //         tokenId: team.tokenId,
-    //         ethCost: cost.ethCost
-    //     }
-    // }
-
-    // async getBuyWithDiamondsMintInfo(tls:TeamLeagueSeason, team:Team, ownerId:string, totalOverride?:string) {
-
-    //     let cost = this.getTeamCost(tls.financeSeason)
-
-    //     let totalDiamonds = totalOverride ? totalOverride : cost.totalDiamonds
-
-    //     return {
-    //         revenueWithMultiplier: cost.revenueWithMultiplier,
-    //         totalDiamonds: totalDiamonds,
-    //         to:ownerId,
-    //         tokenId: team.tokenId
-    //     }
-    // }
-
-    // async dropPlayerWithSignature(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, message:string, signature:string) {
-
-    //     let s = await this.sequelize()
-    //     await s.transaction(async (t1) => {
-        
-    //         let options = { transaction: t1 }
-
-
-    //         //Check if it has a valid signature.
-    //         const recoveredAddress = ethers.verifyMessage(message, signature)
-
-    //         if (!ethers.isAddress(recoveredAddress) || recoveredAddress != team.ownerId) {
-    //             throw new Error("Invalid signature.")
-    //         }
-
-    //         const token = message.slice(message.indexOf("@") + 1).trim()
-
-    //         let tokenKey = `drop-${player._id}-${recoveredAddress}`
-
-    //         let signatureToken = await this.signatureTokenRepository.get(tokenKey, options)
-
-    //         if (token != signatureToken.token || signatureToken.expires < new Date(new Date().toUTCString())) {
-    //             throw new Error("Invalid signature token.")
-    //         }
-
-    //         //Update team. Remove from lineup and rotation.
-    //         let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
-
-    //         //Make sure they can afford to drop player.
-    //         let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
-    //         let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
-
-    //         let costToDrop = this.playerService.getCostToDrop(player, gamesPerSeason, gamesRemaining)
-
-    //         let teamDiamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId)
-
-
-    //         if (BigInt(costToDrop) > BigInt(teamDiamondBalance)) {
-    //             throw new Error("Insufficient funds to drop.")
-    //         }
-
-
-    //         let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
-
-    //         this.lineupService.lineupRemove(tls.lineups[0], player._id)
-    //         this.lineupService.rotationRemove(tls.lineups[0], player._id)
-
-    //         tls.changed("lineups", true)
-
-
-
-    //         //End current PLS
-    //         pls.endDate = date
-
-    //         await this.playerLeagueSeasonService.put(pls, options)
-
-
-    //         //Create new PLS
-    //         let nextPLS = new PlayerLeagueSeason()
-    //         nextPLS.playerId = pls.playerId
-    //         nextPLS.seasonId = season._id
-    //         nextPLS.seasonIndex = pls.seasonIndex + 1
-    //         nextPLS.primaryPosition = pls.primaryPosition
-    //         nextPLS.overallRating = pls.overallRating
-    //         nextPLS.hittingRatings = pls.hittingRatings
-    //         nextPLS.pitchRatings = pls.pitchRatings
-    //         nextPLS.startDate = date
-    //         nextPLS.endDate = season.endDate
-    //         nextPLS.age = player.age
-
-    //         nextPLS.stats = {
-    //             //@ts-ignore
-    //             hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-    //             //@ts-ignore
-    //             pitching: this.statService.mergePitchResultsToStatLine({}, {})
-    //         }
-
-    //         // if (player.contract.isRookie) {
-
-    //         //     let contractYear:ContractYear = player.contract.years.find(y => y.startDate == dayjs(season.startDate).format("YYYY-MM-DD"))
-            
-    //         //     if (contractYear?.salary) {
-    //         //         nextPLS.askingPrice = parseFloat(ethers.formatUnits(contractYear.salary, "ether")) 
-    //         //     }
-
-    //         // } else {
-
-    //         //     //If they are not on a rookie deal we need to generate a free agent contract for them.
-    //         //     let league:League = await this.leagueService.getByRank(1, options)
-
-    //         //     let highestLeaguePLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByLeagueSeason(league, season, options)
-    //         //     let laPlayerRating = this.rollService.getArrayAvg(highestLeaguePLS.map( p => p.overallRating))
-    //         //     let laSalary = this.rollService.getArrayAvg(highestLeaguePLS.map( p => parseFloat(ethers.formatUnits(p.contractYear.salary))))
-
-    //         //     this.playerService.createFreeAgentContract(player, laPlayerRating, laSalary, 7, 30)
-    //         //     nextPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
-
-    //         // }
-
-    //         await this.playerLeagueSeasonService.put(nextPLS, options)
-
-    //         //drop the player
-
-
-    //         //Get updated player list for team
-    //         let teamPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-    //         let teamPLSPlain = teamPLS.map( tls => tls.get({ plain: true }))
-
-    //         //Update team finances
-    //         this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium, this.financeService.calculateProjectedPayroll(teamPLSPlain))
-
-    //         await this.offchainEventService.createTeamBurnEvent(team.tokenId, `-${costToDrop}`, undefined, options)
-
-    //         let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
-
-    //         tls.financeSeason.diamondBalance = diamondBalance
-
-    //         await this.put(team, options)
-    //         await this.teamLeagueSeasonService.put(tls, options)
-
-    //     })
-
-
-    // }
-
-    // async dropPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date) {
-
-    //     let s = await this.sequelize()
-    //     await s.transaction(async (t1) => {
-        
-    //         let options = { transaction: t1 }
-
-    //         //Update team. Remove from lineup and rotation.
-    //         let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
-
-    //         //Make sure they can afford to drop player.
-    //         let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
-    //         let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
-
-    //         let costToDrop = this.playerService.getCostToDrop(player, gamesPerSeason, gamesRemaining)
-
-    //         let teamDiamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId)
-
-
-    //         if (BigInt(costToDrop) > BigInt(teamDiamondBalance)) {
-    //             throw new Error("Insufficient funds to drop.")
-    //         }
-
-
-    //         let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
-
-    //         this.lineupService.lineupRemove(tls.lineups[0], player._id)
-    //         this.lineupService.rotationRemove(tls.lineups[0], player._id)
-
-    //         tls.changed("lineups", true)
-
-
-
-    //         //End current PLS
-    //         pls.endDate = date
-
-    //         await this.playerLeagueSeasonService.put(pls, options)
-
-
-    //         //Create new PLS
-    //         let nextPLS = new PlayerLeagueSeason()
-    //         nextPLS.playerId = pls.playerId
-    //         nextPLS.seasonId = season._id
-    //         nextPLS.seasonIndex = pls.seasonIndex + 1
-    //         nextPLS.primaryPosition = pls.primaryPosition
-    //         nextPLS.overallRating = pls.overallRating
-    //         nextPLS.hittingRatings = pls.hittingRatings
-    //         nextPLS.pitchRatings = pls.pitchRatings
-    //         nextPLS.startDate = date
-    //         nextPLS.endDate = season.endDate
-    //         nextPLS.age = player.age
-
-    //         nextPLS.stats = {
-    //             //@ts-ignore
-    //             hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-    //             //@ts-ignore
-    //             pitching: this.statService.mergePitchResultsToStatLine({}, {})
-    //         }
-
-    //         // if (player.contract.isRookie) {
-
-    //         //     let contractYear:ContractYear = player.contract.years.find(y => y.startDate == dayjs(season.startDate).format("YYYY-MM-DD"))
-            
-    //         //     if (contractYear?.salary) {
-    //         //         nextPLS.askingPrice = parseFloat(ethers.formatUnits(contractYear.salary, "ether")) 
-    //         //     }
-
-    //         // } else {
-
-    //         //     //If they are not on a rookie deal we need to generate a free agent contract for them.
-    //         //     let league:League = await this.leagueService.getByRank(1, options)
-
-    //         //     let highestLeaguePLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByLeagueSeason(league, season, options)
-    //         //     let laPlayerRating = this.rollService.getArrayAvg(highestLeaguePLS.map( p => p.overallRating))
-    //         //     let laSalary = this.rollService.getArrayAvg(highestLeaguePLS.map( p => parseFloat(ethers.formatUnits(p.contractYear.salary))))
-
-    //         //     this.playerService.createFreeAgentContract(player, laPlayerRating, laSalary, 7, 30)
-    //         //     nextPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
-
-    //         // }
-
-    //         await this.playerLeagueSeasonService.put(nextPLS, options)
-
-    //         //drop the player
-    //         // await this.gameTransactionService.dropPlayer(tlsPlain.league, team, season, player, date, options)
-
-
-    //         //Get updated player list for team
-    //         let teamPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-    //         let teamPLSPlain = teamPLS.map( tls => tls.get({ plain: true }))
-
-    //         //Update team finances
-    //         this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium)
-
-    //         await this.offchainEventService.createTeamBurnEvent(team.tokenId, `-${costToDrop}`, undefined, options)
-
-    //         let diamondBalance = await this.offchainEventService.getBalanceForTokenId(ContractType.DIAMONDS, team.tokenId, options)
-
-    //         tls.financeSeason.diamondBalance = diamondBalance
-
-    //         await this.put(team, options)
-    //         await this.teamLeagueSeasonService.put(tls, options)
-
-    //     })
-
-
-    // }
-
-
     optimizeLineup(team:Team, tls:TeamLeagueSeason, plss:PlayerLeagueSeason[], date:Date) {
 
         let originalLineup = JSON.parse(JSON.stringify(tls.lineups[0]))
@@ -1365,47 +958,43 @@ class TeamService {
 
     }
 
-    // createNFTMetadata(city:City, team: Team, imagePath:string) {
+    async createForUser(user:User, league:League, season:Season, financeSeason:FinanceSeason, options?:any) {
 
-    //     let result: NFTMetadata = {
-    //         tokenId: team.tokenId,
-    //         name: `${city.name} ${team.name}`,
-    //         description: ''
-    //     }
+        let team:Team = new Team()
+        team._id = uuidv4()
+        team.name = user.discordProfile.username
+        team.userId = user._id
 
-    //     result.image = `ipfs://${imagePath}`
+        const colors = TEAM_COLORS[Math.floor(Math.random() * TEAM_COLORS.length)]
 
-    //     result.attributes = [
-    //         {
-    //             trait_type: "Token ID",
-    //             value: team.tokenId.toString()
-    //         },
-    //         {
-    //             trait_type: "City",
-    //             value: city.name
-    //         },
-    //         {
-    //             trait_type: "Name",
-    //             value: team.name
-    //         }
-            
-    //     ]
+        team.colors = {
+            color1: colors.color1,
+            color2: colors.color2
+        }
 
+        team.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
+        team.longTermRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
 
+        await this.put(team, options)
 
-    //     return result
+        let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(team, league, season, undefined, undefined, financeSeason)
 
-    // }
+        let logo = await this.imageService.createTeamLogo(team, options)
+        tls.logoId = logo._id
 
-    async changeName(team:Team, options?:any) {
+        await this.imageService.put(logo, options)
 
-        //Change name on team.
+        await this.teamLeagueSeasonService.put(tls, options)
 
-        //Change name on current TLS. 
-
-        //Update all future scheduled games with new name.
+        return {
+            team: team,
+            tls: tls
+        }
 
     }
+
+
+    
 
 }
 
@@ -1501,7 +1090,6 @@ interface TeamGame {
         name: string
         abbrev: string
         ratingBefore: number
-        ratingAfter: number
         wins: number
         losses: number
         runs: number
@@ -1514,7 +1102,6 @@ interface TeamGame {
         name: string
         abbrev: string
         ratingBefore: number
-        ratingAfter: number
         wins: number
         losses: number
         runs: number

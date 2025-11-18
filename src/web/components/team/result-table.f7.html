@@ -1,84 +1,84 @@
 <template>
 
     <div class="stat-table-wrapper">
-    <table class="data-table">
-        <thead>
-            <th>Date</th>
-            <th>Opp</th>
-            <th>Result</th>
-            <th>W-L</th>
-            <th>Win</th>
-            <th>Loss</th>
-            <th>Profit</th>
-        </thead>
-        <tbody>
-            ${gameLogs?.length > 0 ? $h`
-                ${gameLogs.map(gl => $h`
-                    <tr>
-                        <td class="game">
-                            <div class="large-only-flex">
-                                <a href="${universeWebService.startDateLink(`/g/${gl._id}`)}">${dayjs(gl.startDate).format('ddd, MMM D, YYYY')}</a>
-                            </div>
+        <table class="data-table">
+            <thead>
+                <th>Date</th>
+                <th>Opp</th>
+                <th>Result</th>
+                <th>W-L</th>
+                <th>Win</th>
+                <th>Loss</th>
+                <th>Profit</th>
+            </thead>
+            <tbody>
+                ${gameLogs?.length > 0 ? $h`
+                    ${gameLogs.map(gl => $h`
+                        <tr>
+                            <td class="game">
+                                <div class="large-only-flex">
+                                    <a href="${universeWebService.startDateLink(`/g/${gl._id}`)}">${dayjs(gl.startDate).format('ddd, MMM D, YYYY')}</a>
+                                </div>
+                                
+                                <div class="small-only-flex">
+                                    <a href="${universeWebService.startDateLink(`/g/${gl._id}`)}">${dayjs(gl.startDate).format('ddd, MM/DD')}</a>
+                                </div>
+
+                            </td>
+
+                            <td>
+
+                                <div class="large-only-flex">
+
+                                    <a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">
+                                        ${gl.isHome == true ? 'vs ' : '@ '}${gl.opp.cityName}</a>
+                                </div>
+                                
+                                <div class="small-only-flex">
+                                    <a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">
+                                        ${gl.isHome == true ? 'vs ' : '@ '}${gl.opp.abbrev}</a> 
+                                </div>
+
+                            </td>
+
+                            ${gl.isComplete ? $h`
+                                <td><strong>${gl.team.isWinner ? "W" : "L"}</strong> ${gl.team.runs}-${gl.opp.runs}</td>
+                            ` : $h`
+                                <td>${gl.team.runs}-${gl.opp.runs}</td>
+                            `}
+
+
+                            ${gl.isComplete ? $h`
+                                <td>${gl.team.wins}-${gl.team.losses}</td>
+                            ` : $h`
+                                <td></td>
+                            `}
+
                             
-                            <div class="small-only-flex">
-                                <a href="${universeWebService.startDateLink(`/g/${gl._id}`)}">${dayjs(gl.startDate).format('ddd, MM/DD')}</a>
-                            </div>
+                            <td>
+                                ${gl.winningPitcher ? $h`
+                                <a href="${universeWebService.startDateLink(`/p/${gl.winningPitcher._id}`)}">${gl.winningPitcher.name}</a>
+                                ` : $h` `}
+                            </td>
 
-                        </td>
+                            <td>
+                                ${gl.losingPitcher ? $h`
+                                <a href="${universeWebService.startDateLink(`/p/${gl.losingPitcher._id}`)}">${gl.losingPitcher.name}</a>
+                                ` : $h` `}
+                            </td>
 
-                        <td>
+                            <td>
+                                ${gl.team.finances?.totalProfit ? $h`${universeWebService.displayDiamonds(gl.team.finances?.totalProfit)}` : $h` `}
+                            </td>
 
-                            <div class="large-only-flex">
+                        </tr>
+                    `)}
+                ` : $h`
+                <td colspan="9">No games played.</td>
+                `}
 
-                                <a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">
-                                    ${gl.isHome == true ? 'vs ' : '@ '}${gl.opp.cityName}</a>
-                            </div>
-                            
-                            <div class="small-only-flex">
-                                <a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">
-                                    ${gl.isHome == true ? 'vs ' : '@ '}${gl.opp.abbrev}</a> 
-                            </div>
-
-                        </td>
-
-                        ${gl.isComplete ? $h`
-                            <td><strong>${gl.team.isWinner ? "W" : "L"}</strong> ${gl.team.runs}-${gl.opp.runs}</td>
-                        ` : $h`
-                            <td>${gl.team.runs}-${gl.opp.runs}</td>
-                        `}
-
-
-                        ${gl.isComplete ? $h`
-                            <td>${gl.team.wins}-${gl.team.losses}</td>
-                        ` : $h`
-                            <td></td>
-                        `}
-
-                        
-                        <td>
-                            ${gl.winningPitcher ? $h`
-                            <a href="${universeWebService.startDateLink(`/p/${gl.winningPitcher._id}`)}">${gl.winningPitcher.name}</a>
-                            ` : $h` `}
-                        </td>
-
-                        <td>
-                            ${gl.losingPitcher ? $h`
-                            <a href="${universeWebService.startDateLink(`/p/${gl.losingPitcher._id}`)}">${gl.losingPitcher.name}</a>
-                            ` : $h` `}
-                        </td>
-
-                        <td>
-                            ${gl.team.finances?.totalProfit ? $h`${universeWebService.displayDiamonds(gl.team.finances?.totalProfit)}` : $h` `}
-                        </td>
-
-                    </tr>
-                `)}
-            ` : $h`
-            <td colspan="9">No games played.</td>
-            `}
-
-        </tbody>
-    </table>
+            </tbody>
+        </table>
     </div>
 
 </template>

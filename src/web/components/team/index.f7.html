@@ -33,26 +33,13 @@
                             <span class="name">${teamWebService.getTeamName(teamComponentService.team)}</span> 
 
                             <div class="team-record">
-                                <span class="label">Ranked: </span> ${ teamComponentService.team.overallRank } <br />
-                                <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} 
-                                            <span class="separator">|</span>  ${teamComponentService.team.overallRecord.gamesBack} GB<br />
+                                ${teamComponentService.team.owner?.discordId ? $h`
+                                    <span class="label">Discord:</span> <a class="external link" href="https://discord.com/users/${teamComponentService.team.owner?.discordId}">${teamComponentService.team.owner?.discordUsername}</a><br /><br />
+                                ` : $h` `}
+                                <span class="label">Ranked: </span> ${ teamComponentService.team.overallRecord.rank } <br />
+                                <span class="label">Rating: </span> ${ teamComponentService.team.longTermRating.rating.toFixed(0) } <br />
+                                <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} <br />
                                 <span class="label">Cash: </span> <a data-popup=".front-office-popup" class="link popup-open" href="#">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</a><br /><br />
-                            
-                                ${teamComponentService.team.owner?._id ? $h`
-                        
-                                    <span class="owner-label">Owner</span> <br />
-
-                                    <span class="label">Wallet:</span> <a class="link" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/address/${teamComponentService.team.owner?._id}" class="external">${walletService.truncateEthAddress(teamComponentService.team.owner?._id)}</a><br />
-                        
-                                    ${teamComponentService.team.owner?.discordId ? $h`
-                                        <span class="label">Discord:</span> <a class="external link" href="https://discord.com/users/${teamComponentService.team.owner?.discordId}">${teamComponentService.team.owner?.discordUsername}</a>
-                                    ` : $h` `}
-
-                                ` : $h`
-                                    <!-- Team is unminted and computer managed. <a href="/t/mint/${teamComponentService.team.tokenId}" class="link">Mint Team</a> -->
-                                `}
-                            
-                            
                             </div>
 
                         </div>
@@ -62,21 +49,18 @@
 
                 <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
                     <ul>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team.tokenId}`)}">📅 Results</a></li>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/${teamComponentService.team.tokenId}`)}">📝 Activity</a></li>
+                        <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">📝 Activity</a></li>
                         <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>   
-            
-                        ${env.OPENSEA_COLLECTION_URL ? $h`
-                            <li><a class="link external" href="https://opensea.io/item/ethereum/${env.UNIVERSE_ADDRESS}/${teamComponentService.team.tokenId}" target="_blank">🌊 View on OpenSea <span class="tokenId"> #${ teamComponentService.team.tokenId }</span></a></li>
-                        ` : $h` `}
-
-
                     </ul>
                 </div>
 
                 <div class="block-title block-title-medium">Recent Games</div>
                 <div class="block block-outline block-strong">
-                    <${ResultTable} logs="${games}" />
+                    <${ResultTable} logs="${games}" _id=${teamComponentService.team._id} />
+
+                    ${games?.length > 0 ? $h`
+                         <a class="button button-outline small-button" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">All Games</a> 
+                    ` : $h` `}
                 </div>
 
                 <div class="block-title block-title-medium">Lineup</div>
@@ -89,7 +73,6 @@
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats" selected>Season Stats</option>
                                 <option value="ratings">Ratings</option>
-                                <option value="contracts">Contracts</option>
                             </select>
                         </hitter-stats>
                         ` : $h` `}
@@ -100,7 +83,6 @@
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" selected>Ratings</option>
-                                <option value="contracts">Contracts</option>
                             </select>
                         </hitter-ratings>
                         ` : $h` `}
@@ -111,7 +93,6 @@
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings">Ratings</option>
-                                <option value="contracts" selected>Contracts</option>
                             </select>
                         </hitter-contracts>
                         ` : $h` `}
@@ -297,12 +278,15 @@
                             </div>
 
                             <div class="card card-outline card-header-divider">
-                                <div class="card-header">City</div>
+                                <div class="card-header">Fan Interest</div>
                                 <div class="card-content card-content-padding">
 
-                                    <p>
-                                        <strong>${teamComponentService.team.city.name}, ${teamComponentService.team.city.state}</strong>
-                                    </p>
+                                    ${teamComponentService.team.city ? $h`
+                                        <p>
+                                            <strong>${teamComponentService.team.city.name}, ${teamComponentService.team.city.state}</strong>
+                                        </p>
+                                    ` : $h` `}
+
                                     
                                     <div class="skill-wrapper">
                                             Fan Interest (Long Term) 
@@ -463,6 +447,19 @@
 
     let displayHitters = teamComponentService.getDisplayHitters()
     let displayPitchers = teamComponentService.getDisplayPitchers()
+
+
+    const refreshLineup = () => {
+
+        displayHitters.length = 0
+        displayHitters.push(...teamComponentService.getDisplayHitters())
+
+        displayPitchers.length = 0
+        displayPitchers.push(...teamComponentService.getDisplayPitchers())
+
+    }
+
+
 
 
     const isSigned = (mp) => {
@@ -641,7 +638,8 @@
 
         resetMoves()
 
-        $f7.emit('refresh')
+        refreshLineup()
+        // $f7.emit('refresh')
 
         $update()
 
@@ -652,11 +650,12 @@
         try {
             await teamComponentService.save()
 
-            await teamComponentService.loadTeam(teamComponentService.team.tokenId, universeWebService.getStartDate())
+            await teamComponentService.loadTeam(teamComponentService.team._id, universeWebService.getStartDate())
 
             resetMoves()
 
-            $f7.emit('refresh')
+            // $f7.emit('refresh')
+            refreshLineup()
 
             $update()
 
@@ -764,7 +763,8 @@
 
         }
 
-        $f7.emit('refresh')
+        // $f7.emit('refresh')
+        refreshLineup()
 
 
         $update()
@@ -813,6 +813,7 @@
         }
 
         $f7.emit('refresh')
+        refreshLineup()
 
 
         $update()
@@ -839,10 +840,11 @@
         $(`.action-row.${actionRow}`).hide()
         resetMoves()
 
+
+        // $f7.emit('refresh')
+        refreshLineup()
+
         $update()
-
-        $f7.emit('refresh')
-
 
     }
 
@@ -947,7 +949,8 @@
 
         teamComponentService.selected = $(e.srcElement).val()
 
-        $f7.emit('refresh')
+        // $f7.emit('refresh')
+        refreshLineup()
 
         await $update()
 
@@ -969,9 +972,13 @@
         // updateDisplayRoster()
 
         // setCurrentPage()
-        $update()
 
-        $f7.emit('refresh')
+
+        // $f7.emit('refresh')
+        refreshLineup()
+
+
+        $update()
 
     }
 
@@ -1029,16 +1036,17 @@
 
 
         universeWebService.setMetadata(
-            `${team.city.name} ${team.name} - Ethereum Baseball League`, 
+            `${team.city?.name ? team.city.name : ""} ${team.name} - Ethereum Baseball League`, 
             window.location.href, 
             `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
-            `${teamComponentService.team.city.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
+            `${teamComponentService.team.city?.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
         ) 
 
 
 
         $f7.emit('team-loaded')
-        $f7.emit('refresh')
+        // $f7.emit('refresh')
+        refreshLineup()
 
         await $update()
 

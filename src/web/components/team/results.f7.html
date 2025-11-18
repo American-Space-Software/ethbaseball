@@ -58,7 +58,7 @@
     let picker
 
 
-    let tokenId = props.tokenId
+    let teamId = props.teamId
     let date = props.date
     let gameLogs = props.gameLogs
 
@@ -90,7 +90,7 @@
 
         let date = dayjs(`${picker.getValue()[1]}-${parseInt(picker.getValue()[0]) + 1}-01`).toDate()
 
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/schedule/${tokenId}?date=${dayjs(date).format('YYYY-MM-DD')}`), { reloadCurrent: true })
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/schedule/${teamId}?date=${dayjs(date).format('YYYY-MM-DD')}`), { reloadCurrent: true })
 
     }
 
@@ -155,16 +155,16 @@
                 }, 
                 { 
                     text: teamWebService.getTeamName(teamComponentService.team), 
-                    path: universeWebService.startDateLink(`/t/${teamComponentService.team.tokenId}`) 
+                    path: universeWebService.startDateLink(`/t/index/${teamComponentService.team._id}`) 
                 }, { text: 'Results'}]
             }
         }))
 
         universeWebService.setMetadata(
-                `${teamComponentService.team.city.name} ${teamComponentService.team.name} Schedule - Ethereum Baseball League`, 
+                `${teamComponentService.team.city?.name ? teamComponentService.team.city.name : ''} ${teamComponentService.team.name} Schedule - Ethereum Baseball League`, 
                 window.location.href, 
                 `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
-                `View the schedule for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
+                `View the schedule for ${teamComponentService.team.city?.name ? teamComponentService.team.city.name : ''} ${teamComponentService.team.name} in Ethereum Baseball League.`
         ) 
 
 

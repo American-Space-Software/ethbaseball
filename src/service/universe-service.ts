@@ -45,6 +45,7 @@ import { OwnerService } from "./owner-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { AirdropService } from "./airdrop-service.js";
 import { PostService } from "./post-service.js";
+import { FinanceService } from "./finance-service.js";
 
 @injectable()
 class UniverseService {
@@ -70,10 +71,7 @@ class UniverseService {
         private seasonService:SeasonService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private ladderService:LadderService,
-        private ownerService:OwnerService,
-        private offchainEventService:OffchainEventService,
-        private airdropService:AirdropService,
-        private postService:PostService,
+        private financeService:FinanceService,
         @inject("universe") private _universe:Function,
         @inject("config") private _config:Function
     ) {}
@@ -461,21 +459,6 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
     }
 
-    async createTeamLogo(city:City, team:Team, options?:any) {
-
-        let logo = new Image()
-        logo.svg = this.imageService.getTeamLogoSVG(city, team)
-        logo.cid = await Hash.of(logo.svg)
-        logo._id = logo.cid
-
-        let existing = await this.imageService.get(logo._id, options)
-
-        if (!existing) {
-            existing = await this.imageService.put(logo, options)
-        }
-
-        return existing
-    }
 
 
 
@@ -498,10 +481,10 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
         for (let t of teams) {
 
-            let financeSeason:FinanceSeason = this.ladderService.getDefaultFinanceSeason()
+            let financeSeason:FinanceSeason = this.financeService.getDefaultFinanceSeason()
             let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(t.team, league, season, t.city, t.stadium, financeSeason)
 
-            let logo = await this.createTeamLogo(t.city, t.team, options)
+            let logo = await this.imageService.createCityTeamLogo(t.city, t.team, options)
             tls.logoId = logo._id
 
             await this.imageService.put(logo, options)
@@ -548,7 +531,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
                 let stadium = await this.stadiumService.put(teamStadium.stadium, options)
 
-                let financeSeason = this.ladderService.getDefaultFinanceSeason()
+                let financeSeason = this.financeService.getDefaultFinanceSeason()
                 let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(team, league, season, city, stadium, financeSeason)
 
 
@@ -580,11 +563,11 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
 
                 // if (!logo) {
-                //     logo = await this.createTeamLogo(city, team, options)
+                let logo = await this.imageService.createCityTeamLogo(city, team, options)
                 // }
                 
                 
-                // tls.logoId = logo._id
+                tls.logoId = logo._id
 
                 await this.teamLeagueSeasonService.put(tls, options)
 
@@ -658,11 +641,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
           //Generate player pool
           await this.ladderService.generatePlayerPool(season, options)
 
-          //Start first season so we get numbers for the airdrop
-          let allLeagues:League[] = await this.leagueService.list(options)
-          await this.ladderService.startSeason(season, allLeagues, options)
-      
-
+    
         }
 
     }

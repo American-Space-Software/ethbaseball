@@ -815,7 +815,7 @@
   }
 
   const getRating = (game, team) => {
-    return game.isComplete ? team.ratingAfter?.toFixed(0) : team.ratingBefore?.toFixed(0)
+    return team.ratingBefore?.toFixed(0)
   }
 
   const getRecord = (game, team) => {

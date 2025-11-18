@@ -8,6 +8,7 @@ interface GameRepository {
     get(id:string, options?:any): Promise<Game>
     put(game:Game, options?:any) : Promise<Game>
     getInProgressIds(options?:any) : Promise<string[]>
+    getInProgressIdsByTeam(team:Team, options?:any) : Promise<string[]>
     getByIds(ids: string[], options?: any): Promise<Game[]>
     getByDateIds(date:Date, options?:any): Promise<string[]>
     getByDateAndLeagueIds(date:Date, league:League, options?:any): Promise<string[]>
@@ -22,6 +23,9 @@ interface GameRepository {
     getRecentIdsByTeam(team:Team, limit:number, offset:number, options?:any)
     getUpcomingIdsByTeam(team:Team, limit:number, offset:number, options?:any)
     getUnfinishedByDateIds(date:Date, options?:any): Promise<string[]>
+    getUnfinishedByDateAndLeagueIds(date:Date, league:League, options?:any): Promise<string[]>
+    getUnfinishedByLeagueIds(league:League, options?:any): Promise<string[]>
+    getResultsByDate(date:Date, options?:any): Promise<{ winningTeamId:string, losingTeamId:string }[]> 
     getPreviousDatesWithUnfinishedGames(date:Date, options?:any): Promise<string[]>
     getCompleteAndUnfinishedByDateIds(date:Date, options?:any): Promise<string[]>
     getInProgressIdsByDate(date:Date, options?:any) : Promise<string[]>

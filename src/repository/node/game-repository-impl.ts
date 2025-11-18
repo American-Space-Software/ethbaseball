@@ -113,6 +113,34 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     }
 
+    async getInProgressIdsByTeam(team:Team, options?:any) : Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                teamId: team._id
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select g._id
+            from game g 
+            INNER JOIN game_team gt on gt.gameId = g._id
+            WHERE 
+                gt.teamId = :teamId
+            WHERE g.isComplete = 0 AND g.isStarted = 1
+            order by g.startDate ASC
+
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+    }
+
     async getReadyForIncrementIds(options?:any) : Promise<string[]> {
 
         let s = await this.sequelize()
@@ -420,6 +448,90 @@ class GameRepositoryNodeImpl implements GameRepository {
 
 
     }
+
+    async getUnfinishedByDateAndLeagueIds(date:Date, league:League, options?:any): Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                theDate: dayjs(date).format("YYYY-MM-DD"),
+                leagueId: league._id
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select 
+                g._id
+            FROM game g
+            WHERE g.gameDate = :theDate AND g.isFinished = 0 AND g.leagueId = :leagueId
+            order by g.startDate ASC
+
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+
+    }
+
+    async getUnfinishedByLeagueIds(league:League, options?:any): Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                leagueId: league._id
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select 
+                g._id
+            FROM game g
+            WHERE g.isFinished = 0 AND g.leagueId = :leagueId
+            order by g.startDate ASC
+
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+
+    }
+
+    async getResultsByDate(date:Date, options?:any): Promise<{ winningTeamId:string, losingTeamId:string }[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                theDate: dayjs(date).format("YYYY-MM-DD"),
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select 
+                g.winningTeamId,
+                g.losingTeamId
+            FROM game g
+            WHERE g.gameDate = :theDate && g.isFinished = 1
+            order by g.startDate ASC
+
+        `, Object.assign(queryOptions, options))
+
+        return queryResults
+
+
+    }
+
 
     async getPreviousDatesWithUnfinishedGames(date:Date, options?:any): Promise<string[]> {
 

@@ -11,9 +11,10 @@
       <table class="data-table players ${actions ? $h`actions`: $h` `}">
         <thead>
           <tr>
-            ${actions ? $h`<th class="action"></th>` : $h` `}     
             <th class="image"></th>
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
+            ${actions ? $h`<th class="action"></th>` : $h` `}     
+
             <th @click=${sortHitters} class="numeric-cell" data-sort="displayRating">OVR</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="age">Age</th>
             <th @click=${sortHitters} data-sort="throws">Throws</th>
@@ -47,15 +48,6 @@
             ${displayHitters?.map( (p,index) => $h`
               <tr>
 
-                ${actions ? $h`
-                  <td class="action">
-                    ${actions.showMove(p) ? $h`
-                      <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-ratings" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>  
-                    ` : $h` `}
-                  </td>
-                ` : $h` `}
-
-
                 <td class="image">
                   ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" />` : $h`<span />`}
                 </td>
@@ -75,6 +67,15 @@
 
                   ` : $h` `}
                 </td>
+
+
+                ${actions ? $h`
+                  <td class="action">
+                    ${actions.showMove(p) ? $h`
+                      <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-ratings" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>  
+                    ` : $h` `}
+                  </td>
+                ` : $h` `}
 
                 <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
                 <td class="numeric-cell">${p?.age}</td>

@@ -27,6 +27,11 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getIdsByPlayersSeason(players, season, options)
     }
 
+    async getByPlayersSeason(players:Player[], season:Season, options?:any) {
+        let ids = this.playerLeagueSeasonRepository.getIdsByPlayersSeason(players, season, options)
+        return this.playerLeagueSeasonRepository.getByIds(ids, options)
+    }
+
     async updateGameFields(plss:PlayerLeagueSeason[], options?:any) {
         return this.playerLeagueSeasonRepository.updateGameFields(plss, options)
     }
@@ -93,6 +98,10 @@ class PlayerLeagueSeasonService {
 
     async getById(_id:string, options?:any): Promise<PlayerLeagueSeason> {
         return this.playerLeagueSeasonRepository.getById(_id, options)
+    }
+
+    async getByIds(ids: string[], options?: any): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getByIds(ids, options)
     }
 
     async getByTeamSeason(team: Team, season: Season, options?: any): Promise<PlayerLeagueSeason[]> {

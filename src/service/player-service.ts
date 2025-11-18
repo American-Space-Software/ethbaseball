@@ -92,11 +92,6 @@ class PlayerService {
         return this.playerRepository.getFreeAgentsAfterSeason(season, options)
     }
 
-    async getPurgeable(options?: any) : Promise<Player[]> {
-        return this.playerRepository.getPurgeable(options)
-    }
-
-
     async put(player: Player, options?: any) {
         return this.playerRepository.put(player, options)
     }

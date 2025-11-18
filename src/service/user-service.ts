@@ -49,14 +49,20 @@ class UserService {
         return this.userRepository.getByAddress(address, options)
     }
 
+    async getByDiscordId(discordId:string, options?:any) : Promise<User> {
+        return this.userRepository.getByDiscordId(discordId, options)
+    }
+
     async getAuthInfo(user:User) {
+
+        let teams:Team[]  = await this.teamService.getByUser(user)
 
         let authInfo:any = { 
           _id: user._id, 
           discordUsername: user.discordProfile?.username, 
           discordId: user.discordId,
           address: user.address, 
-          teamIds: []
+          teamIds: teams.map( t => {  return { _id: t._id} })
         }
     
         if (user.address) {
@@ -64,18 +70,10 @@ class UserService {
           let owner:Owner = await this.ownerService.get(user.address)
           authInfo.diamondBalance = owner?.diamondBalance || "0"
 
-          let teams:Team[] = []
-
           if (owner) {
-            teams = await this.teamService.getByOwner(owner)
-
             authInfo.offChainDiamondBalance = await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner)
             authInfo.diamondMintPasses = await this.diamondMintPassService.getUnmintedByAddress(owner._id)
-
           }
-
-          authInfo.teamIds.push(...teams.map( t => {  return { _id: t._id} }))
-
         }
         
 
@@ -85,37 +83,25 @@ class UserService {
     async getViewModel(user:User, season:Season) {
 
         let vm:any = {
-            // authInfo: await this.getAuthInfo(user),
-            teams: []
         }
 
-        if (user.address) {
+        let teams:Team[] = await this.teamService.getByUser(user)
+        let team = teams[0]
 
-            let owner:Owner = await this.ownerService.getOrCreate(user.address)
+        if (team) {
 
-            if (owner) {
+            let tls = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
 
-                let tlss = await this.teamLeagueSeasonService.listByOwnerAndSeason(owner, season)
+            let tlsPlain = tls.get({ plain: true })
+            vm.team = this.teamService.getTeamStandingsViewModel(tlsPlain, 1)
+            vm.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
 
-                let index = 0
-    
-                for (let tls of tlss) {
-                    let tlsPlain = tls.get({ plain: true })
-                    vm.teams.push(this.teamService.getTeamStandingsViewModel(tlsPlain, index + 1))
-                    index++
-                }
-
-                if ( vm.teams?.length > 0) {
-                    //Get games for teams
-                    let games:Game[] = await this.gameService.getByDateAndTeams(dayjs().toDate(), vm.teams.map( t => { return { _id: t._id } } ) )
-
-                    vm.games = games.map( g => this.gameService.getGameSummaryViewModel(g))
-                }
-
-
-            }
-
+            //Get games for teams
+            let games:Game[] = await this.gameService.getByDateAndTeams(dayjs().toDate(), [team] )
+            vm.games = games.map( g => this.gameService.getGameSummaryViewModel(g))
         }
+
+
 
         return vm
     

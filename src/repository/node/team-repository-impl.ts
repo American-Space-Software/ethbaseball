@@ -9,6 +9,7 @@ import { City } from "../../dto/city.js"
 import { Stadium } from "../../dto/stadium.js"
 import { Season } from "../../dto/season.js"
 import { League } from "../../dto/league.js"
+import { User } from "../../dto/user.js"
 
 
 @injectable()
@@ -106,6 +107,38 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
+
+    async getClosetRatedBot(rating:number, options?:any): Promise<Team> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.SELECT,
+            mapToModel: true,
+            model: Team,
+            replacements: {
+                rating: rating
+            }
+        }
+
+        const queryResults = await s.query(`
+            select t.*
+            FROM team t
+            WHERE t.userId is null
+            ORDER BY ABS(CAST(stats->>"$.longTermRating" AS SIGNED))
+            LIMIT 1
+        `, Object.assign(queryOptions, options))
+
+
+        if (queryResults?.length > 0) {
+            return queryResults[0]
+        }
+
+        
+
+    }
+
+
     async put(team:Team, options?:any): Promise<Team> {
 
         await team.save(options)
@@ -113,11 +146,11 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
-    async getByOwner(owner:Owner, options?: any): Promise<Team[]> {
+    async getByUser(user:User, options?: any): Promise<Team[]> {
 
         let queryOptions = {
             where: {
-                ownerId: owner._id
+                userId: user._id
             },
             order: [
                 ['seasonRating.rating', 'desc']

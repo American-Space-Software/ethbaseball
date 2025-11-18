@@ -24,7 +24,6 @@ class PlayerWebService {
 
         return result
 
-
     }
 
 
@@ -40,10 +39,9 @@ class PlayerWebService {
     }
 
     async getPlayers(startDate:string, rank:number, page:number, position:Position|HitterPitcher, sortColumn:string, sortDirection:string) {
-    //Download it.
-    let result = await axios.get(`/api/player/list/${rank}/${startDate}/${page}?sortColumn=${sortColumn}&sortDirection=${sortDirection}&position=${position}`)
-    return result.data
-
+        //Download it.
+        let result = await axios.get(`/api/player/list/${rank}/${startDate}/${page}?sortColumn=${sortColumn}&sortDirection=${sortDirection}&position=${position}`)
+        return result.data
     }
 
 
@@ -249,9 +247,7 @@ class PlayerWebService {
 
     }
 
-    getPlayerDisplayRating(overallRating:number, age:number) {
-        return (overallRating * this.getAgeModifier(age)).toFixed(1)
-    }
+
 
     getAgeModifier(yearsOld: number): number {
 

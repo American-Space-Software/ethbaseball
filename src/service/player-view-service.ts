@@ -85,7 +85,7 @@ class PlayerViewService {
                 let plain = p.get({ plain: true})
 
                 return Object.assign({ 
-                    team: { _id: plain.team._id, tokenId: plain.team.tokenId, abbrev: plain.team.abbrev }, 
+                    team: { _id: plain.team._id, name: plain.team.name, abbrev: plain.team.abbrev }, 
                     season: { _id: plain.season._id, startDate: plain.season.startDate},
                     age: plain.age,
                 }, p.stats.hitting)
@@ -96,7 +96,7 @@ class PlayerViewService {
                 let plain = p.get({ plain: true})
 
                 return Object.assign({ 
-                    team: { _id: plain.team._id, tokenId: plain.team.tokenId, abbrev: plain.team.abbrev }, 
+                    team: { _id: plain.team._id, name: plain.team.name, abbrev: plain.team.abbrev }, 
                     season: { _id: plain.season._id, startDate: plain.season.startDate},
                     age: plain.age,
                 }, p.stats.pitching)

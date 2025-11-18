@@ -1733,7 +1733,6 @@ h1 {
 
 .main-card {
   display: flex;
-  margin-top: 15px;
   background: #172e49;
   color: white;
   max-width: 100%;
@@ -2047,7 +2046,43 @@ text-align: center;
 .rating-table {
   margin-top: 10px;
   font-size: .65em;
+  display: flex;
 }
+
+.rating-table .left {
+  flex: 0 0 50%;
+  padding: 5px;
+}
+
+.rating-table .right {
+  flex: 1;
+  padding: 5px;
+
+}
+
+
+
+@media only screen and (max-width: 1024px) {
+  .rating-table {
+    margin-top: 10px;
+    font-size: .65em;
+    display: block;
+  }
+
+  .rating-table .left {
+    display: block;
+    padding: unset;
+  }
+
+  .rating-table .right {
+    margin-top: 10px;
+    display: block;
+    padding: unset;
+  }
+
+}
+
+
 
 
 

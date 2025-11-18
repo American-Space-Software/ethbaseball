@@ -10,6 +10,7 @@ import { City } from "../../dto/city.js"
 import { Owner } from "../../dto/owner.js"
 import { TeamSeasonId, TokenSeasonId } from "../../service/enums.js"
 import { Op } from "sequelize"
+import { User } from "../../dto/user.js"
 
 
 
@@ -168,13 +169,13 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
 
     }
 
-    async listByOwnerAndSeason(owner: Owner, season: Season, options?: any): Promise<TeamLeagueSeason[]> {
+    async listByUserAndSeason(user: User, season: Season, options?: any): Promise<TeamLeagueSeason[]> {
 
         let query = {
 
             where: {
                 seasonId: season._id,
-                '$team.ownerId$': owner._id
+                '$team.userId$': user._id
             },
 
             order: [

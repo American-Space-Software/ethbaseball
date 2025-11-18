@@ -161,14 +161,40 @@ class GameService {
         return games
     }
 
-
-
     async getIdsByDate(date:Date, options?:any) {
         return this.gameRepository.getByDateIds(date, options)
     }
 
+    async getInProgressByTeam(team:Team, options?:any) : Promise<Game[]> {
+
+        let ids = await this.gameRepository.getInProgressIdsByTeam(team, options)
+        if (ids.length == 0) return []
+
+        let games:Game[] = await this.gameRepository.getByIds(ids, options)
+        
+        //Sort so it matches ids order
+        games.sort(function(a,b) {
+            return ids.indexOf( a._id ) - ids.indexOf( b._id )
+        })
+
+        return games
+
+    }
+
     async getUnfinishedByDateIds(date:Date, options?:any): Promise<string[]> {
         return this.gameRepository.getUnfinishedByDateIds(date, options)
+    }
+
+    async getUnfinishedByDateAndLeagueIds(date:Date, league:League, options?:any): Promise<string[]> {
+        return this.gameRepository.getUnfinishedByDateAndLeagueIds(date, league, options)
+    }
+
+    async getUnfinishedByLeagueIds(league:League, options?:any): Promise<string[]> {
+        return this.gameRepository.getUnfinishedByLeagueIds(league, options)
+    }
+
+    async getResultsByDate(date:Date, options?:any) : Promise<{ winningTeamId:string, losingTeamId:string }[]>  {
+        return this.gameRepository.getResultsByDate(date, options)
     }
 
     async getPreviousDatesWithUnfinishedGames(date:Date, options?:any): Promise<string[]> {
@@ -201,7 +227,6 @@ class GameService {
             finished: games.filter( g => g.isComplete == true && g.isStarted == true).map( g => this.getGameSummaryViewModel(g))
         }
     }
-
 
     async validateGameLineup(lineup:Lineup, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, gameDate:Date) {
 
@@ -479,7 +504,7 @@ class GameService {
         //Get player and update
         this.playerService.updateHittingPitchingRatings(player)
         
-        player.lastGameUpdate = new Date(new Date().toUTCString())
+        // player.lastGameUpdate = new Date(new Date().toUTCString())
 
         player.overallRating = gamePlayer.overallRating.after
         player.careerStats = {

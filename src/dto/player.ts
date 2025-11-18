@@ -135,8 +135,8 @@ class Player extends Model {
     @Column(DataType.DATE)
     declare lastTeamChange?:Date 
 
-    @Column(DataType.DATE)
-    declare lastGameUpdate?:Date 
+    // @Column(DataType.DATE)
+    // declare lastGameUpdate?:Date 
 
     @Column(DataType.DATE)
     declare lastUpdated?:Date 

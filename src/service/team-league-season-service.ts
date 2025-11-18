@@ -10,6 +10,7 @@ import { City } from "../dto/city.js";
 import { Position, TeamSeasonId } from "./enums.js";
 import { v4 as uuidv4 } from 'uuid';
 import { Owner } from "../dto/owner.js";
+import { User } from "../dto/user.js";
 
 @injectable()
 class TeamLeagueSeasonService {
@@ -33,10 +34,10 @@ class TeamLeagueSeasonService {
         tls.seasonId = season._id
         tls.season = season
 
-        tls.cityId = city._id
+        tls.cityId = city?._id
         tls.city = city
 
-        tls.stadiumId = stadium._id
+        tls.stadiumId = stadium?._id
         tls.stadium = stadium
 
         tls.financeSeason = financeSeason
@@ -154,8 +155,8 @@ class TeamLeagueSeasonService {
         return this.teamLeagueSeasonRepository.getByTeam(team, options)
     }
 
-    async listByOwnerAndSeason(owner:Owner, season:Season, options?:any): Promise<TeamLeagueSeason[]> {
-        return this.teamLeagueSeasonRepository.listByOwnerAndSeason(owner, season, options)
+    async listByUserAndSeason(user:User, season:Season, options?:any): Promise<TeamLeagueSeason[]> {
+        return this.teamLeagueSeasonRepository.listByUserAndSeason(user, season, options)
     }
 
     async getByTeamSeasonIds(tokenSeasonIds:TeamSeasonId[], options?: any): Promise<TeamLeagueSeason[]> {

@@ -8,8 +8,8 @@
 
             <div class="block">
                 <p class="segmented">
-                    <a href="${universeWebService.fullLink(`/t/activity/${tokenId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
-                    <a href="${universeWebService.fullLink(`/t/activity/off/${tokenId}`)}" class="button button-outline tab-link ">Off-chain</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/${teamId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/off/${teamId}`)}" class="button button-outline tab-link ">Off-chain</a>
                 </p>
             </div>
 
@@ -107,7 +107,7 @@
     let page = props.page
     let previousPage = props.previousPage
     let nextPage = props.nextPage
-    let tokenId = props.tokenId
+    let teamId = props.teamId
 
 
     $on('pageInit', async (e) => {
@@ -132,7 +132,7 @@
                   }, 
                   { 
                       text: teamWebService.getTeamName(teamComponentService.team), 
-                      path: universeWebService.startDateLink(`/t/${teamComponentService.team.tokenId}`) 
+                      path: universeWebService.startDateLink(`/t/index/${teamComponentService.team._id}`) 
                   }, { text: 'Activity'}
               ]
           }
@@ -140,10 +140,10 @@
 
 
       universeWebService.setMetadata(
-          `${teamComponentService.team.city.name} ${teamComponentService.team.name} Activity - Ethereum Baseball League`, 
+          `${teamComponentService.team.city?.name ? teamComponentService.team.city.name : ''} ${teamComponentService.team.name} Activity - Ethereum Baseball League`, 
           window.location.href, 
           `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
-          `View the activity for ${teamComponentService.team.city.name} ${teamComponentService.team.name} in Ethereum Baseball League.`
+          `View the activity for ${teamComponentService.team.city?.name ? teamComponentService.team.city.name : ''} ${teamComponentService.team.name} in Ethereum Baseball League.`
       ) 
 
 

@@ -31,6 +31,16 @@ class UserRepositoryNodeImpl implements UserRepository {
         }, options))
     }
 
+    async getByDiscordId(discordId:string, options?:any): Promise<User> {
+
+        return User.findOne(Object.assign({
+            where:{
+                discordId:discordId
+            }
+        }, options))
+    }
+
+
 }
 
 
