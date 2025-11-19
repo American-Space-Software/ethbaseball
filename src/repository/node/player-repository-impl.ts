@@ -762,165 +762,6 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getDisplayPlayersById(playerIds: string[], options?: any) {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-            replacements: {
-                playerIds: playerIds
-            }
-        }
-
-        const [queryResults, metadata] = await s.query(`
-            SELECT
-
-                p.*,
-
-                c.name as cityName,
-                t.name as teamName,
-                t._id as teamId,
-
-                hit_stats.games as _hit_games,
-                hit_stats.assists as _hit_assists,
-                hit_stats.outfieldAssists as _hit_outfieldAssists,
-                hit_stats.pa as _hit_pa,
-                hit_stats.atBats as _hit_atBats,
-                hit_stats.hits as _hit_hits,
-                hit_stats.runs as _hit_runs,
-                hit_stats.bb as _hit_bb,
-                hit_stats.cs as _hit_cs,
-                hit_stats.csDefense as _hit_csDefense,
-                hit_stats.passedBalls as _hit_passedBalls,
-                hit_stats.singles as _hit_singles,
-                hit_stats.doubles as _hit_doubles,
-                hit_stats.triples as _hit_triples,
-                hit_stats.e as _hit_e,
-                hit_stats.flyBalls as _hit_flyBalls,
-                hit_stats.flyOuts as _hit_flyOuts,
-                hit_stats.gidp as _hit_gidp,
-                hit_stats.groundBalls as _hit_groundBalls,
-                hit_stats.groundOuts as _hit_groundOuts,
-                hit_stats.doublePlays as _hit_doublePlays,
-                hit_stats.hbp as _hit_hbp,
-                hit_stats.homeRuns as _hit_homeRuns,
-                hit_stats.lineDrives as _hit_lineDrives,
-                hit_stats.lineOuts as _hit_lineOuts,
-                hit_stats.outs as _hit_outs,
-                hit_stats.lob as _hit_lob,
-                hit_stats.po  as _hit_po,
-                hit_stats.rbi as _hit_rbi,
-                hit_stats.sacBunts as _hit_sacBunts,
-                hit_stats.sacFlys as _hit_sacFlys,
-                hit_stats.sb as _hit_sb,
-                hit_stats.sbAttempts as _hit_sbAttempts,
-
-                hit_stats.so as _hit_so,
-                hit_stats.wpa as _hit_wpa,
-                hit_stats.experience as _hit_experience,
-                hit_stats.teamWins as _hit_teamWins,
-                hit_stats.teamLosses as _hit_teamLosses,
-                hit_stats.pitches as _hit_pitches,
-                hit_stats.balls as _hit_balls,
-                hit_stats.strikes as _hit_strikes,
-                hit_stats.fouls as _hit_fouls,
-                hit_stats.swings as _hit_swings,
-                hit_stats.swingAtBalls as _hit_swingAtBalls,
-                hit_stats.swingAtStrikes as _hit_swingAtStrikes,
-                hit_stats.inZone as _hit_inZone,
-
-                hit_stats.inZoneContact AS _hit_inZoneContact,
-                hit_stats.outZoneContact AS _hit_outZoneContact
-
-                pitch_stats.games as _pitch_games,
-                pitch_stats.atBats AS _pitch_atBats,
-                pitch_stats.hits AS _pitch_hits,
-                pitch_stats.battersFaced AS _pitch_battersFaced,
-                pitch_stats.bb AS _pitch_bb,
-                pitch_stats.bs AS _pitch_bs,
-                pitch_stats.cg AS _pitch_cg,
-                pitch_stats.doubles AS _pitch_doubles,
-                pitch_stats.er AS _pitch_er,
-                pitch_stats.wildPitches AS _pitch_wildPitches,
-                
-                pitch_stats.flyBalls AS _pitch_flyBalls,
-                pitch_stats.flyOuts AS _pitch_flyOuts,
-                
-                pitch_stats.groundBalls AS _pitch_groundBalls,
-                pitch_stats.groundOuts AS _pitch_groundOuts,
-                pitch_stats.hbp AS _pitch_hbp,
-                pitch_stats.homeRuns AS _pitch_homeRuns,
-                pitch_stats.lineDrives AS _pitch_lineDrives,
-                pitch_stats.lineOuts AS _pitch_lineOuts,
-        
-                pitch_stats.losses AS _pitch_losses,
-                pitch_stats.outs AS _pitch_outs,
-                pitch_stats.runs AS _pitch_runs,
-                pitch_stats.saves AS _pitch_saves,
-                pitch_stats.sho AS _pitch_sho,
-                
-                pitch_stats.singles AS _pitch_singles,
-                pitch_stats.so AS _pitch_so,
-                pitch_stats.starts AS _pitch_starts,
-        
-                pitch_stats.triples AS _pitch_triples,
-                pitch_stats.wins AS _pitch_wins,
-                pitch_stats.wpa AS _pitch_wpa,
-                pitch_stats.experience AS _pitch_experience,
-                pitch_stats.teamWins AS _pitch_teamWins,
-                pitch_stats.teamLosses AS _pitch_teamLosses,
-        
-                pitch_stats.balls AS _pitch_balls,
-                pitch_stats.strikes AS _pitch_strikes,
-                pitch_stats.fouls AS _pitch_fouls,
-                pitch_stats.pitches AS _pitch_pitches,
-        
-                pitch_stats.swings AS _pitch_swings,
-                pitch_stats.swingAtBalls AS _pitch_swingAtBalls,
-                pitch_stats.swingAtStrikes AS _pitch_swingAtStrikes,
-        
-                
-                pitch_stats.inZone AS _pitch_inZone,
-                pitch_stats.inZoneContact AS _pitch_inZoneContact,
-                pitch_stats.outZoneContact AS _pitch_outZoneContact
-
-
-            FROM player p
-            
-            LEFT JOIN (
-                SELECT 
-                playerId,
-                COUNT(*) games,
-                ${HIT_SUM_QUERY_FIELDS}
-                FROM game_hit_result
-
-                GROUP BY playerId
-            ) AS hit_stats ON p._id = hit_stats.playerId
-
-            LEFT JOIN (
-                SELECT
-                    playerId,
-                    COUNT(*) AS games,
-                    ${PITCH_SUM_QUERY_FIELDS}
-                FROM game_pitch_result
-                GROUP BY playerId
-            ) AS pitch_stats ON p._id = pitch_stats.playerId
-
-            LEFT JOIN team t ON p.teamId = t._id
-            LEFT JOIN city c on t.cityId = c._id
-            where p._id in (:playerIds)
-            ORDER BY FIELD(p._id, :playerIds)
-
-        `, Object.assign(queryOptions, options))
-
-        return queryResults
-
-
-
-    }
 
     async getLeagueAverageHitterRatings(league: League, season: Season, options?: any): Promise<HittingRatings> {
 
@@ -1084,7 +925,6 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
 
     // }
-
 
     async getPlayerPercentileRatings(options?: any): Promise<PlayerPercentileRatings[]> {
 
@@ -1294,6 +1134,33 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
         }
 
         return queryResults.map(mapRowToPlayerRatingPercentiles)
+
+    }
+
+    async getPlayerIdsByGameDate(date:Date, options?:any) : Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.RAW,
+            plain: false,
+            mapToModel: false,
+            replacements: {
+                gameDate: dayjs(date).format("YYYY-MM-DD")
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            SELECT  
+                DISTINCT p._id
+			FROM player as p
+            INNER JOIN game_player gp on gp.playerId = p._id
+            INNER JOIN game g on g._id = gp.gameId
+            WHERE g.gameDate = :gameDate
+        `, Object.assign(queryOptions, options))
+
+        return queryResults.map( qr => qr._id)
+
 
     }
 

@@ -34,7 +34,7 @@
           <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
               <ul>
                   <li><a class="link" href="/t/index/${vm.team._id}">✏️ Manage Team</a></li>
-                  <li><a class="link" href="/t/index/${vm.team._id}">🤖 Play Bot</a></li>
+                  <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
                   <li><a class="link" href="/t/index/${vm.team._id}">🏆 Play</a></li>
               </ul>
           </div>
@@ -104,6 +104,7 @@
   import { ContainerService } from "../../../service/container-service"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
 
   import { StatService } from "../../../service/stat-service.ts"
   import { Position } from "../../../service/enums.ts"
@@ -127,12 +128,31 @@
     let walletService = ContainerService.getInstance("WalletService")
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let statService = ContainerService.getInstance(StatService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
 
     let authInfo = props.authInfo
     let vm = props.vm
     let contractBalance = props.contractBalance
     let discord = props.discord 
 
+
+    const playBotClick = async (e) => {
+
+      e.preventDefault()
+
+
+      try {
+        
+        await gameWebService.playBot()
+
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message, "There was an error")
+      }
+
+      
+
+    }
 
     $on('pageBeforeIn', async (e) => {
 

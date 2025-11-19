@@ -6,6 +6,7 @@ import dayjs from "dayjs"
 import { OverallRecord, Team } from "../../dto/team.js"
 import { Season } from "../../dto/season.js"
 import { League } from "../../dto/league.js"
+import { Player } from "../../dto/player.js"
 
 
 
@@ -532,7 +533,6 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     }
 
-
     async getPreviousDatesWithUnfinishedGames(date:Date, options?:any): Promise<string[]> {
 
         let s = await this.sequelize()
@@ -716,6 +716,13 @@ class GameRepositoryNodeImpl implements GameRepository {
         }
 
 
+
+    }
+
+    async getPlayerWPAByDate(player:Player, option?:any) {
+
+        
+        
 
     }
 

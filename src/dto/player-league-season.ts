@@ -60,10 +60,6 @@ class PlayerLeagueSeason extends Model {
     @Column(DataType.STRING)
     declare primaryPosition:Position
 
-    @AllowNull(true)
-    @Column(DataType.DECIMAL(50, 18))
-    declare askingPrice:number
-
     @AllowNull(false)
     @Column(DataType.DECIMAL(10,2))
     declare overallRating:number

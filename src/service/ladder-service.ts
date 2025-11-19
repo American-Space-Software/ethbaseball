@@ -48,8 +48,7 @@ class LadderService {
     @inject("UniverseRepository")
     private universeRepository: UniverseRepository
 
-    @inject("GamePlayerRepository")
-    private gamePlayerRepository: GamePlayerRepository
+
 
     @inject("GameHitResultRepository")
     private gameHitResultRepository:GameHitResultRepository
@@ -109,10 +108,61 @@ class LadderService {
                         if (inProgressGameIds?.length == 0) {
 
                             //Tasks to finish day.
+                            
+                            //Update player ratings.
+                            let playerIds:string[] = await this.playerService.getPlayerIdsByGameDate(universe.currentDate, options)
+                            let players:Player[] = await this.playerService.getByIds(playerIds, options)
+                            let plss = await this.playerLeagueSeasonService.getByPlayersSeason(players, season, options)
+
+                            for (let player of players) {
+
+                                let pls = plss.find( p => p.playerId == player._id)
+
+                                //Update overall rating
+                                //Get player's full results for the day. If WPA is positive they go up. Otherwise, down. Recalculate ratings after.
+                                if (player.primaryPosition == Position.PITCHER) {
+                                    let gprSums = await this.gamePitchResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
+                                    player.overallRating = this.playerService.updateOverallRating(player.overallRating, gprSums.wpa > 0, player.age, true)
+                                } else {
+
+                                    let ghrSums = await this.gameHitResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
+                                    player.overallRating = this.playerService.updateOverallRating(player.overallRating, ghrSums.wpa > 0, player.age, false)
+                                }
+
+                                await this.playerService.updateHittingPitchingRatings(player)
+
+                                player.changed("overallRating", true)
+                                player.changed("displayRating", true)
+                                player.changed("hittingRatings", true)
+                                player.changed("pitchRatings", true)
+
+                                pls.overallRating = player.overallRating
+                                pls.hittingRatings = player.hittingRatings
+                                pls.pitchRatings = player.pitchRatings
+                                
+                                pls.changed("overallRating", true)
+                                pls.changed("displayRating", true)
+                                pls.changed("hittingRatings", true)
+                                pls.changed("pitchRatings", true)
+
+                                await this.playerService.put(player, options)
+                                await this.playerLeagueSeasonService.put(pls, options)
+
+                            }
+
+                            //Recalculate percentile ratings.
                             await this.playerService.updateAllPercentileRatings()
 
+                            //Update team ratings
                             await this.updateTeamRankings(season, universe.currentDate, options)
 
+                            //Update league average player ratings.
+                            for (let league of leagues) {
+                                league.averageRating = {
+                                    hittingRatings: await this.playerService.getLeagueAverageHitterRatings(league, season, options),
+                                    pitchRatings: await this.playerService.getLeagueAveragePitcherRatings(league, season, options)
+                                }
+                            }
 
                             if (dayjs(universe.currentDate).format("YYYY/MM/DD") == dayjs(season.endDate).format("YYYY/MM/DD") && !season.isComplete) {
                                 console.time(`Finishing season...`)
@@ -221,7 +271,7 @@ class LadderService {
 
             let isHome = game.home._id == teamInfo.team._id
 
-            let gameFinances = isHome ? game.gameFinances.home : game.gameFinances.away 
+            let gameFinances = isHome ? game.home.finances : game.away.finances
 
             //Update finances for team.
             this.financeService.updateFinanceSeason(teamInfo.tls.financeSeason, gameFinances)
@@ -391,22 +441,22 @@ class LadderService {
     }
     
 
-    async scheduleGenerator(tlss:TeamLeagueSeason[], league:League, season:Season, options?:any) {
+    // async scheduleGenerator(tlss:TeamLeagueSeason[], league:League, season:Season, options?:any) {
 
-        let teams = tlss.map( tls => tls.get({ plain: true }).team)
+    //     let teams = tlss.map( tls => tls.get({ plain: true }).team)
 
-        let scheduleDetails:ScheduleDetails = this.generateSchedule(teams, season.startDate)
+    //     let scheduleDetails:ScheduleDetails = this.generateSchedule(teams, season.startDate)
     
-        //Create games from schedule
-        for (let dateName of Object.keys(scheduleDetails.schedule)) {
-            await this.gameService.scheduleGames(league, season, dayjs(dateName).toDate(), scheduleDetails.schedule[dateName], tlss, options)
-        }
+    //     //Create games from schedule
+    //     for (let dateName of Object.keys(scheduleDetails.schedule)) {
+    //         await this.gameService.scheduleGames(league, season, dayjs(dateName).toDate(), scheduleDetails.schedule[dateName], tlss, options)
+    //     }
 
-        season.startDate = dayjs(scheduleDetails.startDate).toDate()
-        season.endDate = dayjs(scheduleDetails.endDate).toDate()
-        await this.seasonService.put(season, options)
+    //     season.startDate = dayjs(scheduleDetails.startDate).toDate()
+    //     season.endDate = dayjs(scheduleDetails.endDate).toDate()
+    //     await this.seasonService.put(season, options)
 
-    }
+    // }
 
     async finishSeason(season:Season, leagues:League[], options?:any) {
 
@@ -515,10 +565,10 @@ class LadderService {
 
         }
 
-        for (let league of leagues) {
-            let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, nextSeason, options)
-            await this.scheduleGenerator(tlss, league, nextSeason, options)
-        }
+        // for (let league of leagues) {
+        //     let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, nextSeason, options)
+        //     await this.scheduleGenerator(tlss, league, nextSeason, options)
+        // }
 
         //Create PLS for the next season or retire players
         let currentPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentBySeason(season, options)
@@ -641,7 +691,7 @@ class LadderService {
 
 
                 } else {
-                    nextSeasonPLS.askingPrice = pls.askingPrice
+                    // nextSeasonPLS.askingPrice = pls.askingPrice
 
                 }
 

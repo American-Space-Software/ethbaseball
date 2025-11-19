@@ -279,16 +279,16 @@
                           <tbody>
                               <tr>
                                   <td class="label">Local Media Deal</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.localTvRevenue)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.localTvRevenue)}</td>
                               </tr>
                               <tr>
                                   <td class="label">National Media Deal</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.nationalTvRevenue)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.nationalTvRevenue)}</td>
                               </tr>
           
                               <tr class="total">
                                   <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalRevenue)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.totalRevenue)}</td>
                               </tr>
           
                           </tbody>
@@ -305,15 +305,15 @@
                           <tbody>
                               <tr>
                                   <td class="label">Payroll</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.payroll)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.payroll)}</td>
                               </tr>
                               <tr>
                                   <td class="label">Stadium Lease</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.stadiumLease)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.stadiumLease)}</td>
                               </tr>
                               <tr class="total">
                                   <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalExpenses)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.totalExpenses)}</td>
                               </tr>
           
           
@@ -331,7 +331,7 @@
                           <tbody>
                               <tr class="total">
                                   <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.away.totalProfit)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.totalProfit)}</td>
                               </tr>        
                           </tbody>
                         </table>
@@ -353,7 +353,7 @@
                       <div class="game-finances">
 
                         <div class="ticket-price">
-                          <strong>Ticket Price:</strong> ${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.ticketPrice)}
+                          <strong>Ticket Price:</strong> ${universeWebService.displayDiamonds( gameViewModel.game.home.finances.ticketPrice)}
                         </div>
 
 
@@ -369,31 +369,31 @@
                           <tbody>
                               <tr>
                                   <td class="label">Season Tickets</td>
-                                  <td class="numeric-cell">${gameViewModel.game.gameFinances.home.seasonTickets}</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.gameFinances.home.seasonTicketRevenue)}</td>
+                                  <td class="numeric-cell">${gameViewModel.game.home.finances.seasonTickets}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.home.finances.seasonTicketRevenue)}</td>
                               </tr>
                               <tr>
                                   <td class="label">Gate Tickets</td>
-                                  <td class="numeric-cell">${gameViewModel.game.gameFinances.home.gateTickets}</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.gateTicketRevenue)}</td>
+                                  <td class="numeric-cell">${gameViewModel.game.home.finances.gateTickets}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.gateTicketRevenue)}</td>
                               </tr>
 
 
                               <tr>
                                   <td class="label">Local Media Deal</td>
                                   <td></td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.localTvRevenue)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.localTvRevenue)}</td>
                               </tr>
                               <tr>
                                   <td class="label">National Media Deal</td>
                                   <td></td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.nationalTvRevenue)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.nationalTvRevenue)}</td>
                               </tr>
 
                               <tr class="total">
                                   <td class="label">Total</td>
-                                  <td class="numeric-cell">${gameViewModel.game.gameFinances.home.totalAttendance}</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalRevenue)}</td>
+                                  <td class="numeric-cell">${gameViewModel.game.home.finances.totalAttendance}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.totalRevenue)}</td>
                               </tr>
           
           
@@ -412,15 +412,15 @@
                           <tbody>
                               <tr>
                                   <td class="label">Payroll</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.payroll)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.payroll)}</td>
                               </tr>
                               <tr>
                                   <td class="label">Stadium Lease</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.stadiumLease)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.stadiumLease)}</td>
                               </tr>
                               <tr class="total">
                                   <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalExpenses)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.totalExpenses)}</td>
                               </tr>
           
           
@@ -438,7 +438,7 @@
                           <tbody>
                               <tr class="total">
                                   <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.gameFinances.home.totalProfit)}</td>
+                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.totalProfit)}</td>
                               </tr>        
                           </tbody>
                         </table>

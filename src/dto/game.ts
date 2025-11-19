@@ -120,9 +120,6 @@ class Game extends Model {
 
     @BelongsTo(() => Stadium)
     stadium: Stadium
-
-    @Column(DataType.JSON)
-    declare gameFinances:GameFinances
     
     @BelongsToMany(() => Team, () => GameTeam)
     declare teams: Team[]
@@ -185,19 +182,9 @@ class GamePlayer extends Model {
 }
 
 
-interface GameTeamFinance {
-    totalAttendance?: number
-    totalRevenue?: string
 
-    // payroll?:string
-    stadiumLease?:string
-}
 
-interface GameFinances {
-    home: GameTeamFinance
-    away: GameTeamFinance
-}
 
 export {
-    Game, GameTeam, GameFinances, GameTeamFinance, GamePlayer
+    Game, GameTeam, GamePlayer
 }

@@ -2,6 +2,8 @@ import {  inject, injectable } from "inversify"
 
 import { GameHitResultRepository } from "../game-hit-result-repository.js"
 import { GameHitResult, HitResult } from "../../dto/game-hit-result.js"
+import { Player } from "../../dto/player.js"
+import dayjs from "dayjs"
 
 const SUM_QUERY_FIELDS = `
     SUM(pa) pa,
@@ -243,104 +245,6 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
 
     }
 
-    async getPlayersWithCareerHitResult(playerIds:string[], options?:any) {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-            replacements: {
-                playerIds: playerIds
-            }
-        }
-
-        const [queryResults, metadata] = await s.query(`
-            SELECT
-                p.*,
-                c.name as cityName,
-                t.name as teamName,
-                t._id as teamId,
-                game_stats.games as gs_games,
-                game_stats.assists as gs_assists,
-                game_stats.pa as gs_pa,
-                game_stats.atBats as gs_atBats,
-                game_stats.hits as gs_hits,
-                game_stats.runs as gs_runs,
-                game_stats.bb as gs_bb,
-                game_stats.cs as gs_cs,
-                game_stats.singles as gs_singles,
-                game_stats.doubles as gs_doubles,
-                game_stats.triples as gs_triples,
-                game_stats.e as gs_e,
-                game_stats.flyBalls as gs_flyBalls,
-                game_stats.flyOuts as gs_flyOuts,
-                game_stats.gidp as gs_gidp,
-                game_stats.passedBalls as gs_passedBalls,
-                game_stats.groundBalls as gs_groundBalls,
-                game_stats.groundOuts as gs_groundOuts,
-                game_stats.hbp as gs_hbp,
-                game_stats.homeRuns as gs_homeRuns,
-                game_stats.lineDrives as gs_lineDrives,
-                game_stats.lineOuts as gs_lineOuts,
-                game_stats.outs as gs_outs,
-                game_stats.lob as gs_lob,
-                game_stats.po  as gs_po,
-                game_stats.rbi as gs_rbi,
-                game_stats.sacBunts as gs_sacBunts,
-                game_stats.sacFlys as gs_sacFlys,
-                game_stats.sb as gs_sb,
-                game_stats.so as gs_so,
-                game_stats.wpa as gs_wpa,
-                game_stats.experience as gs_experience,
-                game_stats.teamWins as gs_teamWins,
-                game_stats.teamLosses as gs_teamLosses,
-                game_stats.pitches as gs_pitches,
-                game_stats.balls as gs_balls,
-                game_stats.strikes as gs_strikes,
-                game_stats.fouls as gs_fouls,
-                game_stats.swings as gs_swings,
-                game_stats.swingAtBalls as gs_swingAtBalls,
-                game_stats.swingAtStrikes as gs_swingAtStrikes,
-                game_stats.inZone as gs_inZone,
-                game_stats.inZoneContact as gs_inZoneContact,
-                game_stats.outZoneContact as gs_outZoneContact,
-
-                game_stats.ballsInPlay as gs_ballsInPlay,
-                game_stats.sbAttempts as gs_sbAttempts,
-
-                game_stats.totalPitchQuality as gs_totalPitchQuality,
-                game_stats.totalPitchPowerQuality as gs_totalPitchPowerQuality,
-                game_stats.totalPitchLocationQuality as gs_totalPitchLocationQuality,
-                game_stats.totalPitchMovementQuality as gs_totalPitchMovementQuality,
-
-
-                
-            FROM player p
-            
-            LEFT JOIN (
-                SELECT 
-                playerId,
-                COUNT(*) games,
-                ${SUM_QUERY_FIELDS}                
-                FROM game_hit_result
-
-                GROUP BY playerId
-            ) AS game_stats ON p._id = game_stats.playerId
-
-            LEFT JOIN team t ON p.teamId = t._id
-            LEFT JOIN city c on t.cityId = c._id
-            where p._id in (:playerIds)
-
-
-
-        `, Object.assign(queryOptions, options))
-
-        return queryResults
-
-
-    }
 
     async getAverageCareerHitResult(playerId:string, options?:any) : Promise<HitResult> {
 
@@ -512,6 +416,40 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
             ORDER BY g.lastUpdated desc
             ${options?.limit ? `LIMIT ${options.limit}` : ''}
             ) 
+
+        `, Object.assign(queryOptions, options))
+
+        if (queryResults?.length > 0) {
+            return queryResults[0]
+        }
+
+    }
+
+    async getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<HitResult> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                gameDate: dayjs(date).format("YYYY-MM-DD"),
+                playerId: player._id
+            }
+
+        }
+
+        const [queryResults, metadata] = await s.query(`
+
+            select 
+                COUNT(*) games,
+                ${SUM_QUERY_FIELDS}
+            FROM game_hit_result ghr
+                INNER JOIN 'game' g on ghr.gameId = g._id
+            WHERE g.gameDate = :gameDate AND ghr.playerId
+            ORDER BY g.lastUpdated desc
+            
 
         `, Object.assign(queryOptions, options))
 

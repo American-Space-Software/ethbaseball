@@ -463,7 +463,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
 
 
-    async runLeagueGenerator(season:Season, rank:number, name:string, numberOfTeams:number, options?:any) {
+    async runLeagueGenerator(universe:Universe, season:Season, rank:number, name:string, numberOfTeams:number, options?:any) {
 
         let rng = await this.seedService.getRNG(options)
 
@@ -490,6 +490,9 @@ Join us at [https://playebl.com](https://playebl.com)`,
             await this.imageService.put(logo, options)
 
             await this.teamLeagueSeasonService.put(tls, options)
+
+            await this.teamService.fillAndValidateRoster(league, t.team, tls, [], season, universe.currentDate, true, options)
+
         }
 
         // let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
@@ -497,7 +500,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
         // await this.ladderService.scheduleGenerator(tlss, league, season, options)
     }
 
-    async loadPresetLeagues(season:Season, leagues:LeagueInfo[], config, options?:any) {
+    async loadPresetLeagues(universe:Universe, season:Season, leagues:LeagueInfo[], config, options?:any) {
 
         let cities = await this.cityService.list(1000, 0, options)
 
@@ -571,6 +574,9 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
                 await this.teamLeagueSeasonService.put(tls, options)
 
+
+                await this.teamService.fillAndValidateRoster(league, team, tls, [], season, universe.currentDate, true, options)
+
             }
 
             // let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
@@ -620,12 +626,12 @@ Join us at [https://playebl.com](https://playebl.com)`,
           if (process.env.LEAGUE_LIST) {
       
             let leagueList = JSON.parse(process.env.LEAGUE_LIST)
-            await this.loadPresetLeagues(season, leagueList, config, options)
+            await this.loadPresetLeagues(universe, season, leagueList, config, options)
       
           } else {
       
             // await this.runLeagueGenerator(season, 1, "The Apex League", 0, options)
-            await this.runLeagueGenerator(season, 1, "The Genesis League", 0, options)
+            await this.runLeagueGenerator(universe, season, 1, "The Genesis League", 0, options)
 
             // await this.runLeagueGenerator(season, 2, "The Second League", TEAMS_PER_TIER, options)
             // await this.runLeagueGenerator(season, 3, "The Third League", TEAMS_PER_TIER, options)
@@ -642,6 +648,8 @@ Join us at [https://playebl.com](https://playebl.com)`,
           await this.ladderService.generatePlayerPool(season, options)
 
     
+
+
         }
 
     }

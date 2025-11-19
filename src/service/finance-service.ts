@@ -4,12 +4,11 @@ import { FinanceSeason, Lineup, Revenue, RotationPitcher, Team } from "../dto/te
 
 import { Player } from "../dto/player.js";
 
-import { LEASE_PER_CAPACITY, Position} from "./enums.js";
+import { GameTeamFinance, LEASE_PER_CAPACITY, Position} from "./enums.js";
 
 import { LineupService } from "./lineup-service.js";
 import { ethers } from "ethers";
 import { RollChartService } from "./roll-chart-service.js";
-import { GameTeamFinance } from "../dto/game.js";
 import { Season } from "../dto/season.js";
 import { TeamLeagueSeason } from "../dto/team-league-season.js";
 import { PlayerLeagueSeason } from "../dto/player-league-season.js";

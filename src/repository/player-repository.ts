@@ -46,7 +46,6 @@ interface PlayerRepository {
     getPitcherIds(options?:any): Promise<string[]> 
     getPitcherIdsByOwner(owner:Owner, options?:any): Promise<string[]>
 
-    getDisplayPlayersById(playerIds:string[], options?:any)
     // getRecentAveragePlayerRating(options?:any) : Promise<{ age:number, averageRating:number }>    
     // getLeagueAveragePlayerRating(league:League, options?:any) : Promise<{ age:number, averageRating:number }>
 
@@ -61,6 +60,7 @@ interface PlayerRepository {
 
     // getPurgeable(options?: any) : Promise<Player[]>
     getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]>
+    getPlayerIdsByGameDate(date:Date, options?:any) : Promise<string[]>
 }
 
 export {

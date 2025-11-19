@@ -9,10 +9,10 @@ interface GameHitResultRepository {
     getCareerHitResult(playerId:string, options?:any) : Promise<HitResult>
     getGameAverageHitResult(options?:any) : Promise<HitResult>
     getAverageCareerHitResult(playerId:string, options?:any) : Promise<HitResult>
-    getPlayersWithCareerHitResult(playerIds:string[], options?:any)
     getTeamHitResult(teamId:number, options?:any) : Promise<HitResult>
     getGlobalHitResult(options?:any) : Promise<HitResult>
     updateGameHitResults(hitResults: GameHitResult[], options?: any) : Promise<void>
+    getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<HitResult>
 }
 
 export {

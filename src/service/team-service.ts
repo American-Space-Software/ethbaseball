@@ -150,7 +150,7 @@ n
         let t = tls.get({ plain: true })
 
         let nextStartDate = this.getNextStartDate(team)
-        let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, nextStartDate)
+        let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, nextStartDate, true)
 
         let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id, options)
         let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
@@ -301,8 +301,8 @@ n
         let teamInfo = [g.home, g.away].find( t => t._id == team._id)
         let oppTeamInfo = [g.home, g.away].find( t => t._id != team._id)
 
-        let teamFinances = g.home._id == team._id ? g.gameFinances?.home : g.gameFinances?.away
-        let oppFinances = g.home._id == team._id ? g.gameFinances?.away : g.gameFinances?.home
+        let teamFinances = g.home._id == team._id ? g?.home.finances : g?.away.finances
+        let oppFinances = g.home._id == team._id ? g?.away.finances : g?.home.finances
 
         let allPlayers = [].concat(g.away.players).concat(g.home.players)
 
@@ -537,7 +537,7 @@ n
 
         for (let lineup of tls.lineups) {
 
-            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss, gameDate)
+            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss, gameDate, true)
 
             this.validateLineup(team, lineup, plss, startingPitcher, gameDate)
 
@@ -649,7 +649,7 @@ n
         return startingPitcher
     }
 
-    getStartingPitcherFromPLS(rotation: RotationPitcher[], plss: PlayerLeagueSeason[], startDate: Date): RotationPitcher {
+    getStartingPitcherFromPLS(rotation: RotationPitcher[], plss: PlayerLeagueSeason[], startDate: Date, reuseDaysPitcher:boolean): RotationPitcher {
 
         //Loop through rotation and grab first listed pitcher that's eligible to play
         let compareDate = dayjs(startDate).subtract(4, 'days').toDate()
@@ -673,7 +673,15 @@ n
             }
             
 
-            if (player.lastGamePitched == undefined || player.lastGamePitched <= compareDate) {
+            let isEligible = player.lastGamePitched == undefined || player.lastGamePitched <= compareDate 
+            
+            if (reuseDaysPitcher) {
+                isEligible = isEligible || dayjs(player.lastGamePitched).format("YYYY-MM-DD") == dayjs().format("YYYY-MM-DD")
+            }
+            
+
+            //They are eligible 
+            if (isEligible ) {
                 startingPitcher = JSON.parse(JSON.stringify(pitcher))
                 startingPitcher.stamina = 1
                 break
@@ -741,9 +749,6 @@ n
 
         pls.leagueId = tls.leagueId
         pls.teamId = tls.teamId
-        pls.leagueId = tls.leagueId
-        pls.askingPrice = null
-
 
         // await this.gameTransactionService.signPlayer(league, team, season, player, player.contract, date, options)
 
@@ -949,7 +954,7 @@ n
         })
 
 
-        let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, date)
+        let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, date, true)
         this.validateLineup(team, tls.lineups[0], plss, startingPitcher, date)
 
         if (originalLineup != tls.lineups[0]) {

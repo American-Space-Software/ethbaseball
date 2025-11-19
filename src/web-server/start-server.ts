@@ -53,7 +53,7 @@ import { TeamMintPass } from '../dto/team-mint-pass.js'
 
 import { Eta } from "eta"
 import { CityService } from '../service/city-service.js'
-import { Game } from '../dto/game.js'
+import { Game, GamePlayer } from '../dto/game.js'
 
 const TWITTER = "@ethbaseball"
 
@@ -1667,85 +1667,116 @@ let startWebServer = async () => {
             return res.send("Game in progress")
           }
 
+          const getTeamBundle = async (theTeam) => {
+            
+            let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
+            let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
+
+            let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
+            let plsPlain = pls.map( pls => pls.get({ plain: true}))
+
+            let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate, true)
+
+            return {
+              tls: tls,
+              tlsPlain: tlsPlain,
+              plss: pls,
+              plssPlain: plsPlain,
+              startingPitcher: startingPitcher,
+              team: theTeam
+            }
+
+          }
+
+
           let season:Season = await seasonService.getMostRecent()
-
-          let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-          let tlsPlain = tls.get( { plain: true })
-
-          let lineup = tls.lineups[0]
-
-          let currentPLS: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(team)
-          let currentPLSPlain = currentPLS.map( pls => pls.get({ plain: true}))
-
-          let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, currentPLSPlain, universe.currentDate)
-
-
-          //Validate roster and lineup.
-          teamService.validateLineup(team, lineup, currentPLSPlain, startingPitcher, universe.currentDate)
 
           //Find bot match.
           let bot:Team = await teamService.getClosetRatedBot(team.longTermRating.rating)
-          let botTLS:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(bot, season)
 
+          let teamBundle = await getTeamBundle(team)
+          let botBundle = await getTeamBundle(bot)
+
+          //Validate rosters and lineups.
+          teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
+          teamService.validateLineup(bot, botBundle.tls.lineups[0], botBundle.plssPlain, botBundle.startingPitcher, universe.currentDate)
+
+          
           let isHome = Math.random() >= .5
 
-          let awayTLS = isHome ? botTLS : tls
-          let homeTLS = isHome ? tls: botTLS
+          let awayBundle = isHome ? botBundle : teamBundle
+          let homeBundle = isHome ? teamBundle : botBundle
 
-          let game = await gameService.scheduleGame({
-            league: tlsPlain.league,
-            season: season,
-            awayTLS: awayTLS,
-            homeTLS: homeTLS,
-            startDate: new Date(new Date().toUTCString())
+          await sequelize.transaction(async (t1) => {
+        
+            let options = { transaction: t1 }
+
+            let game = await gameService.scheduleGame({
+              league: teamBundle.tlsPlain.league,
+              season: season,
+              awayTLS: awayBundle.tlsPlain,
+              homeTLS: homeBundle.tlsPlain,
+              startDate: new Date(new Date().toUTCString()),
+            }, options)
+
+            //Create game-player association
+            let playerIds = [].concat(awayBundle.plss.map( pls => pls.playerId)).concat(homeBundle.plss.map( pls => pls.playerId))
+            let players:Player[] = await playerService.getByIds(playerIds, options)
+
+            await gameService.createGamePlayers(game, playerIds, options)
+
+
+            gameService.startGame({
+              
+              game: game,
+
+              homeTLS: homeBundle.tls, 
+              awayTLS: awayBundle.tls,
+
+              awayPlayers: awayBundle.plss,
+              homePlayers: homeBundle.plss,
+
+              away: awayBundle.team,
+              home: homeBundle.team,
+
+              awayStartingPitcher: awayBundle.startingPitcher,
+              homeStartingPitcher: homeBundle.startingPitcher,
+
+              date: universe.currentDate,
+              leagueAverageRatings: teamBundle.tlsPlain.league.averageRating
+              
+            })
+
+            await gameService.put(game, options)
+
+
+            let home:Team = await teamService.get(homeBundle.team._id)
+            let away:Team = await teamService.get(awayBundle.team._id)
+
+            home.lastGamePlayed = universe.currentDate
+            away.lastGamePlayed = universe.currentDate
+
+            await teamService.put(home, options)
+            await teamService.put(away, options)
+
+
+            //Update players last game date
+            for (let player of players) {
+                player.lastGamePlayed = game.startDate
+            }
+
+
+            //Updated pitch dates for starting pitchers
+            let homePitcher = players.find( p => p._id == homeBundle.startingPitcher._id)
+            homePitcher.lastGamePitched = universe.currentDate
+
+
+            let awayPitcher = players.find( p => p._id == awayBundle.startingPitcher._id)
+            awayPitcher.lastGamePitched = universe.currentDate
+
+            await playerService.updateGameFields(players, options)
+
           })
-
-
-          //Connect the game and the player 
-          // for (let player of players) {
-          //     let gp = new GP()
-          //     gp.gameId = game._id
-          //     gp.playerId = player._id
-          //     saveGPs.push(gp)
-          // }
-
-          // let homePlssPlain = homePlss.map( p => p.get({ plain: true}))
-          // let awayPlssPlain = awayPlss.map( p => p.get({ plain: true}))
-
-          // let homeTlsPlain = homeTLS.get( { plain: true })
-          // let awayTlsPlain = awayTLS.get( { plain: true })
-
-          // let homeRotationIds = homeTLS.lineups[0].rotation.map( r => r._id)
-          // let homeRotation:Player[] = players.filter( p => homeRotationIds.indexOf(p._id) > -1)
-
-          // let awayRotationIds = awayTLS.lineups[0].rotation.map( r => r._id)
-          // let awayRotation:Player[] = players.filter( p => awayRotationIds.indexOf(p._id) > -1)
-
-          // let homeStartingPitcher:RotationPitcher = this.teamService.getStartingPitcher(homeRotation, date)
-          // let awayStartingPitcher:RotationPitcher = this.teamService.getStartingPitcher(awayRotation, date)
-
-          // this.gameService.startGame(game, league.rank, home, homeTlsPlain, homePlssPlain, homeStartingPitcher, away, awayTlsPlain, awayPlssPlain, awayStartingPitcher, leagueAverage, date)
-
-
-          // //Update players last game date
-          // for (let player of players) {
-          //     player.lastGamePlayed = date
-          // }
-
-          // //Updated pitch dates for starting pitchers
-          // let homePitcher = players.find( p => p._id == homeStartingPitcher._id)
-          // homePitcher.lastGamePitched = date
-
-
-          // let awayPitcher = players.find( p => p._id == awayStartingPitcher._id)
-          // awayPitcher.lastGamePitched = date
-
-
-
-        // if (allGamePlayers?.length > 0) {
-        //     await this.gamePlayerRepository.insertAll(allGamePlayers, options)
-        // }
-
 
           return res.send("success")
 

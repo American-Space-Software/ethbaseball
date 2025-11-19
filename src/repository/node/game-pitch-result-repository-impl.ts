@@ -3,6 +3,7 @@ import {  inject, injectable } from "inversify"
 import { GamePitchResultRepository } from "../game-pitch-result-repository.js"
 import { GamePitchResult, PitchResult } from "../../dto/game-pitch-result.js"
 import { Player } from "../../dto/player.js"
+import dayjs from "dayjs"
 
 const SUM_QUERY_FIELDS = `
     SUM(atBats) atBats,
@@ -911,6 +912,41 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
             ORDER BY g.lastUpdated desc
             ${options?.limit ? `LIMIT ${options.limit}` : ''}
             ) 
+
+        `, Object.assign(queryOptions, options))
+
+        if (queryResults?.length > 0) {
+            return queryResults[0]
+        }
+
+    }
+
+
+    async getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<PitchResult> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                gameDate: dayjs(date).format("YYYY-MM-DD"),
+                playerId: player._id
+            }
+
+        }
+
+        const [queryResults, metadata] = await s.query(`
+
+            select 
+                COUNT(*) games,
+                ${SUM_QUERY_FIELDS}
+            FROM game_hit_result gpr
+                INNER JOIN 'game' g on gpr.gameId = g._id
+            WHERE g.gameDate = :gameDate AND gpr.playerId
+            ORDER BY g.lastUpdated desc
+            
 
         `, Object.assign(queryOptions, options))
 

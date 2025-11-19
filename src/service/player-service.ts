@@ -1044,6 +1044,10 @@ class PlayerService {
         return this.playerRepository.list(options)
     }
 
+    async getPlayerIdsByGameDate(date:Date, options?:any) {
+        return this.playerRepository.getPlayerIdsByGameDate(date, options)
+    }
+
     getPlayerLevelDescription(playerLevel: PlayerLevel) {
         return PlayerService.getPlayerLevelDescription(playerLevel)
     }

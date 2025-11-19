@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify"
 
 import fs from "fs"
 
-import { Game, GameTeam } from "../dto/game.js"
+import { Game, GameTeam, GamePlayer as GP } from "../dto/game.js"
 import {  Player } from "../dto/player.js"
 import { Position, GameLevel, GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, SimMatchupCommand, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame } from "./enums.js"
 
@@ -23,6 +23,7 @@ import { FinanceService } from "./finance-service.js"
 import { StatService } from "./stat-service.js"
 import { GamePitchResult } from "../dto/game-pitch-result.js"
 import { GameHitResult } from "../dto/game-hit-result.js"
+import { GamePlayerRepository } from "../repository/game-player-repository.js"
 
 
 
@@ -34,6 +35,10 @@ class GameService {
 
     @inject("GameTeamRepository")
     private gameTeamRepository:GameTeamRepository
+
+    @inject("GamePlayerRepository")
+    private gamePlayerRepository: GamePlayerRepository
+
 
     constructor(
         private rollService: RollService,
@@ -255,7 +260,7 @@ class GameService {
 
     }
 
-    buildTeamInfoFromTeam(leagueAverageRatings:LeagueAverageRatings, tls:TeamLeagueSeason, players:PlayerLeagueSeason[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number) {
+    buildTeamInfoFromTeam(leagueAverageRatings:LeagueAverageRatings, tls:TeamLeagueSeason, players:PlayerLeagueSeason[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number) : TeamInfo {
 
         let gamePlayer:GamePlayer[] = this.initGamePlayers(leagueAverageRatings, players, startingPitcher, tls.team._id, color1, color2, startingId)
 
@@ -270,6 +275,7 @@ class GameService {
         let teamInfo:TeamInfo = {
             logoId: tls.logoId,
             _id: tls.team._id,
+            finances: {},
             name: tls.team.name,
             abbrev: tls.team.abbrev,
             cityName: tls.city.name,
@@ -316,19 +322,13 @@ class GameService {
 
         })
 
-        return {
-            teamInfo: teamInfo,
-            players: players
-        }
+        return teamInfo
 
     }
     
-    startGame(game:Game, leagueRank:number, home:Team, homeTLS:TeamLeagueSeason, homePlayers:PlayerLeagueSeason[], homeStartingPitcher:RotationPitcher, away:Team, awayTLS:TeamLeagueSeason, awayPlayers:PlayerLeagueSeason[], awayStartingPitcher:RotationPitcher,leagueAverageRatings:LeagueAverageRatings, date:Date) {
+    startGame(command:StartGameCommand) {
 
-        game.gameFinances = {
-            home: {},
-            away: {}
-        }
+        let game = command.game
 
         //Home
         // game.gameFinances.home.payroll = (BigInt(homeTLS.financeSeason.expenses.projectedRemaining.payroll) / BigInt(homeTLS.financeSeason.totalGamesRemaining)).toString()
@@ -365,29 +365,27 @@ class GameService {
         // game.gameFinances.away.totalRevenue = (BigInt(game.gameFinances.away.nationalTvRevenue) + BigInt(game.gameFinances.away.localTvRevenue)).toString()
         // game.gameFinances.away.totalProfit = (BigInt(game.gameFinances.away.totalRevenue) - BigInt(game.gameFinances.away.totalExpenses)).toString()
 
-        game.changed('gameFinances', true)
+        // game.changed('gameFinances', true)
 
         //Validate lineups
-        this.validateGameLineup(awayTLS.lineups[0], awayPlayers, awayStartingPitcher, date)
-        this.validateGameLineup(homeTLS.lineups[0], homePlayers, homeStartingPitcher, date)
+        this.validateGameLineup(command.awayTLS.lineups[0], command.awayPlayers, command.awayStartingPitcher, command.date)
+        this.validateGameLineup(command.homeTLS.lineups[0], command.homePlayers, command.homeStartingPitcher, command.date)
 
-        home.lastGamePlayed = date
-        away.lastGamePlayed = date
+        let awayInfo = this.buildTeamInfoFromTeam(command.leagueAverageRatings, command.awayTLS,  command.awayPlayers, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1)
+        let homeInfo = this.buildTeamInfoFromTeam(command.leagueAverageRatings, command.homeTLS,  command.homePlayers, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length)
 
-        let awayTeam = this.buildTeamInfoFromTeam(leagueAverageRatings, awayTLS,  awayPlayers, awayStartingPitcher, away.colors.color1, away.colors.color2, HomeAway.AWAY, 1)
-        let homeTeam = this.buildTeamInfoFromTeam(leagueAverageRatings, homeTLS,  homePlayers, homeStartingPitcher, home.colors.color1, home.colors.color2, HomeAway.HOME, 1 + awayPlayers.length)
-
-        let awayInfo = awayTeam.teamInfo
-        let homeInfo = homeTeam.teamInfo
-
-        game.leagueAverages = this.playerService.buildLeagueAverages(leagueAverageRatings)
+        game.leagueAverages = this.playerService.buildLeagueAverages(command.leagueAverageRatings)
 
         //Set teams on game.
         game.away = awayInfo            
         game.home = homeInfo
 
-        game.startDate = date
+        game.startDate = command.date
         
+        game.changed('leagueAverages', true)
+        game.changed('away', true)
+        game.changed('home', true)
+        game.changed('startDate', true)
 
         return game 
     }
@@ -491,22 +489,6 @@ class GameService {
         gamePlayer.hitResult.wpa = hittingRewards?.reward || 0
         gamePlayer.pitchResult.wpa = pitchingRewards?.reward || 0
 
-        //Update overall rating
-        if (player.primaryPosition == Position.PITCHER) {
-            gamePlayer.overallRating.after = this.playerService.updateOverallRating(gamePlayer.overallRating.before, gamePlayer.pitchResult.wpa > 0, gamePlayer.age, gamePlayer.currentPosition == Position.PITCHER)
-        } else {
-            gamePlayer.overallRating.after = this.playerService.updateOverallRating(gamePlayer.overallRating.before, gamePlayer.hitResult.wpa > 0, gamePlayer.age, gamePlayer.currentPosition == Position.PITCHER)
-        }
-        
-        gamePlayer.overallRating.change = gamePlayer.overallRating.after - gamePlayer.overallRating.before
-        
-
-        //Get player and update
-        this.playerService.updateHittingPitchingRatings(player)
-        
-        // player.lastGameUpdate = new Date(new Date().toUTCString())
-
-        player.overallRating = gamePlayer.overallRating.after
         player.careerStats = {
             //@ts-ignore
             hitting: this.statService.mergeHitResultsToStatLine(player.careerStats.hitting, gamePlayer.hitResult),
@@ -515,10 +497,6 @@ class GameService {
         }
 
         player.changed("careerStats", true)
-        player.changed("overallRating", true)
-        player.changed("displayRating", true)
-
-        pls.overallRating = player.overallRating
 
         pls.stats = {
             //@ts-ignore
@@ -527,15 +505,11 @@ class GameService {
             pitching: this.statService.mergePitchResultsToStatLine(pls.stats?.pitching, gamePlayer.pitchResult)
         }
 
-        pls.hittingRatings = player.hittingRatings
-        pls.pitchRatings = player.pitchRatings
         pls.primaryPosition = player.primaryPosition
 
         pls.changed("overallRating", true)
         pls.changed("stats", true)
-        pls.changed("hittingRatings", true)
-        pls.changed("pitchRatings", true)
-        pls.changed("displayRating", true)
+
 
 
     }
@@ -729,6 +703,7 @@ class GameService {
         let gamePlayer:GamePlayer[] = this.initGamePlayers(leagueAverageRatings, players, undefined, teamId, color1, color2, startingId)
 
         let teamInfo:TeamInfo = {
+            finances: {},
             logoId: undefined,
             name: name,
             abbrev: name,
@@ -1656,6 +1631,7 @@ class GameService {
     buildTeamInfo(tls:TeamLeagueSeason, color1:string, color2:string, homeAway:HomeAway) : TeamInfo {
 
         let teamInfo:TeamInfo = {
+            finances: {},
             logoId: tls.logoId,
             _id: tls.team._id,
             name: tls.team.name,
@@ -1700,12 +1676,9 @@ class GameService {
 
         this.initGame(game)
 
-        let awayTLSPlain = command.awayTLS.get({plain: true})
-        let homeTLSPlain = command.homeTLS.get({plain: true})
-
         //Set teams on game.
-        game.away = this.buildTeamInfo(awayTLSPlain, awayTLSPlain.team.colors.color1, awayTLSPlain.team.colors.color2, HomeAway.AWAY)            
-        game.home = this.buildTeamInfo(homeTLSPlain, homeTLSPlain.team.colors.color1, homeTLSPlain.team.colors.color2, HomeAway.HOME)
+        game.away = this.buildTeamInfo(command.awayTLS, command.awayTLS.team.colors.color1, command.awayTLS.team.colors.color2, HomeAway.AWAY)            
+        game.home = this.buildTeamInfo(command.homeTLS, command.homeTLS.team.colors.color1, command.homeTLS.team.colors.color2, HomeAway.HOME)
 
         game.startDate = command.startDate
         game.gameDate = command.startDate
@@ -1731,40 +1704,40 @@ class GameService {
         return game        
     }
 
-    async scheduleGames(league:League, season:Season, date:Date, games:ScheduledGame[], tlss:TeamLeagueSeason[], options?:any) {
+    // async scheduleGames(league:League, season:Season, date:Date, games:ScheduledGame[], tlss:TeamLeagueSeason[], options?:any) {
 
-        if (games.length == 0) return
+    //     if (games.length == 0) return
 
-        //We have 3 different start times
+    //     //We have 3 different start times
 
-        // 1 PM
-        // 4 PM
-        // 7 PM
-        let currentSlot = 0
-        let perSlot = Math.max(1, Math.round(games.length / 3))
+    //     // 1 PM
+    //     // 4 PM
+    //     // 7 PM
+    //     let currentSlot = 0
+    //     let perSlot = Math.max(1, Math.round(games.length / 3))
 
-        console.time(`Creating ${games.length} games for ${dayjs(date).format("YYYY/MM/DD")}`)
+    //     console.time(`Creating ${games.length} games for ${dayjs(date).format("YYYY/MM/DD")}`)
 
-        let i=0
-        for (let game of games ) {
+    //     let i=0
+    //     for (let game of games ) {
 
-            let startDate = this.getTargetTime(date, [17, 20, 23][currentSlot])
+    //         let startDate = this.getTargetTime(date, [17, 20, 23][currentSlot])
 
-            await this.scheduleGame({
-                awayTLS: tlss.find(t => t.teamId == game.awayId),
-                homeTLS: tlss.find(t => t.teamId == game.homeId),
-                startDate: startDate,
-                season: season,
-                league: league
-            }, options)
+    //         await this.scheduleGame({
+    //             awayTLS: tlss.find(t => t.teamId == game.awayId),
+    //             homeTLS: tlss.find(t => t.teamId == game.homeId),
+    //             startDate: startDate,
+    //             season: season,
+    //             league: league
+    //         }, options)
 
-            if (i % perSlot == 0 && currentSlot < 2) currentSlot++
-            i++
-        }
+    //         if (i % perSlot == 0 && currentSlot < 2) currentSlot++
+    //         i++
+    //     }
 
-        console.timeEnd(`Creating ${games.length} games for ${dayjs(date).format("YYYY/MM/DD")}`)
+    //     console.timeEnd(`Creating ${games.length} games for ${dayjs(date).format("YYYY/MM/DD")}`)
 
-    }
+    // }
 
 
     createHitResult(game:Game, player:GamePlayer) : GameHitResult {
@@ -1804,7 +1777,20 @@ class GameService {
         return gpr
     }
 
+    async createGamePlayers(game:Game, playerIds:string[], options?:any) {
 
+        let gamePlayers:GP[] = []
+
+        for (let id of playerIds) {
+            let gp = new GP()
+            gp.gameId = game._id
+            gp.playerId = id
+            gamePlayers.push(gp)
+        }
+
+        await this.gamePlayerRepository.insertAll(gamePlayers, options)
+
+    }
 
     // async getGlobalStats()  {
 
@@ -1965,6 +1951,21 @@ interface OverallStats {
     ops:number
 
 }
+
+interface StartGameCommand {
+    game:Game, 
+    home:Team, 
+    homeTLS:TeamLeagueSeason, 
+    homePlayers:PlayerLeagueSeason[], 
+    homeStartingPitcher:RotationPitcher, 
+    away:Team, 
+    awayTLS:TeamLeagueSeason, 
+    awayPlayers:PlayerLeagueSeason[], 
+    awayStartingPitcher:RotationPitcher,
+    leagueAverageRatings:LeagueAverageRatings, 
+    date:Date
+}
+
 
 const WIN_EXPECTANCY_CHART = [
     {

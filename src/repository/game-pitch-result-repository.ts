@@ -15,6 +15,7 @@ interface GamePitchResultRepository {
     getGlobalPitchResult(options?:any) : Promise<PitchResult>
     getStartsByPlayer(playerId:string, options?:any): Promise<GamePitchResult[]>
     updateGamePitchResults(pitchResults: GamePitchResult[], options?: any)
+    getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<PitchResult>
 }
 
 export {
