@@ -2,24 +2,7 @@ import { League } from "../dto/league.js"
 import { ContactTypeRollInput, PowerRollInput } from "../dto/roll-input.js"
 import { OverallRecord } from "../dto/team.js"
 
-enum PlayerLevel {
-    HIGH_SCHOOL_JUNIOR = 1,
-    HIGH_SCHOOL_SENIOR = 2,
-    JUNIOR_COLLEGE = 3,
-    COLLEGE_JUNIOR = 4,
-    COLLEGE_SENIOR = 5,
-    MINORS = 6,
-    PROS = 7
-}
-
-enum GameLevel {
-    HIGH_SCHOOL = 1,
-    JUNIOR_COLLEGE = 2,
-    COLLEGE = 3,
-    MINORS = 4,
-    PROS = 5
-}
-
+const DIAMONDS_PER_DAY = 1000 
 
 enum Position {
     CATCHER = "C",
@@ -1343,9 +1326,9 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
 
 
 
-export  { GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+export  { DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimMatchupCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
-    RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, PlayerLevel, GameLevel, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
+    RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
     Handedness, Rating, PitchRatings, HittingRatings, ContactProfile, GamePlayer, HitterStatLine, PitcherStatLine, PitchLog, PitchResult, RunnerEvent, Pitch, PitchCount,
     PitchProfile, BaseResult, DefensiveCredit, DefenseCreditType, LeagueAverage,ThrowRoll, InZoneByCount, OfficialRunnerResult, ThrowResult, BallTakeByCount, BallSwingByCount, StrikeSwingByCount, StrikeTakeByCount,HittingProfile, PitchingProfile, PitchRating, PlayerStatLines, PersonalityType }

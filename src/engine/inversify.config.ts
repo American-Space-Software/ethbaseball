@@ -32,7 +32,6 @@ import { OwnerRepositoryNodeImpl } from "../repository/node/owner-repository-imp
 import { SeedRepositoryNodeImpl } from "../repository/node/seed-repository-impl.js";
 import { Seed } from "../dto/seed.js";
 import { SeedService } from "../service/seed-service.js";
-import { LevelService } from "../service/level-service.js";
 
 import { GameTeamRepositoryNodeImpl } from "../repository/node/game-team-repository-impl.js"
 import { GamePlayerRepositoryNodeImpl } from "../repository/node/game-player-repository-impl.js"
@@ -382,7 +381,6 @@ async function getContainer() {
     container.bind(SchemaService).toSelf().inSingletonScope()
     container.bind(OwnerService).toSelf().inSingletonScope()
     container.bind(SeedService).toSelf().inSingletonScope()
-    container.bind(LevelService).toSelf().inSingletonScope()
     container.bind(StatService).toSelf().inSingletonScope()
     container.bind(ImageService).toSelf().inSingletonScope()
     container.bind(AnimationService).toSelf().inSingletonScope()

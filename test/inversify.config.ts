@@ -16,7 +16,6 @@ import mysql from 'mysql2/promise.js'
 import { OllamaService } from '../src/service/ollama-service.js';
 
 import { DiamondService } from '../src/service/diamond-service.js';
-import { LevelService } from '../src/service/level-service.js';
 import { OwnerService } from "../src/service/owner-service.js";
 import { CityService } from "../src/service/city-service.js";
 
@@ -449,7 +448,6 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(RollService).toSelf().inSingletonScope()
   container.bind(GameService).toSelf().inSingletonScope()
   container.bind(PlayerService).toSelf().inSingletonScope()
-  container.bind(LevelService).toSelf().inSingletonScope()
   container.bind(OwnerService).toSelf().inSingletonScope()
   container.bind(SeedService).toSelf().inSingletonScope()
   container.bind(UserIOService).toSelf().inSingletonScope()

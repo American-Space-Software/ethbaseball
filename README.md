@@ -3,7 +3,7 @@
 ## Technical Overview
 
 Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator.  
-Teams and in-game currency (Diamonds) are represented as Ethereum assets, while all simulation and gameplay run off-chain for performance.
+Players and in-game currency (Diamonds) are represented as Ethereum assets, while all simulation and gameplay run off-chain for performance.
 
 This document provides a technical overview of the stack plus quick-start steps and environment file examples.
 
@@ -40,10 +40,10 @@ This document provides a technical overview of the stack plus quick-start steps 
 
 - **Simulation runtime:** Node.js service (`engine.js`)
 - **Responsibilities:**
-  - Simulate games (one per team per real-world day; time slots are scheduled)
-  - Update player stats & progression
-  - Manage team finances, contracts, promotion/relegation
-  - Write results/state to MySQL for the web app to render
+  - Simulate games.
+  - Update player stats & progression.
+  - Manage team finances and rewards.
+  - Write results/state to MySQL for the web app to render.
 
 ---
 

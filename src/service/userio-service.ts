@@ -3,7 +3,6 @@ import { Player } from '../dto/player.js'
 
 import Table from "cli-table3"
 import colors from "@colors/colors"
-import { LevelService } from './level-service.js'
 import { GameViewModel, LastPlay } from './game-service.js'
 import { GamePlayer, PitchType, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from './enums.js'
 
@@ -11,7 +10,6 @@ import { GamePlayer, PitchType, PlayResult, Position, ShallowDeep, TeamInfo, Thr
 class UserIOService {
 
     constructor(
-        private levelService: LevelService,
         @inject("rlp") private rlp
     ) {}
 

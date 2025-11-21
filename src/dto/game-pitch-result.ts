@@ -1,5 +1,5 @@
 import { Table, Column, Model, Index, PrimaryKey, ForeignKey, AllowNull, DataType, BelongsTo } from 'sequelize-typescript'
-import { GameLevel, PitcherStatLine, Rating } from '../service/enums.js'
+import { PitcherStatLine, Rating } from '../service/enums.js'
 
 @Table({
     tableName: 'game_pitch_result',
@@ -183,7 +183,6 @@ class GamePitchResult extends Model {
         after: PitcherStatLine
     }
 
-    level: GameLevel
 
     @Column(DataType.DATE)
     declare startDate?:Date

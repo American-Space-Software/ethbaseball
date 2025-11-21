@@ -4,7 +4,7 @@ import fs from "fs"
 
 import { Game, GameTeam, GamePlayer as GP } from "../dto/game.js"
 import {  Player } from "../dto/player.js"
-import { Position, GameLevel, GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, SimMatchupCommand, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame } from "./enums.js"
+import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, SimMatchupCommand, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame } from "./enums.js"
 
 import { RollService,  } from "./roll-service.js"
 import { GameRepository } from "../repository/game-repository.js"
@@ -1870,7 +1870,6 @@ const EXP_WIN_BONUS = 1.2
 
 interface SimGameCommand {
 
-    level:GameLevel
 }
 
 

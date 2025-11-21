@@ -854,7 +854,8 @@ describe('RollService', async () => {
                         rank: 0,
                     }
                 },
-                logoId: ""
+                logoId: "",
+                finances: {}
             },
             defense: {
                 name: "Defense",
@@ -882,7 +883,8 @@ describe('RollService', async () => {
                         rank: 0,
                     }
                 },
-                logoId: ""
+                logoId: "",
+                finances: {}
             },
 
             hitterId: hitter._id,

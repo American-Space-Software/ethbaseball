@@ -3,7 +3,7 @@ import { Owner } from "../dto/owner.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
 import { Team } from "../dto/team.js"
-import { GameLevel, HittingRatings, PitchRatings, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../service/enums.js"
+import {  HittingRatings, PitchRatings, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../service/enums.js"
 
 interface PlayerRepository {
     get(id:string, options?:any): Promise<Player>

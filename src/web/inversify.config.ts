@@ -21,7 +21,6 @@ import { QueueService } from '../service/queue-service.js';
 import { WalletServiceImpl } from "../service/wallet-service.js";
 import { UiService } from "../service/ui-service.js";
 
-import { LevelService } from "../service/level-service.js";
 import { SeedService } from "../service/seed-service.js";
 import { StatService } from "../service/stat-service.js";
 import { PagingService } from "../service/paging-service.js";
@@ -243,7 +242,6 @@ async function getContainer(env, footerRoutes) {
 
     container.bind("WalletService").to(WalletServiceImpl).inSingletonScope()
     container.bind(RoutingService).toSelf().inSingletonScope()
-    container.bind(LevelService).toSelf().inSingletonScope()
     container.bind(DiamondService).toSelf().inSingletonScope()
     container.bind(QueueService).toSelf().inSingletonScope()
     container.bind(UiService).toSelf().inSingletonScope()

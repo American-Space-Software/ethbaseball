@@ -211,49 +211,8 @@ class FinanceService {
         return leagueRankModifier
     }
 
-    getNationalMediaRevenuePerGame(leagueRank:number) : bigint {
-
-        // Combine inputs to calculate ticket price
-        let leagueRankFactor = 1
-
-        Array.from({ length: leagueRank - 1 }, () => {
-            leagueRankFactor *= .5
-        }) 
-
-        return ethers.parseUnits( (TOTAL_NATIONAL_MEDIA_REVENUE_PER_GAME * leagueRankFactor).toString()  , 'ether')
-    }
-
-    calculateLocalMediaRevenuePerGame(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number) : bigint {
-
-        let demandChange = this.getDemandChange(leagueRank, fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
-
-        let localMediaRevenuePerGame = this.rollChartService.applyChange(AVG_LOCAL_MEDIA_REVENUE_PER_GAME, demandChange)
-
-        if (localMediaRevenuePerGame > MAX_LOCAL_MEDIA_REVENUE_PER_GAME) localMediaRevenuePerGame = MAX_LOCAL_MEDIA_REVENUE_PER_GAME
-
-        return ethers.parseUnits( localMediaRevenuePerGame.toString()  , 'ether')
-
-    }
-
-    calculateStadiumLease(leagueRank:number, stadiumCapacity:number) : bigint {
-
-        let perSeat = LEASE_PER_CAPACITY * this.getLeagueRankModifier(leagueRank)
-
-        return ethers.parseUnits( (perSeat * stadiumCapacity).toString()  , 'ether')
-
-    }
-
     calculateTotalRevenue(revenue:Revenue) {
         return BigInt(revenue.total)//BigInt(revenue.gate) + BigInt(revenue.localMedia) + BigInt(revenue.nationalMedia) + BigInt(revenue.seasonTickets)
-    }
-
-    // calculateTotalExpenses(expenses:Expenses) {
-    //     return  BigInt(expenses.stadiumLease)
-    // }
-
-    setPerGameRevenue(revenue:Revenue, games:number) {
-        let totalRevenue = this.calculateTotalRevenue(revenue)
-        revenue.perGame = games > 0 ? BigInt(totalRevenue / BigInt(games)).toString() : BigInt(0).toString()
     }
 
     getDefaultFinanceSeason() {
@@ -288,27 +247,59 @@ class FinanceService {
         }
     }
 
+    /**
+     * Rewards are split based on a blended rating that uses both your team’s long-term strength and its current-season performance. 
+     * Higher-rated teams receive a larger share of the pool, lower-rated teams receive a smaller share, and every team always earns something. 
+     * The system scales smoothly, so even small rating improvements increase your rewards, while bigger jumps make a noticeable difference.
+     * @param totalRewards 
+     * @param teams 
+     * @returns 
+     */
+    calculateRewardsPerTeam(
+        totalRewards: number,
+        teams: Team[]
+    ) : { _id: string, amount: number, longTermAmount: number, seasonAmount: number }[] {
 
-    // calculateProjectedPayroll(plss:PlayerLeagueSeason[]) : bigint {
+        const BASE_RATING = 1500
+        const STEP = 300
 
-    //     let payroll:bigint = BigInt(0)
+        if (teams.length === 0) return []
 
-    //     for (let pls of plss) {
+        const computeShares = (getRating: (t: Team) => number) => {
+            const weights = teams.map((t) => {
+                const exponent = (getRating(t) - BASE_RATING) / STEP
+                return Math.pow(2, exponent)
+            })
 
-    //         //Get current season's contract
-    //         payroll += BigInt(pls.contractYear.salary)
+            const totalWeight = weights.reduce((sum, w) => sum + w, 0)
 
-    //     }
+            if (totalWeight === 0) {
+                const equalShare = 1 / teams.length
+                return teams.map(() => equalShare)
+            }
 
-    //     return payroll
+            return weights.map(w => w / totalWeight)
+        }
 
-    // }
+        const longTermShares = computeShares(t => t.longTermRating.rating)
+        const seasonShares = computeShares(t => t.seasonRating.rating)
 
-    // getProjectedRemainingPayroll(roster:PlayerLeagueSeason[], gamesPerSeason:number, gamesRemaining:number) {
-    //     let projectedPayrollTotal = this.calculateProjectedPayroll(roster)
-    //     let projectedPayrollPerGame = gamesRemaining > 0 ? projectedPayrollTotal / BigInt(gamesPerSeason) : BigInt(0)     
-    //     return (projectedPayrollPerGame * BigInt(gamesRemaining)).toString()
-    // }
+        const half = totalRewards / 2
+
+        return teams.map((t, i) => {
+            const longTermAmount = longTermShares[i] * half
+            const seasonAmount = seasonShares[i] * half
+            const amount = longTermAmount + seasonAmount
+
+            return {
+                _id: t._id,
+                amount,
+                longTermAmount,
+                seasonAmount
+            }
+        })
+    }
+
 
 
 }

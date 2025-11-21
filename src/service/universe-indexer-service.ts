@@ -17,10 +17,6 @@ import { TeamService } from "./team-service.js";
 import { DiamondMintPass, Team } from "../dto/team.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { LogEventService } from "./log-event-service.js";
-import { OffchainEventService } from "./offchain-event-service.js";
-import { ContractType } from "./enums.js";
-import { TeamLeagueSeason } from "../dto/team-league-season.js";
-import { TeamLeagueSeasonService } from "./team-league-season-service.js";
 
 const MAX_BLOCKS_TO_INDEX = 10000
 
@@ -53,9 +49,7 @@ class UniverseIndexerService {
         private contractStateService: ContractStateService,
         private ownerService: OwnerService,
         private diamondMintPassService:DiamondMintPassService,
-        private offChainEventService:OffchainEventService,
         private logEventService:LogEventService,
-        private teamLeagueSeasonService:TeamLeagueSeasonService
     ) { }
 
     BLOCK_CONFIRMATIONS = 35

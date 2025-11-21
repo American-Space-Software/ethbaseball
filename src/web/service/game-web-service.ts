@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { BaseResult, Contact, GameLevel, GamePlayer, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Play, PlayResult, Position, RunnerEvent, ShallowDeep, ThrowResult } from "../../service/enums.js";
+import { BaseResult, Contact, GamePlayer, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Play, PlayResult, Position, RunnerEvent, ShallowDeep, ThrowResult } from "../../service/enums.js";
 import { StatService } from "../../service/stat-service.js";
 import dayjs from "dayjs";
 import { Game } from "../../dto/game.js";
@@ -769,23 +769,6 @@ class GameWebService {
 
     }
 
-
-    getGameLevelDescription(level:GameLevel) {
-
-        switch (level) {
-            case GameLevel.HIGH_SCHOOL:
-                return "High School"
-            case GameLevel.JUNIOR_COLLEGE:
-                return "Junior College"
-            case GameLevel.COLLEGE:
-                return "College"
-            case GameLevel.MINORS:
-                return "Minors"
-            case GameLevel.PROS:
-                return "Pros"
-        }
-
-    }
 
 
     getNumberWithOrdinal(n) {

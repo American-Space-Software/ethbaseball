@@ -4,7 +4,7 @@ import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./player-
 
 import { GameService } from "./game-service.js"
 import { FinanceSeason, RotationPitcher, Team } from "../dto/team.js"
-import {  GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position, TeamSeasonId } from "./enums.js"
+import {  GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./team-service.js"
 
@@ -153,16 +153,50 @@ class LadderService {
                             //Recalculate percentile ratings.
                             await this.playerService.updateAllPercentileRatings()
 
-                            //Update team ratings
-                            await this.updateTeamRankings(season, universe.currentDate, options)
+                            //Update team ratings.
+                            let teams:Team[] = await this.teamService.list(1000000000, 0, options)
+
+                            let teamIds = teams.map( t => t._id)
+                            let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
+
+                            let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
+
+                            await this.updateTeamRankings(teams, season, tlss, universe.currentDate, options)
+
+                            //Calculate daily rewards. Only to teams that played.
+                            let rewardTeamIds = Array.from(new Set(plss.map( pls => pls.teamId )))
+                            let rewardTeams = teams.filter( t => rewardTeamIds.find( rt => rt == t._id) != undefined)
+                            let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, rewardTeams)
+                            
+                            
+                            //Distribute rewards and save.
+                            for (let team of teams) {
+                                let reward = rewardsPerTeam.find( r => r._id == team._id)
+                                await this.offchainEventService.createTeamMintEvent(team._id, reward.amount.toString(), undefined, options )
+                                await this.teamService.put(team, options)
+                            }
+
+                            //Save
+                            for (let tls of tlss) {
+                                await this.teamLeagueSeasonService.put(tls, options)
+                            }
+
 
                             //Update league average player ratings.
                             for (let league of leagues) {
+
                                 league.averageRating = {
                                     hittingRatings: await this.playerService.getLeagueAverageHitterRatings(league, season, options),
                                     pitchRatings: await this.playerService.getLeagueAveragePitcherRatings(league, season, options)
                                 }
+
+                                league.changed('averageRating', true)
+
+                                await this.leagueService.put(league, options)
                             }
+
+                            
+
 
                             if (dayjs(universe.currentDate).format("YYYY/MM/DD") == dayjs(season.endDate).format("YYYY/MM/DD") && !season.isComplete) {
                                 console.time(`Finishing season...`)
@@ -863,17 +897,10 @@ class LadderService {
 
     }
 
-    async updateTeamRankings(season:Season, date:Date, options?:any)  {
+    async updateTeamRankings(teams:Team[], season:Season, tlss:TeamLeagueSeason[], date:Date, options?:any)  {
 
         let results = await this.gameService.getResultsByDate(date, options)
-        let teams:Team[] = await this.teamService.list(1000000, 0, options)
-
-        let teamIds = teams.map( t => t._id)
-        let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
-
-        let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
-
-
+        
         let seasonRatings = teams.map( t =>  { return { rating: t.seasonRating, _id: t._id} })
         let longTermRatings = teams.map( t =>  { return { rating: t.longTermRating, _id: t._id} })
 

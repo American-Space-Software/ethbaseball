@@ -59,8 +59,8 @@ describe('LadderService', async () => {
         
         await seasonService.put(season)
 
-        await universeService.runLeagueGenerator(season, 1, "Apex League", 4)
-        await universeService.runLeagueGenerator(season, 2, "The Second League", 4)
+        await universeService.runLeagueGenerator(universe, season, 1, "Apex League", 4)
+        await universeService.runLeagueGenerator(universe, season, 2, "The Second League", 4)
 
         // await service.runGameRunner(universe._id, 0)
 

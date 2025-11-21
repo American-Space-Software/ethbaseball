@@ -18,7 +18,7 @@ import { Animation } from "../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "./stat-service.js"
-import { GameLevel, Handedness, PlayerLevel, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "./enums.js"
+import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "./enums.js"
 import dayjs from "dayjs"
 
 
@@ -1048,47 +1048,6 @@ class PlayerService {
         return this.playerRepository.getPlayerIdsByGameDate(date, options)
     }
 
-    getPlayerLevelDescription(playerLevel: PlayerLevel) {
-        return PlayerService.getPlayerLevelDescription(playerLevel)
-    }
-
-    static getPlayerLevelDescription(playerLevel: PlayerLevel) {
-
-        switch (playerLevel) {
-            case PlayerLevel.HIGH_SCHOOL_JUNIOR:
-                return "High School (Junior)"
-            case PlayerLevel.HIGH_SCHOOL_SENIOR:
-                return "High School (Senior)"
-            case PlayerLevel.JUNIOR_COLLEGE:
-                return "Junior College"
-            case PlayerLevel.COLLEGE_JUNIOR:
-                return "College (Junior)"
-            case PlayerLevel.COLLEGE_SENIOR:
-                return "College (Senior)"
-            case PlayerLevel.MINORS:
-                return "Minors"
-            case PlayerLevel.PROS:
-                return "Pros"
-        }
-
-    }
-
-    getGameLevelDescription(level: GameLevel) {
-
-        switch (level) {
-            case GameLevel.HIGH_SCHOOL:
-                return "High School"
-            case GameLevel.JUNIOR_COLLEGE:
-                return "Junior College"
-            case GameLevel.COLLEGE:
-                return "College"
-            case GameLevel.MINORS:
-                return "Minors"
-            case GameLevel.PROS:
-                return "Pros"
-        }
-
-    }
 
     getHandednessFull(handedness: Handedness) {
         return PlayerService.getHandednessFull(handedness)
@@ -1968,26 +1927,6 @@ interface PlayerRowViewModel {
 
 }
 
-
-interface PlayerSummaryViewModel {
-
-    _id: number
-    firstName: string
-    lastName: string
-    primaryPosition: Position
-    age: number
-    rating: number
-    zodiacSign: string
-    ownerId: string
-    throws: Handedness
-    hits: Handedness
-    lastGamePlayed: Date
-
-    overallRating: number
-    playerLevel: PlayerLevel
-
-
-}
 
 
 
