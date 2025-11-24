@@ -584,6 +584,9 @@ interface TeamInfo {
 
     _id?:string
     logoId:string
+    owner?:{
+        _id:string
+    }
 
     finances:GameTeamFinance
 
@@ -1211,7 +1214,8 @@ enum PlayerTransactionType {
 }
 
 enum ContractType {
-    DIAMONDS = "DIAMONDS"
+    DIAMONDS = "DIAMONDS",
+    PLAYERS = "PLAYERS"
 
 }
 

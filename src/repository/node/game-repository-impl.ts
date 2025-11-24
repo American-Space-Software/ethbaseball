@@ -132,8 +132,8 @@ class GameRepositoryNodeImpl implements GameRepository {
             from game g 
             INNER JOIN game_team gt on gt.gameId = g._id
             WHERE 
-                gt.teamId = :teamId
-            WHERE g.isComplete = 0 AND g.isStarted = 1
+                gt.teamId = :teamId AND
+                g.isComplete = 0 AND g.isStarted = 1
             order by g.startDate ASC
 
         `, Object.assign(queryOptions, options))

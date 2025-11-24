@@ -3,7 +3,7 @@ import { Player } from '../dto/player.js'
 
 import Table from "cli-table3"
 import colors from "@colors/colors"
-import { GameViewModel, LastPlay } from './game-service.js'
+import { GameViewModel, LastPlay } from './data/game-service.js'
 import { GamePlayer, PitchType, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from './enums.js'
 
 @injectable()

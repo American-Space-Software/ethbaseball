@@ -5,25 +5,35 @@ import { StatService } from "../../service/stat-service.js";
 import dayjs from "dayjs";
 import { Game } from "../../dto/game.js";
 
+import { io } from "socket.io-client";
+import { SocketWebService } from "./socket-web-service.js";
+
 
 @injectable()
 class GameWebService {
+    
 
     constructor(
-        private statService: StatService
-    ) { }
+        private socketWebService: SocketWebService,
+        @inject('env') private env:any
+    ) { 
 
-    async getLatest() {
-        let result = await axios.get(`/api/game/latest`, {
-            // query URL without using browser cache
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-            },
-        })
-        return result.data
+
     }
+
+
+
+    // async getLatest() {
+    //     let result = await axios.get(`/api/game/latest`, {
+    //         // query URL without using browser cache
+    //         headers: {
+    //             'Cache-Control': 'no-cache',
+    //             'Pragma': 'no-cache',
+    //             'Expires': '0',
+    //         },
+    //     })
+    //     return result.data
+    // }
 
 
     async getGames(dateString:string, rank:number) {

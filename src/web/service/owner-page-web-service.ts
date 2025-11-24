@@ -1,6 +1,6 @@
 import axios from "axios";
 import { injectable } from "inversify";
-import { LeaderboardRowViewModel } from "../../service/owner-service.js";
+import { LeaderboardRowViewModel } from "../../service/data/owner-service.js";
 
 @injectable()
 class OwnerPageWebService {

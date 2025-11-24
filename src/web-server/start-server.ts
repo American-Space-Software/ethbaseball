@@ -14,51 +14,64 @@ import session from "express-session"
 import bodyParser from 'body-parser';
 import { ConnectService } from "../service/connect-service.js"
 import { Owner } from "../dto/owner.js"
-import { PlayerService } from "../service/player-service.js"
+import { PlayerService } from "../service/data/player-service.js"
 import { Player } from "../dto/player.js"
 import { Image } from "../dto/image.js"
 
 import { PlayerViewService } from "../service/player-view-service.js"
-import { OwnerService } from "../service/owner-service.js"
+import { OwnerService } from "../service/data/owner-service.js"
 
 import connectSessionSequelize from "connect-session-sequelize"
 import { UserService } from "../service/user-service.js"
 import { User } from "../dto/user.js"
 import { DiamondMintPass, RotationPitcher, Team } from "../dto/team.js"
-import { TeamService } from "../service/team-service.js"
-import { GameService } from "../service/game-service.js"
+import { TeamService } from "../service/data/team-service.js"
+import { GameService } from "../service/data/game-service.js"
 import { UniverseService } from "../service/universe-service.js"
 import { Universe } from "../dto/universe.js"
 import dayjs from "dayjs"
-import { ImageService } from '../service/image-service.js'
+import { ImageService } from '../service/data/image-service.js'
 import { CacheService, ENV_TAG, IMAGES, OWNERS, PLAYERS, TEAMS } from '../service/cache-service.js'
-import { SignatureTokenService } from '../service/signature-token-service.js'
+import { SignatureTokenService } from '../service/data/signature-token-service.js'
 import { ethers } from 'ethers'
-import { LeagueService } from '../service/league-service.js'
+import { LeagueService } from '../service/data/league-service.js'
 import { League } from '../dto/league.js'
-import { SeasonService } from '../service/season-service.js'
+import { SeasonService } from '../service/data/season-service.js'
 import { Season } from '../dto/season.js'
 import { PlayerLeagueSeason } from '../dto/player-league-season.js'
-import { PlayerLeagueSeasonService } from '../service/player-league-season-service.js'
-import { TeamLeagueSeasonService } from '../service/team-league-season-service.js'
+import { PlayerLeagueSeasonService } from '../service/data/player-league-season-service.js'
+import { TeamLeagueSeasonService } from '../service/data/team-league-season-service.js'
 
 import { OffchainEventService } from '../service/offchain-event-service.js'
 import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, TeamCost } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
-import { PostService } from '../service/post-service.js'
-import { ProcessedTransactionService } from '../service/processed-transaction-service.js'
-import { DiamondMintPassService } from '../service/diamond-mint-pass-service.js'
-import { TeamMintPassService } from '../service/team-mint-pass-service.js'
-import { TeamMintPass } from '../dto/team-mint-pass.js'
+import { ProcessedTransactionService } from '../service/data/processed-transaction-service.js'
+import { DiamondMintPassService } from '../service/data/diamond-mint-pass-service.js'
+import { TeamMintPassService } from '../service/data/team-mint-pass-service.js'
 
 import { Eta } from "eta"
-import { CityService } from '../service/city-service.js'
+import { CityService } from '../service/data/city-service.js'
 import { Game, GamePlayer } from '../dto/game.js'
+
+import { Server } from "socket.io"
+import http from 'http'
+
+
+
 
 const TWITTER = "@ethbaseball"
 
 
+const app = express()
 
+//Used for socket.io
+const server = http.createServer(app)
+
+/** WEBSOCKETS */
+const io = new Server(server)
+
+
+/** END WEBSOCKETS */
 
 
 
@@ -88,7 +101,6 @@ let startWebServer = async () => {
 
 
 
-  const app = express()
   app.use(compression())
   app.use(bodyParser.json()) // add a middleware (so that express can parse request.body's json)
 
@@ -212,6 +224,7 @@ let startWebServer = async () => {
 
     return {
       'WEB': process.env.WEB,
+      'WEB_SOCKET': process.env.WEB_SOCKET,
       'LEAGUES': leagues,
       'CURRENT_DATE': universe.currentDate,
       'START_DATE': dayjs(season.startDate).format("YYYY-MM-DD"),
@@ -1046,56 +1059,55 @@ let startWebServer = async () => {
     return
   })
 
+  app.post('/api/player/drop/:playerId', async function (req, res) {
 
-  // app.post('/api/player/drop/:playerId', async function (req, res) {
+    try {
 
-  //   try {
+      let playerId = req.params.playerId
 
-  //     let playerId = req.params.playerId
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
 
-  //     //@ts-ignore
-  //     let userId = req.session?.passport?.user
-  //     if (!userId) {
-  //       res.status(401)
-  //       return res.send("Not authorized.")
-  //     }
+      let user: User = await userService.get(userId)
 
-  //     let user: User = await userService.get(userId)
-
-  //     //Make sure this user owns this player
-  //     let player:Player = await playerService.get(playerId)
-  //     let season:Season = await seasonService.getMostRecent()
+      //Make sure this user owns this player
+      let player:Player = await playerService.get(playerId)
+      let season:Season = await seasonService.getMostRecent()
       
-  //     let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+      let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
       
-  //     if (!pls.teamId) {
-  //       throw new Error("Player is not rostered.")
-  //     }
+      if (!pls.teamId) {
+        throw new Error("Player is not rostered.")
+      }
       
-  //     let team:Team = await teamService.get(pls.teamId)
+      let team:Team = await teamService.get(pls.teamId)
       
-  //     //Must be team owner
-  //     if (user._id != team.userId) {
-  //       res.status(401)
-  //       return res.send("Not authorized.")
-  //     }
+      //Must be team owner
+      if (user._id != team.userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
 
-  //     await refreshUniverse()
+      await refreshUniverse()
 
-  //     await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
+      await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
 
-  //     //Clear cache 
-  //     await cacheService.clearPlayersTag()
-  //     await cacheService.clearTeamsTag()
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
 
-  //     res.send("success")
+      res.send("success")
 
-  //   } catch (ex) {
-  //     res.status(500)
-  //     res.send(ex.message);
-  //   }
+    } catch (ex) {
+      res.status(500)
+      res.send(ex.message);
+    }
 
-  // })
+  })
 
 /**
  * End Players
@@ -1406,7 +1418,7 @@ let startWebServer = async () => {
 
         mintPass = await diamondMintPassService.generateWithdrawPass(team.userId, team._id, BigInt(balance).toString(), options)
 
-        await offchainEventService.createTeamBurnEvent(team._id, `-${balance}`, undefined, options)
+        await offchainEventService.createTeamBurnEvent(team._id, `-${balance}`, options)
 
         //Refetch tls so it's part of this transaction
         let tls = await teamLeagueSeasonService.getByTeamSeason(team, season, options)
@@ -1548,7 +1560,7 @@ let startWebServer = async () => {
     return
   })
 
-  app.get('/api/league/standings/:leagueRank/:page/:startDate?', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
+  app.get('/api/league/standings/:leagueRank/:page/:startDate', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
 
     try {
 
@@ -1633,16 +1645,16 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/game/latest', async function (req, res) {
+  // app.get('/api/game/latest', async function (req, res) {
 
-    try {
-      return res.json(await gameService.getLastUpdate())
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(404)
-    }
+  //   try {
+  //     return res.json(await gameService.getLastUpdate())
+  //   } catch (ex) {
+  //     console.log(ex)
+  //     res.sendStatus(404)
+  //   }
 
-  })
+  // })
 
   app.post('/api/game/play/bot', async function (req, res) {
 
@@ -1707,11 +1719,13 @@ let startWebServer = async () => {
           let awayBundle = isHome ? botBundle : teamBundle
           let homeBundle = isHome ? teamBundle : botBundle
 
+          let game
+
           await sequelize.transaction(async (t1) => {
         
             let options = { transaction: t1 }
 
-            let game = await gameService.scheduleGame({
+            game = await gameService.scheduleGame({
               league: teamBundle.tlsPlain.league,
               season: season,
               awayTLS: awayBundle.tlsPlain,
@@ -1724,7 +1738,6 @@ let startWebServer = async () => {
             let players:Player[] = await playerService.getByIds(playerIds, options)
 
             await gameService.createGamePlayers(game, playerIds, options)
-
 
             gameService.startGame({
               
@@ -1749,7 +1762,6 @@ let startWebServer = async () => {
 
             await gameService.put(game, options)
 
-
             let home:Team = await teamService.get(homeBundle.team._id)
             let away:Team = await teamService.get(awayBundle.team._id)
 
@@ -1759,12 +1771,10 @@ let startWebServer = async () => {
             await teamService.put(home, options)
             await teamService.put(away, options)
 
-
             //Update players last game date
             for (let player of players) {
                 player.lastGamePlayed = game.startDate
             }
-
 
             //Updated pitch dates for starting pitchers
             let homePitcher = players.find( p => p._id == homeBundle.startingPitcher._id)
@@ -1778,7 +1788,9 @@ let startWebServer = async () => {
 
           })
 
-          return res.send("success")
+          return res.json({
+            gameId: game._id
+          })
 
 
       } catch (ex) {
@@ -1845,59 +1857,6 @@ let startWebServer = async () => {
 
   /** AUTHENTICATION */
 
-  // app.get('/auth/token/drop-player/:address/:playerId', async function (req, res) {
-
-  //   try {
-
-  //     let address = req.params.address
-  //     let playerId = req.params.playerId
-
-  //     if (!ethers.isAddress(address)) {
-  //       res.status(500)
-  //       return res.send("Invalid wallet.")
-  //     }
-
-  //     //@ts-ignore
-  //     let userId = req.session?.passport?.user
-  //     if (!userId) {
-  //       res.status(401)
-  //       return res.send("Not authorized.")
-  //     }
-
-  //     let user: User = await userService.get(userId)
-  //     if (user.address != address) {
-  //       res.status(401)
-  //       return res.send("Not authorized.")
-  //     }
-
-  //     //Make sure this address owns this player
-  //     let player:Player = await playerService.get(playerId)
-  //     let season:Season = await seasonService.getMostRecent()
-     
-
-  //     let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-
-  //     if (!pls.teamId) {
-  //       throw new Error("Player is not rostered.")
-  //     }
-
-  //     let team:Team = await teamService.get(pls.teamId)
-  //     if (team.ownerId != address) throw new Error("Not team owner.")
-
-  //     let tokenKey = `drop-${playerId}-${address}`
-
-  //     let signatureToken = await signatureTokenService.getOrCreate(tokenKey)
-  
-  //     res.send({
-  //       token: signatureToken.token,
-  //     })
-      
-  //   } catch (ex) {
-  //     console.log(ex)
-  //     res.sendStatus(404)
-  //   }
-
-  // })
 
   app.get('/auth/token/:address', async function (req, res) {
 
@@ -2052,7 +2011,20 @@ let startWebServer = async () => {
 
   const PORT = process.env.WEB_PORT ? process.env.WEB_PORT : 8080
 
-  app.listen(PORT, () => {
+
+
+  io.on('connection', function(socket) {
+
+      console.log("a user has connected!")
+
+      socket.on('disconnect', function() {
+          console.log('user disconnected')
+      })
+
+  })
+
+
+  server.listen(PORT, () => {
     console.log(`EBL listening on port ${PORT}`)
   })
 

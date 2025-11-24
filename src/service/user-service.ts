@@ -1,17 +1,17 @@
 import { inject, injectable } from "inversify";
 import { User } from "../dto/user.js";
 import { UserRepository } from "../repository/user-repository.js";
-import { OwnerService } from "./owner-service.js";
+import { OwnerService } from "./data/owner-service.js";
 import { Owner } from "../dto/owner.js";
-import { TeamService } from "./team-service.js";
-import { PlayerService } from "./player-service.js";
+import { TeamService } from "./data/team-service.js";
+import { PlayerService } from "./data/player-service.js";
 import { Season } from "../dto/season.js";
 import { Team } from "../dto/team.js";
-import { TeamLeagueSeasonService } from "./team-league-season-service.js";
-import { GameService } from "./game-service.js";
+import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
+import { GameService } from "./data/game-service.js";
 import { Game } from "../dto/game.js";
 import dayjs from "dayjs";
-import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
+import { DiamondMintPassService } from "./data/diamond-mint-pass-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { ContractType } from "./enums.js";
 

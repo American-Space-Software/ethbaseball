@@ -16,10 +16,10 @@ import { ContractState } from "../dto/contract-state.js"
 import { ProcessedEvent, ProcessedTransaction, ProcessedTransactionToken, ProcessedTransactionTrader } from "../dto/processed-transaction.js"
 import { Owner } from "../dto/owner.js"
 import { MintPassIndexerService } from "../service/mint-pass-indexer-service.js"
-import { SchemaService } from "../service/schema-service.js"
-import { PlayerService } from "../service/player-service.js"
+import { SchemaService } from "../service/data/schema-service.js"
+import { PlayerService } from "../service/data/player-service.js"
 
-import { OwnerService } from "../service/owner-service.js"
+import { OwnerService } from "../service/data/owner-service.js"
 
 
 

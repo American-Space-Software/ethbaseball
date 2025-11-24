@@ -73,10 +73,11 @@ class TeamWebService {
 
         let isBot = tls.owner?._id == undefined
 
-        if (tls.city) {
-            return `${tls.city.name} ${tls.name}${isBot ? ' 🤖' : ''}`
-        }
+        let cityName = tls.city?.name ? tls.city.name : tls.cityName
 
+        if (cityName) {
+            return `${cityName} ${tls.name}${isBot ? ' 🤖' : ''}`
+        }
         
         return `${tls.name}${isBot ? ' 🤖' : ''}`
     }

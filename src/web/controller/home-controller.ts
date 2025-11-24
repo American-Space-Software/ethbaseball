@@ -4,7 +4,6 @@ import HomeComponent from '../components/home/home.f7.html'
 import HomeLoggedInComponent from '../components/home/home-logged-in.f7.html'
 
 import ConnectComponent from '../components/connect.f7.html'
-import DraftComponent from '../components/draft.f7.html'
 import AboutComponent from '../components/about.f7.html'
 
 import { ModelView } from '../../util/model-view.js';
@@ -77,17 +76,6 @@ class HomeController {
     }
 
 
-    @routeMap("/draft")
-    async showDraft(): Promise<ModelView> {
-        
-        return new ModelView(async () => {
-            return {
-                discord: this.discord,
-                fees: this.fees()
-            }
-        }, DraftComponent)
-
-    }
 
     @routeMap("/about")
     async showAbout(): Promise<ModelView> {

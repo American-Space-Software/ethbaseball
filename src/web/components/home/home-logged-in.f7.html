@@ -140,16 +140,24 @@
 
       e.preventDefault()
 
+      $f7.preloader.show()
 
       try {
         
-        await gameWebService.playBot()
+        $f7.preloader.show
 
+        let gameInfo = await gameWebService.playBot()
 
+        if (gameInfo.gameId) {
+          $f7.views.main.router.navigate(`/g/${gameInfo.gameId}`, { reloadCurrent: true })
+        }
+
+      
       } catch(ex) {
         $f7.dialog.alert(ex.message, "There was an error")
       }
 
+      $f7.preloader.hide()
       
 
     }

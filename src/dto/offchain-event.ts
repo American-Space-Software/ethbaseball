@@ -1,5 +1,6 @@
 import {Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryKey, Index, ForeignKey, BelongsTo, AllowNull, BelongsToMany } from 'sequelize-typescript'
 import { Game } from './game.js'
+import { Player } from './player.js'
 // import { ProcessedEvent } from './processed-transaction.js'
 
 
@@ -39,9 +40,9 @@ class OffchainEvent extends Model {
     declare event?:string 
 
     @Index
-    @ForeignKey(() => Game)
+    @ForeignKey(() => Player)
     @Column
-    declare gameId: string
+    declare playerId: string
 
     @AllowNull(true)	
     @Column(DataType.STRING)

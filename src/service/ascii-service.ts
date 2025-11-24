@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { Player } from "../dto/player.js";
 
 import Table from "easy-table"
-import { PlayerService } from "./player-service.js";
+import { PlayerService } from "./data/player-service.js";
 import { Position } from "./enums.js";
 
 @injectable()

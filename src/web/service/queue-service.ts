@@ -1,7 +1,7 @@
-import {PromiseView} from "../util/promise-view.js";
+import {PromiseView} from "../../util/promise-view.js";
 
 import { inject, injectable } from "inversify";
-import { RoutingService } from "./routing-service.js";
+import { RoutingService } from "../service/routing-service.js";
 
 @injectable()
 class QueueService {

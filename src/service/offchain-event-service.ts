@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ContractType, TeamSeasonId } from "./enums.js";
 import { Season } from "../dto/season.js";
 import { TeamLeagueSeason } from "../dto/team-league-season.js";
-import { TeamLeagueSeasonService } from "./team-league-season-service.js";
-import { TeamService } from "./team-service.js";
+import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
+import { TeamService } from "./data/team-service.js";
 import { Team } from "../dto/team.js";
 import { TeamRepository } from "../repository/team-repository.js";
 
@@ -53,7 +53,7 @@ class OffchainEventService {
         await this.put(offChainEvent, options)
     }
 
-    async createTeamMintEvent(toTeamId:string, amount:string, gameId:string, options?:any) {
+    async createTeamMintEvent(toTeamId:string, amount:string, options?:any) {
 
         if (BigInt(amount) <= 0) throw new Error("Mint amount can not be negative.")
 
@@ -64,15 +64,13 @@ class OffchainEventService {
         offChainEvent.fromAddress = "0x0000000000000000000000000000000000000000"
         offChainEvent.toTeamId = toTeamId
         offChainEvent.amount = amount
-        offChainEvent.gameId = gameId
 
         await this.put(offChainEvent, options)
 
         return offChainEvent
     }
 
-
-    async createTeamBurnEvent(fromTeamId:string, amount:string, gameId:string, options?:any) {
+    async createTeamBurnEvent(fromTeamId:string, amount:string, options?:any) {
 
         if (BigInt(amount) >= 0) throw new Error("Burn amount can not be positive.")
 
@@ -83,13 +81,62 @@ class OffchainEventService {
         offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
         offChainEvent.fromTeamId = fromTeamId
         offChainEvent.amount = (BigInt(0) - BigInt(amount)).toString()
-        offChainEvent.gameId = gameId
 
         await this.put(offChainEvent, options)
 
         return offChainEvent
 
     }
+
+    async createPlayerTransferEvent(fromTeamId:string, toTeamId:string, playerId:string, options?:any) {
+
+        let offChainEvent:OffchainEvent = new OffchainEvent()
+        offChainEvent._id = uuidv4() 
+        offChainEvent.contractType = ContractType.PLAYERS
+        offChainEvent.event = "Transfer"
+        offChainEvent.toTeamId = toTeamId
+        offChainEvent.fromTeamId = fromTeamId
+        offChainEvent.playerId = playerId
+
+        await this.put(offChainEvent, options)
+
+        return offChainEvent
+
+    }
+
+
+    async createFreeAgentTransferEvent(toTeamId:string, playerId:string, options?:any) {
+
+        let offChainEvent:OffchainEvent = new OffchainEvent()
+        offChainEvent._id = uuidv4() 
+        offChainEvent.contractType = ContractType.PLAYERS
+        offChainEvent.event = "Transfer"
+        offChainEvent.toTeamId = toTeamId
+        offChainEvent.playerId = playerId
+
+        await this.put(offChainEvent, options)
+
+        return offChainEvent
+
+    }
+
+    async createPlayerDropTransferEvent(fromTeamId:string, playerId:string, options?:any) {
+
+        let offChainEvent:OffchainEvent = new OffchainEvent()
+        offChainEvent._id = uuidv4() 
+        offChainEvent.contractType = ContractType.PLAYERS
+        offChainEvent.event = "Transfer"
+        offChainEvent.fromTeamId = fromTeamId
+        offChainEvent.playerId = playerId
+
+        await this.put(offChainEvent, options)
+
+        return offChainEvent
+
+    }
+
+
+
 
     async get(_id:string, options?:any) : Promise<OffchainEvent> {
         return this.offchainEventRepository.get(_id, options)
@@ -115,7 +162,6 @@ class OffchainEventService {
 
     }
 
-
     getBalanceForOwnerFromEvents(owner:Owner, events:OffchainEvent[]) {
 
         let diamondBalance = "0"
@@ -135,8 +181,6 @@ class OffchainEventService {
         return diamondBalance
 
     }
-
-
 
     async getBalanceForTeamId(contractAddress:string, teamId:string, options?:any) {
 

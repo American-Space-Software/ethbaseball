@@ -13,7 +13,7 @@ import './html/css/app.css'
 
 
 
-import { RoutingService } from "../service/routing-service.js"
+import { RoutingService } from "./service/routing-service.js"
 import {Workbox} from 'workbox-window'
 
 export class GlobalEventTarget extends EventTarget {}

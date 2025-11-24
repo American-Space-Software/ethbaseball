@@ -1,17 +1,16 @@
 import { inject, injectable } from 'inversify';
-import { SchemaService } from './schema-service.js';
+import { SchemaService } from './data/schema-service.js';
 import { Owner } from '../dto/owner.js';
 
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder,  Events,  InteractionResponse,  Message,  TextChannel,  bold } from 'discord.js';
-import { OwnerService } from './owner-service.js';
+import { OwnerService } from './data/owner-service.js';
 import { ConnectService } from './connect-service.js';
 import { Player } from '../dto/player.js';
-import { PlayerService } from './player-service.js';
+import { PlayerService } from './data/player-service.js';
 import { ASCIIService } from './ascii-service.js';
 import { DiamondService } from './diamond-service.js';
 import { ethers } from 'ethers';
 import commands from "../engine/commands/commands.js"
-import { AnimationService } from './animation-service.js';
 
 
 
@@ -29,7 +28,6 @@ class DiscordService {
         private playerService:PlayerService,
         private asciiService:ASCIIService,
         private diamondService:DiamondService,
-        private animationService:AnimationService,
         @inject("config") private _config:Function,
         @inject("discord") private discord:Client
     ) {}

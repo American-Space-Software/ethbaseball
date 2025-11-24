@@ -11,21 +11,8 @@
           ${gameViewModel?.game ? $h`
               
             ${gameViewModel?.game.isStarted ? $h`
-              
-              <div class="game-inning">
-                ${!gameViewModel?.game.isComplete ? $h`
-
-                  ${gameViewModel?.play.play.inningTop ? $h`
-                    Top ${gameViewModel?.play.play.inningNum}
-                  ` : $h`
-                    Bottom ${gameViewModel?.play.play.inningNum}
-                  `}
-                ` : $h`Final`}
-              </div>
-
-
-              <div class="card card-outline">
-                <div class="card-content game-banner">
+            
+              <div class="block block-outline block-strong game-banner">
                   <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
 
                     <div class="name">
@@ -33,7 +20,11 @@
                       <a href="${universeWebService.startDateLink(`/t/${gameViewModel.game.away.tokenId}`)}">
                         <img src="/image/thumbnail/100/${gameViewModel?.game.away.logoId}" class="profilePic" />
                         <span class="record">${gameViewModel?.game.away.overallRecord.after?.wins || gameViewModel?.game.away.overallRecord.before?.wins}-${gameViewModel?.game.away.overallRecord.after?.losses || gameViewModel?.game.away.overallRecord.before?.losses}<br /></span>
-                        <span class="small">${gameViewModel?.game.away.cityName}</span><br />
+                        
+                        ${gameViewModel?.game.away.cityName ? $h`
+                          <span class="small">${gameViewModel?.game.away.cityName}</span><br />
+                        ` : $h` `}
+                        
                         ${gameViewModel?.game.away.name} 
                       </a>
 
@@ -50,15 +41,30 @@
                       <a href="${universeWebService.startDateLink(`/t/${gameViewModel.game.home.tokenId}`)}">
                         <img src="/image/thumbnail/100/${gameViewModel?.game.home.logoId}" class="profilePic" />
                         <span class="record">${gameViewModel?.game.home.overallRecord.after?.wins || gameViewModel?.game.home.overallRecord.before?.wins}-${gameViewModel?.game.home.overallRecord.after?.losses || gameViewModel?.game.home.overallRecord.before?.losses}<br /></span>
-                        <span class="small">${gameViewModel?.game.home.cityName}</span><br />
+                        
+                        
+                        ${gameViewModel?.game.home.cityName ? $h`
+                          <span class="small">${gameViewModel?.game.home.cityName}</span><br />
+                        ` : $h` `}
+                        
                         ${gameViewModel?.game.home.name} 
                       </a>
 
                     </div>
                     
                   </div>
-                </div>
               </div>
+
+              <!-- <div class="game-inning">
+                ${!gameViewModel?.game.isComplete ? $h`
+
+                  ${gameViewModel?.play.play.inningTop ? $h`
+                    Top ${gameViewModel?.play.play.inningNum}
+                  ` : $h`
+                    Bottom ${gameViewModel?.play.play.inningNum}
+                  `}
+                ` : $h`Final`}
+              </div> -->
 
               <div class="card card-outline">
                   <div class="card-content">
@@ -83,7 +89,7 @@
                             <tr>
 
                               <td class="abbrev">
-                                <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" /> ${gameViewModel.game.away.abbrev}
+                                <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
                               </td>
                       
                               ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
@@ -261,195 +267,11 @@
               <div class="boxscores grid medium-grid-cols-2">
                 
                 <div class="left">
-
-                  <${Boxscore} vm=${awayBoxscoreViewModel} name=${ `${gameViewModel?.game.away.cityName} ${gameViewModel?.game.away.name}`} />
-
-                  <div class="card">
-                    <div class="card-content card-content-padding">
-                      <div class="game-finances">
-
-                        <table>
-                          <thead>
-                              <tr>
-                                  <th class="label"></th>
-                                  <th>Revenue</th>
-                              </tr>
-                          </thead>
-          
-                          <tbody>
-                              <tr>
-                                  <td class="label">Local Media Deal</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.localTvRevenue)}</td>
-                              </tr>
-                              <tr>
-                                  <td class="label">National Media Deal</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.nationalTvRevenue)}</td>
-                              </tr>
-          
-                              <tr class="total">
-                                  <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.totalRevenue)}</td>
-                              </tr>
-          
-                          </tbody>
-                        </table>
-          
-                        <table>
-                          <thead>
-                              <tr>
-                                  <th class="label"></th>
-                                  <th>Expense</th>
-                              </tr>
-                          </thead>
-          
-                          <tbody>
-                              <tr>
-                                  <td class="label">Payroll</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.payroll)}</td>
-                              </tr>
-                              <tr>
-                                  <td class="label">Stadium Lease</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.stadiumLease)}</td>
-                              </tr>
-                              <tr class="total">
-                                  <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.totalExpenses)}</td>
-                              </tr>
-          
-          
-                          </tbody>
-                        </table>
-
-                        <table>
-                          <thead>
-                              <tr>
-                                  <th class="label"></th>
-                                  <th>Profit</th>
-                              </tr>
-                          </thead>
-          
-                          <tbody>
-                              <tr class="total">
-                                  <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.away.finances.totalProfit)}</td>
-                              </tr>        
-                          </tbody>
-                        </table>
-
-
-                      </div>
-                    </div>
-                  </div>
-
+                  <${Boxscore} vm=${awayBoxscoreViewModel} name=${ `${gameViewModel?.game.away.cityName ? gameViewModel?.game.away.cityName : ''} ${gameViewModel?.game.away.name}`} />
                 </div>
 
                 <div class="right">
-                  
-                  <${Boxscore} vm=${homeBoxscoreViewModel} name=${ `${gameViewModel?.game.home.cityName} ${gameViewModel?.game.home.name}`} />
-
-                  <div class="card">
-                    <div class="card-content card-content-padding">
-        
-                      <div class="game-finances">
-
-                        <div class="ticket-price">
-                          <strong>Ticket Price:</strong> ${universeWebService.displayDiamonds( gameViewModel.game.home.finances.ticketPrice)}
-                        </div>
-
-
-                        <table>
-                          <thead>
-                              <tr>
-                                  <th class="label"></th>
-                                  <th>Attendance</th>
-                                  <th>Revenue</th>
-                              </tr>
-                          </thead>
-          
-                          <tbody>
-                              <tr>
-                                  <td class="label">Season Tickets</td>
-                                  <td class="numeric-cell">${gameViewModel.game.home.finances.seasonTickets}</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds( gameViewModel.game.home.finances.seasonTicketRevenue)}</td>
-                              </tr>
-                              <tr>
-                                  <td class="label">Gate Tickets</td>
-                                  <td class="numeric-cell">${gameViewModel.game.home.finances.gateTickets}</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.gateTicketRevenue)}</td>
-                              </tr>
-
-
-                              <tr>
-                                  <td class="label">Local Media Deal</td>
-                                  <td></td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.localTvRevenue)}</td>
-                              </tr>
-                              <tr>
-                                  <td class="label">National Media Deal</td>
-                                  <td></td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.nationalTvRevenue)}</td>
-                              </tr>
-
-                              <tr class="total">
-                                  <td class="label">Total</td>
-                                  <td class="numeric-cell">${gameViewModel.game.home.finances.totalAttendance}</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.totalRevenue)}</td>
-                              </tr>
-          
-          
-                          </tbody>
-                        </table>
-
-          
-                        <table>
-                          <thead>
-                              <tr>
-                                  <th class="label"></th>
-                                  <th>Expenses</th>
-                              </tr>
-                          </thead>
-          
-                          <tbody>
-                              <tr>
-                                  <td class="label">Payroll</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.payroll)}</td>
-                              </tr>
-                              <tr>
-                                  <td class="label">Stadium Lease</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.stadiumLease)}</td>
-                              </tr>
-                              <tr class="total">
-                                  <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.totalExpenses)}</td>
-                              </tr>
-          
-          
-                          </tbody>
-                        </table>
-
-                        <table>
-                          <thead>
-                              <tr>
-                                  <th class="label"></th>
-                                  <th>Profit</th>
-                              </tr>
-                          </thead>
-          
-                          <tbody>
-                              <tr class="total">
-                                  <td class="label">Total</td>
-                                  <td class="numeric-cell">${universeWebService.displayDiamonds(gameViewModel.game.home.finances.totalProfit)}</td>
-                              </tr>        
-                          </tbody>
-                        </table>
-
-
-
-                      </div>
-
-                    </div>
-                  </div>
-
+                  <${Boxscore} vm=${homeBoxscoreViewModel} name=${ `${gameViewModel?.game.home.cityName ? gameViewModel?.game.home.cityName : ''} ${gameViewModel?.game.home.name}`} />
                 </div>
 
               </div> 
@@ -647,6 +469,7 @@
   import { ContainerService } from "../../../service/container-service.ts"
   import { GameWebService } from "../../service/game-web-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
 
   import { Position } from "../../../service/enums.ts"
 
@@ -846,6 +669,7 @@
 
     let gameWebService = ContainerService.getInstance(GameWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let gameViewModel = props.gameViewModel
     
@@ -858,62 +682,62 @@
     let timeoutTime = 10*1000
     let lastGameUpdate
 
-    let nameRgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu')  
+    // let nameRgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu')  
 
-    const checkForUpdate = async () => {
+    // const checkForUpdate = async () => {
 
-      //Clear existing timeout if exists
-      if (timeoutId) clearTimeout(timeoutId)
+    //   //Clear existing timeout if exists
+    //   if (timeoutId) clearTimeout(timeoutId)
 
-      //Get latest
-      let latest = await gameWebService.getLatest()
+    //   //Get latest
+    //   let latest = await gameWebService.getLatest()
 
-      if (dayjs(latest).toDate() > lastGameUpdate) {
-        await loadGame($f7.views.main.router.currentRoute?.params?.id)
-      } else {
-        timeoutId = setTimeout(checkForUpdate, timeoutTime)
-      }
+    //   if (dayjs(latest).toDate() > lastGameUpdate) {
+    //     await loadGame($f7.views.main.router.currentRoute?.params?.id)
+    //   } else {
+    //     timeoutId = setTimeout(checkForUpdate, timeoutTime)
+    //   }
       
-      $update()
+    //   $update()
 
-    }
-
-
-    const loadGame = async (gameId) => {
-
-        if (!gameId) return
-
-        console.time("Loading game...")
-
-        try  {
-
-            Object.assign(gameViewModel, await gameWebService.getGameViewModel(gameId))
-            Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
-
-            Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
-            Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
-
-            $f7.emit('gameUpdate', gameViewModel)
+    // }
 
 
-            await $update()
+    // const loadGame = async (gameId) => {
 
-        } catch(ex) { 
-          console.log(ex) 
-        }
+    //     if (!gameId) return
 
-        $f7.preloader.hide()
+    //     console.time("Loading game...")
 
-        lastGameUpdate = new Date(new Date().toUTCString())
+    //     try  {
 
-        if (!linescoreViewModel.isComplete) {
-          timeoutId = setTimeout(checkForUpdate, timeoutTime)
-        }
+    //         Object.assign(gameViewModel, await gameWebService.getGameViewModel(gameId))
+    //         Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
 
-        console.timeEnd("Loading game...")
+    //         Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
+    //         Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
+
+    //         $f7.emit('gameUpdate', gameViewModel)
 
 
-    }
+    //         await $update()
+
+    //     } catch(ex) { 
+    //       console.log(ex) 
+    //     }
+
+    //     $f7.preloader.hide()
+
+    //     lastGameUpdate = new Date(new Date().toUTCString())
+
+    //     if (!linescoreViewModel.isComplete) {
+    //       timeoutId = setTimeout(checkForUpdate, timeoutTime)
+    //     }
+
+    //     console.timeEnd("Loading game...")
+
+
+    // }
 
 
     $on('pageBeforeIn', async (e) => {
@@ -921,9 +745,6 @@
       $f7.emit('gameUpdate', gameViewModel)
 
       await $update()
-
-      timeoutId = setTimeout(checkForUpdate, timeoutTime)
-
 
       if (gameViewModel.linescoreViewModel) {
 
@@ -935,17 +756,17 @@
                   path: `/games/?gameDate=${dayjs(gameViewModel.game.startDate).format("YYYY-MM-DD")}`
               },
               {
-                  text: `${gameViewModel.game.away.abbrev} @ ${gameViewModel.game.home.abbrev}`
+                  text: `${gameViewModel.game.away.abbrev ? gameViewModel.game.away.abbrev : gameViewModel.game.away.name} @ ${gameViewModel.game.home.abbrev ? gameViewModel.game.home.abbrev : gameViewModel.game.home.name}`
               }
               ]}
           }))
 
 
           universeWebService.setMetadata(
-              `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`, 
+              `${gameViewModel.game.away.cityName ? gameViewModel.game.away.cityName : ''} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName ? gameViewModel.game.home.cityName : ''} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`, 
               window.location.href, 
               `${env.WEB}/logo.png`, 
-              `${gameViewModel.game.away.cityName} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}`
+              `${gameViewModel.game.away.cityName ? gameViewModel.game.away.cityName : ''} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName ? gameViewModel.game.home.cityName : ''} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}`
           ) 
 
 

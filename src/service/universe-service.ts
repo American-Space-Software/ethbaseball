@@ -2,9 +2,9 @@ import { inject, injectable } from "inversify";
 
 import { UniverseRepository } from "../repository/universe-repository.js";
 import { Universe } from "../dto/universe.js";
-import { GLICKO_SETTINGS, NFTMetadata, PlayerService } from "./player-service.js";
+import { GLICKO_SETTINGS, NFTMetadata, PlayerService } from "./data/player-service.js";
 import { IPFSService } from "./ipfs-service.js";
-import { ImageService } from "./image-service.js";
+import { ImageService } from "./data/image-service.js";
 
 import { Image } from "../dto/image.js";
 import { Animation } from "../dto/animation.js";
@@ -22,29 +22,29 @@ import pluralize from "pluralize"
 
 import { City, SEED_DATA } from "../dto/city.js";
 import { CityRepository } from "../repository/city-repository.js";
-import { TeamService } from "./team-service.js";
+import { TeamService } from "./data/team-service.js";
 import {  FinanceSeason, Team, TEAM_COLORS, TEAM_NAMES } from "../dto/team.js";
-import { CityService } from "./city-service.js";
-import { SeedService } from "./seed-service.js";
+import { CityService } from "./data/city-service.js";
+import { SeedService } from "./data/seed-service.js";
 import { RollService } from "./roll-service.js";
 import { Stadium } from "../dto/stadium.js";
-import { StadiumService } from "./stadium-service.js";
-import { LeagueService } from "./league-service.js";
+import { StadiumService } from "./data/stadium-service.js";
+import { LeagueService } from "./data/league-service.js";
 import { League } from "../dto/league.js";
-import { SeasonService } from "./season-service.js";
+import { SeasonService } from "./data/season-service.js";
 import { Season } from "../dto/season.js";
 
 import { LadderService } from "./ladder-service.js";
 import { TeamLeagueSeason } from "../dto/team-league-season.js";
-import { TeamLeagueSeasonService } from "./team-league-season-service.js";
+import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
 import { ContractType, SERIES_LENGTH } from "./enums.js";
 import dayjs from "dayjs";
 import { Owner } from "../dto/owner.js";
 import { TEAMS_PER_TIER } from "../service/enums.js"
-import { OwnerService } from "./owner-service.js";
+import { OwnerService } from "./data/owner-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { AirdropService } from "./airdrop-service.js";
-import { PostService } from "./post-service.js";
+import { PostService } from "./data/post-service.js";
 import { FinanceService } from "./finance-service.js";
 
 @injectable()
@@ -491,7 +491,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             await this.teamLeagueSeasonService.put(tls, options)
 
-            await this.teamService.fillAndValidateRoster(league, t.team, tls, [], season, universe.currentDate, true, options)
+            await this.teamService.fillAndValidateRoster(tls, [], season, universe.currentDate, true, options)
 
         }
 
@@ -575,7 +575,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
                 await this.teamLeagueSeasonService.put(tls, options)
 
 
-                await this.teamService.fillAndValidateRoster(league, team, tls, [], season, universe.currentDate, true, options)
+                await this.teamService.fillAndValidateRoster(tls, [], season, universe.currentDate, true, options)
 
             }
 
@@ -647,7 +647,10 @@ Join us at [https://playebl.com](https://playebl.com)`,
           //Generate player pool
           await this.ladderService.generatePlayerPool(season, options)
 
-    
+          let allLeagues:League[] = await this.leagueService.list(options)
+          await this.leagueService.updateLeagueAveragePlayerRatings(allLeagues, season, options)
+
+
 
 
         }

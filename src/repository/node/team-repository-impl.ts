@@ -125,7 +125,7 @@ class TeamRepositoryNodeImpl implements TeamRepository {
             select t.*
             FROM team t
             WHERE t.userId is null
-            ORDER BY ABS(CAST(stats->>"$.longTermRating" AS SIGNED))
+            ORDER BY ABS(CAST(longTermRating->>"$.rating" AS SIGNED))
             LIMIT 1
         `, Object.assign(queryOptions, options))
 

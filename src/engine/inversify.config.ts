@@ -15,23 +15,23 @@ import { Sequelize } from 'sequelize-typescript'
 import { Container } from "inversify";
 import readline from 'readline-promise'
 
-import { GameService } from "../service/game-service.js";
+import { GameService } from "../service/data/game-service.js";
 import { RollService } from "../service/roll-service.js";
-import { PlayerService } from "../service/player-service.js";
+import { PlayerService } from "../service/data/player-service.js";
 import { PlayerRepositoryNodeImpl } from "../repository/node/player-repository-impl.js";
 import { Player } from "../dto/player.js";
 import { DiamondMintPass, Team } from "../dto/team.js";
 import { Game, GamePlayer, GameTeam } from "../dto/game.js";
 import { RollChartService } from "../service/roll-chart-service.js";
-import { SchemaService } from "../service/schema-service.js";
+import { SchemaService } from "../service/data/schema-service.js";
 import { TeamMintPass } from "../dto/team-mint-pass.js";
 
 import { Owner } from "../dto/owner.js";
-import { OwnerService } from "../service/owner-service.js";
+import { OwnerService } from "../service/data/owner-service.js";
 import { OwnerRepositoryNodeImpl } from "../repository/node/owner-repository-impl.js";
 import { SeedRepositoryNodeImpl } from "../repository/node/seed-repository-impl.js";
 import { Seed } from "../dto/seed.js";
-import { SeedService } from "../service/seed-service.js";
+import { SeedService } from "../service/data/seed-service.js";
 
 import { GameTeamRepositoryNodeImpl } from "../repository/node/game-team-repository-impl.js"
 import { GamePlayerRepositoryNodeImpl } from "../repository/node/game-player-repository-impl.js"
@@ -42,8 +42,7 @@ import { Animation } from "../dto/animation.js";
 import { Image } from "../dto/image.js";
 import { AnimationRepositoryNodeImpl } from "../repository/node/animation-repository-impl.js";
 import { ImageRepositoryNodeImpl } from "../repository/node/image-repository-impl.js";
-import { ImageService } from "../service/image-service.js";
-import { AnimationService } from "../service/animation-service.js";
+import { ImageService } from "../service/data/image-service.js";
 
 import { Client, IntentsBitField } from 'discord.js';
 import { DiscordService } from "../service/discord-service.js"
@@ -58,7 +57,7 @@ import { ConnectService } from "../service/connect-service.js"
 import { ASCIIService } from "../service/ascii-service.js"
 import { DeployService } from "../service/deploy-service.js"
 
-import { PostService } from "../service/post-service.js";
+import { PostService } from "../service/data/post-service.js";
 import { PostRepositoryNodeImpl } from "../repository/node/post-repository-impl.js";
 
 
@@ -80,9 +79,9 @@ import { ProcessedEvent, ProcessedTransaction, ProcessedTransactionToken, Proces
 import { ContractState } from "../dto/contract-state.js"
 import { Block } from "../dto/block.js"
 import { Transaction } from "../dto/transaction.js"
-import { BlockService } from "../service/block-service.js"
+import { BlockService } from "../service/data/block-service.js"
 import { ContractStateService } from "../service/contract-state-service.js"
-import { ProcessedTransactionService } from "../service/processed-transaction-service.js"
+import { ProcessedTransactionService } from "../service/data/processed-transaction-service.js"
 import { TransactionService } from "../service/transaction-service.js"
 import { BlockRepositoryNodeImpl } from "../repository/node/block-repository-impl.js"
 import { ContractStateRepositoryNodeImpl } from "../repository/node/contract-state-repository-impl.js"
@@ -101,7 +100,7 @@ import { NodeWalletServiceImpl } from "../service/node-wallet-service.js"
 import { UniverseContractService } from "../service/universe-contract-service.js";
 import { LeagueRepositoryNodeImpl } from "../repository/node/league-repository-impl.js";
 import { League } from "../dto/league.js";
-import { LeagueService } from "../service/league-service.js";
+import { LeagueService } from "../service/data/league-service.js";
 import { User } from "../dto/user.js";
 import { UserService } from "../service/user-service.js";
 import { UserRepositoryNodeImpl } from "../repository/node/user-repository-impl.js";
@@ -112,29 +111,29 @@ import { City } from "../dto/city.js";
 import { LadderService } from "../service/ladder-service.js";
 import { LadderChallengeRepositoryNodeImpl } from "../repository/node/ladder-challenge-repository-impl .js";
 import { LadderChallenge } from "../dto/ladder-challenge.js";
-import { TeamService } from "../service/team-service.js";
-import { CityService } from "../service/city-service.js";
+import { TeamService } from "../service/data/team-service.js";
+import { CityService } from "../service/data/city-service.js";
 import { TeamRepositoryNodeImpl } from "../repository/node/team-repository-impl.js";
 import { SignatureTokenRepositoryNodeImpl } from "../repository/node/signature-token-repository-impl.js"
 import { UniverseIndexerService } from "../service/universe-indexer-service.js"
-import { StadiumService } from "../service/stadium-service.js"
+import { StadiumService } from "../service/data/stadium-service.js"
 import { LogEventService } from "../service/log-event-service.js"
 
 import { HuggingFaceService } from "../service/hugging-face-service.js"
 import { LineupService } from "../service/lineup-service.js"
 import { Season } from "../dto/season.js"
 import { SeasonRepositoryNodeImpl } from "../repository/node/season-repository-impl.js"
-import { SeasonService } from "../service/season-service.js"
+import { SeasonService } from "../service/data/season-service.js"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
 import { FinanceService } from "../service/finance-service.js"
 import { TeamLeagueSeason } from "../dto/team-league-season.js"
-import { TeamLeagueSeasonService } from "../service/team-league-season-service.js"
+import { TeamLeagueSeasonService } from "../service/data/team-league-season-service.js"
 import { TeamLeagueSeasonRepositoryNodeImpl } from "../repository/node/team-league-season-repository-impl.js"
 import { PlayerLeagueSeasonRepositoryNodeImpl } from "../repository/node/player-league-season-repository-impl.js"
-import { PlayerLeagueSeasonService } from "../service/player-league-season-service.js"
+import { PlayerLeagueSeasonService } from "../service/data/player-league-season-service.js"
 import { PlayerLeagueSeason } from "../dto/player-league-season.js"
-import { DiamondMintPassService } from "../service/diamond-mint-pass-service.js"
+import { DiamondMintPassService } from "../service/data/diamond-mint-pass-service.js"
 import { DiamondMintPassRepositoryNodeImpl } from "../repository/node/diamond-mint-pass-repository-impl.js"
 import { ChatGPTService } from "../service/chatgpt-service.js"
 import { ChatGPTAPI } from 'chatgpt'
@@ -142,7 +141,6 @@ import { OpenAI } from 'openai'
 import { OffchainEvent } from "../dto/offchain-event.js"
 import { OffchainEventRepositoryNodeImpl } from "../repository/node/offchain-event-repository-impl.js"
 import { OffchainEventService } from "../service/offchain-event-service.js"
-import { OllamaService } from "../service/ollama-service.js"
 import { GameHitResultRepositoryNodeImpl } from "../repository/node/game-hit-result-repository-impl.js"
 import { GamePitchResultRepositoryNodeImpl } from "../repository/node/game-pitch-result-repository-impl.js"
 import { GameHitResult } from "../dto/game-hit-result.js"
@@ -154,7 +152,7 @@ import { Alchemy } from 'alchemy-sdk'
 import { AbiPayloadService } from "../service/abi-payload-service.js"
 import { MintPassIndexerService } from "../service/mint-pass-indexer-service.js"
 import { TeamMintPassRepositoryNodeImpl } from "../repository/node/team-mint-pass-repository-impl.js"
-import { TeamMintPassService } from "../service/team-mint-pass-service.js"
+import { TeamMintPassService } from "../service/data/team-mint-pass-service.js"
 
 
 const client = new Client({ intents: [
@@ -383,7 +381,6 @@ async function getContainer() {
     container.bind(SeedService).toSelf().inSingletonScope()
     container.bind(StatService).toSelf().inSingletonScope()
     container.bind(ImageService).toSelf().inSingletonScope()
-    container.bind(AnimationService).toSelf().inSingletonScope()
     container.bind(UniverseService).toSelf().inSingletonScope()
     container.bind(ConnectService).toSelf().inSingletonScope()
     container.bind(ASCIIService).toSelf().inSingletonScope()
@@ -414,7 +411,6 @@ async function getContainer() {
 
     container.bind(ChatGPTService).toSelf().inSingletonScope()
     container.bind(OffchainEventService).toSelf().inSingletonScope()
-    container.bind(OllamaService).toSelf().inSingletonScope()
     container.bind(PostService).toSelf().inSingletonScope()
     container.bind(AirdropService).toSelf().inSingletonScope()
     container.bind(TeamMintPassService).toSelf().inSingletonScope()

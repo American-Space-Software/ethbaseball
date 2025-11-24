@@ -1,13 +1,13 @@
 import { inject, injectable } from "inversify";
 import fs from "fs"
-import { PlayerService } from "./player-service.js";
+import { PlayerService } from "./data/player-service.js";
 import { Player } from "../dto/player.js";
 import { Team } from "../dto/team.js";
-import { TeamService } from "./team-service.js";
+import { TeamService } from "./data/team-service.js";
 import { Owner } from "../dto/owner.js";
-import { OwnerService } from "./owner-service.js";
+import { OwnerService } from "./data/owner-service.js";
 import dayjs from "dayjs";
-import { SeasonService } from "./season-service.js";
+import { SeasonService } from "./data/season-service.js";
 import { Season } from "../dto/season.js";
 import { Universe } from "../dto/universe.js";
 import { UniverseService } from "./universe-service.js";

@@ -1,35 +1,31 @@
 import { inject, injectable } from "inversify"
 
-import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./player-service.js"
+import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./data/player-service.js"
 
-import { GameService } from "./game-service.js"
+import { GameService } from "./data/game-service.js"
 import { FinanceSeason, RotationPitcher, Team } from "../dto/team.js"
-import {  GamePlayer, LeagueAverageRatings, Matchup, MIN_AAV_CONTRACT, MINIMUM_PLAYER_POOL, Rating, PromotionRelegationLog, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, TEAMS_PER_TIER, LeagueBundle, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY } from "./enums.js"
+import {  GamePlayer, LeagueAverageRatings, Matchup, MINIMUM_PLAYER_POOL, Rating, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
-import { TeamService } from "./team-service.js"
+import { TeamService } from "./data/team-service.js"
 
 import dayjs from "dayjs"
 
 import glicko2 from "glicko2"
 import { TeamRating } from "../repository/node/team-repository-impl.js"
-import { LeagueService } from "./league-service.js"
+import { LeagueService } from "./data/league-service.js"
 import { League } from "../dto/league.js"
-import { SeasonService } from "./season-service.js"
+import { SeasonService } from "./data/season-service.js"
 import { Season } from "../dto/season.js"
 import { FinanceService } from "./finance-service.js"
 import { TeamLeagueSeason } from "../dto/team-league-season.js"
-import { TeamLeagueSeasonService } from "./team-league-season-service.js"
-import { PlayerLeagueSeasonService } from "./player-league-season-service.js"
+import { TeamLeagueSeasonService } from "./data/team-league-season-service.js"
+import { PlayerLeagueSeasonService } from "./data/player-league-season-service.js"
 import { PlayerLeagueSeason } from "../dto/player-league-season.js"
 import { v4 as uuidv4 } from 'uuid';
 import { Player } from "../dto/player.js"
-import { SeedService } from "./seed-service.js"
-import { ethers } from "ethers"
-import { RollService } from "./roll-service.js"
+import { SeedService } from "./data/seed-service.js"
 import { Universe } from "../dto/universe.js"
 import { UniverseRepository } from "../repository/universe-repository.js"
-import { LineupService } from "./lineup-service.js"
-import { GamePlayerRepository } from "../repository/game-player-repository.js"
 import { StatService } from "./stat-service.js"
 import { faker } from '@faker-js/faker'
 import { OffchainEventService } from "./offchain-event-service.js"
@@ -66,8 +62,6 @@ class LadderService {
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
         private seedService:SeedService,
         private financeService:FinanceService,
-        private lineupService:LineupService,
-        private rollService:RollService,
         private statService:StatService,
         private offchainEventService:OffchainEventService,
     ) {}
@@ -172,7 +166,7 @@ class LadderService {
                             //Distribute rewards and save.
                             for (let team of teams) {
                                 let reward = rewardsPerTeam.find( r => r._id == team._id)
-                                await this.offchainEventService.createTeamMintEvent(team._id, reward.amount.toString(), undefined, options )
+                                await this.offchainEventService.createTeamMintEvent(team._id, reward.amount.toString(), options )
                                 await this.teamService.put(team, options)
                             }
 
@@ -183,17 +177,7 @@ class LadderService {
 
 
                             //Update league average player ratings.
-                            for (let league of leagues) {
-
-                                league.averageRating = {
-                                    hittingRatings: await this.playerService.getLeagueAverageHitterRatings(league, season, options),
-                                    pitchRatings: await this.playerService.getLeagueAveragePitcherRatings(league, season, options)
-                                }
-
-                                league.changed('averageRating', true)
-
-                                await this.leagueService.put(league, options)
-                            }
+                            await this.leagueService.updateLeagueAveragePlayerRatings(leagues, season, options)
 
                             
 
@@ -296,7 +280,7 @@ class LadderService {
         let homeTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
         let awayTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
 
-        let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
+        let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p.playerId), options )
         let plss = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
 
         this.gameService.finishGame(game, players, plss)

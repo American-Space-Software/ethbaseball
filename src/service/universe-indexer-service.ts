@@ -2,20 +2,20 @@ import { Contract, ethers, Provider } from "ethers";
 import { inject, injectable } from "inversify";
 
 import { Block } from "../dto/block.js";
-import { BlockService } from "./block-service.js";
+import { BlockService } from "./data/block-service.js";
 
 import { ContractState } from "../dto/contract-state.js";
 import { ProcessedEvent, ProcessedTransaction } from "../dto/processed-transaction.js";
 import { Transaction } from "../dto/transaction.js";
 import { ContractStateService } from "./contract-state-service.js";
 import { TransactionService } from "./transaction-service.js";
-import { ProcessedTransactionService, TransactionViewModel } from "./processed-transaction-service.js";
+import { ProcessedTransactionService, TransactionViewModel } from "./data/processed-transaction-service.js";
 import { Owner } from "../dto/owner.js";
-import { OwnerService } from "./owner-service.js";
+import { OwnerService } from "./data/owner-service.js";
 import { WalletService } from "./wallet-service.js";
-import { TeamService } from "./team-service.js";
+import { TeamService } from "./data/team-service.js";
 import { DiamondMintPass, Team } from "../dto/team.js";
-import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
+import { DiamondMintPassService } from "./data/diamond-mint-pass-service.js";
 import { LogEventService } from "./log-event-service.js";
 
 const MAX_BLOCKS_TO_INDEX = 10000

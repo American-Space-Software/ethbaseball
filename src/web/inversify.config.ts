@@ -14,14 +14,14 @@ import AppComponent from './components/app.f7.html'
 import { BrowserProvider } from "ethers"
 
 
-import { RoutingService } from '../service/routing-service.js';
+import { RoutingService } from './service/routing-service.js';
 import { DiamondService } from '../service/diamond-service.js';
 
-import { QueueService } from '../service/queue-service.js';
+import { QueueService } from './service/queue-service.js';
 import { WalletServiceImpl } from "../service/wallet-service.js";
 import { UiService } from "../service/ui-service.js";
 
-import { SeedService } from "../service/seed-service.js";
+import { SeedService } from "../service/data/seed-service.js";
 import { StatService } from "../service/stat-service.js";
 import { PagingService } from "../service/paging-service.js";
 
@@ -84,7 +84,7 @@ import { PlayerController } from "./controller/player-controller.js";
 import { OwnerPageWebService } from "./service/owner-page-web-service.js";
 import { GameController } from "./controller/game-controller.js";
 import { GameWebService } from "./service/game-web-service.js";
-import { FieldService } from "../service/field-service.js";
+import { FieldService } from "./service/field-service.js";
 import { LoginWebService } from "./service/login-web-service.js";
 import { TeamController } from "./controller/team-controller.js";
 import { TeamWebService } from "./service/team-web-service.js";
@@ -101,6 +101,7 @@ import { PostWebService } from "./service/post-web-service.js";
 import { UserController } from "./controller/user-controller.js";
 import { OffChainEventWebService } from "./service/off-chain-event-web-service.js";
 import { ActivityController } from "./controller/activity-controller.js";
+import { SocketWebService } from "./service/socket-web-service.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -252,6 +253,8 @@ async function getContainer(env, footerRoutes) {
     container.bind(PlayerWebService).toSelf().inSingletonScope()
     container.bind(TransactionWebService).toSelf().inSingletonScope()
     container.bind(OwnerPageWebService).toSelf().inSingletonScope()
+    container.bind(SocketWebService).toSelf().inSingletonScope()
+
     container.bind(GameWebService).toSelf().inSingletonScope()
     container.bind(FieldService).toSelf().inSingletonScope()
     container.bind(PagingService).toSelf().inSingletonScope()

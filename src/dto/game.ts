@@ -114,7 +114,7 @@ class Game extends Model {
 
 
     @ForeignKey(() => Stadium)
-    @AllowNull(false)	
+    @AllowNull(true)	
     @Column(DataType.UUID)
     declare stadiumId?:string 
 

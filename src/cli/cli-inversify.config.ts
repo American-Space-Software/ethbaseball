@@ -9,21 +9,21 @@ import glicko2 from "glicko2"
 
 import { UserIOService } from "../service/userio-service.js";
 import { MainController } from "./controller/main-controller.js";
-import { GameService } from "../service/game-service.js";
+import { GameService } from "../service/data/game-service.js";
 import { RollService } from "../service/roll-service.js";
-import { PlayerService } from "../service/player-service.js";
+import { PlayerService } from "../service/data/player-service.js";
 import { PlayerRepositoryNodeImpl } from "../repository/node/player-repository-impl.js";
 import { Player } from "../dto/player.js";
 import { Game } from "../dto/game.js";
 import { RollChartService } from "../service/roll-chart-service.js";
-import { SchemaService } from "../service/schema-service.js";
+import { SchemaService } from "../service/data/schema-service.js";
 
 import { Owner } from "../dto/owner.js";
-import { OwnerService } from "../service/owner-service.js";
+import { OwnerService } from "../service/data/owner-service.js";
 import { OwnerRepositoryNodeImpl } from "../repository/node/owner-repository-impl.js";
 import { SeedRepositoryNodeImpl } from "../repository/node/seed-repository-impl.js";
 import { Seed } from "../dto/seed.js";
-import { SeedService } from "../service/seed-service.js";
+import { SeedService } from "../service/data/seed-service.js";
 
 
 import { GameRepositoryNodeImpl } from "../repository/node/game-repository-impl.js";
@@ -33,8 +33,7 @@ import { Animation } from "../dto/animation.js";
 import { Image } from "../dto/image.js";
 import { AnimationRepositoryNodeImpl } from "../repository/node/animation-repository-impl.js";
 import { ImageRepositoryNodeImpl } from "../repository/node/image-repository-impl.js";
-import { ImageService } from "../service/image-service.js";
-import { AnimationService } from "../service/animation-service.js";
+import { ImageService } from "../service/data/image-service.js";
 import { UniverseRepositoryNodeImpl } from "../repository/node/universe-repository-impl.js";
 import { UniverseService } from "../service/universe-service.js";
 
@@ -116,7 +115,6 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(SeedService).toSelf().inSingletonScope()
     container.bind(StatService).toSelf().inSingletonScope()
     container.bind(ImageService).toSelf().inSingletonScope()
-    container.bind(AnimationService).toSelf().inSingletonScope()
     container.bind(UniverseService).toSelf().inSingletonScope()
     container.bind(ConnectService).toSelf().inSingletonScope()
 

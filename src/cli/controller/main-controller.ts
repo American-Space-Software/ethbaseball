@@ -1,10 +1,10 @@
 import { injectable } from 'inversify';
 import { UserIOService } from '../../service/userio-service.js';
-import { GameService, GameViewModel, LastPlay } from '../../service/game-service.js';
+import { GameService, GameViewModel, LastPlay } from '../../service/data/game-service.js';
 import { Player } from '../../dto/player.js';
-import { PlayerService } from '../../service/player-service.js';
-import { SchemaService } from '../../service/schema-service.js';
-import { OwnerService } from '../../service/owner-service.js';
+import { PlayerService } from '../../service/data/player-service.js';
+import { SchemaService } from '../../service/data/schema-service.js';
+import { OwnerService } from '../../service/data/owner-service.js';
 import { Owner } from '../../dto/owner.js';
 
 import { Position } from '../../service/enums.js';

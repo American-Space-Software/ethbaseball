@@ -213,7 +213,7 @@ CREATE TABLE `game` (
   `isFinished` tinyint(1) DEFAULT NULL,
   `seasonId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `leagueId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `stadiumId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `stadiumId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `winningPitcherId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `losingPitcherId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `winningTeamId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
@@ -617,8 +617,12 @@ DROP TABLE IF EXISTS `offchain_event`;
 CREATE TABLE `offchain_event` (
 
   `_id` varchar(255) NOT NULL,
+
+  `playerId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `amount` varchar(255) DEFAULT NULL,
+
   `contractType` varchar(255) DEFAULT NULL,
+
   `fromAddress` varchar(255) DEFAULT NULL,
   `toAddress` varchar(255) DEFAULT NULL,
 
@@ -627,16 +631,15 @@ CREATE TABLE `offchain_event` (
 
   `event` varchar(255) DEFAULT NULL,
 
-  `gameId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `processedEventId` varchar(255) DEFAULT NULL,
 
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
   PRIMARY KEY (`_id`),
-  UNIQUE(`gameId`, `toTeamId`),
   UNIQUE(`processedEventId`),
-  CONSTRAINT `offchain_event_ibfk_1` FOREIGN KEY (`gameId`) REFERENCES `game` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `offchain_event_ibfk_2` FOREIGN KEY (`processedEventId`) REFERENCES `processed_event` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `offchain_event_ibfk_1` FOREIGN KEY (`processedEventId`) REFERENCES `processed_event` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `offchain_event_ibfk_2` FOREIGN KEY (`playerId`) REFERENCES `player` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
+
 
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

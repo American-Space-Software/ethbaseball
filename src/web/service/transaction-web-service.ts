@@ -1,6 +1,6 @@
 import axios from "axios";
 import { inject, injectable } from "inversify";
-import { TransactionsViewModel } from "../../service/processed-transaction-service.js";
+import { TransactionsViewModel } from "../../service/data/processed-transaction-service.js";
 
 @injectable()
 class TransactionWebService {
