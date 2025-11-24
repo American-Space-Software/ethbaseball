@@ -7,7 +7,7 @@ import { BlockService } from "./data/block-service.js";
 import { ContractState } from "../dto/contract-state.js";
 import { ProcessedEvent, ProcessedTransaction } from "../dto/processed-transaction.js";
 import { Transaction } from "../dto/transaction.js";
-import { ContractStateService } from "./contract-state-service.js";
+import { ContractStateService } from "./data/contract-state-service.js";
 import { TransactionService } from "./transaction-service.js";
 import { ProcessedTransactionService, TransactionViewModel } from "./data/processed-transaction-service.js";
 import { Owner } from "../dto/owner.js";

@@ -140,7 +140,6 @@ class OwnerRepositoryNodeImpl implements OwnerRepository {
 
     async getUpdatedSince(lastUpdated:Date, options?: any) : Promise<Owner[]> {
 
-
         let queryOptions = {
             where: { 
                 lastUpdated: {

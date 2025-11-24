@@ -74,7 +74,7 @@ import { ContractState } from "../dto/contract-state.js"
 import { Block } from "../dto/block.js"
 import { Transaction } from "../dto/transaction.js"
 import { BlockService } from "../service/data/block-service.js"
-import { ContractStateService } from "../service/contract-state-service.js"
+import { ContractStateService } from "../service/data/contract-state-service.js"
 import { ProcessedTransactionService } from "../service/data/processed-transaction-service.js"
 import { TransactionService } from "../service/transaction-service.js"
 import { BlockRepositoryNodeImpl } from "../repository/node/block-repository-impl.js"
@@ -95,7 +95,7 @@ import { TeamMintPass } from "../dto/team-mint-pass.js"
 import { NodeWalletServiceImpl } from "../service/node-wallet-service.js"
 import { PlayerViewService } from "../service/player-view-service.js"
 import { User } from "../dto/user.js";
-import { UserService } from "../service/user-service.js";
+import { UserService } from "../service/data/user-service.js";
 import { UserRepositoryNodeImpl } from "../repository/node/user-repository-impl.js";
 import { StadiumRepositoryNodeImpl } from "../repository/node/stadium-repository-impl.js";
 import { Stadium } from "../dto/stadium.js";
@@ -135,7 +135,7 @@ import { DiamondMintPassService } from "../service/data/diamond-mint-pass-servic
 import { DiamondMintPassRepositoryNodeImpl } from "../repository/node/diamond-mint-pass-repository-impl.js";
 import { ChatGPTService } from "../service/chatgpt-service.js";
 import { OffchainEvent } from "../dto/offchain-event.js";
-import { OffchainEventService } from "../service/offchain-event-service.js";
+import { OffchainEventService } from "../service/data/offchain-event-service.js";
 import { OffchainEventRepositoryNodeImpl } from "../repository/node/offchain-event-repository-impl.js";
 import { GamePitchResult } from "../dto/game-pitch-result.js";
 import { GameHitResult } from "../dto/game-hit-result.js";
@@ -147,6 +147,7 @@ import { PostRepositoryNodeImpl } from "../repository/node/post-repository-impl.
 import { AirdropService } from "../service/airdrop-service.js";
 import { TeamMintPassRepositoryNodeImpl } from "../repository/node/team-mint-pass-repository-impl.js";
 import { TeamMintPassService } from "../service/data/team-mint-pass-service.js";
+import { SocketService } from "../service/socket-service.js";
 
 
 let _diamondsAddress:string
@@ -331,6 +332,7 @@ async function getContainer(command?:GetContainerCommand) {
     })
 
     container.bind(DiamondMintPassService).toSelf().inSingletonScope()
+    container.bind(SocketService).toSelf().inSingletonScope()
 
     container.bind(PlayerService).toSelf().inSingletonScope()
     container.bind(RollService).toSelf().inSingletonScope()

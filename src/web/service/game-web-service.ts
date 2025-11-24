@@ -1,39 +1,36 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
 import { BaseResult, Contact, GamePlayer, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Play, PlayResult, Position, RunnerEvent, ShallowDeep, ThrowResult } from "../../service/enums.js";
-import { StatService } from "../../service/stat-service.js";
 import dayjs from "dayjs";
 import { Game } from "../../dto/game.js";
 
-import { io } from "socket.io-client";
 import { SocketWebService } from "./socket-web-service.js";
 
 
 @injectable()
 class GameWebService {
     
-
     constructor(
         private socketWebService: SocketWebService,
         @inject('env') private env:any
-    ) { 
+    ) { }
 
+    async watchGame(_id:string, onGameUpdate:Function) {
+
+        let socket = this.socketWebService.gameSocket
+
+        socket.emit("watch-game", _id)
+
+        socket.on("game", (data) => {
+            console.log(data)
+            onGameUpdate(data)
+        })
 
     }
 
-
-
-    // async getLatest() {
-    //     let result = await axios.get(`/api/game/latest`, {
-    //         // query URL without using browser cache
-    //         headers: {
-    //             'Cache-Control': 'no-cache',
-    //             'Pragma': 'no-cache',
-    //             'Expires': '0',
-    //         },
-    //     })
-    //     return result.data
-    // }
+    async unwatchGame(_id:string) {
+        this.socketWebService.gameSocket.emit("unwatch-game", _id)
+    }
 
 
     async getGames(dateString:string, rank:number) {
@@ -72,9 +69,7 @@ class GameWebService {
 
     }
 
-    async getGameViewModel(gameId) {
-
-        let game = await this.get(gameId)
+    async getGameViewModel(game) {
 
         // //Expand season and career stats
         // let allPlayers:GamePlayer[] = [].concat(game.away.players).concat(game.home.players).filter( gp => gp != undefined)

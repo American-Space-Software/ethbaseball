@@ -31,6 +31,7 @@ interface GameRepository {
     getInProgressIdsByDate(date:Date, options?:any) : Promise<string[]>
     updateGameRatings(games:Game[], options?:any)
     getGameCountsByTeamSeason(team:Team, season:Season, date:Date, options?:any)
+    getIdsUpdatedSince(lastUpdated:Date, options?: any) : Promise<string[]>
 }
 
 export {

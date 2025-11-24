@@ -22,7 +22,7 @@ import { PlayerViewService } from "../service/player-view-service.js"
 import { OwnerService } from "../service/data/owner-service.js"
 
 import connectSessionSequelize from "connect-session-sequelize"
-import { UserService } from "../service/user-service.js"
+import { UserService } from "../service/data/user-service.js"
 import { User } from "../dto/user.js"
 import { DiamondMintPass, RotationPitcher, Team } from "../dto/team.js"
 import { TeamService } from "../service/data/team-service.js"
@@ -42,7 +42,7 @@ import { PlayerLeagueSeason } from '../dto/player-league-season.js'
 import { PlayerLeagueSeasonService } from '../service/data/player-league-season-service.js'
 import { TeamLeagueSeasonService } from '../service/data/team-league-season-service.js'
 
-import { OffchainEventService } from '../service/offchain-event-service.js'
+import { OffchainEventService } from '../service/data/offchain-event-service.js'
 import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, TeamCost } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { ProcessedTransactionService } from '../service/data/processed-transaction-service.js'
@@ -53,9 +53,10 @@ import { Eta } from "eta"
 import { CityService } from '../service/data/city-service.js'
 import { Game, GamePlayer } from '../dto/game.js'
 
-import { Server } from "socket.io"
 import http from 'http'
+import { SocketService } from '../service/socket-service.js'
 
+const SECONDS_BETWEEN_GAME_UPDATES = 30
 
 
 
@@ -64,14 +65,7 @@ const TWITTER = "@ethbaseball"
 
 const app = express()
 
-//Used for socket.io
 const server = http.createServer(app)
-
-/** WEBSOCKETS */
-const io = new Server(server)
-
-
-/** END WEBSOCKETS */
 
 
 
@@ -128,6 +122,7 @@ let startWebServer = async () => {
   let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
   let diamondMintPassService:DiamondMintPassService = container.get(DiamondMintPassService)
   let teamMintPassService:TeamMintPassService = container.get(TeamMintPassService)
+  let socketService:SocketService = container.get(SocketService)
 
   let offchainEventService:OffchainEventService = container.get(OffchainEventService)
   let processedTransactionService:ProcessedTransactionService = container.get(ProcessedTransactionService)
@@ -165,8 +160,7 @@ let startWebServer = async () => {
 
   const SESSION_EXPIRES = 365 * 24 * 60 * 60 * 1000
 
-  app.use(
-    session({
+  const sessionMiddleware = session({
       secret: process.env.SESSION_SECRET,
       store: new SequelizeStore({
         db: sequelize,
@@ -181,8 +175,10 @@ let startWebServer = async () => {
       resave: false, // we support the touch method so per the express-session docs this should be set to false
       proxy: true, // if you do SSL outside of node.
       saveUninitialized: false
-    })
-  )
+   })
+
+
+  app.use(sessionMiddleware)
 
   console.log(`Connecting to Diamonds: ${universe.diamondAddress}`)
   setDiamondsAddress(universe.diamondAddress)
@@ -1645,17 +1641,6 @@ let startWebServer = async () => {
 
   })
 
-  // app.get('/api/game/latest', async function (req, res) {
-
-  //   try {
-  //     return res.json(await gameService.getLastUpdate())
-  //   } catch (ex) {
-  //     console.log(ex)
-  //     res.sendStatus(404)
-  //   }
-
-  // })
-
   app.post('/api/game/play/bot', async function (req, res) {
 
       try {
@@ -2011,23 +1996,34 @@ let startWebServer = async () => {
 
   const PORT = process.env.WEB_PORT ? process.env.WEB_PORT : 8080
 
-
-
-  io.on('connection', function(socket) {
-
-      console.log("a user has connected!")
-
-      socket.on('disconnect', function() {
-          console.log('user disconnected')
-      })
-
-  })
-
+  /** WEBSOCKETS */
+  socketService.init(server, sessionMiddleware)
+  /** END WEBSOCKETS */
 
   server.listen(PORT, () => {
     console.log(`EBL listening on port ${PORT}`)
   })
 
+
+  let lastGameCheck
+
+  const gameUpdateLoop = async () => {
+
+    let updatedGames = await gameService.getUpdatedSince(lastGameCheck ? lastGameCheck : dayjs().subtract(1, 'minute').toDate())
+
+    for (let game of updatedGames) {
+      socketService.gameUpdate(game)
+    }
+
+    lastGameCheck = new Date(new Date().toUTCString())
+
+    console.log(`Game loop complete...waiting...`)
+
+    setTimeout(async () => { await gameUpdateLoop() }, SECONDS_BETWEEN_GAME_UPDATES*1000)
+  }
+
+
+  await gameUpdateLoop()
 
 
   console.log(`

@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 import { Owner } from "../dto/owner.js";
 import { OwnerService } from "./data/owner-service.js";
 import { SignatureTokenRepository } from "../repository/signature-token-repository.js";
-import { UserService } from "./user-service.js";
+import { UserService } from "./data/user-service.js";
 import { User } from "../dto/user.js";
 
 @injectable()

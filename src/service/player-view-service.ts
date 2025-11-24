@@ -16,7 +16,7 @@ import { Season } from "../dto/season.js"
 import { ethers } from "ethers"
 import { GameService } from "./data/game-service.js"
 import dayjs from "dayjs"
-import { OffchainEventService } from "./offchain-event-service.js"
+import { OffchainEventService } from "./data/offchain-event-service.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
 

@@ -7,28 +7,25 @@ import { io } from "socket.io-client";
 @injectable()
 class SocketWebService {
     
-    private _socket
+    private _gameSocket
 
     constructor(
         @inject('env') private env:any
     ) { 
 
-        this.socket.on("connect", () => {
-            console.log("HERE")
-        })
+        // this.gameSocket.on("connect", () => {})
 
     }
 
 
-    public get socket() {
+    public get gameSocket() {
 
-        if (!this._socket) {
-            this._socket = io(this.env().WEB_SOCKET)
+        if (!this._gameSocket) {
+            this._gameSocket = io(`${this.env().WEB_SOCKET}/game`, {})
         }
             
-        return this._socket
+        return this._gameSocket
     }
-
 
 
 

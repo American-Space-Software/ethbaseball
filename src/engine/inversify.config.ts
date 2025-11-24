@@ -80,7 +80,7 @@ import { ContractState } from "../dto/contract-state.js"
 import { Block } from "../dto/block.js"
 import { Transaction } from "../dto/transaction.js"
 import { BlockService } from "../service/data/block-service.js"
-import { ContractStateService } from "../service/contract-state-service.js"
+import { ContractStateService } from "../service/data/contract-state-service.js"
 import { ProcessedTransactionService } from "../service/data/processed-transaction-service.js"
 import { TransactionService } from "../service/transaction-service.js"
 import { BlockRepositoryNodeImpl } from "../repository/node/block-repository-impl.js"
@@ -102,7 +102,7 @@ import { LeagueRepositoryNodeImpl } from "../repository/node/league-repository-i
 import { League } from "../dto/league.js";
 import { LeagueService } from "../service/data/league-service.js";
 import { User } from "../dto/user.js";
-import { UserService } from "../service/user-service.js";
+import { UserService } from "../service/data/user-service.js";
 import { UserRepositoryNodeImpl } from "../repository/node/user-repository-impl.js";
 import { StadiumRepositoryNodeImpl } from "../repository/node/stadium-repository-impl.js";
 import { Stadium } from "../dto/stadium.js";
@@ -140,7 +140,7 @@ import { ChatGPTAPI } from 'chatgpt'
 import { OpenAI } from 'openai'
 import { OffchainEvent } from "../dto/offchain-event.js"
 import { OffchainEventRepositoryNodeImpl } from "../repository/node/offchain-event-repository-impl.js"
-import { OffchainEventService } from "../service/offchain-event-service.js"
+import { OffchainEventService } from "../service/data/offchain-event-service.js"
 import { GameHitResultRepositoryNodeImpl } from "../repository/node/game-hit-result-repository-impl.js"
 import { GamePitchResultRepositoryNodeImpl } from "../repository/node/game-pitch-result-repository-impl.js"
 import { GameHitResult } from "../dto/game-hit-result.js"

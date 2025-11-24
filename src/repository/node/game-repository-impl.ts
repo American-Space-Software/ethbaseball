@@ -7,6 +7,7 @@ import { OverallRecord, Team } from "../../dto/team.js"
 import { Season } from "../../dto/season.js"
 import { League } from "../../dto/league.js"
 import { Player } from "../../dto/player.js"
+import { Op } from "sequelize"
 
 
 
@@ -16,6 +17,33 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     @inject("sequelize")
     private sequelize:Function
+
+
+    async getIdsUpdatedSince(lastUpdated:Date, options?: any) : Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                lastUpdated: lastUpdated
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select 
+                g._id
+            from game g 
+            WHERE 
+                g.lastUpdated > :lastUpdated
+            ORDER BY g.lastUpdated DESC
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+    }
 
     async getLastUpdate(options?:any) : Promise<Date> {
 

@@ -74,7 +74,8 @@ class GameController {
 
             let id = routeTo?.params?.id
 
-            let gameViewModel = await this.gameWebService.getGameViewModel(id)
+            let game = await this.gameWebService.get(id)
+            let gameViewModel = await this.gameWebService.getGameViewModel(game)
 
             return {
                 gameViewModel: gameViewModel,

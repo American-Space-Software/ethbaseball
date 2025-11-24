@@ -42,7 +42,7 @@ import dayjs from "dayjs";
 import { Owner } from "../dto/owner.js";
 import { TEAMS_PER_TIER } from "../service/enums.js"
 import { OwnerService } from "./data/owner-service.js";
-import { OffchainEventService } from "./offchain-event-service.js";
+import { OffchainEventService } from "./data/offchain-event-service.js";
 import { AirdropService } from "./airdrop-service.js";
 import { PostService } from "./data/post-service.js";
 import { FinanceService } from "./finance-service.js";

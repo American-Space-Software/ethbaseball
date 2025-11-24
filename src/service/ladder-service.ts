@@ -28,7 +28,7 @@ import { Universe } from "../dto/universe.js"
 import { UniverseRepository } from "../repository/universe-repository.js"
 import { StatService } from "./stat-service.js"
 import { faker } from '@faker-js/faker'
-import { OffchainEventService } from "./offchain-event-service.js"
+import { OffchainEventService } from "./data/offchain-event-service.js"
 import { GameHitResult } from "../dto/game-hit-result.js"
 import { GamePitchResult } from "../dto/game-pitch-result.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
@@ -267,6 +267,7 @@ class LadderService {
         }
 
         await this.gameService.put(game, options)
+        
     }
 
 
