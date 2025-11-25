@@ -4,15 +4,15 @@
     <table class="game-result">
       <tr>
         <td colspan="2" class="inning">
-            ${game.play.play.inningTop ? $h`
-              Top ${game.play.play.inningNum}
+            ${game.play?.play.inningTop ? $h`
+              Top ${game.play?.play.inningNum}
             ` : $h`
-              Bottom ${game.play.play.inningNum}
+              Bottom ${game.play?.play.inningNum}
             `}
 
         </td>
       </tr>
-      <tr class="${game.play.play.inningTop ? 'at-bat' : ' '}">
+      <tr class="${game.play?.play.inningTop ? 'at-bat' : ' '}">
         <td class="name">
           <a href="${universeWebService.startDateLink(`/t/${game.away.tokenId}`)}" class="team-link">
             <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo"/>
@@ -24,7 +24,7 @@
         </td>
         <td class="runs">${game.score.away}</td>
       </tr>
-      <tr class="${game.play.play.inningTop ? ' ' : 'at-bat'}">
+      <tr class="${game.play?.play.inningTop ? ' ' : 'at-bat'}">
         <td class="name">
           
           <a href="${universeWebService.startDateLink(`/t/${game.home.tokenId}`)}" class="team-link">

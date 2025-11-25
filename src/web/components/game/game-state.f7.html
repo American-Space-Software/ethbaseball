@@ -2,17 +2,215 @@
 
     <div class="game-state">
 
+      <div class="game-banner">
+
+          <div class="away ${vm?.game.isComplete && vm?.game.score.away > vm?.game.score.home ? $h`winner` : $h` `}">
+
+            <div class="name">
+
+              <a href="${universeWebService.startDateLink(`/t/index/${vm.game.away._id}`)}">
+                <img src="/image/thumbnail/100/${vm?.game.away.logoId}" class="profilePic" />
+                <span class="record">${vm?.game.away.overallRecord.after?.wins || vm?.game.away.overallRecord.before?.wins}-${vm?.game.away.overallRecord.after?.losses || vm?.game.away.overallRecord.before?.losses}<br /></span>
+                
+                ${vm?.game.away.cityName ? $h`
+                  <span class="small">${vm?.game.away.cityName}</span><br />
+                ` : $h` `}
+                
+                ${vm?.game.away.name} 
+              </a>
+
+            </div>
+            <div class="runs">${vm?.game.score.away}</div>
+          </div>
+
+          <div class="linescore-wrapper">
+            <table class="linescore">
+              <thead>
+                <tr>
+                  <th></th>
+                  ${Array.from({length: Math.max(9, vm.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                    <th>${num}</th>                          
+                  `)}
+          
+                  <th>R</th>
+                  <th>H</th>
+                  <th>E</th>        
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+
+                  <td class="abbrev">
+                    <img src="/image/thumbnail/${vm?.game.away.logoId}" class="profilePic" />
+                  </td>
+          
+                  ${Array.from({length: Math.max(9, vm.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                    <td class="align-center ${!vm.game.isComplete && vm.game.currentInning == num && vm.linescoreViewModel.isTopInning ? $h`current` : ` `}">${vm.linescoreViewModel.linescore.away[num]}</td>                        
+                  `)}
+          
+                  <td class="align-center ${vm?.game.isComplete ? $h`linescore-strong` : $h` `}">${vm.linescoreViewModel.linescore.away[vm.linescoreViewModel.linescore.away.length - 3]}</td>
+                  <td class="align-center ${vm?.game.isComplete ? $h`linescore-strong` : $h` `}">${vm.linescoreViewModel.linescore.away[vm.linescoreViewModel.linescore.away.length - 2]}</td>
+                  <td class="align-center ${vm?.game.isComplete ? $h`linescore-strong` : $h` `}">${vm.linescoreViewModel.linescore.away[vm.linescoreViewModel.linescore.away.length - 1]}</td>
+                </tr>
+                <tr>
+              
+                  <td class="abbrev">
+                    <img src="/image/thumbnail/${vm?.game.home.logoId}" class="profilePic" /> ${vm.game.home.abbrev}
+                  </td>
+              
+                  ${Array.from({length: Math.max(9, vm.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                    <td class="align-center ${!vm.game.isComplete && vm.game.currentInning == num && !vm.linescoreViewModel.isTopInning ? $h`current` : ` `}">${vm.linescoreViewModel.linescore.home[num]}</td>                        
+                  `)}
+          
+                  <td class="align-center ${vm?.game.isComplete ? $h`linescore-strong` : $h` `}">${vm.linescoreViewModel.linescore.home[vm.linescoreViewModel.linescore.home.length - 3]}</td>
+                  <td class="align-center ${vm?.game.isComplete ? $h`linescore-strong` : $h` `}">${vm.linescoreViewModel.linescore.home[vm.linescoreViewModel.linescore.home.length - 2]}</td>
+                  <td class="align-center ${vm?.game.isComplete ? $h`linescore-strong` : $h` `}">${vm.linescoreViewModel.linescore.home[vm.linescoreViewModel.linescore.home.length - 1]}</td>
+                </tr>
+              </tbody>	
+            </table>
+          </div>
+
+          <div class="home ${vm?.game.isComplete && vm?.game.score.home > vm?.game.score.away ? $h`winner` : $h` `}">
+            
+            <div class="runs">${vm?.game.score.home}</div>
+            
+            <div class="name">
+
+              <a href="${universeWebService.startDateLink(`/t/index/${vm.game.home._id}`)}">
+                <img src="/image/thumbnail/100/${vm?.game.home.logoId}" class="profilePic" />
+                <span class="record">${vm?.game.home.overallRecord.after?.wins || vm?.game.home.overallRecord.before?.wins}-${vm?.game.home.overallRecord.after?.losses || vm?.game.home.overallRecord.before?.losses}<br /></span>
+                
+                
+                ${vm?.game.home.cityName ? $h`
+                  <span class="small">${vm?.game.home.cityName}</span><br />
+                ` : $h` `}
+                
+                ${vm?.game.home.name} 
+              </a>
+
+            </div>
+            
+          </div>
+
+      </div>
+
+      <div class="left">
+
+        <div class="content">
+
+          ${vm.pitcher || vm.hitter ? $h`
+          <div class="matchup-wrapper">
+
+            ${vm.pitcher ? $h`
+
+              <div class="card">
+                <div class="card-header">Pitching</div>
+                <div class="card-content card-content-padding">
+
+                  <img src="/player/image/${vm.pitcher._id}" width="20" height="20" /> ${vm.pitcher.throws}HP <a href="/p?id=${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a>
+
+                  ${vm.matchupHandedness ? $h`
+                    <table class="data-table">
+                      <thead>
+                        <th class="label-cell">Ratings</th>
+                        <th class="numeric-cell">POW</th>
+                        <th class="numeric-cell">CON</th>
+                        <th class="numeric-cell">MOV</th>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="label-cell">vs ${vm.matchupHandedness?.hits}</td>
+                          <td class="numeric-cell">${vm.pitcher.pitchRatings.power}</td>
+                          <td class="numeric-cell"> ${vm.matchupPitcherRatings?.control}</td>
+                          <td class="numeric-cell">${vm.matchupPitcherRatings?.movement}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  ` : $h` ` }
+
+                </div>
+              </div>
+            ` : $h` `}
+
+            ${vm.hitter ? $h`
+
+              <div class="card">
+                <div class="card-header">Hitting</div>
+                <div class="card-content card-content-padding">
+                  <img src="/player/image/${vm.hitter._id}" width="20" height="20" /> ${vm.hitter.hits}HB <a href="/p?id=${vm.hitter._id}" class="player">${vm.hitter.fullName}</a>
+
+                  <table class="data-table">
+                    <thead>
+                      <th class="label-cell">Ratings</th>
+                      <th class="numeric-cell">CON</th>
+                      <th class="numeric-cell">GAP</th>
+                      <th class="numeric-cell">HR</th>
+                      <th class="numeric-cell">EYE</th>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="label-cell">vs ${vm.matchupHandedness?.throws}</td>
+                        <td class="numeric-cell">${vm.matchupHitterRatings?.contact}</td>
+                        <td class="numeric-cell">${vm.matchupHitterRatings?.gapPower}</td>
+                        <td class="numeric-cell">${vm.matchupHitterRatings?.homerunPower}</td>
+                        <td class="numeric-cell">${vm.matchupHitterRatings?.plateDiscipline}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ` : $h` `}
+
+          </div>
+          ` : $h``}
+
+          ${vm.showLineup ? $h`
+              <div class="card">
+                <div class="card-header">${vm.atBatBoxscoreViewModel.teamInfo.name}</div>
+                <div class="card-content card-content-padding">
+                  
+                  <table class="lineup">
+                    <thead>
+                      <th class="num order">#</th>
+                      <th class="image"></th>
+                      <th class="name">Name</th>
+                      <th>Bats</th>
+                      <th>POS</th>
+                      <th class="stats">Today</th>
+                    </thead>
+                    <tbody>
+                      ${vm.atBatBoxscoreViewModel.teamInfo.lineupIds.map( id => vm.atBatBoxscoreViewModel.teamInfo.players.find( p2 => p2._id == id) ).map( (p, index) => $h`
+                      <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
+                        <td class="num order">${index + 1}</td>
+                        <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
+                        <td class="name"><a href="/p?id=${p._id}">${p.displayName}</a></td>
+                        <td>${p.hits}</td>
+                        <td class="pos">${p.currentPosition}</td>
+                        <td class="stats">${gameWebService.hitterGameStatsShort(p)}</td>
+                      </tr>
+                      `)}
+                    </tbody>
+                  </table>
+
+                </div>
+              </div>
+          ` : $h` `}
+
+        </div>
+
+      </div>
+
       <div class="middle">
         <div class="game-info">
 
           <img src="${Field}" />
 
           ${vm.showHitter ? $h`
-          <a href="/p/${vm.hitter.playerId}" class="runner hitter ${vm.matchupHandedness.hits == "R" ? $h`rhb` : $h`lhb`}">
+          <a href="/p/${vm.hitter._id}" class="runner hitter ${vm.matchupHandedness?.hits == "R" ? $h`rhb` : $h`lhb`}">
 
-            ${vm.matchupHandedness.hits == "L" ? $h`
+            ${vm.matchupHandedness?.hits == "L" ? $h`
               <div class="image">
-                <img src="/player/image/${vm.hitter.playerId}" />
+                <img src="/player/image/${vm.hitter._id}" />
               </div>
             ` : $h` `}
 
@@ -25,9 +223,9 @@
               </div>
             </div>
 
-            ${vm.matchupHandedness.hits == "R" ? $h`
+            ${vm.matchupHandedness?.hits == "R" ? $h`
               <div class="image">
-                <img src="/player/image/${vm.hitter.playerId}" />
+                <img src="/player/image/${vm.hitter._id}" />
               </div>
             ` : $h` `}
 
@@ -35,9 +233,9 @@
           ` : $h` `}
 
           ${vm.runner1B ? $h`
-          <a href="/p/${vm.runner1B.playerId}" class="runner firstBase">
+          <a href="/p/${vm.runner1B._id}" class="runner firstBase">
             <div class="image">
-              <img src="/player/image/${vm.runner1B.playerId}" />
+              <img src="/player/image/${vm.runner1B._id}" />
             </div>
 
             <div class="wrapper" style="border: 1px solid ${vm.runner1B.color1};">
@@ -52,11 +250,11 @@
           ` : $h` `}
 
           ${vm.runner2B ? $h`
-            <a href="/p/${vm.runner2B.playerId}" class="runner secondBase">
+            <a href="/p/${vm.runner2B._id}" class="runner secondBase">
               
               <div class="large-only-flex">
                 <div class="image">
-                  <img src="/player/image/${vm.runner2B.playerId}" />
+                  <img src="/player/image/${vm.runner2B._id}" />
                 </div>
               </div>
 
@@ -70,7 +268,7 @@
 
               <div class="small-only">
                 <div class="image">
-                  <img src="/player/image/${vm.runner2B.playerId}" />
+                  <img src="/player/image/${vm.runner2B._id}" />
                 </div>
               </div>
 
@@ -79,9 +277,9 @@
           ` : $h` `}
 
           ${vm.runner3B ? $h`
-          <a href="/p/${vm.runner3B.playerId}" class="runner thirdBase">
+          <a href="/p/${vm.runner3B._id}" class="runner thirdBase">
             <div class="image">
-              <img src="/player/image/${vm.runner3B.playerId}" />
+              <img src="/player/image/${vm.runner3B._id}" />
             </div>
 
             <div class="wrapper" style="border: 1px solid ${vm.runner3B.color1};">
@@ -95,24 +293,24 @@
           </a>
           ` : $h` `}
 
-          <a href="/p/${vm.pitcher.playerId}" class="defender p" data-pos="P">
+          <a href="/p/${vm.pitcher._id}" class="defender p" data-pos="P">
             <div class="wrapper" style="border: 1px solid ${vm.pitcher.color1};">
               <div class="text" style="background: ${vm.pitcher.color1};">
-                ${vm.matchupHandedness.throws == " R" ? $h`RHP` : $h`LHP`} - ${vm.pitcher.displayName}
+                ${vm.matchupHandedness?.throws == " R" ? $h`RHP` : $h`LHP`} - ${vm.pitcher.displayName}
               </div>
               <div class="game-stats">${gameWebService.pitcherGameStatsShort(vm.pitcher)}</div>
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.pitcher.playerId}" />
+              <img src="/player/image/${vm.pitcher._id}" />
             </div>
 
           </a>
 
-          <a href="/p/${vm.catcher.playerId}" class="defender c top" data-pos="C">
+          <a href="/p/${vm.catcher._id}" class="defender c top" data-pos="C">
 
             <div class="image">
-              <img src="/player/image/${vm.catcher.playerId}" />
+              <img src="/player/image/${vm.catcher._id}" />
             </div>
 
             <div class="wrapper" style="border: 1px solid ${vm.catcher.color1};">
@@ -125,7 +323,7 @@
 
           </a>
 
-          <a href="/p/${vm.firstBase.playerId}" class="defender firstBase" data-pos="1B">
+          <a href="/p/${vm.firstBase._id}" class="defender firstBase" data-pos="1B">
             <div class="wrapper" style="border: 1px solid ${vm.firstBase.color1};">
               <div class="text" style="background: ${vm.firstBase.color1};">
                 ${vm.firstBase.displayName}
@@ -133,11 +331,11 @@
               <div class="game-stats">1B DEF: ${vm.firstBase.hittingRatings.defense}</div>
             </div>
             <div class="image">
-              <img src="/player/image/${vm.firstBase.playerId}" />
+              <img src="/player/image/${vm.firstBase._id}" />
             </div>
           </a>
 
-          <a href="/p/${vm.secondBase.playerId}" class="defender secondBase" data-pos="2B">
+          <a href="/p/${vm.secondBase._id}" class="defender secondBase" data-pos="2B">
 
             <div class="wrapper" style="border: 1px solid ${vm.secondBase.color1};">
               <div class="text" style="background: ${vm.secondBase.color1};">
@@ -148,11 +346,11 @@
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.secondBase.playerId}" />
+              <img src="/player/image/${vm.secondBase._id}" />
             </div>
           </a>
 
-          <a href="/p/${vm.thirdBase.playerId}" class="defender thirdBase" data-pos="3B">
+          <a href="/p/${vm.thirdBase._id}" class="defender thirdBase" data-pos="3B">
 
             <div class="wrapper" style="border: 1px solid ${vm.thirdBase.color1};">
               <div class="text" style="background: ${vm.thirdBase.color1};">
@@ -162,11 +360,11 @@
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.thirdBase.playerId}" />
+              <img src="/player/image/${vm.thirdBase._id}" />
             </div>
           </a>
 
-          <a href="/p/${vm.ss.playerId}" class="defender ss" data-pos="SS">
+          <a href="/p/${vm.ss._id}" class="defender ss" data-pos="SS">
             <div class="wrapper" style="border: 1px solid ${vm.ss.color1};">
               <div class="text" style="background: ${vm.ss.color1}; ">
                 ${vm.ss.displayName}
@@ -175,11 +373,11 @@
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.ss.playerId}" />
+              <img src="/player/image/${vm.ss._id}" />
             </div>
           </a>
 
-          <a href="/p/${vm.lf.playerId}" class="defender lf" data-pos="LF">
+          <a href="/p/${vm.lf._id}" class="defender lf" data-pos="LF">
             <div class="wrapper" style="border: 1px solid ${vm.lf.color1};">
               <div class="text" style="background: ${vm.lf.color1}; ">
                 ${vm.lf.displayName}
@@ -188,11 +386,11 @@
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.lf.playerId}" />
+              <img src="/player/image/${vm.lf._id}" />
             </div>
           </a>
 
-          <a href="/p/${vm.cf.playerId}" class="defender cf" data-pos="CF">
+          <a href="/p/${vm.cf._id}" class="defender cf" data-pos="CF">
             <div class="wrapper" style="border: 1px solid ${vm.cf.color1};">
               <div class="text" style="background: ${vm.cf.color1}; ">
                 ${vm.cf.displayName}
@@ -201,11 +399,11 @@
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.cf.playerId}" />
+              <img src="/player/image/${vm.cf._id}" />
             </div>
           </a>
 
-          <a href="/p/${vm.rf.playerId}" class="defender rf" data-pos="RF">
+          <a href="/p/${vm.rf._id}" class="defender rf" data-pos="RF">
             <div class="wrapper" style="border: 1px solid ${vm.rf.color1};">
               <div class="text" style="background: ${vm.rf.color1}; ">
                 ${vm.rf.displayName}
@@ -214,109 +412,104 @@
             </div>
 
             <div class="image">
-              <img src="/player/image/${vm.rf.playerId}" />
+              <img src="/player/image/${vm.rf._id}" />
             </div>
           </a>
 
         </div>
-
-
-
       </div>
 
       <div class="right">
 
-        ${vm.play ? $h`
-          <div class="update-wrapper">
-            Updated <strong>${dayjs(vm.game.lastUpdated).fromNow()}</strong>
-          </div>
+        <div class="content">
 
-          <div class="play-wrapper">
-            <div class="block-title block-title-small">Recent Plays</div>
-            <div class="list cards-list ">
-              <ul>
-                ${vm.playByPlay?.map( p => $h`
-                <li class="card recap card-header-divider card-outline">
+          ${vm.play ? $h`
+            <div class="play-wrapper">
+              <div class="list cards-list ">
+                <ul>
+                  ${vm.playByPlay?.map( p => $h`
+                  <li class="card recap card-header-divider card-outline">
 
-                  <div class="card-header">
-                    ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
+                    <div class="card-header">
+                      ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
 
-                    <div class="diamond-wrapper">
-                      <div class="diamond">
-                        <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
-                        <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
-                        <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
+                      <div class="diamond-wrapper">
+                        <div class="diamond">
+                          <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
+                          <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
+                          <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
+                        </div>
                       </div>
+
                     </div>
 
-                  </div>
+                    <div class="card-content card-content-padding play-description">
 
-                  <div class="card-content card-content-padding play-description">
+                      <div class="chip result">
+                        <div class="chip-label">${p.play.result}</div>
+                      </div>
 
-                    <div class="chip result">
-                      <div class="chip-label">${p.play.result}</div>
+                      ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.length > 0 ? $h`
+                        <div class="runners">
+                          <strong>Stolen Bases</strong>
+                          <ul>
+                            ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.map( re => $h`
+                              <li><a href="/p/${re.runner._id}">${gameWebService.gamePlayers(vm.game)[re.runner._id].fullName}</a> ${gameWebService.getRunnerDescription(vm.game, re)}</li>
+                            `)}                            
+                          </ul>
+                        </div>                          
+                      ` : $h` `}
+
+
+
+                      <div innerHTML="${p.descriptions.mainDescription}" class="main-description"></div>
+
+                      <ul>
+                        ${p.descriptions.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
+                      </ul>
+
+                      ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt)?.length > 0 ? $h`
+                        <div class="runners">
+                          <strong>Runners</strong>
+                          <ul>
+                            ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt).map( re => $h`
+                              <li>${gameWebService.gamePlayers(vm.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(vm.game, re)}</li>
+                            `)}                            
+                          </ul>
+                        </div>                          
+                      ` : $h` `}
+
+
+                      <div class="info-wrapper">
+                        <span class="label">Balls</span>${gameWebService.getBalls(4, p.play.pitchLog.count.balls)}<br />
+                        <span class="label">Strikes</span>${gameWebService.getBalls(3, p.play.pitchLog.count.strikes)}<br />
+                        <span class="label">Outs</span>${gameWebService.getBalls(3, p.play.count.end.outs)}
+                      </div>
+
+
+    
+                      ${p.play.credits?.length > 0 ? $h`
+                        <div class="defense">
+                          <strong>Defense</strong>
+                          <ul>
+                            ${p.play.credits.map( c => $h`
+                              <li>${gameWebService.gamePlayers(vm.game)[c._id].currentPosition} ${gameWebService.gamePlayers(vm.game)[c._id].fullName} - ${c.type}</li>
+                            `)}                            
+                          </ul>
+                        </div>                          
+                      ` : $h` `}
+
                     </div>
 
-                    ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.length > 0 ? $h`
-                      <div class="runners">
-                        <strong>Stolen Bases</strong>
-                        <ul>
-                          ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.map( re => $h`
-                            <li><a href="/p/${re.runner.playerId}">${gameWebService.gamePlayers(vm.game)[re.runner._id].fullName}</a> ${gameWebService.getRunnerDescription(vm.game, re)}</li>
-                          `)}                            
-                        </ul>
-                      </div>                          
-                    ` : $h` `}
-
-
-
-                    <div innerHTML="${p.descriptions.mainDescription}" class="main-description"></div>
-
-                    <ul>
-                      ${p.descriptions.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
-                    </ul>
-
-                    ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt)?.length > 0 ? $h`
-                      <div class="runners">
-                        <strong>Runners</strong>
-                        <ul>
-                          ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt).map( re => $h`
-                            <li>${gameWebService.gamePlayers(vm.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(vm.game, re)}</li>
-                          `)}                            
-                        </ul>
-                      </div>                          
-                    ` : $h` `}
-
-
-                    <div class="info-wrapper">
-                      <span class="label">Balls</span>${gameWebService.getBalls(4, p.play.pitchLog.count.balls)}<br />
-                      <span class="label">Strikes</span>${gameWebService.getBalls(3, p.play.pitchLog.count.strikes)}<br />
-                      <span class="label">Outs</span>${gameWebService.getBalls(3, p.play.count.end.outs)}
-                    </div>
-
-
-  
-                    ${p.play.credits?.length > 0 ? $h`
-                      <div class="defense">
-                        <strong>Defense</strong>
-                        <ul>
-                          ${p.play.credits.map( c => $h`
-                            <li>${gameWebService.gamePlayers(vm.game)[c._id].currentPosition} ${gameWebService.gamePlayers(vm.game)[c._id].fullName} - ${c.type}</li>
-                          `)}                            
-                        </ul>
-                      </div>                          
-                    ` : $h` `}
-
-                  </div>
-
-                </li>
-                `)}
-              </ul>
+                  </li>
+                  `)}
+                </ul>
+              </div>
             </div>
+
+          ` : $h`<div class="game-start-message">Game begins at ${gameWebService.getFormattedDate(vm.game.startDate)}</div>`}
+
           </div>
-
-        ` : $h`<div class="game-start-message">Game begins at ${gameWebService.getFormattedDate(vm.game.startDate)}</div>`}
-
 
       </div>
 
@@ -359,6 +552,7 @@
   import { ContainerService } from "../../../service/container-service.ts"
   import { GameWebService } from "../../service/game-web-service.ts"
   import { StatService } from "../../../service/stat-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
 
   function percentageFormatter(num) {
     return new Intl.NumberFormat('default', {
@@ -371,10 +565,9 @@
   export default (props, { $on, $, $f7, $update }) => {
 
     let gameWebService = ContainerService.getInstance(GameWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
 
     let statService = ContainerService.getInstance(StatService)
-
-
 
     let vm = props.vm
     let linescoreViewModel = vm.linescoreViewModel
@@ -389,6 +582,8 @@
       Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
       Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
       
+      lastPlayText = dayjs(vm.game.lastUpdated).fromNow()
+
       $update()
     })
 

@@ -1674,6 +1674,8 @@ let startWebServer = async () => {
 
             let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate, true)
 
+            
+
             return {
               tls: tls,
               tlsPlain: tlsPlain,

@@ -143,7 +143,6 @@ interface Rating {
 
 interface GamePlayer {
     _id:string
-    playerId:string
     coverImageCid:string
     fullName: string
     firstName:string
@@ -631,7 +630,6 @@ interface TeamInfo {
 interface GamePlayerBio {
 
     _id:string
-    playerId:string
     fullName: string
     // ratingBefore:Rating
 

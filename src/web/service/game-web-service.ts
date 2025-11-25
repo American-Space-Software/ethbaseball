@@ -22,7 +22,7 @@ class GameWebService {
         socket.emit("watch-game", _id)
 
         socket.on("game", (data) => {
-            console.log(data)
+            // console.log(data)
             onGameUpdate(data)
         })
 
@@ -70,7 +70,7 @@ class GameWebService {
     }
 
     async getGameViewModel(game) {
-
+        console.log(game)
         // //Expand season and career stats
         // let allPlayers:GamePlayer[] = [].concat(game.away.players).concat(game.home.players).filter( gp => gp != undefined)
 
@@ -190,7 +190,7 @@ class GameWebService {
                 hitter: hitter,
                 pitcher: pitcher,
     
-                showHitter: true,
+                showHitter: hitter != undefined ,
                 showLinescore: true,
                 showLineup: true,
 
@@ -299,9 +299,9 @@ class GameWebService {
         if (game.isComplete) return
 
         if (game.isTopInning) {
-            return game.away.players.filter((p, index) => index == game.away.currentHitterIndex)[0]
+            return game.away.players.find((p) => p._id == game.away.lineupIds[game.away.currentHitterIndex])
         } else {
-            return game.home.players.filter((p, index) => index == game.home.currentHitterIndex)[0]
+            return game.home.players.find((p) => p._id == game.away.lineupIds[game.home.currentHitterIndex])
         }
 
     }
@@ -393,13 +393,13 @@ class GameWebService {
 
             
             case PlayResult.STRIKEOUT:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> strikes out.`
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> strikes out.`
                 break
             case PlayResult.BB:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> draws a walk.`
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> draws a walk.`
                 break
             case PlayResult.HIT_BY_PITCH:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> gets hit by a pitch.`
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> gets hit by a pitch.`
                 break
             case PlayResult.OUT:
 
@@ -414,28 +414,28 @@ class GameWebService {
                 }
 
                 if (play.officialPlayResult == OfficialPlayResult.FIELDERS_CHOICE) {
-                    mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), false)} to ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer.playerId}">${fielderPlayer.fullName}</a>. The throw gets the lead runner at ${fcRunnerRA?.movement?.outBase}. Fielder's choice.`
+                    mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), false)} to ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>. The throw gets the lead runner at ${fcRunnerRA?.movement?.outBase}. Fielder's choice.`
                 } else if (play.officialPlayResult == OfficialPlayResult.GROUNDED_INTO_DP) {
-                    mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer.playerId}">${fielderPlayer.fullName}</a>. Fielder throws to ${fcRunnerRA.movement.outBase} for the first out and relays to first for the double play.`
+                    mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>. Fielder throws to ${fcRunnerRA.movement.outBase} for the first out and relays to first for the double play.`
                 } else {
-                    mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to the ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer.playerId}">${fielderPlayer.fullName}</a>.`
+                    mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to the ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`
                 }
 
                 break
             case PlayResult.SINGLE:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} single to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
-                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer.playerId}">${fielderPlayer.fullName}</a>.`)
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} single to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
+                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`)
                 break
             case PlayResult.DOUBLE:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} double to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
-                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer.playerId}">${fielderPlayer.fullName}</a>.`)
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} double to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
+                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`)
                 break
             case PlayResult.TRIPLE:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} triple to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
-                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer.playerId}">${fielderPlayer.fullName}</a>.`)
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} triple to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
+                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`)
                 break
             case PlayResult.HR:
-                mainDescription = `<a href="/p/${hitter.playerId}">${hitter.fullName}</a> hits a home run.`
+                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits a home run.`
                 break
         }
 

@@ -282,18 +282,20 @@ class LadderService {
         let awayTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
 
         let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p.playerId), options )
-        let plss = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
+        let plssIds = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
+
+        let plss = await this.playerLeagueSeasonService.getByIds(plssIds, options)
 
         this.gameService.finishGame(game, players, plss)
 
         for (let teamInfo of [{ team: home, tls: homeTLS}, { team: away, tls: awayTLS}]) {
 
-            let isHome = game.home._id == teamInfo.team._id
+            // let isHome = game.home._id == teamInfo.team._id
 
-            let gameFinances = isHome ? game.home.finances : game.away.finances
+            // let gameFinances = isHome ? game.home.finances : game.away.finances
 
             //Update finances for team.
-            this.financeService.updateFinanceSeason(teamInfo.tls.financeSeason, gameFinances)
+            // this.financeService.updateFinanceSeason(teamInfo.tls.financeSeason, gameFinances)
 
             let counts = await this.gameService.getGameCountsByTeamSeason(teamInfo.team, season, game.gameDate, options)
 

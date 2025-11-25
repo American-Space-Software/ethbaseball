@@ -33,34 +33,35 @@
 
           <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
               <ul>
-                  <li><a class="link" href="/t/index/${vm.team._id}">✏️ Manage Team</a></li>
-                  <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
-                  <li><a class="link" href="/t/index/${vm.team._id}">🏆 Play</a></li>
+                  <li><a class="link" href="/t/index/${vm.team._id}">✏️ Set Lineup</a></li>
+
+                  ${!inProgressGame ? $h`
+                    <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
+                    <li><a class="link" href="/t/index/${vm.team._id}">🏆 Play</a></li>
+                  ` : $h` `}
+
               </ul>
           </div>
 
 
-          ${vm.games?.length > 0 ? $h`
+          ${inProgressGame ? $h`
+              <div class="block-title block-title-small">In Progress</div>
+              <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
+                  <ul style="padding: 15px;">
+                    <${InProgress} game=${inProgressGame} />
+                  </ul>
+              </div>
+          ` : $h` `}
 
-              <div class="block-title block-title-small">Today's Games</div>
+
+          ${completedGames?.length > 0 ? $h`
+
+              <div class="block-title block-title-small">Recent Games</div>
               <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
                   <ul style="padding: 15px;">
       
-                      ${vm.games.map( game => $h`
-                  
-                          ${!game.isStarted ? $h`
-                              <${Scheduled} game=${game} /> 
-                          ` : $h` `}
-
-                          ${game.isStarted && !game.isFinished ? $h`
-                              <${InProgress} game=${game} />
-                          ` : $h` `}
-
-                          ${game.isStarted && game.isFinished ? $h`
-                              <${Result} game=${game} />
-                          ` : $h` `}
-
-                      
+                      ${completedGames.map( game => $h`
+                          <${Result} game=${game} />                      
                       `)}
       
                   </ul>
@@ -134,6 +135,9 @@
     let vm = props.vm
     let contractBalance = props.contractBalance
     let discord = props.discord 
+    
+    let completedGames = props.completedGames
+    let inProgressGame = props.inProgressGame
 
 
     const playBotClick = async (e) => {
@@ -163,24 +167,6 @@
     }
 
     $on('pageBeforeIn', async (e) => {
-
-      let swiper = $f7.swiper.create('.swiper', {
-        slidesPerView: 2,
-        breakpoints: {
-          1024: {
-            slidesPerView: 6
-          }
-        },
-        pagination: {
-          el: ".swiper-pagination",
-          type: "progressbar",
-        },
-        navigation: {
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
-        }
-      })
-
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {

@@ -18,10 +18,7 @@ import { LoginWebService } from '../service/login-web-service.js';
 class HomeController {
 
     constructor(
-        @inject("getFees") private fees:Function,
         @inject("discord") private discord:string,
-        @inject("env") private env,
-        @inject("eventTarget") private eventTarget,
         private universeWebService:UniverseWebService,
         private loginWebService:LoginWebService,
         @inject("WalletService") private walletService:WalletService
@@ -52,11 +49,17 @@ class HomeController {
                 contractBalance = await this.universeWebService.getContractBalance()
             }
 
+            let completedGames = vm.games?.filter( g => g.isComplete)
+            let inProgressGame = vm.games?.find( g => !g.isComplete)
+
+
             return {
                 contractBalance: contractBalance,
                 authInfo: authInfo,
                 vm: vm,
-                discord: this.discord
+                discord: this.discord,
+                inProgressGame: inProgressGame,
+                completedGames: completedGames
             }
 
         }, component)

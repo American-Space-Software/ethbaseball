@@ -446,7 +446,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
                 COUNT(*) games,
                 ${SUM_QUERY_FIELDS}
             FROM game_hit_result ghr
-                INNER JOIN 'game' g on ghr.gameId = g._id
+                INNER JOIN game g on ghr.gameId = g._id
             WHERE g.gameDate = :gameDate AND ghr.playerId
             ORDER BY g.lastUpdated desc
             

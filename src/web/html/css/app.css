@@ -218,9 +218,8 @@ h1 {
   text-align: center;
 }
 
-.stat-table .image  {
+.stat-table .image {
   width: 25px;
-  border: 1px solid #cccccc;
   vertical-align: middle;
   border-radius: 50%;
   object-fit: cover;
@@ -322,7 +321,6 @@ h1 {
   position: sticky;
   left: 0;
   z-index: 200;
-  background: var(--f7-card-bg-color);
 }
 
 
@@ -392,14 +390,32 @@ h1 {
 
 
 
-.stat-table .at-bat > td, .stat-table .pitching > td {
+.data-table .at-bat > td, .stat-table .pitching > td {
   background: #f1f1f1;
   font-weight: bold;
 }
 
-.stat-table .at-bat-next > td {
+.data-table .at-bat-next > td {
   background: #f1f1f1;
 }
+
+
+.dark .data-table .at-bat > td, .stat-table .pitching > td {
+  background: #585858;
+}
+
+.dark .at-bat-next > td {
+  background: #585858;
+}
+
+.lineup .at-bat {
+  background: #f1f1f1;
+}
+
+.dark .lineup .at-bat {
+  background: #585858;
+}
+
 
 .stat-table .queue {
   font-size: 12px;
@@ -778,13 +794,14 @@ h1 {
 }
 
 .linescore {
-  width: 350px;
-  max-width: 100%;
-  border: 1px solid #cccccc;
-  background: #f1f1f1;
   margin: 0px auto 0px auto;
-  font-size: 12px;
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  background: inherit;
+  font-size: 14px;
 }
+
 
 
 .linescore th {
@@ -803,46 +820,16 @@ h1 {
   font-weight: bold;
 }
 
-
-
-
-.wrap-up .linescore {
-  width: 100%;
-  max-width: 100%;
-  border: none;
-  background: inherit;
-  font-size: 19px;
-}
-
-
-
-.wrap-up .linescore th {
-  font-weight: bold;
-  text-align: center;
-  background: #cccccc;
-}
-
-.dark .wrap-up .linescore th {
+.dark .linescore th {
   background: black;
 }
 
-
-
-
-
-.wrap-up .linescore td {
-  padding: 2px;
-}
-
-.wrap-up .linescore .abbrev {
+.linescore .abbrev {
   vertical-align: middle;
 }
 
-.wrap-up .linescore .current {
-  font-weight: bold;
-}
  
-.wrap-up .linescore .profilePic {
+.linescore .profilePic {
   height: 25px;
   width: 25px;
   vertical-align: middle;
@@ -855,27 +842,50 @@ h1 {
 
 
 .game-state {
-  width: 1100px;
+  width: 100%;
   max-width: 100%;
   background: #00a831;
   border: 1px solid #cccccc;
   display: flex;
   margin: 10px auto 0px auto;
+  flex-wrap: wrap;
 }
 
+.game-state .game-banner {
+  flex: 1;
+  width: 1250px;
+}
+
+
+.game-state .left .content, .game-state .right .content {
+  max-width: 300px;
+  font-size: .75em;
+}
+
+.game-state .left .content {
+  float: right;
+}
+
+
+.game-state .left {
+  flex: 1;
+  min-width: 300px;
+}
 
 .game-state .middle {
   flex: 0 0 650px;
 }
-
 .game-state .right {
-  flex: 0 0 450px;
-  max-width: 450px;
-  background: #dddddd;
+  flex: 1;
+  min-width: 300px;
+}
+
+.game-state .card {
+  font-size: .75em;
 }
 
 .dark .game-state .right {
-  background: black;
+  /* background: black; */
 }
 
 
@@ -1190,7 +1200,7 @@ h1 {
   padding: 15px;
 }
 
-.linescore-wrapper  {
+/* .linescore-wrapper  {
   display: flex;
   width: 100%;
 }
@@ -1202,7 +1212,7 @@ h1 {
 .linescore-wrapper .score .linescore {
   flex: 1;
 }
-
+ */
 
 
 
@@ -1292,15 +1302,11 @@ h1 {
 
 
 
-.game-state .lineup-container {
-  height: 100%;
-  width: 100%;
-}
 
 .game-state .lineup {
   font-size: 11px;
   width: 100%;
-  background: #f1f1f1;
+  background: var(--f7-card-bg-color);
   display: block;
   border: none;
 }
@@ -2370,9 +2376,15 @@ td.action, th.action {
 }
 
 .game-banner .away {
-    flex: 0 0 50%;
+    flex: 1;
     display: flex;
     padding: 5px;
+}
+
+.game-banner .linescore-wrapper {
+  flex: 0 0 475px;
+  max-width: 475px;
+  overflow: hidden;
 }
 
 
@@ -2414,8 +2426,8 @@ td.action, th.action {
 }
 
 .game-banner .profilePic {
-  height: 100px;
-  width: 100px;
+  height: 25px;
+  width: 25px;
 }
 
 
@@ -2435,10 +2447,7 @@ td.action, th.action {
 
 
 @media only screen and (max-width: 1024px) {
-  .game-banner .profilePic {
-    height: 50px;
-    width: 50px;
-  }
+
 
   .game-banner .runs {
       flex: 1;

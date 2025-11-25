@@ -943,7 +943,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
                 COUNT(*) games,
                 ${SUM_QUERY_FIELDS}
             FROM game_hit_result gpr
-                INNER JOIN 'game' g on gpr.gameId = g._id
+                INNER JOIN game g on gpr.gameId = g._id
             WHERE g.gameDate = :gameDate AND gpr.playerId
             ORDER BY g.lastUpdated desc
             

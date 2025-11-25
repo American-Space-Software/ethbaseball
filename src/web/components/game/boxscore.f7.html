@@ -23,10 +23,10 @@
                     </tr>                
                 </thead>
                 <tbody>
-                    ${batters.map( (p, index) => $h`
-                    <tr class="${vm.teamInfo.currentHitterIndex == index && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=='AWAY' || !vm.isTopInning && vm.homeaway=='HOME' ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
-                        <td class="image"><img src="/player/image/${p.playerId}" width="25" height="25" /></td>
-                        <td class="name"> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p.playerId}`)}">${p.fullName}</a></td>
+                    ${batters.map( (p) => $h`
+                    <tr class="${vm.teamInfo.lineupIds[vm.teamInfo.currentHitterIndex] == p._id && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=='AWAY' || !vm.isTopInning && vm.homeaway=='HOME' ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
+                        <td class="image"><img src="/player/image/${p._id}" width="25" height="25" /></td>
+                        <td class="name"> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a></td>
                         <td class="pos">${p.currentPosition}</td>
                         <td class="numeric-cell">${p.hitResult.atBats}</td>
                         <td class="numeric-cell">${p.hitResult.runs}</td>
