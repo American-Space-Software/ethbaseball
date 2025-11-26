@@ -793,68 +793,17 @@ h1 {
 
 }
 
-.linescore {
-  margin: 0px auto 0px auto;
-  width: 100%;
-  max-width: 100%;
-  border: none;
-  background: inherit;
-  font-size: 14px;
-}
-
-
-
-.linescore th {
-  font-weight: bold;
-  text-align: center;
-  background: #cccccc;
-}
-
-
-
-.linescore td {
-  padding: 2px;
-}
-
-.linescore .current {
-  font-weight: bold;
-}
-
-.dark .linescore th {
-  background: black;
-}
-
-.linescore .abbrev {
-  vertical-align: middle;
-}
-
- 
-.linescore .profilePic {
-  height: 25px;
-  width: 25px;
-  vertical-align: middle;
-}
-
-
-
-
-
-
 
 .game-state {
   width: 100%;
   max-width: 100%;
   background: #00a831;
-  border: 1px solid #cccccc;
   display: flex;
   margin: 10px auto 0px auto;
   flex-wrap: wrap;
+  /* height: calc(100vh - 100px); */
 }
 
-.game-state .game-banner {
-  flex: 1;
-  width: 1250px;
-}
 
 
 .game-state .left .content, .game-state .right .content {
@@ -866,6 +815,20 @@ h1 {
   float: right;
 }
 
+.game-state .left .content .rating-table {
+    margin-top: 0px;
+    font-size: .85em;
+    display: flex;
+}
+
+.game-state .left .content .rating-table .left {
+    min-width: 100%;
+    padding: 0px;
+}
+
+.game-state .left .content .skill-wrapper {
+  min-width: 100%;
+}
 
 .game-state .left {
   flex: 1;
@@ -883,12 +846,6 @@ h1 {
 .game-state .card {
   font-size: .75em;
 }
-
-.dark .game-state .right {
-  /* background: black; */
-}
-
-
 
 .game-state .game-info {
   position: relative;
@@ -1080,9 +1037,6 @@ h1 {
     display: none;
   }
 
-
-
-
   .game-state .game-info .defender, .game-state .game-info .runner {
     font-size: .6em;
   }
@@ -1110,17 +1064,14 @@ h1 {
     z-index: 1000;
   }
   
-
   .game-state .game-info .defender.p {
     top:48.5%; 
   }
-
 
   .game-state .game-info .runner.firstBase,.game-state .game-info .runner.thirdBase {
     top:59%; 
   }
   
-
   .game-state .game-info .defender.firstBase {
     top:40%; 
   }
@@ -1140,6 +1091,47 @@ h1 {
 }
 
 
+
+.linescore {
+  margin: 0px auto 0px auto;
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  background: inherit;
+  font-size: 14px;
+  height: 85px;
+}
+
+
+.linescore th {
+  font-weight: bold;
+  text-align: center;
+  background: #cccccc;
+}
+
+
+/* .linescore td {
+  padding: 2px;
+} */
+
+.linescore .current {
+  font-weight: bold;
+}
+
+.dark .linescore th {
+  background: black;
+}
+
+.linescore .abbrev {
+  vertical-align: middle;
+}
+
+ 
+.game-state .linescore .profilePic {
+  height: 25px;
+  width: 25px;
+  vertical-align: middle;
+}
 
 
 .score {
@@ -1198,6 +1190,10 @@ h1 {
 .game-state .update-wrapper {
   font-size: .75em;
   padding: 15px;
+}
+
+.game-state .linescore-wrapper {
+  background: var(--f7-card-bg-color);
 }
 
 /* .linescore-wrapper  {
@@ -1341,12 +1337,24 @@ h1 {
 }
 
 
-.game-state .play {
+/* .game-state .play {
   font-size: .7em;
+} */
+
+.game-state .matchup-wrapper .player {
+  width: 100%;
+  height: 45px;
+  font-size: 1.1em;
+  font-weight: bold;
 }
 
-
-
+.game-state .matchup-wrapper .player img {
+  float: left;
+  margin-right: 3px;
+  width: 35px;
+  height: 35px;
+  font-size: 1.2em;
+}
 
 
 
@@ -1446,10 +1454,7 @@ h1 {
   margin-top: 15px;
 }
 
-.recap {
-  border-bottom: 1px solid #cccccc;
-  max-width: 500px;
-}
+
 
 
 @media only screen and (max-width: 1024px) {
@@ -1467,13 +1472,6 @@ h1 {
   display: inline-block;
   vertical-align: middle;
 }
-
-.recap .game-state {
-  width: 500px;
-  margin: 10px 0px 0px 0px;
-}
-
-
 
 .recap .info-wrapper {
   color: #000000;
@@ -2370,15 +2368,18 @@ td.action, th.action {
 
 
 .game-banner {
-  width: 100%; 
+  flex: 1;
+  width: 100%;
   min-width: 100%;
   display: flex;
+  background: var(--f7-card-bg-color);
+  height: 85px;
 }
 
 .game-banner .away {
-    flex: 1;
-    display: flex;
-    padding: 5px;
+  flex: 1;
+  display: flex;
+  padding: 5px;
 }
 
 .game-banner .linescore-wrapper {
@@ -2389,15 +2390,15 @@ td.action, th.action {
 
 
 .game-banner .home {
-    flex: 1;
-    display: flex;
-    padding: 5px;
+  flex: 1;
+  display: flex;
+  padding: 5px;
 }
 
 .game-banner .name {
-    flex: 0 0 70%;
-    line-height: .85em;
-    font-size: 1.5em;
+  flex: 0 0 70%;
+  line-height: .85em;
+  font-size: 1.5em;
 }
 
 .game-banner .record {
@@ -2406,9 +2407,9 @@ td.action, th.action {
 }
 
 .game-banner .runs {
-    flex: 1;
-    font-size: 3em;
-    text-align: center;
+  flex: 1;
+  font-size: 2em;
+  text-align: center;
 }
 
 .game-banner .home .name {
@@ -2426,8 +2427,8 @@ td.action, th.action {
 }
 
 .game-banner .profilePic {
-  height: 25px;
-  width: 25px;
+  height: 50px;
+  width: 50px;
 }
 
 
@@ -2447,6 +2448,15 @@ td.action, th.action {
 
 
 @media only screen and (max-width: 1024px) {
+
+  .game-banner {
+    height: 65px;
+  }
+
+  .game-banner .profilePic {
+    height: 50px;
+    width: 50px;
+  }
 
 
   .game-banner .runs {

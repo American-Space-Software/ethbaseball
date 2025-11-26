@@ -70,7 +70,7 @@ class GameWebService {
     }
 
     async getGameViewModel(game) {
-        console.log(game)
+
         // //Expand season and career stats
         // let allPlayers:GamePlayer[] = [].concat(game.away.players).concat(game.home.players).filter( gp => gp != undefined)
 
@@ -301,7 +301,7 @@ class GameWebService {
         if (game.isTopInning) {
             return game.away.players.find((p) => p._id == game.away.lineupIds[game.away.currentHitterIndex])
         } else {
-            return game.home.players.find((p) => p._id == game.away.lineupIds[game.home.currentHitterIndex])
+            return game.home.players.find((p) => p._id == game.home.lineupIds[game.home.currentHitterIndex])
         }
 
     }

@@ -14,98 +14,91 @@
                 <${GameState} vm=${gameViewModel} />
               ` : $h` 
                 
-              <div class="game-banner">
+                <div class="game-banner">
 
-                  <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
+                    <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
 
-                    <div class="name">
+                      <div class="name">
 
-                      <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.away._id}`)}">
-                        <img src="/image/thumbnail/100/${gameViewModel?.game.away.logoId}" class="profilePic" />
-                        <span class="record">${gameViewModel?.game.away.overallRecord.after?.wins || gameViewModel?.game.away.overallRecord.before?.wins}-${gameViewModel?.game.away.overallRecord.after?.losses || gameViewModel?.game.away.overallRecord.before?.losses}<br /></span>
-                        
-                        ${gameViewModel?.game.away.cityName ? $h`
-                          <span class="small">${gameViewModel?.game.away.cityName}</span><br />
-                        ` : $h` `}
-                        
-                        ${gameViewModel?.game.away.name} 
-                      </a>
+                        <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.away._id}`)}">
+                          <img src="/image/thumbnail/100/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                          <span class="record">${gameViewModel?.game.away.overallRecord.after?.wins || gameViewModel?.game.away.overallRecord.before?.wins}-${gameViewModel?.game.away.overallRecord.after?.losses || gameViewModel?.game.away.overallRecord.before?.losses}<br /></span>
 
+
+                          ${teamWebService.getTeamName(gameViewModel?.game.away)}
+
+                        </a>
+
+                      </div>
+                      <div class="runs">${gameViewModel?.game.score.away}</div>
                     </div>
-                    <div class="runs">${gameViewModel?.game.score.away}</div>
-                  </div>
 
-                  <div class="linescore-wrapper">
-                    <table class="linescore">
-                      <thead>
-                        <tr>
-                          <th></th>
-                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                            <th>${num}</th>                          
-                          `)}
-                  
-                          <th>R</th>
-                          <th>H</th>
-                          <th>E</th>        
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-
-                          <td class="abbrev">
-                            <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
-                          </td>
-                  
-                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                            <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
-                          `)}
-                  
-                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
-                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
-                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
-                        </tr>
-                        <tr>
-                      
-                          <td class="abbrev">
-                            <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
-                          </td>
-                      
-                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                            <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
-                          `)}
-                  
-                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
-                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
-                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
-                        </tr>
-                      </tbody>	
-                    </table>
-                  </div>
-
-                  <div class="home ${gameViewModel?.game.isComplete && gameViewModel?.game.score.home > gameViewModel?.game.score.away ? $h`winner` : $h` `}">
+                    <div class="linescore-wrapper">
+                      <table class="linescore">
+                        <thead>
+                          <tr>
+                            <th></th>
+                            ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                              <th>${num}</th>                          
+                            `)}
                     
-                    <div class="runs">${gameViewModel?.game.score.home}</div>
+                            <th>R</th>
+                            <th>H</th>
+                            <th>E</th>        
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+
+                            <td class="abbrev">
+                              <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                            </td>
                     
-                    <div class="name">
-
-                      <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.home._id}`)}">
-                        <img src="/image/thumbnail/100/${gameViewModel?.game.home.logoId}" class="profilePic" />
-                        <span class="record">${gameViewModel?.game.home.overallRecord.after?.wins || gameViewModel?.game.home.overallRecord.before?.wins}-${gameViewModel?.game.home.overallRecord.after?.losses || gameViewModel?.game.home.overallRecord.before?.losses}<br /></span>
+                            ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                              <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
+                            `)}
+                    
+                            <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
+                            <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
+                            <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
+                          </tr>
+                          <tr>
                         
+                            <td class="abbrev">
+                              <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
+                            </td>
                         
-                        ${gameViewModel?.game.home.cityName ? $h`
-                          <span class="small">${gameViewModel?.game.home.cityName}</span><br />
-                        ` : $h` `}
-                        
-                        ${gameViewModel?.game.home.name} 
-                      </a>
-
+                            ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                              <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
+                            `)}
+                    
+                            <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
+                            <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
+                            <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
+                          </tr>
+                        </tbody>	
+                      </table>
                     </div>
-                    
-                  </div>
 
-              </div>
-              
+                    <div class="home ${gameViewModel?.game.isComplete && gameViewModel?.game.score.home > gameViewModel?.game.score.away ? $h`winner` : $h` `}">
+                      
+                      <div class="runs">${gameViewModel?.game.score.home}</div>
+                      
+                      <div class="name">
+
+                        <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.home._id}`)}">
+                          <img src="/image/thumbnail/100/${gameViewModel?.game.home.logoId}" class="profilePic" />
+                          <span class="record">${gameViewModel?.game.home.overallRecord.after?.wins || gameViewModel?.game.home.overallRecord.before?.wins}-${gameViewModel?.game.home.overallRecord.after?.losses || gameViewModel?.game.home.overallRecord.before?.losses}<br /></span>
+                          
+                          
+                          ${teamWebService.getTeamName(gameViewModel?.game.home)}
+                        </a>
+
+                      </div>
+                      
+                    </div>
+
+                </div>
               
               `} 
       
@@ -121,94 +114,106 @@
 
               </div> 
       
-              <div class="block-title block-title-large small-only">Play by Play</div>
-    
-              ${gameViewModel.playByPlay?.length > 0 ? $h`
-                <div class="list cards-list small-only">
-                  <ul>
-                      ${gameViewModel.playByPlay.map( p => $h`
-                        <li class="card recap card-header-divider card-outline">
-      
-                          <div class="card-header">
-                            ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
+              <div class="popup play-by-play-popup">
+                <div class="view">
+                  <div class="page">
+                    <div class="navbar">
+                      <div class="navbar-bg"></div>
+                      <div class="navbar-inner">
+                        <div class="title">
+                          Play by Play
+                        </div>
+                        <div class="right">
+                          <!-- Link to close popup -->
+                          <a class="link popup-close">Close</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="page-content">
+
+                      <div class="list cards-list">
+                        <ul>
+                            ${gameViewModel.playByPlay?.map( p => $h`
+                              <li class="card recap card-header-divider card-outline">
+            
+                                <div class="card-header">
+                                  ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
+                                
+                                  <div class="diamond-wrapper">
+                                    <div class="diamond">
+                                      <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
+                                      <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
+                                      <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
+                                    </div>
+                                  </div>
+                                
+                                </div>
+            
+                                <div class="card-content card-content-padding play-description">
+                            
+                                  <div class="chip result">
+                                    <div class="chip-label">${p.play.result}</div>
+                                  </div>
+                            
+                                  ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.length > 0 ? $h`
+                                    <div class="runners">
+                                      <strong>Stolen Bases</strong>
+                                      <ul>
+                                        ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.map( re => $h`
+                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(gameViewModel.game, re)}</li>
+                                        `)}                            
+                                      </ul>
+                                    </div>                          
+                                  ` : $h` `}
+          
+          
+          
+                                  <div innerHTML="${p.descriptions.mainDescription}"></div>
+                            
+                                  <ul>
+                                    ${p.descriptions.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
+                                  </ul>
+          
+                                  ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt)?.length > 0 ? $h`
+                                    <div class="runners">
+                                      <strong>Runners</strong>
+                                      <ul>
+                                        ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt).map( re => $h`
+                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(gameViewModel.game, re)}</li>
+                                        `)}                            
+                                      </ul>
+                                    </div>                          
+                                  ` : $h` `}
+          
                           
-                            <div class="diamond-wrapper">
-                              <div class="diamond">
-                                <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
-                                <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
-                                <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
-                              </div>
-                            </div>
-                          
-                          </div>
-      
-                          <div class="card-content card-content-padding play-description">
-                      
-                            <div class="chip result">
-                              <div class="chip-label">${p.play.result}</div>
-                            </div>
-                      
-                            ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.length > 0 ? $h`
-                              <div class="runners">
-                                <strong>Stolen Bases</strong>
-                                <ul>
-                                  ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.map( re => $h`
-                                    <li>${gameWebService.gamePlayers(gameViewModel.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(gameViewModel.game, re)}</li>
-                                  `)}                            
-                                </ul>
-                              </div>                          
-                            ` : $h` `}
-    
-    
-    
-                            <div innerHTML="${p.descriptions.mainDescription}"></div>
-                      
-                            <ul>
-                              ${p.descriptions.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
-                            </ul>
-    
-                            ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt)?.length > 0 ? $h`
-                              <div class="runners">
-                                <strong>Runners</strong>
-                                <ul>
-                                  ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt).map( re => $h`
-                                    <li>${gameWebService.gamePlayers(gameViewModel.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(gameViewModel.game, re)}</li>
-                                  `)}                            
-                                </ul>
-                              </div>                          
-                            ` : $h` `}
-    
-                    
-                            <div class="info-wrapper">
-                              <span class="label">Balls</span>${getBalls(4, p.play.pitchLog.count.balls)}<br />
-                              <span class="label">Strikes</span>${getBalls(3, p.play.pitchLog.count.strikes)}<br />
-                              <span class="label">Outs</span>${getBalls(3, p.play.count.end.outs)}
-                            </div>
-      
-                            ${p.play.credits?.length > 0 ? $h`
-                              <div class="defense">
-                                <strong>Defense</strong>
-                                <ul>
-                                  ${p.play.credits.map( c => $h`
-                                    <li>${gameWebService.gamePlayers(gameViewModel.game)[c._id].currentPosition} ${gameWebService.gamePlayers(gameViewModel.game)[c._id].fullName} - ${c.type}</li>
-                                  `)}                            
-                                </ul>
-                              </div>                          
-                            ` : $h` `}
-    
-                          </div>
-                          
-                        </li>
-                      `)}
-                    </ul>
+                                  <div class="info-wrapper">
+                                    <span class="label">Balls</span>${getBalls(4, p.play.pitchLog.count.balls)}<br />
+                                    <span class="label">Strikes</span>${getBalls(3, p.play.pitchLog.count.strikes)}<br />
+                                    <span class="label">Outs</span>${getBalls(3, p.play.count.end.outs)}
+                                  </div>
+            
+                                  ${p.play.credits?.length > 0 ? $h`
+                                    <div class="defense">
+                                      <strong>Defense</strong>
+                                      <ul>
+                                        ${p.play.credits.map( c => $h`
+                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[c._id].currentPosition} ${gameWebService.gamePlayers(gameViewModel.game)[c._id].fullName} - ${c.type}</li>
+                                        `)}                            
+                                      </ul>
+                                    </div>                          
+                                  ` : $h` `}
+          
+                                </div>
+                                
+                              </li>
+                            `)}
+                          </ul>
+                      </div>
+
+                    </div>
+                  </div>
                 </div>
-              ` : $h`
-      
-                <div class="block small-only">
-                  No plays.
-                </div>
-      
-              `}
+              </div>
     
               <div class="block">
                 <br />
@@ -268,6 +273,11 @@
               </div>
 
             `}
+
+
+
+
+
 
           ` : $h`
             <div class="block">
