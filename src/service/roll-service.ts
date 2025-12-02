@@ -5,7 +5,7 @@ import {  RollChartService } from "./roll-chart-service.js"
 import { SeedService } from "./data/seed-service.js"
 import { RollChart } from "../dto/roll-chart.js"
 import { StatService } from "./stat-service.js"
-import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer, SimMatchupCommand, Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score } from "./enums.js"
+import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand } from "./enums.js"
 
 const APPLY_PLAYER_CHANGES = true
 
@@ -36,20 +36,174 @@ class RollService {
         
     }
 
-    simMatchup(play:Play, offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, catcher:GamePlayer, halfInningRunnerEvents:RunnerEvent[], leagueAverages: LeagueAverage, rng) {
+    simMatchup(command:SimPitchCommand) {
     
-        let hitterChange:HitterChange   =  play.matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
-        let pitcherChange:PitcherChange =  play.matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
+        let keepGoing = true
+        while (keepGoing) {
+            keepGoing = this.simPitch(command)
+        }
 
-        //Throw pitches.
-        let pitchLog: PitchLog = this.getPitchLog(rng, leagueAverages, pitcherChange, hitterChange, pitcher)
+        this.finishPlay(command)
+        
+    }
+
+    simPitch(command:SimPitchCommand) : boolean {
+
+        //Sort pitcher's pitches by rating
+        command.pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
+
+        let pitches = command.pitcher.pitchRatings.pitches.map(p => p.type)
+        let weights = [50, 25, 15, 5, 5] //later this can be passed in via strategy
+
+        //Choose a pitch type
+        let pitchType: PitchType = this.weightedRandom(command.rng, pitches, weights.slice(0, pitches.length))
+
+        //Get pitcher's info about pitch.
+        let pitchChange: PitchChange = JSON.parse(JSON.stringify(command.pitcherChange.pitchesChange.find(p => p.type == pitchType)))
+
+        //Hitter will try to guess which pitch. 
+        let hitterPitchGuess:PitchRating = command.pitcher.pitchRatings.pitches[this.getRoll(command.rng, 0, pitches.length - 1)]
+        let guessPitch:boolean = hitterPitchGuess.type == pitchType
+
+        if (guessPitch) {
+
+            //If hitter guesses pitch
+            if (pitchChange.pitchChange >= 0) {
+                //If they have a good pitch change then zero it out.
+                pitchChange.pitchChange = 0
+            } else {
+                //If they have a bad pitch change then multiply it.
+                pitchChange.pitchChange *= 1.5
+            }
+        }
+
+
+        //How fast is it going? We can translate this to MPH later. 0-99.
+        let powerQuality = this.getPowerQuality(command.rng, command.pitcherChange.powerChange, pitchChange.pitchChange)
+        
+        //Did the pitcher throw it where they wanted? 0-99
+        let locationQuality = this.getLocationQuality(command.rng, command.pitcherChange.controlChange, pitchChange.pitchChange)
+
+        //How much movement does the pitch have? 0-99
+        let movementQuality = this.getMovementQuality(command.rng, command.pitcherChange.movementChange, pitchChange.pitchChange)
+
+        //Average for overall pitch quality
+        let pitchQuality = this.getPitchQuality(powerQuality, locationQuality, movementQuality)
+        
+        //Is it in the strike zone?
+        let inZone = this.isInZone(command.rng, locationQuality, command.leagueAverages.inZoneRate)
+
+        let pitch: Pitch = {
+            type: pitchType,
+            quality: pitchQuality,
+            locQ: locationQuality,
+            movQ: movementQuality,
+            powQ: powerQuality,
+            swing: false,
+            con: false,
+            result: inZone ? PitchResult.STRIKE : PitchResult.BALL,
+            inZone: inZone,
+            guess: guessPitch,
+            isWP: false,
+            isPB: false
+        }
+
+
+        if (locationQuality <= .025) {
+
+            //Passed ball
+            pitch.isPB = true
+            pitch.inZone = false
+            pitch.result = PitchResult.BALL
+
+        } else if (locationQuality <= .25) {
+
+            //HBP
+            pitch.result = PitchResult.HBP
+            pitch.inZone = false
+            pitch.result = PitchResult.BALL
+
+        } else if (locationQuality <= .50) {
+
+            //Wild pitch
+            pitch.isWP = true
+            pitch.inZone = false
+            pitch.result = PitchResult.BALL
+
+        } else {
+
+            //Does the batter swing?
+            let swingResult = this.getSwingResult(command.rng, command.hitterChange, command.leagueAverages, inZone, pitchQuality, guessPitch)
+
+
+            //Create pitch. 
+            pitch.swing = (swingResult != SwingResult.NO_SWING)
+            pitch.con= (swingResult == SwingResult.FAIR || swingResult == SwingResult.FOUL)
+
+            switch (swingResult) {
+
+                case SwingResult.FAIR:
+                    pitch.result = PitchResult.IN_PLAY
+
+                    break
+
+                case SwingResult.FOUL:
+
+                    pitch.result = PitchResult.FOUL
+                    command.play.pitchLog.count.fouls++
+
+                    if (command.play.pitchLog.count.strikes < 2) {
+                        command.play.pitchLog.count.strikes++
+                    }
+
+                    break
+
+                case SwingResult.STRIKE:
+
+                    pitch.result = PitchResult.STRIKE
+                    command.play.pitchLog.count.strikes++
+
+                    break
+
+                case SwingResult.NO_SWING:
+
+                    if (inZone) {
+                        command.play.pitchLog.count.strikes++
+                    } else {
+                        command.play.pitchLog.count.balls++
+                    }
+
+            }
+
+
+        }
+
+        command.play.pitchLog.pitches.push(pitch)
+
+        command.play.pitchLog.count.pitches = command.play.pitchLog.pitches.length
+
+        //HBP
+        if (pitch.result == PitchResult.HBP) return false
+        
+        //In play?
+        if (pitch.result == PitchResult.IN_PLAY) return false
+
+        //Strikeout or walk?
+        if (command.play.pitchLog.count.balls == 4) return false
+        if (command.play.pitchLog.count.strikes == 3) return false
+
+        return true
+
+    }
+
+    finishPlay(command:SimPitchCommand) {
 
         let defensiveCredits:DefensiveCredit[] = []
 
         //Check if any runners moved during the at-bat
         try {
-            let pitchLogRunnerEvents:RunnerEvent[] = this.generateRunnerEventsFromPitchLog(offense, defense, play.runner.result.end, defensiveCredits, pitcher, catcher, pitchLog, halfInningRunnerEvents, leagueAverages, rng)
-            play.runner.events.push(...this.filterNonEvents(pitchLogRunnerEvents, undefined))
+            let pitchLogRunnerEvents:RunnerEvent[] = this.generateRunnerEventsFromPitchLog(command.offense, command.defense, command.play.runner.result.end, defensiveCredits, command.pitcher, command.catcher, command.play.pitchLog, command.halfInningRunnerEvents, command.leagueAverages, command.rng)
+            command.play.runner.events.push(...this.filterNonEvents(pitchLogRunnerEvents, undefined))
         } catch(ex) {
             //Ignore inning ending events errors.
             if (!(ex instanceof InningEndingEvent)) throw ex
@@ -61,21 +215,21 @@ class RollService {
         let contact:Contact
         let shallowDeep:ShallowDeep 
 
-        if (pitchLog.count.strikes == 3) {
+        if (command.play.pitchLog.count.strikes == 3) {
             playResult = PlayResult.STRIKEOUT
-        } else if (pitchLog.count.balls == 4) {
+        } else if (command.play.pitchLog.count.balls == 4) {
             playResult = PlayResult.BB
-        } else if (pitchLog.pitches.find(p => p.result == PitchResult.HBP)) {
+        } else if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.HBP)) {
             playResult = PlayResult.HIT_BY_PITCH
-        } else if (pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)) {
+        } else if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)) {
 
             //In play
-            let pitch = pitchLog.pitches[pitchLog.pitches.length - 1]
+            let pitch = command.play.pitchLog.pitches[command.play.pitchLog.pitches.length - 1]
 
             //How much better than average?
-            let pitchQualityChange = this.getChange(leagueAverages.pitchQuality, pitch.quality)
+            let pitchQualityChange = this.getChange(command.leagueAverages.pitchQuality, pitch.quality)
 
-            let contactRollChart:RollChart = this.getMatchupContactRollChart(leagueAverages, hitter.hittingRatings.contactProfile, pitcher.pitchRatings.contactProfile)
+            let contactRollChart:RollChart = this.getMatchupContactRollChart(command.leagueAverages, command.hitter.hittingRatings.contactProfile, command.pitcher.pitchRatings.contactProfile)
 
             const pickFielder = (contact:Contact) => {
 
@@ -92,34 +246,34 @@ class RollService {
                 //Who did it get hit towards?
                 fielderPlayer = undefined
 
-                fielder = this.getFielder(rng, leagueAverages, play.matchupHandedness.hits)
+                fielder = this.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
 
                 //If we match on the ignore list get fielders until we don't.
                 while (ignoreList.includes(fielder)) {
-                    fielder = this.getFielder(rng, leagueAverages, play.matchupHandedness.hits)
+                    fielder = this.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
                 }
 
-                fielderPlayer = defense.players.find(p => p.currentPosition == fielder)
+                fielderPlayer = command.defense.players.find(p => p.currentPosition == fielder)
 
             }
 
             let hitQuality:number
 
             //What kind of contact? 
-            contact = contactRollChart.entries.get(this.getRoll(rng, 0, 99)) as Contact
+            contact = contactRollChart.entries.get(this.getRoll(command.rng, 0, 99)) as Contact
 
 
             pickFielder(contact)
 
             //Calculate team defense. We're going to use this overall average to simulate being slightly better or worse at positioning.
-            let teamDefenseChange:number = this.rollChartService.getChange(leagueAverages.hittingRatings.defense, this.getTeamDefense(defense))
-            let fielderDefenseChange:number = this.rollChartService.getChange(leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
+            let teamDefenseChange:number = this.rollChartService.getChange(command.leagueAverages.hittingRatings.defense, this.getTeamDefense(command.defense))
+            let fielderDefenseChange:number = this.rollChartService.getChange(command.leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
 
 
             //Was it high quality contact? 1-1000
-            hitQuality = this.getHitQuality(rng, pitchQualityChange, teamDefenseChange, fielderDefenseChange, contact, pitch.guess)
+            hitQuality = this.getHitQuality(command.rng, pitchQualityChange, teamDefenseChange, fielderDefenseChange, contact, pitch.guess)
 
-            let powerRollChart:RollChart = this.getMatchupPowerRollChart(leagueAverages, hitterChange, pitcherChange)
+            let powerRollChart:RollChart = this.getMatchupPowerRollChart(command.leagueAverages, command.hitterChange, command.pitcherChange)
 
             //O, 1B, 2B, 3B, or HR
             playResult = powerRollChart.entries.get(hitQuality) as PlayResult
@@ -142,7 +296,7 @@ class RollService {
 
 
             if (this.isToOF(fielder)) {
-                shallowDeep = this.getShallowDeep(rng, leagueAverages)
+                shallowDeep = this.getShallowDeep(command.rng, command.leagueAverages)
             }
 
             if (playResult == PlayResult.HR) {
@@ -162,28 +316,22 @@ class RollService {
         }
 
         //Players could have moved. Grab the correct base runners.
-        let runner1B = offense.players.find( p => p._id == play.runner.result.end.first)
-        let runner2B = offense.players.find( p => p._id == play.runner.result.end.second)
-        let runner3B = offense.players.find( p => p._id == play.runner.result.end.third)
+        let runner1B = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
+        let runner2B = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
+        let runner3B = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
 
         //Add in-play runner events
-        this.getRunnerEvents(rng, play.runner.result.end, halfInningRunnerEvents, play.runner.events, defensiveCredits, 
-                             leagueAverages, playResult, contact, shallowDeep, hitter, fielderPlayer, runner1B, runner2B, runner3B, 
-                             offense, defense, pitcher, pitchLog.count.pitches - 1)
+        this.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.runner.events, defensiveCredits, 
+                             command.leagueAverages, playResult, contact, shallowDeep, command.hitter, fielderPlayer, runner1B, runner2B, runner3B, 
+                             command.offense, command.defense, command.pitcher, command.play.pitchLog.count.pitches - 1)
         
-        this.validateRunnerResult(play.runner.result.end)
+        this.validateRunnerResult(command.play.runner.result.end)
 
-        let officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder, play.runner.events)
+        command.play.officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder,command.play.runner.events)
 
-        this.logResults(offense, defense, hitter, pitcher, runner1B?._id, runner2B?._id, runner3B?._id, defensiveCredits, play.runner.events, contact, officialPlayResult, playResult, pitchLog)
-
+        this.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, defensiveCredits, command.play.runner.events, contact, command.play.officialPlayResult, playResult, command.play.pitchLog)
 
     }
-
-    simPitch() {}
-
-    
-
 
     validateRunnerResult(runnerResult:RunnerResult) {
 
@@ -2082,178 +2230,7 @@ class RollService {
 
     }
 
-    public getPitchLog(gameRNG, leagueAverage: LeagueAverage, pitcherChange:PitcherChange, hitterChange:HitterChange, pitcher: GamePlayer): PitchLog {
 
-        //Clone so we don't change outside of here.
-        pitcherChange = JSON.parse(JSON.stringify(pitcherChange))
-
-        let pitchLog: PitchLog = {
-
-            count: {
-                balls: 0,
-                strikes: 0,
-                fouls: 0,
-                pitches: 0
-            },
-
-            pitches: []
-        }
-
-        //Sort pitcher's pitches by rating
-        pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
-
-        //Max of 5 pitches
-        let pitches = pitcher.pitchRatings.pitches.map(p => p.type)
-        let weights = [50, 25, 15, 5, 5] //later this can be passed in via strategy
-
-        let keepGoing = true
-        while (keepGoing) {
-
-            //Choose a pitch type
-            let pitchType: PitchType = this.weightedRandom(gameRNG, pitches, weights.slice(0, pitches.length))
-
-            //Get pitcher's info about pitch.
-            let pitchChange: PitchChange = JSON.parse(JSON.stringify(pitcherChange.pitchesChange.find(p => p.type == pitchType)))
-
-            //Hitter will try to guess which pitch. 
-            let hitterPitchGuess:PitchRating = pitcher.pitchRatings.pitches[this.getRoll(gameRNG, 0, pitches.length - 1)]
-            let guessPitch:boolean = hitterPitchGuess.type == pitchType
-
-            if (guessPitch) {
-
-                //If hitter guesses pitch
-                if (pitchChange.pitchChange >= 0) {
-                    //If they have a good pitch change then zero it out.
-                    pitchChange.pitchChange = 0
-                } else {
-                    //If they have a bad pitch change then multiply it.
-                    pitchChange.pitchChange *= 1.5
-                }
-            }
-
-
-            //How fast is it going? We can translate this to MPH later. 0-99.
-            let powerQuality = this.getPowerQuality(gameRNG, pitcherChange.powerChange, pitchChange.pitchChange)
-            
-            //Did the pitcher throw it where they wanted? 0-99
-            let locationQuality = this.getLocationQuality(gameRNG, pitcherChange.controlChange, pitchChange.pitchChange)
-
-            //How much movement does the pitch have? 0-99
-            let movementQuality = this.getMovementQuality(gameRNG, pitcherChange.movementChange, pitchChange.pitchChange)
-
-            //Average for overall pitch quality
-            let pitchQuality = this.getPitchQuality(powerQuality, locationQuality, movementQuality)
-            
-            //Is it in the strike zone?
-            let inZone = this.isInZone(gameRNG, locationQuality, leagueAverage.inZoneRate)
-
-            let pitch: Pitch = {
-                type: pitchType,
-                quality: pitchQuality,
-                locQ: locationQuality,
-                movQ: movementQuality,
-                powQ: powerQuality,
-                swing: false,
-                con: false,
-                result: inZone ? PitchResult.STRIKE : PitchResult.BALL,
-                inZone: inZone,
-                guess: guessPitch,
-                isWP: false,
-                isPB: false
-            }
-
-
-            if (locationQuality <= .025) {
-
-                //Passed ball
-                pitch.isPB = true
-                pitch.inZone = false
-                pitch.result = PitchResult.BALL
-
-            } else if (locationQuality <= .25) {
-
-                //HBP
-                pitch.result = PitchResult.HBP
-                pitch.inZone = false
-                pitch.result = PitchResult.BALL
-
-            } else if (locationQuality <= .50) {
-
-                //Wild pitch
-                pitch.isWP = true
-                pitch.inZone = false
-                pitch.result = PitchResult.BALL
-
-            } else {
-
-                //Does the batter swing?
-                let swingResult = this.getSwingResult(gameRNG, hitterChange, leagueAverage, inZone, pitchQuality, guessPitch)
-
-
-                //Create pitch. 
-                pitch.swing = (swingResult != SwingResult.NO_SWING)
-                pitch.con= (swingResult == SwingResult.FAIR || swingResult == SwingResult.FOUL)
-
-                switch (swingResult) {
-
-                    case SwingResult.FAIR:
-                        pitch.result = PitchResult.IN_PLAY
-
-                        break
-
-                    case SwingResult.FOUL:
-
-                        pitch.result = PitchResult.FOUL
-                        pitchLog.count.fouls++
-
-                        if (pitchLog.count.strikes < 2) {
-                            pitchLog.count.strikes++
-                        }
-
-                        break
-
-                    case SwingResult.STRIKE:
-
-                        pitch.result = PitchResult.STRIKE
-                        pitchLog.count.strikes++
-
-                        break
-
-                    case SwingResult.NO_SWING:
-
-                        if (inZone) {
-                            pitchLog.count.strikes++
-                        } else {
-                            pitchLog.count.balls++
-                        }
-
-                }
-
-
-            }
-
-            pitchLog.pitches.push(pitch)
-
-            //HBP
-            if (pitch.result == PitchResult.HBP) keepGoing = false
-            
-            //In play?
-            if (pitch.result == PitchResult.IN_PLAY) keepGoing = false
-
-            //Strikeout or walk?
-            if (pitchLog.count.balls == 4) keepGoing = false
-            if (pitchLog.count.strikes == 3) keepGoing = false
-
-        }
-
-        pitchLog.count.pitches = pitchLog.pitches.length
-
-        // console.log(`Count: ${pitchLog.count.pitches}`)
-
-
-        return pitchLog
-
-    }
 
     isInZone(gameRNG, locationQuality:number, inZoneRate:number) {
 

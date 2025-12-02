@@ -4,7 +4,7 @@ import fs from "fs"
 
 import { Game, GameTeam, GamePlayer as GP } from "../../dto/game.js"
 import {  Player } from "../../dto/player.js"
-import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, SimMatchupCommand, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog } from "../enums.js"
+import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand } from "../enums.js"
 
 import { RollService,  } from "../roll-service.js"
 import { GameRepository } from "../../repository/game-repository.js"
@@ -649,6 +649,9 @@ class GameService {
 
         let matchupHandedness: MatchupHandedness = this.getMatchupHandedness(hitter, pitcher)
 
+        let hitterChange:HitterChange = matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
+        let pitcherChange:PitcherChange = matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
+
         let play:Play = this.createPlay(game.playIndex, 
                                    hitter, 
                                    pitcher, 
@@ -666,8 +669,30 @@ class GameService {
         //Add play to half inning
         halfInning.plays.push(play)
 
+        let command:SimPitchCommand = {
+            play:play,
+
+            offense:offense,
+            defense:defense,
+
+            hitter:hitter,
+            pitcher:pitcher,
+
+            hitterChange:hitterChange,
+            pitcherChange:pitcherChange,
+
+            catcher:catcher,
+
+            halfInningRunnerEvents:halfInningRunnerEvents,
+            leagueAverages: game.leagueAverages,
+
+            rng:rng
+
+        }
+
+
         //Do matchup
-        this.rollService.simMatchup(play, offense, defense, hitter, pitcher, catcher, halfInningRunnerEvents, game.leagueAverages, rng)
+        this.rollService.simMatchup(command)
 
 
 

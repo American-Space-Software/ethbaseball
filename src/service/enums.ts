@@ -747,32 +747,25 @@ interface WPAReward {
     hitting:boolean
 }
 
-interface SimMatchupCommand {
+interface SimPitchCommand {
 
-    offense: TeamInfo
-    defense: TeamInfo
+    play:Play
 
-    outs: number
+    offense:TeamInfo
+    defense:TeamInfo
 
-    //Runners
-    runner1BId?: string
-    runner2BId?: string
-    runner3BId?: string
+    hitter:GamePlayer
+    pitcher:GamePlayer
 
-    hitterId: string
-    pitcherId: string
+    hitterChange:HitterChange
+    pitcherChange:PitcherChange
 
+    catcher:GamePlayer
+
+    halfInningRunnerEvents:RunnerEvent[]
     leagueAverages: LeagueAverage
 
-    rng: any
-
-    playIndex: number,
-
-    inningNum: number,
-    inningTop: boolean,
-
-    score?:Score
-    halfInningRunnerEvents:RunnerEvent[]
+    rng:any
 
 }
 
@@ -1317,7 +1310,7 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
 
 
 export  { DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
-    LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimMatchupCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
+    LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimPitchCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
     Handedness, Rating, PitchRatings, HittingRatings, ContactProfile, GamePlayer, HitterStatLine, PitcherStatLine, PitchLog, PitchResult, RunnerEvent, Pitch, PitchCount,
