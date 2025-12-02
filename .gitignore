@@ -90,7 +90,10 @@ truffle/keys/*
 dist/*
 yarn.lock
 package-lock.json
+
 data/
+!/src/service/data/
+
 test/public
 public/*
 
