@@ -149,9 +149,10 @@ async function getContainer(env, footerRoutes) {
         return new Framework7({
             // init: false,
             el: '#app', // App root element
-            id: 'ebl', // App bundle ID
+            // id: 'ebl', // App bundle ID
             name: 'Ethereum Baseball League', // App name
             theme: 'ios', // Automatic theme detection
+            //@ts-ignore
             component: AppComponent,
             iosTranslucentBars: false,
             smartSelect: {
@@ -272,6 +273,7 @@ async function getContainer(env, footerRoutes) {
 
     container.bind(LineupService).toSelf().inSingletonScope()
     container.bind(OffChainEventWebService).toSelf().inSingletonScope()
+
 
     return container
 }

@@ -1,43 +1,18 @@
 <template es>
 
-  <div class="page" data-name="home">
+  <div class="page page-with-subnavbar" data-name="home">
 
 
     <div class="page-content">
 
         <div class="fixed-width-content center">
 
-          <div class="block block-strong block-outline main-card">
-
-            <div class="left">
-
-              <div class="logo-wrapper">
-                <img src="${logo}" />
-              </div>
-              
-              <div class="description">
-                A competitive PvP baseball ownership and business sim powered by Ethereum.
-              </div>
-
-              <a data-popup=".login-popup" href="#" class="button button-fill main-button color-green popup-open">Get Started</a>
-
-              <p>
-                Join the community on <a class="link external" href="${discord}" target="_blank">Discord</a>. 
-              </p>
-
-            </div>
-
-            <div class="right">
-              <img src="${gameShot}" />
-            </div>
-
-          </div>
-
-          <div class="block block-strong block-outline">
+          <div class="block-title block-title-large">A competitive PvP baseball ownership and business sim powered by Ethereum.</div>
+          <div class="block">
               <p>
                 
                 Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                where players and Diamonds are bought, sold, and earned.
+                where players and Diamonds are bought, sold, and earned. <strong><a class="link"  href="/about">Learn More...</a></strong>
 
                 <ul>
                   <li>Own players as an NFTs (ERC-721) on Ethereum.</li>
@@ -47,10 +22,16 @@
 
               </p>
 
-              <a class="button button-outline main-button color-white"  href="/about">Learn More</a>
 
+              <a data-popup=".login-popup" href="#" class="button button-fill main-button color-green popup-open">Get Started</a>
+              
+
+              <p>
+                Join the community on <a class="link external" href="${discord}" target="_blank">Discord</a>. 
+              </p>
 
           </div>
+
 
         </div>
 
@@ -134,9 +115,9 @@
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {
-            visible: false,
+            visible: true,
             tabLink: "/",
-            breadcrumbs: [{ text: "Home", path: "/" }, { text: walletService.truncateEthAddress(vm?.authInfo?.address)}]
+            breadcrumbs: [{ text: "Ethereum Baseball League", path: "/" }]
           }
       }))
 

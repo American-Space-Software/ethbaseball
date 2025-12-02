@@ -5,21 +5,25 @@
     
     <div class="navbar-bg"></div>
 
-    <div class="navbar-inner sliding">
+    <div class="navbar-inner">
 
       <div class="left">
 
+        <a href="/" class="link" aria-label="Home">
+          <img src="${logo}" width="42" height="42" alt="Logo" class="logo" />
+        </a>
+
+      </div>
+
+      <div class="title">
+
         <div class="small-only-flex">
 
-            <a href="/" class="link icon-only" aria-label="Home">
-              <img src="${logo}" width="42" height="42" alt="Logo" />
-            </a>
+            <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
+            <a href="${universeWebService.fullLink(`/games`)}" class="link  ${tabLink == '/games' ? 'active' : ''}">Scores</a>
+            <a href="${universeWebService.fullLink(`/players/`)}"  class="link  ${tabLink == '/players/' ? 'active' : ''}">Players</a>
 
-            <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link color-white first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
-            <a href="${universeWebService.fullLink(`/games`)}" class="link color-white ${tabLink == '/games' ? 'active' : ''}">Scores</a>
-            <a href="${universeWebService.fullLink(`/players/`)}"  class="link color-white ${tabLink == '/players/' ? 'active' : ''}">Players</a>
-
-            <a href="#" class="popover-open link color-white ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">More</a>
+            <a href="#" class="popover-open link ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">More</a>
 
             
             <div class="popover popover-menu">
@@ -48,40 +52,29 @@
 
         <div class="large-only-flex">
 
-          <a href="/" class="link icon-only" aria-label="Home">
-            <img src="${logo}" width="70" height="70" style="margin-left: 25px;" alt="Logo"  />
-          </a>
-
-          <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link color-white first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
-          <a href="${universeWebService.fullLink(`/games`)}" class="link color-white ${tabLink == '/games' ? 'active' : ''}">Scores</a>
-          <a href="${universeWebService.fullLink(`/players/`)}"  class="link color-white ${tabLink == '/players/' ? 'active' : ''}">Players</a>
-          <a href="/u/owners" class="link color-white ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a>
-          <a href="/activity"  class="link color-white ${tabLink == '/activity' ? 'active' : ''}">Activity</a>
-          <a href="/about"  class="link color-white ${tabLink == '/about' ? 'active' : ''}">About</a>
-          <a class="link external color-white" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a>
+          <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
+          <a href="${universeWebService.fullLink(`/games`)}" class="link ${tabLink == '/games' ? 'active' : ''}">Scores</a>
+          <a href="${universeWebService.fullLink(`/players/`)}"  class="link  ${tabLink == '/players/' ? 'active' : ''}">Players</a>
+          <a href="/u/owners" class="link ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a>
+          <a href="/activity"  class="link  ${tabLink == '/activity' ? 'active' : ''}">Activity</a>
+          <a href="/about"  class="link ${tabLink == '/about' ? 'active' : ''}">About</a>
+          <a class="link external " href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a>
 
           ${env.OPENSEA_COLLECTION_URL ? $h`
-            <a class="link external color-white" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a>
+            <a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a>
             ` : $h` `}
-          <a class="link external color-white" href="${discord}" target="_blank">💬 Discord</a>
+          <a class="link external " href="${discord}" target="_blank">💬 Discord</a>
 
         </div>
-
 
       </div>
-
-      <!-- <div class="title">
-        <div class="segmented segmented-round	">
-
-        </div>
-      </div> -->
 
       <div class="right">
 
         ${authInfo ? $h`
-          <a data-popup=".logged-in-popup" href="#" class="popup-open icon-only"><i class="f7-icons text-color-white">person_circle</i></a>
+          <a data-popup=".logged-in-popup" href="#" class="popup-open"><i class="f7-icons text-color-white">person_circle</i></a>
         ` : $h`
-          <a data-popup=".login-popup" href="#" class="popup-open icon-only">Login</a>
+          <a data-popup=".login-popup" href="#" class="popup-open">Login</a>
         `}
 
         
@@ -127,8 +120,6 @@
           </div>
         </div>
       ` : $h` `}
-
-
 
     </div>
 

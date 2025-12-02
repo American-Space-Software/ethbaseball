@@ -1,10 +1,11 @@
 
 :root {
   
+  --f7-glass-shadow: unset;
+  --f7-glass-bg-color:#0A3161;
   --f7-navbar-bg-color: #0A3161; 
   --f7-navbar-link-color: #FFFFFF;
   --f7-navbar-font-size: 15px;
-
   --f7-navbar-height: 75px;
 /* 
   --f7-theme-color: #315c15;
@@ -36,9 +37,41 @@
 
 }
 
+.navbar-inner {
+  background: #0A3161;
+}
+
+.dark .navbar-inner {
+  background: #000000;
+}
+
+
+
 html {
   color-scheme: light;
 }
+
+
+
+.ios .subnavbar {
+  background: #ffffff;
+  margin-top: 5px;
+}
+
+.dark.ios .subnavbar {
+  background: #000000;
+}
+
+.ios.navbar .left, .ios.navbar .right {
+  box-shadow: unset;
+  background-color: unset;
+}
+
+.dark.ios .navbar .left, .dark.ios .navbar .right {
+  box-shadow: unset;
+  background-color: unset;
+}
+
 
 .dark {
   --f7-navbar-bg-color: unset; 
@@ -46,9 +79,6 @@ html {
   color-scheme: dark;
 }
 
-/* a {
-  font-weight: bold;
-} */
 
 .dark a {
   color: white;
@@ -63,21 +93,6 @@ html {
   display: none;
 }
 
-.logo {
-  width: 34px;
-  border: 1px solid #cccccc;
-}
-
-.aurora .toolbar-top-aurora~*, .ios .toolbar-top-ios~*, .md .toolbar-top-md~*, .toolbar-top~* {
-  --f7-page-toolbar-top-offset: 0px;
-}
-
-
-
-.page-content {
-  /* background: #FFFFFF; */
-  /* padding-top: 0px; */
-}
 
 .navbar .title {
   color: #ffffff;
@@ -128,11 +143,6 @@ h1 {
 
 
 @media only screen and (max-width: 1024px) {
-
-  .navbar .segmented .button {
-    height: inherit;
-    font-size: 17px;
-  }
 
   :root {
     --f7-navbar-height: 50px;
@@ -795,13 +805,13 @@ h1 {
 
 
 .game-state {
-  width: 100%;
+  width: 1250px;
   max-width: 100%;
   background: #00a831;
   display: flex;
   margin: 10px auto 0px auto;
   flex-wrap: wrap;
-  /* height: calc(100vh - 100px); */
+  
 }
 
 
@@ -832,7 +842,7 @@ h1 {
 
 .game-state .left {
   flex: 1;
-  min-width: 300px;
+  /* min-width: 300px; */
 }
 
 .game-state .middle {
@@ -840,7 +850,7 @@ h1 {
 }
 .game-state .right {
   flex: 1;
-  min-width: 300px;
+  /* min-width: 300px; */
 }
 
 .game-state .card {
@@ -849,6 +859,7 @@ h1 {
 
 .game-state .game-info {
   position: relative;
+  
 }
 
 .game-state .game-info img {
@@ -1127,7 +1138,7 @@ h1 {
 }
 
  
-.game-state .linescore .profilePic {
+.game-banner .linescore .profilePic, .game-state .linescore .profilePic  {
   height: 25px;
   width: 25px;
   vertical-align: middle;
@@ -1341,18 +1352,52 @@ h1 {
   font-size: .7em;
 } */
 
-.game-state .matchup-wrapper .player {
+/* .game-state .matchup-wrapper {
+  display: flex;
   width: 100%;
-  height: 45px;
-  font-size: 1.1em;
-  font-weight: bold;
+  min-width: 100%;
+} */
+
+
+.game-state .matchup-pitcher, .game-state .matchup-hitter {
+  position: absolute;
+  width: 25%;
+  background: var(--f7-card-bg-color);
+  height: 100px;
 }
 
-.game-state .matchup-wrapper .player img {
+.game-state .matchup-pitcher .card-header , .game-state .matchup-hitter .card-header {
+  font-size: .85em;
+  padding: 5px;
+  height: 25px;
+  min-height: 25px;
+}
+
+.game-state .matchup-pitcher {
+  position: absolute;
+  top:50%; 
+  left: 0%;
+  margin-left: 5px;
+}
+
+.game-state .matchup-hitter {
+  position: absolute;
+  top:50%; 
+  right: 0%;
+  margin-right: 5px;
+
+}
+
+.game-state .player {
+  width: 100%;
+  font-size: .85em;
+}
+
+.game-state .player img {
   float: left;
   margin-right: 3px;
-  width: 35px;
-  height: 35px;
+  width: 25px;
+  height: 25px;
   font-size: 1.2em;
 }
 
@@ -1735,40 +1780,39 @@ h1 {
   border: 1px solid #cccccc;
 }
 
-.main-card {
-  display: flex;
-  background: #172e49;
-  color: white;
+/* .main-card {
   max-width: 100%;
+  width: 100%;
+} */
+
+/* .dark .main-card  {
+  background: unset;
+  color: unset;
+} */
+
+/* 
+.main-card .logo-wrapper {
+  background: #172e49;
   width: 100%;
 }
 
-.dark .main-card  {
-  background: unset;
-  color: unset;
-}
-
-
-.main-card .logo-wrapper {
-
-  width: 300px;
-}
-
 .main-card .left img {
-  max-width: 100%;
+  max-width: 300px;
 }
 
 .main-card .right img {
   width: 520px;
   margin: 15px;
-}
+} */
 
 .main-card .description {
   font-size: 27px;
   font-weight: bold;
+  width: 100%;
+  min-width: 100%;
 }
 
-.main-card .left {
+/* .main-card .left {
   flex: 0 0 50%;
 }
 
@@ -1776,7 +1820,7 @@ h1 {
   flex:1;
   padding-left: 10px;
   font-size: .85em;
-}
+} */
 
 
 .main-button {
@@ -2092,7 +2136,7 @@ text-align: center;
 
 .skill-wrapper {
   width: 100%;
-  min-width: 100px;
+  min-width: 75px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -2398,7 +2442,7 @@ td.action, th.action {
 .game-banner .name {
   flex: 0 0 70%;
   line-height: .85em;
-  font-size: 1.5em;
+  font-size: 1.2em;
 }
 
 .game-banner .record {
@@ -2419,6 +2463,7 @@ td.action, th.action {
 .game-banner .away .name img {
   float: left;
   margin-right: 5px;
+  
 }
 
 .game-banner .home .name img {
@@ -2466,8 +2511,10 @@ td.action, th.action {
 
   .game-banner .name {
       flex: 0 0 85%;
-      line-height: 1em;
-      font-size: .85em;
+      line-height: .85em;
+      font-size: .70em;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
   }
 
 }
@@ -2581,6 +2628,9 @@ td.action, th.action {
   cursor: default;
 }
 
+
+
+
 .navbar .left .large-only-flex .first {
   margin-left: 50px;
 }
@@ -2591,48 +2641,6 @@ td.action, th.action {
 
 
 
-
-
-.home-split {
-  display: flex;
-  width: 1140px;
-  max-width: 100%;
-}
-
-.home-split .left {
-  flex: 1;
-}
-
-.home-split .right {
-  flex: 0 0 350px;
-  background: #f1f1f1;
-}
-
-
-@media only screen and (max-width: 1024px) {
-  .navbar .left .first {
-    margin-left: 15px;
-  }
-
-  .home-split {
-    display: block;
-    width: 100%;
-  }
-
-  .home-split .left {
-    display: block;
-    flex: unset;
-    width: 100%;
-  }
-
-  .home-split .right {
-    display: block;
-    flex: unset;
-    width: 100%;
-    background: unset;
-  }
-
-}
 
 
 .teams {

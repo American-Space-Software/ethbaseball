@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register",
-    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-finance-service.spec.ts",
+    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-game-service.spec.ts",
 
     "test:contracts": "export NODE_ENV=development && npx hardhat test test/hardhat/test-universe.spec.js",
 
@@ -153,7 +153,7 @@
     "ethers": "6.14.1",
     "excerpt-html": "1.2.2",
     "express-session": "1.18.0",
-    "framework7": "8.3.0",
+    "framework7": "9.0.1",
     "framework7-icons": "5.0.5",
     "glicko2": "1.1.0",
     "helia": "5.5.1",

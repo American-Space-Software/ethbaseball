@@ -85,7 +85,6 @@ class Game extends Model {
     @BelongsTo(() => League)
     league: League
 
-
     @AllowNull(true)	
     @Column(DataType.INTEGER)
     declare winningPitcherId?:string 

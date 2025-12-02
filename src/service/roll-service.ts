@@ -5,7 +5,7 @@ import {  RollChartService } from "./roll-chart-service.js"
 import { SeedService } from "./data/seed-service.js"
 import { RollChart } from "../dto/roll-chart.js"
 import { StatService } from "./stat-service.js"
-import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer, SimMatchupCommand, Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange } from "./enums.js"
+import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer, SimMatchupCommand, Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score } from "./enums.js"
 
 const APPLY_PLAYER_CHANGES = true
 
@@ -36,57 +36,16 @@ class RollService {
         
     }
 
-    simMatchup(command: SimMatchupCommand): Play {
-
-        this.validateLineup(command.offense)
-        this.validateLineup(command.defense)
-        
-        let hitter:GamePlayer = command.offense.players.find( p => p._id == command.hitterId)
-        let pitcher = command.defense.players.find( p => p._id == command.pitcherId)
-        let catcher:GamePlayer = command.defense.players.find( p => p.currentPosition == Position.CATCHER)
-
-        this.validateRunners(command.runner1BId, command.runner2BId, command.runner3BId)
-
-        //Handedness
+    simMatchup(play:Play, offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, halfInningRunnerEvents:RunnerEvent[], leagueAverages: LeagueAverage, rng) {
+    
         let matchupHandedness: MatchupHandedness = this.getMatchupHandedness(hitter, pitcher)
 
         let hitterChange:HitterChange   =  matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
         let pitcherChange:PitcherChange =  matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
 
-        let playResult:PlayResult
-
-        let contact:Contact
-        let fielder:Position
-        let fielderPlayer:GamePlayer
-
-        let shallowDeep:ShallowDeep 
-
-        let runnerEvents:RunnerEvent[] = []
-
-        let runnerResult:RunnerResult = {
-            first: command.runner1BId,
-            second: command.runner2BId,
-            third: command.runner3BId,
-            scored: [],
-            out: []
-        }
-
-        //Preserve starting runners to save with play data
-        let startingRunnerResult = JSON.parse(JSON.stringify(runnerResult))
-
-        let startingCount = JSON.parse(JSON.stringify( {
-            balls: 0,
-            strikes: 0,
-            outs: command.outs
-        }))
-
-        let startingScore = JSON.parse(JSON.stringify(command.score))
-
-
-        let defensiveCredits:DefensiveCredit[] = []
 
         //Throw pitches.
-        let pitchLog: PitchLog = this.getPitchLog(command.rng, command.leagueAverages, pitcherChange, hitterChange, pitcher)
+        let pitchLog: PitchLog = this.getPitchLog(rng, leagueAverages, pitcherChange, hitterChange, pitcher)
 
         //Check if any runners moved during the at-bat
         try {
@@ -244,6 +203,11 @@ class RollService {
 
 
     }
+
+    simPitch() {}
+
+    
+
 
     validateRunnerResult(runnerResult:RunnerResult) {
 

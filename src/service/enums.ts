@@ -38,8 +38,6 @@ enum Handedness {
     S = "S"
 }
 
-
-
 enum OfficialPlayResult {
 
     //Don't count as AB
@@ -131,15 +129,11 @@ enum HitterPitcher {
     PITCHER = "P"
 }
 
-
-
 interface Rating {
     rating:number
     ratingDeviation:number
     volatility:number
 }
-
-
 
 interface GamePlayer {
     _id:string
@@ -174,16 +168,6 @@ interface GamePlayer {
 
     hitResult:HitResultCount
     pitchResult:PitchResultCount
-
-    // seasonStats?: {
-    //     before?:PlayerStatLines
-    //     after?:PlayerStatLines
-    // }
-
-    // careerStats?: {
-    //     before?:PlayerStatLines
-    //     after?:PlayerStatLines
-    // }
 
     hitterChange: {
         vsL: HitterChange
@@ -424,7 +408,6 @@ interface PlayerPercentileRatings {
   overallRating_pct: number | null
 
   hittingRatings:HittingRatings
-
   pitchRatings: PitchRatings
 }
 
@@ -710,29 +693,29 @@ interface MatchupHandedness {
 interface Play {
     index: number
     pitchLog: PitchLog
-    result: PlayResult
-    officialPlayResult: OfficialPlayResult|OfficialRunnerResult
+    result?: PlayResult
+    officialPlayResult?: OfficialPlayResult|OfficialRunnerResult
 
     runner: {
         events: RunnerEvent[]
         result: {
             start: RunnerResult
-            end: RunnerResult
+            end?: RunnerResult
         }
     }
 
-    credits?:DefensiveCredit[]
-    contact: Contact
-    shallowDeep: ShallowDeep
-    fielder: Position
-    fielderId:string
+    credits:DefensiveCredit[]
+    contact?: Contact
+    shallowDeep?: ShallowDeep
+    fielder?: Position
+    fielderId?:string
     hitterId: string
     pitcherId: string
-    count?: {
+    count: {
         start: Count
         end?: Count
     }
-    score?: {
+    score: {
         start: Score
         end?: Score
     }

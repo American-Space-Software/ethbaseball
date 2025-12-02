@@ -108,7 +108,7 @@
                     <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
                       <td class="num order">${index + 1}</td>
                       <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
-                      <td class="name"><a href="/p?id=${p._id}">${p.displayName}</a></td>
+                      <td class="name"><a href="/p/${p._id}">${p.displayName}</a></td>
                       <td>${p.hits}</td>
                       <td class="pos">${p.currentPosition}</td>
                       <td class="stats">${gameWebService.hitterGameStatsShort(p)}</td>
@@ -126,6 +126,7 @@
       </div>
 
       <div class="middle">
+
         <div class="game-info">
 
           <img src="${Field}" />
@@ -140,7 +141,7 @@
               ` : $h` `}
 
               <div class="wrapper" style="border: 2px solid ${vm.hitter.color1};">
-                <div class="text">
+                <div class="text" style="background: ${vm.hitter.color1};">
                   ${vm.hitter.displayName}
                 </div>
                 <div class="game-stats">
@@ -164,7 +165,7 @@
               </div>
 
               <div class="wrapper" style="border: 2px solid ${vm.runner1B.color1};">
-                <div class="text">
+                <div class="text" style="background: ${vm.runner1B.color1};">
                   ${vm.runner1B.displayName}
                 </div>              
                 
@@ -185,7 +186,7 @@
 
 
               <div class="wrapper" style="border: 2px solid ${vm.runner2B.color1};">
-                <div class="text">
+                <div class="text" style="background: ${vm.runner2B.color1};">
                   ${vm.runner2B.displayName}
                 </div>
                 <div class="game-stats">Speed: ${vm.runner2B.hittingRatings.speed}</div>
@@ -208,7 +209,7 @@
               </div>
 
               <div class="wrapper" style="border: 2px solid ${vm.runner3B.color1};">
-                <div class="text">
+                <div class="text" style="background: ${vm.runner3B.color1};">
                   ${vm.runner3B.displayName}
                 </div>
                 
@@ -220,7 +221,7 @@
 
           <a href="/p/${vm.pitcher._id}" class="defender p" data-pos="P">
             <div class="wrapper" style="border: 2px solid ${vm.pitcher.color1};">
-              <div class="text">
+              <div class="text" style="background: ${vm.pitcher.color1};">
                 ${vm.pitcher.displayName}
               </div>
               <div class="game-stats">${gameWebService.pitcherGameStatsShort(vm.pitcher)}</div>
@@ -238,8 +239,8 @@
               <img src="/player/image/${vm.catcher._id}" style="border: 1px solid ${vm.catcher.color1}; background: ${vm.catcher.color1};" />
             </div>
 
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.catcher.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.catcher.color1}; display:none;">
+              <div class="text" style="background: ${vm.catcher.color1};">
                 ${vm.catcher.displayName}
               </div>
   
@@ -249,8 +250,8 @@
           </a>
 
           <a href="/p/${vm.firstBase._id}" class="defender firstBase" data-pos="1B">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.firstBase.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.firstBase.color1}; display:none;">
+              <div class="text" style="background: ${vm.firstBase.color1};">
                 ${vm.firstBase.displayName}
               </div>
               <div class="game-stats">1B DEF: ${vm.firstBase.hittingRatings.defense}</div>
@@ -262,8 +263,8 @@
 
           <a href="/p/${vm.secondBase._id}" class="defender secondBase" data-pos="2B">
 
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.secondBase.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.secondBase.color1}; display:none;">
+              <div class="text" style="background: ${vm.secondBase.color1};">
                 ${vm.secondBase.displayName}
               </div>
   
@@ -277,8 +278,8 @@
 
           <a href="/p/${vm.thirdBase._id}" class="defender thirdBase" data-pos="3B">
 
-            <div class="wrapper large-only-block" style="border: 3px solid ${vm.thirdBase.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 3px solid ${vm.thirdBase.color1}; display:none;">
+              <div class="text"  style="background: ${vm.thirdBase.color1};">
                 ${vm.thirdBase.displayName}
               </div>
               <div class="game-stats">3B DEF: ${vm.thirdBase.hittingRatings.defense}</div>
@@ -290,8 +291,8 @@
           </a>
 
           <a href="/p/${vm.ss._id}" class="defender ss" data-pos="SS">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.ss.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.ss.color1}; display:none;">
+              <div class="text" style="background: ${vm.ss.color1};">
                 ${vm.ss.displayName}
               </div>
               <div class="game-stats">SS DEF: ${vm.ss.hittingRatings.defense}</div>
@@ -303,8 +304,8 @@
           </a>
 
           <a href="/p/${vm.lf._id}" class="defender lf" data-pos="LF">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.lf.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.lf.color1}; display:none;">
+              <div class="text" style="background: ${vm.lf.color1};">
                 ${vm.lf.displayName}
               </div>
               <div class="game-stats">LF DEF: ${vm.lf.hittingRatings.defense}</div>
@@ -316,8 +317,8 @@
           </a>
 
           <a href="/p/${vm.cf._id}" class="defender cf" data-pos="CF">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.cf.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.cf.color1}; display:none;">
+              <div class="text" style="background: ${vm.cf.color1};">
                 ${vm.cf.displayName}
               </div>
               <div class="game-stats">CF DEF: ${vm.cf.hittingRatings.defense}</div>
@@ -329,8 +330,8 @@
           </a>
 
           <a href="/p/${vm.rf._id}" class="defender rf" data-pos="RF">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.rf.color1};">
-              <div class="text">
+            <div class="wrapper large-only-block" style="border: 2px solid ${vm.rf.color1}; display:none;">
+              <div class="text" style="background: ${vm.rf.color1};">
                 ${vm.rf.displayName}
               </div>
               <div class="game-stats">RF DEF: ${vm.rf.hittingRatings.defense}</div>
@@ -341,31 +342,30 @@
             </div>
           </a>
 
+        </div>
 
-          ${vm.play ? $h`
-            <div class="play small-only">
-              <div class="card recap">
-                <div class="card-content play-description">
+        ${vm.play ? $h`
+          <div class="play">
+            <div class="card recap">
+              <div class="card-content play-description">
 
-                  <div class="chip result">
-                    <div class="chip-label">${vm.play.play?.result}</div>
-                  </div>
-
-                  <div innerHTML="${vm.play.descriptions?.mainDescription}"></div>
-
-                  <ul>
-                    ${vm.play?.descriptions?.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
-                  </ul>
-
-                  <a data-popup=".play-by-play-popup" class="link popup-open">Full Play by Play</a>
-
+                <div class="chip result">
+                  <div class="chip-label">${vm.play.play?.result}</div>
                 </div>
+
+                <div innerHTML="${vm.play.descriptions?.mainDescription}"></div>
+
+                <ul>
+                  ${vm.play?.descriptions?.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
+                </ul>
+
+                <a data-popup=".play-by-play-popup" class="link popup-open">Full Play by Play</a>
+
               </div>
             </div>
-          ` : $h` `}
+          </div>
+        ` : $h` `}
 
-
-        </div>
       </div>
 
       <div class="right">
@@ -405,26 +405,6 @@
               </div> 
             </div>
 
-            <div class="play large-only-block">
-              <div class="card recap">
-                <div class="card-content play-description">
-
-                  <div class="chip result">
-                    <div class="chip-label">${vm.play.play?.result}</div>
-                  </div>
-
-                  <div innerHTML="${vm.play.descriptions?.mainDescription}"></div>
-
-                  <ul>
-                    ${vm.play?.descriptions?.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
-                  </ul>
-
-                  <a data-popup=".play-by-play-popup" class="link popup-open">Full Play by Play</a>
-
-                </div>
-              </div>
-            </div>
-
           ` : $h` 
 
               <div class="game-start-message">Game begins at ${gameWebService.getFormattedDate(vm.game.startDate)}</div>
@@ -434,9 +414,6 @@
           </div>
 
       </div>
-
-
-
 
       <div class="linescore-wrapper small-only">
         <table class="linescore">
@@ -485,8 +462,6 @@
         </table>
       </div>
 
-
-
     </div>
 
 </template>
@@ -534,6 +509,8 @@
     let homeBoxscoreViewModel = vm.homeBoxscoreViewModel
     let lastPlayText = dayjs(vm.game.lastUpdated).fromNow()
 
+    let playIndex = vm.play?.play?.index
+
     $f7.on('gameUpdate', (gameViewModel) => {
 
       Object.assign(vm, gameViewModel)
@@ -543,9 +520,15 @@
       
       lastPlayText = dayjs(vm.game.lastUpdated).fromNow()
 
+      //If playindex has changed then animate runners.
+      // if (playIndex != vm.play?.play?.index) {
+      //   gameWebService.animateRunnersForPlay(vm.play.play)
+      // }
+
+      playIndex = vm.play?.play?.index
+
       $update()
 
-      console.log(vm)
     })
 
     return $render

@@ -148,7 +148,7 @@
 
       try {
         
-        $f7.preloader.show
+        $f7.preloader.show()
 
         let gameInfo = await gameWebService.playBot()
 
@@ -160,10 +160,7 @@
       } catch(ex) {
         $f7.dialog.alert(ex.message, "There was an error")
       }
-
-      $f7.preloader.hide()
       
-
     }
 
     $on('pageBeforeIn', async (e) => {

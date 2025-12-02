@@ -1,11 +1,11 @@
 
 import { getContainer } from "./inversify.config.js"
 
-import {  PlayerService } from "../src/service/player-service.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import {  PlayerService } from "../src/service/data/player-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 import {  Player} from "../src/dto/player.js"
 import assert from "assert"
-import { GameService } from "../src/service/game-service.js"
+import { GameService } from "../src/service/data/game-service.js"
 import { Position } from "../src/service/enums.js"
 import dayjs from "dayjs"
 

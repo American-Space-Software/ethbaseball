@@ -77,7 +77,6 @@ class PlayerViewService {
             ownerId: player.ownerId,
             hittingRatings: player.hittingRatings,
             pitchRatings: player.pitchRatings,
-            percentileRatings: player.percentileRatings,
             careerHitterStats: player.careerStats.hitting,
             careerPitcherStats: player.careerStats.pitching,
             careerSeasonsHitterStats: plsList.filter( p => p.teamId != undefined).map( p => {
@@ -155,7 +154,6 @@ interface PlayerViewModel {
     ownerId:string
     hittingRatings:HittingRatings
     pitchRatings:PitchRatings
-    percentileRatings:PlayerPercentileRatings
     askingPrice:string
     displayRating:number
 

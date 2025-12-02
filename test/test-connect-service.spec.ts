@@ -1,17 +1,17 @@
 
 import { getContainer } from "./inversify.config.js"
 
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import assert from "assert"
 
 import { ConnectService } from "../src/service/connect-service.js"
 import { WalletService } from "../src/service/wallet-service.js"
-import { SignatureTokenService } from "../src/service/signature-token-service.js"
+import { SignatureTokenService } from "../src/service/data/signature-token-service.js"
 
 import { Wallet } from "ethers"
-import { OwnerService } from "../src/service/owner-service.js"
-import { UserService } from "../src/service/user-service.js"
+import { OwnerService } from "../src/service/data/owner-service.js"
+import { UserService } from "../src/service/data/user-service.js"
 import { v4 as uuidv4 } from 'uuid';
 import { User } from "../src/dto/user.js"
 

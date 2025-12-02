@@ -2,7 +2,7 @@ import assert from "assert"
 
 import { getContainer } from "./inversify.config.js"
 
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import { FinanceService } from "../src/service/finance-service.js"
 import { DIAMONDS_PER_DAY } from "../src/service/enums.js"

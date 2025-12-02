@@ -3,12 +3,12 @@ import assert from "assert"
 import { getContainer } from "./inversify.config.js"
 
 import { GameRepository } from "../src/repository/game-repository.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import { Game } from "../src/dto/game.js";
-import { SeasonService } from "../src/service/season-service.js";
-import { StadiumService } from "../src/service/stadium-service.js";
-import { LeagueService } from "../src/service/league-service.js";
+import { SeasonService } from "../src/service/data/season-service.js";
+import { StadiumService } from "../src/service/data/stadium-service.js";
+import { LeagueService } from "../src/service/data/league-service.js";
 import { Season } from "../src/dto/season.js";
 import { League } from "../src/dto/league.js";
 import { Stadium } from "../src/dto/stadium.js";

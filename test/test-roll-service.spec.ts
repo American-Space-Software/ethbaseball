@@ -4,10 +4,10 @@ import assert, { fail } from "assert"
 import { getContainer } from "./inversify.config.js"
 
 import { RollService } from '../src/service/roll-service.js'
-import { SeedService } from "../src/service/seed-service.js"
-import { PlayerService } from "../src/service/player-service.js"
+import { SeedService } from "../src/service/data/seed-service.js"
+import { PlayerService } from "../src/service/data/player-service.js"
 import { RollChartService } from "../src/service/roll-chart-service.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 import { GamePlayer, Handedness, HitterChange, HittingProfile, HittingRatings, HomeAway, LeagueAverage, OfficialPlayResult, PitchRatings, PitchType, PitcherChange, PitchingProfile, PlayResult, Position, RunnerResult, SimMatchupCommand } from "../src/service/enums.js"
 import { Player } from "../src/dto/player.js"
 
@@ -349,7 +349,6 @@ describe('RollService', async () => {
                 vsL: rollService.getPitcherChange(hitterPlayer.pitchRatings, la.pitchRatings, Handedness.L),
                 vsR: rollService.getPitcherChange(hitterPlayer.pitchRatings, la.pitchRatings, Handedness.R),
             },
-            playerId: ""
         }
 
         let pitcher:GamePlayer = {
@@ -491,7 +490,6 @@ describe('RollService', async () => {
                 vsL: rollService.getPitcherChange(pitcherPlayer.pitchRatings, la.pitchRatings, Handedness.L),
                 vsR: rollService.getPitcherChange(pitcherPlayer.pitchRatings, la.pitchRatings, Handedness.R),
             },
-            playerId: ""
         }
 
         let defensePlayers = [pitcher]
@@ -650,7 +648,6 @@ describe('RollService', async () => {
                     vsL: rollService.getPitcherChange(hitterPlayer.pitchRatings, la.pitchRatings, Handedness.L),
                     vsR: rollService.getPitcherChange(hitterPlayer.pitchRatings, la.pitchRatings, Handedness.R),
                 },
-                playerId: ""
             }
 
             return gamePlayer
@@ -805,7 +802,6 @@ describe('RollService', async () => {
                     vsL: rollService.getPitcherChange(hitterPlayer.pitchRatings, la.pitchRatings, Handedness.L),
                     vsR: rollService.getPitcherChange(hitterPlayer.pitchRatings, la.pitchRatings, Handedness.R),
                 },
-                playerId: ""
             }
 
             

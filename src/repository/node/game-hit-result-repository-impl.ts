@@ -36,7 +36,6 @@ const SUM_QUERY_FIELDS = `
     SUM(sb) sb,
     SUM(so) so,
     SUM(wpa) wpa,
-    SUM(experience) experience,
     SUM(teamWins) teamWins,
     SUM(teamLosses) teamLosses,
     SUM(pitches) pitches,

@@ -3,7 +3,7 @@ import assert from "assert"
 import { getContainer } from "./inversify.config.js"
 
 import { LeagueRepository } from "../src/repository/league-repository.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import { v4 as uuidv4 } from 'uuid';
 import { League } from "../src/dto/league.js"

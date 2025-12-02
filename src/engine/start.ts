@@ -26,7 +26,6 @@ import { OwnerService } from "../service/data/owner-service.js"
 let startEngine = async () => {
 
   const SIM_DATE = process.env.SIM_DATE ? dayjs(process.env.SIM_DATE).toDate() : new Date(new Date().toUTCString())
-  const SECONDS_BETWEEN_SIMS = process.env.SECONDS_BETWEEN_SIMS ?  parseInt(process.env.SECONDS_BETWEEN_SIMS) : 60
   const SECONDS_BETWEEN_INDEXES = process.env.SECONDS_BETWEEN_INDEXES ?  parseInt(process.env.SECONDS_BETWEEN_INDEXES) : 30
   const SECONDS_BETWEEN_MINT_PASS_SIGNINGS = process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS  ? parseInt(process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS) : 5
 
@@ -227,22 +226,12 @@ let startEngine = async () => {
     setTimeout(async () => { await indexerLoop() }, SECONDS_BETWEEN_INDEXES*1000)
   }
 
-  const gameLoop = async () => {
-
-    //Simulate games 
-    await ladderService.runGameRunner(universe._id)
-
-    console.log(`Game loop complete...waiting...`)
-
-    setTimeout(async () => { await gameLoop() }, SECONDS_BETWEEN_SIMS*1000)
-  }
-
   const startupTasks = async () => {
 
     //Make sure that players have percentile ratings. 
-    await playerService.updateAllPercentileRatings()
+    // await playerService.updateAllPercentileRatings()
 
-    console.log(`Updated player percentile ratings`)
+    // console.log(`Updated player percentile ratings`)
 
     //Make sure owner off-chain balances are up to date
     await ownerService.syncOffChainBalances()
@@ -251,13 +240,9 @@ let startEngine = async () => {
 
   }
 
-
   await startupTasks()
   await indexerLoop()
-  await gameLoop()
   await mintPassLoop()
-
-
 
   console.log(`
     *******************************************

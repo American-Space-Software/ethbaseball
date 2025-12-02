@@ -96,7 +96,7 @@ import { DiamondMintPassService } from "../src/service/data/diamond-mint-pass-se
 import { StatService } from "../src/service/stat-service.js";
 import { ASCIIService } from "../src/service/ascii-service.js";
 import { BlockService } from "../src/service/data/block-service.js";
-import { ContractStateService } from "../src/service/contract-state-service.js";
+import { ContractStateService } from "../src/service/data/contract-state-service.js";
 
 import { UniverseRepository } from "../src/repository/universe-repository.js";
 import { Universe } from "../src/dto/universe.js";
@@ -158,8 +158,8 @@ import { SeasonRepositoryNodeImpl } from "../src/repository/node/season-reposito
 import { AnimationRepository } from "../src/repository/animation-repository.js";
 import { ImageService } from "../src/service/data/image-service.js";
 import { LeagueService } from "../src/service/data/league-service.js";
-import { UserService } from "../src/service/user-service.js";
-import { TeamService } from "../src/service/team-service.js";
+import { UserService } from "../src/service/data/user-service.js";
+import { TeamService } from "../src/service/data/team-service.js";
 import { StadiumService } from "../src/service/data/stadium-service.js";
 
 import { createHelia } from 'helia'
@@ -187,7 +187,7 @@ import { GamePitchResultRepositoryNodeImpl } from "../src/repository/node/game-p
 
 import { ChatGPTService } from "../src/service/chatgpt-service.js"
 import { OffchainEvent } from "../src/dto/offchain-event.js"
-import { OffchainEventService } from "../src/service/offchain-event-service.js"
+import { OffchainEventService } from "../src/service/data/offchain-event-service.js"
 
 import { OffchainEventRepository } from "../src/repository/offchain-event-repository.js"
 import { OffchainEventRepositoryNodeImpl } from "../src/repository/node/offchain-event-repository-impl.js"

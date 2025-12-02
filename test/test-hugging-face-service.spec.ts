@@ -1,7 +1,7 @@
 
 import { getContainer } from "./inversify.config.js"
 
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import { HuggingFaceService } from "../src/service/hugging-face-service.js"
 

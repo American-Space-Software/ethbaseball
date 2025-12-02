@@ -55,6 +55,7 @@ import { Game, GamePlayer } from '../dto/game.js'
 
 import http from 'http'
 import { SocketService } from '../service/socket-service.js'
+import { LadderService } from '../service/ladder-service.js'
 
 const SECONDS_BETWEEN_GAME_UPDATES = 30
 
@@ -83,6 +84,9 @@ let startWebServer = async () => {
   const eta = new Eta({
     views: "./src/web-server/views"
   })
+
+  const SECONDS_BETWEEN_SIMS = process.env.SECONDS_BETWEEN_SIMS ?  parseInt(process.env.SECONDS_BETWEEN_SIMS) : 60
+
 
   const PROVIDER_CHAIN_ID = process.env.PROVIDER_CHAIN_ID ? parseInt(process.env.PROVIDER_CHAIN_ID) : 1337
   const PROVIDER_CHAIN_NAME = process.env.PROVIDER_CHAIN_NAME ? process.env.PROVIDER_CHAIN_NAME : "localhost"
@@ -123,6 +127,7 @@ let startWebServer = async () => {
   let diamondMintPassService:DiamondMintPassService = container.get(DiamondMintPassService)
   let teamMintPassService:TeamMintPassService = container.get(TeamMintPassService)
   let socketService:SocketService = container.get(SocketService)
+  let ladderService:LadderService = container.get(LadderService)
 
   let offchainEventService:OffchainEventService = container.get(OffchainEventService)
   let processedTransactionService:ProcessedTransactionService = container.get(ProcessedTransactionService)
@@ -585,8 +590,8 @@ let startWebServer = async () => {
 
         await renderIndex(res,{ 
           twitter: TWITTER,
-          title: `${game.away.cityName} ${game.away.name} @ ${game.home.cityName} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`,
-          description: `${game.away.cityName} ${game.away.name} @ ${game.home.cityName} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}`,
+          title: `${game.away.cityName ? game.away.cityName : ''} ${game.away.name} @ ${game.home.cityName ? game.home.cityName : ''} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`,
+          description: `${game.away.cityName ? game.away.cityName : ''} ${game.away.name} @ ${game.home.cityName ? game.home.cityName : ''} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")}`,
           VERSION: version,
           url: req.originalUrl,
           image: `${process.env.WEB}/ebl-512.png`
@@ -1674,7 +1679,7 @@ let startWebServer = async () => {
 
             let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate, true)
 
-            
+
 
             return {
               tls: tls,
@@ -1826,13 +1831,9 @@ let startWebServer = async () => {
 
   })
 
-
-
   app.get('/api/cities', cacheService.cacheResponse(), async function(req, res) {
     return res.json(await cityService.list(1000, 0))
   })
-
-
 
   /**
    * END GAMES
@@ -2007,25 +2008,29 @@ let startWebServer = async () => {
   })
 
 
-  let lastGameCheck
 
-  const gameUpdateLoop = async () => {
+  const gameLoop = async () => {
 
-    let updatedGames = await gameService.getUpdatedSince(lastGameCheck ? lastGameCheck : dayjs().subtract(1, 'minute').toDate())
+    let date = new Date(new Date().toUTCString())
+
+    //Simulate games 
+    await ladderService.runGameRunner(universe._id)
+
+    let updatedGames = await gameService.getUpdatedSince(date)
 
     for (let game of updatedGames) {
-      socketService.gameUpdate(game)
-    }
 
-    lastGameCheck = new Date(new Date().toUTCString())
+      //Send websocket updates to connected clients.
+      socketService.gameUpdate(game)
+
+    }
 
     console.log(`Game loop complete...waiting...`)
 
-    setTimeout(async () => { await gameUpdateLoop() }, SECONDS_BETWEEN_GAME_UPDATES*1000)
+    setTimeout(async () => { await gameLoop() }, SECONDS_BETWEEN_SIMS*1000)
   }
 
-
-  await gameUpdateLoop()
+  await gameLoop()
 
 
   console.log(`

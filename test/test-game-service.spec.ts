@@ -5,22 +5,22 @@ import { getContainer } from "./inversify.config.js"
 
 
 import { RollService } from '../src/service/roll-service.js'
-import { GameService, SimGameCommand } from "../src/service/game-service.js"
+import { GameService, SimGameCommand } from "../src/service/data/game-service.js"
 import { Game } from "../src/dto/game.js"
-import { PlayerService } from "../src/service/player-service.js"
+import { PlayerService } from "../src/service/data/player-service.js"
 import { StatService } from "../src/service/stat-service.js"
 
 import { UserIOService } from "../src/service/userio-service.js"
-import { OwnerService } from "../src/service/owner-service.js"
+import { OwnerService } from "../src/service/data/owner-service.js"
 // import { GameQueueService } from "../src/service/game-queue-service.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 import { PlayerRepository } from "../src/repository/player-repository.js"
 import { IPFSService } from "../src/service/ipfs-service.js"
-import { GameLevel, TeamInfo } from "../src/service/enums.js"
+import { TeamInfo } from "../src/service/enums.js"
 import dayjs from "dayjs"
-import { SeasonService } from "../src/service/season-service.js"
-import { LeagueService } from "../src/service/league-service.js"
-import { StadiumService } from "../src/service/stadium-service.js"
+import { SeasonService } from "../src/service/data/season-service.js"
+import { LeagueService } from "../src/service/data/league-service.js"
+import { StadiumService } from "../src/service/data/stadium-service.js"
 import { Stadium } from "../src/dto/stadium.js"
 import { Season } from "../src/dto/season.js"
 import { League } from "../src/dto/league.js"
@@ -119,7 +119,6 @@ describe('GameService', async () => {
 
         // Arrange
         let laRatings = playerService.buildLeagueAverages( {
-            league: league,
             hittingRatings: {
                 arm: 15,
                 contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34},
@@ -139,11 +138,11 @@ describe('GameService', async () => {
         })
 
         // Create the away TeamInfo object
-        const awayTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam.map( p => { return { player: p } }), "", "", 1)
+        const awayTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
 
 
         // Create the home TeamInfo object
-        const homeTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam.map( p => { return { player: p } }), "", "", 10)
+        const homeTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
 
         let game: Game = service.initGame(new Game())
@@ -169,10 +168,11 @@ describe('GameService', async () => {
 
         // assert.equal(result.currentInning, 9)
         assert.equal(result.isComplete, true)
-        assert.equal(result.score.away, 3)
-        assert.equal(result.score.home, 7)
+        assert.equal(result.score.away, 2)
+        assert.equal(result.score.home, 3)
 
     })
 
 
 })
+

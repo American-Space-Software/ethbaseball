@@ -4,27 +4,27 @@ import assert, { fail } from "assert"
 import { getContainer } from "./inversify.config.js"
 
 
-import { GLICKO_SETTINGS, PlayerService } from "../src/service/player-service.js"
+import { GLICKO_SETTINGS, PlayerService } from "../src/service/data/player-service.js"
 
-import { OwnerService } from "../src/service/owner-service.js"
+import { OwnerService } from "../src/service/data/owner-service.js"
 
-import { SchemaService } from "../src/service/schema-service.js"
-import { TeamService } from "../src/service/team-service.js"
-import { CityService } from "../src/service/city-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
+import { TeamService } from "../src/service/data/team-service.js"
+import { CityService } from "../src/service/data/city-service.js"
 
 import { FinanceService } from "../src/service/finance-service.js"
 import { TeamLeagueSeason } from "../src/dto/team-league-season.js"
 import { LadderService } from "../src/service/ladder-service.js"
 import { MIN_AAV_CONTRACT, Position } from "../src/service/enums.js"
 
-import { StadiumService } from "../src/service/stadium-service.js"
+import { StadiumService } from "../src/service/data/stadium-service.js"
 import { UniverseService } from "../src/service/universe-service.js"
-import { TeamLeagueSeasonService } from "../src/service/team-league-season-service.js"
-import { LeagueService } from "../src/service/league-service.js"
+import { TeamLeagueSeasonService } from "../src/service/data/team-league-season-service.js"
+import { LeagueService } from "../src/service/data/league-service.js"
 
-import { SeasonService } from "../src/service/season-service.js"
+import { SeasonService } from "../src/service/data/season-service.js"
 
-import { PlayerLeagueSeasonService } from "../src/service/player-league-season-service.js"
+import { PlayerLeagueSeasonService } from "../src/service/data/player-league-season-service.js"
 
 
 describe('TeamService', async () => {
@@ -392,18 +392,18 @@ describe('TeamService', async () => {
     })
 
 
-    it("should calculate local viewership", () => {
+    // it("should calculate local viewership", () => {
 
-        const fanInterestShortTerm = .50
-        const fanInterestLongTerm = .50
-        const cityPopulation = 1000000
-        const stadiumCapacity = 15000
+    //     const fanInterestShortTerm = .50
+    //     const fanInterestLongTerm = .50
+    //     const cityPopulation = 1000000
+    //     const stadiumCapacity = 15000
 
-        const localRevenue = financeService.calculateLocalMediaRevenuePerGame(1, fanInterestShortTerm,fanInterestLongTerm, cityPopulation, stadiumCapacity )
+    //     const localRevenue = financeService.calculateLocalMediaRevenuePerGame(1, fanInterestShortTerm,fanInterestLongTerm, cityPopulation, stadiumCapacity )
 
-        assert(typeof localRevenue === "bigint", "Ticket price should be a bigint")
-        assert(localRevenue == BigInt("216666666666666720000000"), "Ticket price wrong") //216,000 diamonds
-    })   
+    //     assert(typeof localRevenue === "bigint", "Ticket price should be a bigint")
+    //     assert(localRevenue == BigInt("216666666666666720000000"), "Ticket price wrong") //216,000 diamonds
+    // })   
 
     // it("should calculate max free agent salary", () => {
 

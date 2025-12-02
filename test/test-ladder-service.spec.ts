@@ -2,10 +2,10 @@ import assert, { fail } from "assert"
 
 
 import { getContainer } from "./inversify.config.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 import { LadderService } from "../src/service/ladder-service.js"
 import { UniverseService } from "../src/service/universe-service.js"
-import { SeasonService } from "../src/service/season-service.js"
+import { SeasonService } from "../src/service/data/season-service.js"
 import { Season } from "../src/dto/season.js"
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs"

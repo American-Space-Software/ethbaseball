@@ -18,7 +18,6 @@ const SUM_QUERY_FIELDS = `
     SUM(flyBalls) flyBalls,
     SUM(flyOuts) flyOuts,
 
-    SUM(games) games,
     SUM(groundBalls) groundBalls,
     SUM(groundOuts) groundOuts,
     SUM(hbp) hbp,
@@ -942,7 +941,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
             select 
                 COUNT(*) games,
                 ${SUM_QUERY_FIELDS}
-            FROM game_hit_result gpr
+            FROM game_pitch_result gpr
                 INNER JOIN game g on gpr.gameId = g._id
             WHERE g.gameDate = :gameDate AND gpr.playerId
             ORDER BY g.lastUpdated desc

@@ -1,6 +1,6 @@
 import { ModelView } from "../util/model-view.js";
 import { injectable, inject, Container } from "inversify";
-import { Router } from "framework7";
+// import { Router } from "framework7";
 import { UiService } from "../../service/ui-service.js";
 import { container } from "../inversify.config.js"
 import FooterContentTemplate from "../components/common/footer-content.f7.html"
@@ -15,7 +15,7 @@ class RoutingService {
      ) {}
 
 
-    public navigate(navigateParams:Router.NavigateParameters, routeOptions?: Router.RouteOptions, viewName:string='main') {
+    public navigate(navigateParams, routeOptions?, viewName:string='main') {
 
         console.log(`${viewName}: navigating to ${navigateParams.path}`)
 
@@ -35,7 +35,7 @@ class RoutingService {
 
     }
 
-    public navigateUrl(url:string, routeOptions?:Router.RouteOptions, viewName:string='main') {
+    public navigateUrl(url:string, routeOptions?, viewName:string='main') {
 
         console.log(`${viewName}: navigating to ${url}`)
 
@@ -49,9 +49,9 @@ class RoutingService {
 
     }
 
-    public buildRoutesForContainer(container:Container) : Router.RouteParameters[]  {
+    public buildRoutesForContainer(container:Container)  {
 
-        let routes:Router.RouteParameters[] = []
+        let routes = []
 
         //Look up requestMappings 
         for (let mappedRoute of globalThis.mappedRoutes) {
@@ -72,7 +72,7 @@ class RoutingService {
                 route = {
                     path: mappedRoute.path,
                     name: mappedRoute.path,
-                    async: async (ctx: Router.RouteCallbackCtx) => {
+                    async: async (ctx) => {
                         try {
                             this.app.preloader.show()
                             await this.resolveRoute(ctx.to, ctx.resolve, controllerBean[mappedRoute.action]())
@@ -93,7 +93,7 @@ class RoutingService {
         routes.push({
             path: '(.*)',
             // url: 'pages/404.html',
-            async async(ctx: Router.RouteCallbackCtx) {
+            async async(ctx) {
                 // this.uiService.showPopup("Page was not found")
                 console.log(`404 error: ${ctx.to.path}`)
             }

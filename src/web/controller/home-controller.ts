@@ -49,8 +49,8 @@ class HomeController {
                 contractBalance = await this.universeWebService.getContractBalance()
             }
 
-            let completedGames = vm.games?.filter( g => g.isComplete)
-            let inProgressGame = vm.games?.find( g => !g.isComplete)
+            let completedGames = vm.games?.filter( g => g.isFinished)
+            let inProgressGame = vm.games?.find( g => !g.isFinished)
 
 
             return {

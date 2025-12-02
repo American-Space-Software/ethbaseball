@@ -2,7 +2,7 @@ import assert from "assert"
 
 import { getContainer } from "./inversify.config.js"
 
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 
 import { ConnectLinkRepository } from "../src/repository/connect-link-repository.js"

@@ -3,12 +3,12 @@ import assert from "assert"
 import { getContainer } from "./inversify.config.js"
 
 import { TeamRepository } from "../src/repository/team-repository.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import { v4 as uuidv4 } from 'uuid';
 import { Team } from "../src/dto/team.js"
 import { League } from "../src/dto/league.js";
-import { LeagueService } from "../src/service/league-service.js";
+import { LeagueService } from "../src/service/data/league-service.js";
 
 
 let id1

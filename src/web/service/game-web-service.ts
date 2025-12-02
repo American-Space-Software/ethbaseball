@@ -801,18 +801,157 @@ class GameWebService {
   
         return result.join('')
   
-      }
+    }
+
+    getPctPos(el: HTMLElement, container: HTMLElement): PointPct {
+        const r = el.getBoundingClientRect()
+        const c = container.getBoundingClientRect()
+
+        return {
+            top: ((r.top - c.top) / c.height) * 100,
+            right: ((c.right - r.right) / c.width) * 100
+        }
+    }
+
+    getBaseCoords(base: string): PointPct {
+        const isMobile = window.matchMedia('(max-width: 1024px)').matches
+        const map = isMobile ? BASE_POSITIONS_MOBILE : BASE_POSITIONS_DESKTOP
+        return map[base] || map.home
+    }
+
+    findRunnerByStartBase(base: string): HTMLElement | null {
+        if (base === 'home') return document.querySelector('.game-info .runner.hitter')
+        if (base === '1B') return document.querySelector('.game-info .runner.firstBase')
+        if (base === '2B') return document.querySelector('.game-info .runner.secondBase')
+        if (base === '3B') return document.querySelector('.game-info .runner.thirdBase')
+        return null
+    }
+
+    getBasePath(start: string, end: string): string[] {
+        const s = BASE_ORDER.indexOf(start)
+        const e = BASE_ORDER.indexOf(end)
+
+        if (s === -1 || e === -1) return []
+
+        // no movement
+        if (s === e) return [start]
+
+        // forward movement: home → 1B → 2B → 3B → home
+        if (s < e) return BASE_ORDER.slice(s, e + 1)
+
+        // scoring special case: 3B → home
+        if (start === '3B' && end === 'home') return ['3B','home']
+
+        // fallback: direct
+        return [start, end]
+    }
+
+    async moveElPct(el: HTMLElement, from: PointPct, to: PointPct, durationMs: number) {
+    const dx = to.right - from.right
+    const dy = to.top - from.top
+    const dist = Math.hypot(dx, dy)
+
+    if (!dist) {
+        el.style.top = `${to.top}%`
+        el.style.right = `${to.right}%`
+        return
+    }
+
+    const ux = dx / dist
+    const uy = dy / dist
+    const speed = dist / (durationMs / 1000)
+    const start = performance.now()
+
+    await new Promise(resolve => {
+        const frame = now => {
+        const t = (now - start) / 1000
+        const travelled = Math.min(t * speed, dist)
+
+        el.style.top = `${from.top + uy * travelled}%`
+        el.style.right = `${from.right + ux * travelled}%`
+
+        if (travelled < dist) requestAnimationFrame(frame)
+        else resolve(null)
+        }
+        requestAnimationFrame(frame)
+    })
+    }
 
 
+    async animatePath(el: HTMLElement, container: HTMLElement, bases: string[]) {
+        for (let i = 0; i < bases.length - 1; i++) {
+            const fromBase = bases[i]
+            const toBase = bases[i + 1]
 
+            const from = i === 0
+            ? this.getPctPos(el, container)
+            : this.getBaseCoords(fromBase)
 
+            const to = this.getBaseCoords(toBase)
+
+            await this.moveElPct(el, from, to, 1000)
+        }
+    }
+
+    animateRunnersForPlay(play: Play) {
+
+        const container = document.querySelector('.game-info') as HTMLElement
+        if (!container) return
+
+        const events = play.runner?.events || []
+
+        events.forEach(async ev => {
+            
+            const m = ev.movement
+            if (!m) return
+
+            // find the runner element based on where they STARTED this play
+            const el = this.findRunnerByStartBase(m.start)
+            if (!el) return
+
+            const bases = this.getBasePath(m.start, m.end)
+            if (bases.length < 2) return
+
+            await this.animatePath(el, container, bases)
+
+            // -------------------------------
+            // ⭐ OUT POPUP GOES EXACTLY HERE ⭐
+            // The runner has just reached the base where they were thrown out.
+            // Show your "Runner is out!" message here.
+            // Example:
+            //
+            // if (m.isOut) this.socketWebService.showOutMessage(ev.runner?._id)
+            //
+            // -------------------------------
+
+        })
+    }
 
 
 }
 
+type PointPct = { top: number, right: number }
+
+const BASE_POSITIONS_DESKTOP = {
+  home:   { top: 81.5, right: 55.7 },
+  '1B':   { top: 60.0, right: 24.0 },
+  '2B':   { top: 36.5, right: 42.0 },
+  '3B':   { top: 59.0, right: 59.5 }
+}
+
+const BASE_POSITIONS_MOBILE = {
+  home:   { top: 81.0, right: 57.0 },
+  '1B':   { top: 59.0, right: 24.0 },
+  '2B':   { top: 25.0, right: 42.0 },
+  '3B':   { top: 59.0, right: 59.0 }
+}
+
+const BASE_ORDER = ['home','1B','2B','3B','home']
 
 
 
 export {
     GameWebService
 }
+
+

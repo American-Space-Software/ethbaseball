@@ -25,6 +25,7 @@ interface TeamRepository {
     getIds(options?:any): Promise<string[]>
     getUpdatedSince(lastUpdated:Date, options?: any) : Promise<Team[]>
     getOverallRecordsBySeason(season:Season, options?:any) : Promise<TeamRecord[]>
+    getOverallRecordBySeason(team:Team, season:Season, options?:any)
     addToLeagueSeason(team:Team, league:League, season:Season, options?:any)
     getClosetRatedBot(rating:number, options?:any): Promise<Team>
 }

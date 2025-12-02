@@ -114,9 +114,9 @@ class Player extends Model {
     @Column(DataType.JSON)
     declare hittingRatings:HittingRatings
 
-    @AllowNull(true)
-    @Column(DataType.JSON)
-    declare percentileRatings:PlayerPercentileRatings
+    // @AllowNull(true)
+    // @Column(DataType.JSON)
+    // declare percentileRatings:PlayerPercentileRatings
 
 
     @AllowNull(false)

@@ -4,12 +4,15 @@
     <table class="game-result">
       <tr>
         <td colspan="2" class="inning">
-            ${game.play?.play.inningTop ? $h`
-              Top ${game.play?.play.inningNum}
-            ` : $h`
-              Bottom ${game.play?.play.inningNum}
-            `}
+            ${game.isStarted ? $h`
+              
+              ${game.play?.play.inningTop ? $h`
+                Top ${game.play?.play.inningNum}
+              ` : $h`
+                Bottom ${game.play?.play.inningNum}
+              `}
 
+            ` : $h` `}
         </td>
       </tr>
       <tr class="${game.play?.play.inningTop ? 'at-bat' : ' '}">

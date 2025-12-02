@@ -3,7 +3,7 @@ import assert from "assert"
 import { getContainer } from "./inversify.config.js"
 
 import { UniverseRepository } from "../src/repository/universe-repository.js"
-import { SchemaService } from "../src/service/schema-service.js"
+import { SchemaService } from "../src/service/data/schema-service.js"
 
 import { Universe } from "../src/dto/universe.js"
 
