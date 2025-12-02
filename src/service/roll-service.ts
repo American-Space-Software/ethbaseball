@@ -36,25 +36,30 @@ class RollService {
         
     }
 
-    simMatchup(play:Play, offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, halfInningRunnerEvents:RunnerEvent[], leagueAverages: LeagueAverage, rng) {
+    simMatchup(play:Play, offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, catcher:GamePlayer, halfInningRunnerEvents:RunnerEvent[], leagueAverages: LeagueAverage, rng) {
     
-        let matchupHandedness: MatchupHandedness = this.getMatchupHandedness(hitter, pitcher)
-
-        let hitterChange:HitterChange   =  matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
-        let pitcherChange:PitcherChange =  matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
-
+        let hitterChange:HitterChange   =  play.matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
+        let pitcherChange:PitcherChange =  play.matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
 
         //Throw pitches.
         let pitchLog: PitchLog = this.getPitchLog(rng, leagueAverages, pitcherChange, hitterChange, pitcher)
 
+        let defensiveCredits:DefensiveCredit[] = []
+
         //Check if any runners moved during the at-bat
         try {
-            let pitchLogRunnerEvents:RunnerEvent[] = this.generateRunnerEventsFromPitchLog(command, runnerResult, defensiveCredits, pitcher, catcher, pitchLog)
-            runnerEvents.push(...this.filterNonEvents(pitchLogRunnerEvents, undefined))
+            let pitchLogRunnerEvents:RunnerEvent[] = this.generateRunnerEventsFromPitchLog(offense, defense, play.runner.result.end, defensiveCredits, pitcher, catcher, pitchLog, halfInningRunnerEvents, leagueAverages, rng)
+            play.runner.events.push(...this.filterNonEvents(pitchLogRunnerEvents, undefined))
         } catch(ex) {
             //Ignore inning ending events errors.
             if (!(ex instanceof InningEndingEvent)) throw ex
         }
+
+        let playResult:PlayResult
+        let fielderPlayer:GamePlayer
+        let fielder:Position
+        let contact:Contact
+        let shallowDeep:ShallowDeep 
 
         if (pitchLog.count.strikes == 3) {
             playResult = PlayResult.STRIKEOUT
@@ -68,9 +73,9 @@ class RollService {
             let pitch = pitchLog.pitches[pitchLog.pitches.length - 1]
 
             //How much better than average?
-            let pitchQualityChange = this.getChange(command.leagueAverages.pitchQuality, pitch.quality)
+            let pitchQualityChange = this.getChange(leagueAverages.pitchQuality, pitch.quality)
 
-            let contactRollChart:RollChart = this.getMatchupContactRollChart(command.leagueAverages, hitter.hittingRatings.contactProfile, pitcher.pitchRatings.contactProfile)
+            let contactRollChart:RollChart = this.getMatchupContactRollChart(leagueAverages, hitter.hittingRatings.contactProfile, pitcher.pitchRatings.contactProfile)
 
             const pickFielder = (contact:Contact) => {
 
@@ -87,34 +92,34 @@ class RollService {
                 //Who did it get hit towards?
                 fielderPlayer = undefined
 
-                fielder = this.getFielder(command.rng, command.leagueAverages, matchupHandedness.hits)
+                fielder = this.getFielder(rng, leagueAverages, play.matchupHandedness.hits)
 
                 //If we match on the ignore list get fielders until we don't.
                 while (ignoreList.includes(fielder)) {
-                    fielder = this.getFielder(command.rng, command.leagueAverages, matchupHandedness.hits)
+                    fielder = this.getFielder(rng, leagueAverages, play.matchupHandedness.hits)
                 }
 
-                fielderPlayer = command.defense.players.find(p => p.currentPosition == fielder)
+                fielderPlayer = defense.players.find(p => p.currentPosition == fielder)
 
             }
 
             let hitQuality:number
 
             //What kind of contact? 
-            contact = contactRollChart.entries.get(this.getRoll(command.rng, 0, 99)) as Contact
+            contact = contactRollChart.entries.get(this.getRoll(rng, 0, 99)) as Contact
 
 
             pickFielder(contact)
 
             //Calculate team defense. We're going to use this overall average to simulate being slightly better or worse at positioning.
-            let teamDefenseChange:number = this.rollChartService.getChange(command.leagueAverages.hittingRatings.defense, this.getTeamDefense(command.defense))
-            let fielderDefenseChange:number = this.rollChartService.getChange(command.leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
+            let teamDefenseChange:number = this.rollChartService.getChange(leagueAverages.hittingRatings.defense, this.getTeamDefense(defense))
+            let fielderDefenseChange:number = this.rollChartService.getChange(leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
 
 
             //Was it high quality contact? 1-1000
-            hitQuality = this.getHitQuality(command.rng, pitchQualityChange, teamDefenseChange, fielderDefenseChange, contact, pitch.guess)
+            hitQuality = this.getHitQuality(rng, pitchQualityChange, teamDefenseChange, fielderDefenseChange, contact, pitch.guess)
 
-            let powerRollChart:RollChart = this.getMatchupPowerRollChart(command.leagueAverages, hitterChange, pitcherChange)
+            let powerRollChart:RollChart = this.getMatchupPowerRollChart(leagueAverages, hitterChange, pitcherChange)
 
             //O, 1B, 2B, 3B, or HR
             playResult = powerRollChart.entries.get(hitQuality) as PlayResult
@@ -137,7 +142,7 @@ class RollService {
 
 
             if (this.isToOF(fielder)) {
-                shallowDeep = this.getShallowDeep(command.rng, command.leagueAverages)
+                shallowDeep = this.getShallowDeep(rng, leagueAverages)
             }
 
             if (playResult == PlayResult.HR) {
@@ -157,49 +162,20 @@ class RollService {
         }
 
         //Players could have moved. Grab the correct base runners.
-        let runner1B = command.offense.players.find( p => p._id == runnerResult.first)
-        let runner2B = command.offense.players.find( p => p._id == runnerResult.second)
-        let runner3B = command.offense.players.find( p => p._id == runnerResult.third)
+        let runner1B = offense.players.find( p => p._id == play.runner.result.end.first)
+        let runner2B = offense.players.find( p => p._id == play.runner.result.end.second)
+        let runner3B = offense.players.find( p => p._id == play.runner.result.end.third)
 
         //Add in-play runner events
-        this.getRunnerEvents(command.rng, runnerResult, command.halfInningRunnerEvents, runnerEvents, defensiveCredits, 
-                             command.leagueAverages, playResult, contact, shallowDeep, hitter, fielderPlayer, runner1B, runner2B, runner3B, 
-                             command.offense, command.defense, pitcher, pitchLog.count.pitches - 1)
+        this.getRunnerEvents(rng, play.runner.result.end, halfInningRunnerEvents, play.runner.events, defensiveCredits, 
+                             leagueAverages, playResult, contact, shallowDeep, hitter, fielderPlayer, runner1B, runner2B, runner3B, 
+                             offense, defense, pitcher, pitchLog.count.pitches - 1)
         
-        this.validateRunnerResult(runnerResult)
+        this.validateRunnerResult(play.runner.result.end)
 
-        let officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder, runnerEvents)
+        let officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder, play.runner.events)
 
-        this.logResults(command, hitter, pitcher, defensiveCredits, runnerEvents, contact, officialPlayResult, playResult, pitchLog)
-
-        return {
-            index: command.playIndex,
-            pitchLog: pitchLog,
-            result: playResult,
-            officialPlayResult: officialPlayResult,
-            credits: defensiveCredits,
-            runner: {
-                events: runnerEvents,
-                result: {
-                    start: startingRunnerResult,
-                    end: runnerResult,
-                }
-            },
-            contact: contact,
-            shallowDeep: shallowDeep,
-            fielder: fielder,
-            fielderId: fielderPlayer?._id,
-            hitterId: command.hitterId,
-            pitcherId: command.pitcherId,
-            inningNum: command.inningNum,
-            inningTop: command.inningTop,
-            count: {
-                start: startingCount
-            },
-            score: {
-                start: startingScore
-            }
-        }
+        this.logResults(offense, defense, hitter, pitcher, runner1B?._id, runner2B?._id, runner3B?._id, defensiveCredits, play.runner.events, contact, officialPlayResult, playResult, pitchLog)
 
 
     }
@@ -220,16 +196,27 @@ class RollService {
         this.validateRunners(runnerResult.first, runnerResult.second, runnerResult.third)
     }
 
-    generateRunnerEventsFromPitchLog(command:SimMatchupCommand, runnerResult:RunnerResult, defensiveCredits:DefensiveCredit[], pitcher:GamePlayer, catcher:GamePlayer, pitchLog:PitchLog) {
+    generateRunnerEventsFromPitchLog(
+        offense:TeamInfo, 
+        defense:TeamInfo,
+        runnerResult:RunnerResult, 
+        defensiveCredits:DefensiveCredit[], 
+        pitcher:GamePlayer, 
+        catcher:GamePlayer, 
+        pitchLog:PitchLog, 
+        halfInningRunnerEvents:RunnerEvent[], 
+        leagueAverages: LeagueAverage,
+        rng) 
+    {
 
         let runnerEvents:RunnerEvent[] = []
 
         let pitchIndex=0
         for (let pitch of pitchLog.pitches) {
 
-            let runner1B = command.offense.players.find( p => p._id == runnerResult.first)
-            let runner2B = command.offense.players.find( p => p._id == runnerResult.second)
-            let runner3B = command.offense.players.find( p => p._id == runnerResult.third)
+            let runner1B = offense.players.find( p => p._id == runnerResult.first)
+            let runner2B = offense.players.find( p => p._id == runnerResult.second)
+            let runner3B = offense.players.find( p => p._id == runnerResult.third)
 
 
             let pitchEvents:RunnerEvent[] = this.initRunnerEvents(pitcher, 
@@ -277,13 +264,13 @@ class RollService {
             //Even if there's a good chance they can't go on every pitch
             //No stealing on the last pitch.
             if (pitchIndex < pitchLog.pitches.length - 1 ) {
-                this.stealBases(runner1B, runner2B, runner3B, command.rng, runnerResult, command.halfInningRunnerEvents, pitchEvents, defensiveCredits, command.leagueAverages, catcher, command.defense, command.offense, pitcher, pitchIndex)            
+                this.stealBases(runner1B, runner2B, runner3B, rng, runnerResult, halfInningRunnerEvents, pitchEvents, defensiveCredits, leagueAverages, catcher, defense, offense, pitcher, pitchIndex)            
             }
 
             let filteredEvents = this.filterNonEvents(pitchEvents, undefined)
             runnerEvents.push(...filteredEvents)
 
-            this.validateInningOver( [].concat(command.halfInningRunnerEvents).concat(runnerEvents) )
+            this.validateInningOver( [].concat(halfInningRunnerEvents).concat(runnerEvents) )
 
             pitchIndex++
         }
@@ -341,25 +328,6 @@ class RollService {
 
     }
 
-    getMatchupHandedness(hitter:GamePlayer, pitcher:GamePlayer): MatchupHandedness {
-
-        let pitchHand = pitcher.throws
-        let batSide
-
-        if (hitter.hits == Handedness.S) {
-            batSide = pitcher.throws == Handedness.L ? Handedness.R : Handedness.L
-        } else {
-            batSide = hitter.hits
-        }
-
-        return {
-            throws: pitchHand,
-            hits: batSide,
-            vsSameHand: hitter.hits == pitcher.throws
-        }
-
-
-    }
 
     round(number) {
         let result = Math.round(number * 100) / 100
@@ -406,7 +374,7 @@ class RollService {
 
     }
 
-    logResults(command:SimMatchupCommand, hitter:GamePlayer, pitcher:GamePlayer, defensiveCredits:DefensiveCredit[], runnerEvents: RunnerEvent[], contact: Contact, officialPlayResult: OfficialPlayResult, playResult: PlayResult, pitchLog: PitchLog) {
+    logResults(offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, runner1BId:string, runner2BId:string, runner3BId:string, defensiveCredits:DefensiveCredit[], runnerEvents: RunnerEvent[], contact: Contact, officialPlayResult: OfficialPlayResult, playResult: PlayResult, pitchLog: PitchLog) {
 
         let outEvents = runnerEvents.filter( re => re.movement?.isOut)
 
@@ -416,7 +384,7 @@ class RollService {
 
             //Log out for each runner
             for (let oe of outEvents) {
-                this.logOuts(command.offense.players.find( p => p._id == oe.runner._id).hitResult, 1)
+                this.logOuts(offense.players.find( p => p._id == oe.runner._id).hitResult, 1)
             }
 
         }
@@ -432,7 +400,7 @@ class RollService {
 
 
         for (let re of unearnedRuns) {
-            let runner = command.offense.players.find(p => p._id == re.runner._id)
+            let runner = offense.players.find(p => p._id == re.runner._id)
             this.logRuns(runner.hitResult, pitcher.pitchResult)
 
             if (!re.isUnearned) {
@@ -443,7 +411,7 @@ class RollService {
 
         //Log left on base.
         if (this.getTotalOuts(runnerEvents) >= 3) {
-            let startRunners = [command.runner1BId, command.runner2BId, command.runner3BId].filter(r => r != undefined).length
+            let startRunners = [runner1BId, runner2BId, runner3BId].filter(r => r != undefined).length
             this.logLOB(hitter.hitResult, startRunners - unearnedRuns.length)
         }
 
@@ -461,7 +429,7 @@ class RollService {
         let sbAttempts = runnerEvents.filter(re => re.isSBAttempt)
 
         for (let re of sbAttempts) {
-            let runner = command.offense.players.find(p => p._id == re.runner._id)
+            let runner = offense.players.find(p => p._id == re.runner._id)
             this.logStolenBaseAttempt(runner.hitResult)
         }
 
@@ -469,7 +437,7 @@ class RollService {
         let sb = runnerEvents.filter(re => re.isSB)
 
         for (let re of sb) {
-            let runner = command.offense.players.find(p => p._id == re.runner._id)
+            let runner = offense.players.find(p => p._id == re.runner._id)
             this.logStolenBase(runner.hitResult)
         }
 
@@ -477,7 +445,7 @@ class RollService {
         let cs = runnerEvents.filter(re => re.isCS)
 
         for (let re of cs) {
-            let runner = command.offense.players.find(p => p._id == re.runner._id)
+            let runner = offense.players.find(p => p._id == re.runner._id)
             this.logCaughtStealing(runner.hitResult)
         }
 
@@ -486,7 +454,7 @@ class RollService {
         let passedBalls = defensiveCredits.filter( dc => dc.type == DefenseCreditType.PASSED_BALL)
 
         for (let dc of passedBalls) {
-            let defender = command.defense.players.find(p => p._id == dc._id)
+            let defender = defense.players.find(p => p._id == dc._id)
             this.logPassedBall(defender.hitResult)
         }
 
@@ -494,7 +462,7 @@ class RollService {
         let putouts = defensiveCredits.filter( dc => dc.type == DefenseCreditType.PUTOUT)
 
         for (let dc of putouts) {
-            let defender = command.defense.players.find(p => p._id == dc._id)
+            let defender = defense.players.find(p => p._id == dc._id)
             this.logPutout(defender.hitResult)
         }
 
@@ -502,16 +470,16 @@ class RollService {
         let assists = defensiveCredits.filter( dc => dc.type == DefenseCreditType.ASSIST)
 
         for (let dc of assists) {
-            let defender = command.defense.players.find(p => p._id == dc._id)
+            let defender = defense.players.find(p => p._id == dc._id)
             this.logAssist(defender.hitResult)
         }
 
 
         //OF Assists
-        let ofAssists = defensiveCredits.filter( dc => dc.type == DefenseCreditType.ASSIST && this.isToOF(command.defense.players.find(p => p._id == dc._id).currentPosition))
+        let ofAssists = defensiveCredits.filter( dc => dc.type == DefenseCreditType.ASSIST && this.isToOF(defense.players.find(p => p._id == dc._id).currentPosition))
 
         for (let dc of ofAssists) {
-            let defender = command.defense.players.find(p => p._id == dc._id)
+            let defender = defense.players.find(p => p._id == dc._id)
             this.logOutfieldAssist(defender.hitResult)
         }
 
@@ -519,7 +487,7 @@ class RollService {
         let errors = defensiveCredits.filter( dc => dc.type == DefenseCreditType.ERROR)
 
         for (let dc of errors) {
-            let defender = command.defense.players.find(p => p._id == dc._id)
+            let defender = defense.players.find(p => p._id == dc._id)
             this.logErrors(defender.hitResult)
         }
 
@@ -527,7 +495,7 @@ class RollService {
         let csDefense = defensiveCredits.filter( dc => dc.type == DefenseCreditType.CAUGHT_STEALING)
 
         for (let dc of csDefense) {
-            let defender = command.defense.players.find(p => p._id == dc._id)
+            let defender = defense.players.find(p => p._id == dc._id)
             this.logCSDefense(defender.hitResult)
         }
 

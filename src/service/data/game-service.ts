@@ -643,12 +643,13 @@ class GameService {
         let pitcher = defense.players.find( p => p._id == matchup.pitcher._id)
         let catcher:GamePlayer = defense.players.find( p => p.currentPosition == Position.CATCHER)
 
-        let runner1B = offense.players.find( p => p._id == runnerResult.first)
-        let runner2B = offense.players.find( p => p._id == runnerResult.second)
-        let runner3B = offense.players.find( p => p._id == runnerResult.third)
+        let runner1B = offense.players.find( p => p._id == offense.runner1BId)
+        let runner2B = offense.players.find( p => p._id == offense.runner2BId)
+        let runner3B = offense.players.find( p => p._id == offense.runner3BId)
 
+        let matchupHandedness: MatchupHandedness = this.getMatchupHandedness(hitter, pitcher)
 
-        let play = this.createPlay(game.playIndex, 
+        let play:Play = this.createPlay(game.playIndex, 
                                    hitter, 
                                    pitcher, 
                                    catcher, 
@@ -656,18 +657,19 @@ class GameService {
                                    runner2B, 
                                    runner3B, 
                                    matchupHandedness, 
-                                   hitterChange, 
-                                   pitcherChange, 
-                                   outs, 
-                                   score, 
-                                   inningNum, 
-                                   inningTop )
-
-        //Do matchup
-        let play:Play = this.rollService.simMatchup(play)
+                                   game.count.outs, 
+                                   game.score, 
+                                   game.currentInning, 
+                                   game.isTopInning
+                                )
 
         //Add play to half inning
         halfInning.plays.push(play)
+
+        //Do matchup
+        this.rollService.simMatchup(play, offense, defense, hitter, pitcher, catcher, halfInningRunnerEvents, game.leagueAverages, rng)
+
+
 
         //Reset count
         game.count.balls = 0
@@ -734,116 +736,27 @@ class GameService {
 
     }
 
-    simPitch(game:Game, play:Play, rng:any) {
-
-        let halfInning:HalfInning = game.halfInnings.find(i => i.num == game.currentInning && i.top == game.isTopInning)
-
-        let offense:TeamInfo = this.getOffense(game)
-        let defense:TeamInfo = this.getDefense(game)
-
-        let matchup:UpcomingMatchup = this.getUpcomingMatchup(game)
-
-        let halfInningRunnerEvents:RunnerEvent[] = halfInning.plays.map(p => p.runner?.events).reduce((accumulator, reArray) => accumulator.concat(reArray), []) 
 
 
-        //Do matchup
-        let play:Play = this.rollService.simMatchup({
+    getMatchupHandedness(hitter:GamePlayer, pitcher:GamePlayer): MatchupHandedness {
 
-            outs: game.count.outs,
+        let pitchHand = pitcher.throws
+        let batSide
 
-            offense: offense,
-            defense: defense,
-
-            hitterId: matchup.hitter._id,
-            pitcherId: matchup.pitcher._id,
-
-            leagueAverages: game.leagueAverages,
-
-            runner1BId: offense.runner1BId,
-            runner2BId: offense.runner2BId,
-            runner3BId: offense.runner3BId,
-
-            rng: rng,
-
-            playIndex: game.playIndex,
-
-            inningNum: game.currentInning,
-            inningTop: game.isTopInning,
-
-            halfInningRunnerEvents: halfInningRunnerEvents,
-
-            score: game.score
-
-        })
-
-        //Add play to half inning
-        halfInning.plays.push(play)
-
-        //Reset count
-        game.count.balls = 0
-        game.count.strikes = 0
-
-        //Increase outs
-        game.count.outs += play.runner?.events.filter( re => re.movement.isOut).length
-
-        game.playIndex++
-
-        //Set runners
-        offense.runner1BId = play.runner?.result.end.first
-        offense.runner2BId = play.runner?.result.end.second
-        offense.runner3BId = play.runner?.result.end.third
-
-        //Add result to line score and gamescore
-        this.updateLinescoreRuns(game, halfInning, play)
-        this.updateLinescoreHits(game, halfInning, play)
-        this.updateGameRuns(game, play)
-        
-
-        //Make sure the play has the end count. Clone so we don't accidentally change them.
-        play.count.end = JSON.parse(JSON.stringify(game.count))
-        play.score.end = JSON.parse(JSON.stringify(game.score))
-
-        //Move lineup to next hitter except on failed stolen bases that end an inning.
-        if (play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_2B && play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_3B) {
-            this.nextHitter(offense)
+        if (hitter.hits == Handedness.S) {
+            batSide = pitcher.throws == Handedness.L ? Handedness.R : Handedness.L
+        } else {
+            batSide = hitter.hits
         }
 
-        if (game.count.outs >= 3 || (game.currentInning >=9 && !game.isTopInning && game.score.home > game.score.away) ) {
-
-            //Update linescore LOB
-            let leftOnBase = [offense.runner1BId, offense.runner2BId, offense.runner3BId ].filter( r => r != undefined).length
-
-            if (leftOnBase > 0) {
-                this.updateLinescoreLOB(halfInning, leftOnBase)
-            }
-
-            //Clear runners
-            this.clearRunners(offense)
-
-            //Clear outs
-            game.count.outs = 0
-
-            //Check if game over
-            game.isComplete = this.isGameOver(game)
-
-            if (!game.isComplete) {
-
-                if (game.isTopInning) {
-                    game.isTopInning = false
-                } else {
-                    game.currentInning++
-                    game.isTopInning = true
-                }
-
-                //Init next half inning
-                game.halfInnings.push(this.initHalfInning(game.currentInning, game.isTopInning))
-
-            } 
-            
+        return {
+            throws: pitchHand,
+            hits: batSide,
+            vsSameHand: hitter.hits == pitcher.throws
         }
+
 
     }
-
 
     buildTeamInfoFromPlayers(leagueAverageRatings:LeagueAverageRatings, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) : TeamInfo {
 
@@ -1938,8 +1851,6 @@ class GameService {
                runner2B:GamePlayer,
                runner3B:GamePlayer,
                matchupHandedness:MatchupHandedness,
-               hitterChange:HitterChange,
-               pitcherChange:PitcherChange,
                outs:number,
                score:Score,
                inningNum: number,
@@ -1947,9 +1858,9 @@ class GameService {
     ) : Play {
 
             let runnerResult:RunnerResult = {
-                first: runner1B._id,
-                second: runner2B._id,
-                third: runner3B._id,
+                first: runner1B?._id,
+                second: runner2B?._id,
+                third: runner3B?._id,
                 scored: [],
                 out: []
             }
@@ -1989,11 +1900,14 @@ class GameService {
                 runner: {
                     events: [],
                     result: {
-                        start: startingRunnerResult
+                        start: startingRunnerResult,
+                        end: startingRunnerResult //change this one
                     }
                 },
                 hitterId: hitter._id,
                 pitcherId: pitcher._id,
+                catcherId: catcher._id,
+                matchupHandedness: matchupHandedness,
                 count: {
                     start: startingCount
                 },

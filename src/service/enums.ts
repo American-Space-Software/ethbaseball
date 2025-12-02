@@ -700,7 +700,7 @@ interface Play {
         events: RunnerEvent[]
         result: {
             start: RunnerResult
-            end?: RunnerResult
+            end: RunnerResult
         }
     }
 
@@ -709,8 +709,13 @@ interface Play {
     shallowDeep?: ShallowDeep
     fielder?: Position
     fielderId?:string
+
+    matchupHandedness:MatchupHandedness
+
     hitterId: string
     pitcherId: string
+    catcherId:string
+
     count: {
         start: Count
         end?: Count
