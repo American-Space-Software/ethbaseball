@@ -38,10 +38,23 @@ class RollService {
 
     simMatchup(command:SimPitchCommand) {
     
-        let keepGoing = true
-        while (keepGoing) {
-            keepGoing = this.simPitch(command)
+        //Check if any runners moved during the at-bat
+        try {
+    
+            let keepGoing = true
+
+            while (keepGoing) {
+                keepGoing = this.simPitch(command)
+            }
+    
+            this.generateRunnerEventsFromPitchLog(command)
+            
+            
+        } catch(ex) {
+            //Ignore inning ending events errors.
+            if (!(ex instanceof InningEndingEvent)) throw ex
         }
+
 
         this.finishPlay(command)
         
@@ -198,17 +211,6 @@ class RollService {
 
     finishPlay(command:SimPitchCommand) {
 
-        let defensiveCredits:DefensiveCredit[] = []
-
-        //Check if any runners moved during the at-bat
-        try {
-            let pitchLogRunnerEvents:RunnerEvent[] = this.generateRunnerEventsFromPitchLog(command, defensiveCredits)
-            command.play.runner.events.push(...this.filterNonEvents(pitchLogRunnerEvents, undefined))
-        } catch(ex) {
-            //Ignore inning ending events errors.
-            if (!(ex instanceof InningEndingEvent)) throw ex
-        }
-
         let playResult:PlayResult
         let fielderPlayer:GamePlayer
         let fielder:Position
@@ -321,7 +323,7 @@ class RollService {
         let runner3B = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
 
         //Add in-play runner events
-        this.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.runner.events, defensiveCredits, 
+        this.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.runner.events, command.play.credits, 
                              command.leagueAverages, playResult, contact, shallowDeep, command.hitter, fielderPlayer, runner1B, runner2B, runner3B, 
                              command.offense, command.defense, command.pitcher, command.play.pitchLog.count.pitches - 1)
         
@@ -329,7 +331,7 @@ class RollService {
 
         command.play.officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder,command.play.runner.events)
 
-        this.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, defensiveCredits, command.play.runner.events, contact, command.play.officialPlayResult, playResult, command.play.pitchLog)
+        this.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, contact, command.play.officialPlayResult, playResult, command.play.pitchLog)
 
     }
 
@@ -344,29 +346,25 @@ class RollService {
         this.validateRunners(runnerResult.first, runnerResult.second, runnerResult.third)
     }
 
-    generateRunnerEventsFromPitchLog(command:SimPitchCommand, defensiveCredits:DefensiveCredit[]) {
-
-        let runnerEvents:RunnerEvent[] = []
+    generateRunnerEventsFromPitchLog(command:SimPitchCommand) {
 
         let pitchIndex=0
         for (let pitch of command.play.pitchLog.pitches) {
 
-            let isLastPitch = pitch == command.play.pitchLog.pitches[command.play.pitchLog.pitches.length - 1]
+            let canSteal = pitchIndex < command.play.pitchLog.pitches.length - 1 
 
-            runnerEvents.push(...this.generateRunnerEventsFromPitch(command, pitchIndex, pitch, defensiveCredits, isLastPitch, command.rng  ))
+            this.generateRunnerEventsFromPitch(command, pitch, pitchIndex, canSteal)
+
             pitchIndex++
         }
-
-        return runnerEvents
     }
 
-    generateRunnerEventsFromPitch(command:SimPitchCommand, pitchIndex:number, pitch:Pitch, defensiveCredits:DefensiveCredit[], isLastPitch:boolean, rng) : RunnerEvent[]  {
-
-        let runnerEvents:RunnerEvent[] = []
+    generateRunnerEventsFromPitch(command:SimPitchCommand, pitch:Pitch, pitchIndex:number, canSteal:boolean) {
 
         let runner1B = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
         let runner2B = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
         let runner3B = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
+
 
         let pitchEvents:RunnerEvent[] = this.initRunnerEvents(command.pitcher, 
             undefined,
@@ -388,7 +386,8 @@ class RollService {
                 re.isWP = true
             }
 
-        } else if (pitch.isPB) {
+            
+        } if (pitch.isPB) {
 
             //Move runners up on passed ball.
 
@@ -400,30 +399,28 @@ class RollService {
             }
 
             //Credit the catcher
-            defensiveCredits.push({
+            command.play.credits.push({
                 _id: command.catcher._id,
                 type: DefenseCreditType.PASSED_BALL
             })
 
-        } else if (!isLastPitch ) {
-
+        } if (canSteal) {
+            
             //Stolen bases
             //Even if there's a good chance they can't go on every pitch
             //No stealing on the last pitch.
-
-            this.stealBases(runner1B, runner2B, runner3B, rng, command.play.runner.result.end, command.halfInningRunnerEvents, pitchEvents, defensiveCredits, command.leagueAverages, command.catcher, command.defense, command.offense, command.pitcher, pitchIndex)            
+            
+            this.stealBases(runner1B, runner2B, runner3B, command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, pitchEvents, command.play.credits, command.leagueAverages, command.catcher, command.defense, command.offense, command.pitcher, pitchIndex)            
         }
 
-        let filteredEvents = this.filterNonEvents(pitchEvents, undefined)
 
-        runnerEvents.push(...filteredEvents)
+        command.play.runner.events.push(...this.filterNonEvents(pitchEvents, undefined))
 
-        this.validateInningOver( [].concat(command.halfInningRunnerEvents).concat(runnerEvents) )
 
-        return runnerEvents
+        this.validateInningOver( [].concat(command.halfInningRunnerEvents).concat(command.play.runner.events) )
 
+        pitchIndex++
     }
-
 
     validateInningOver( allEvents:RunnerEvent[]) {
 
@@ -908,6 +905,8 @@ class RollService {
     
                 runner: {
                     _id: hitter._id,
+                    // speed: hitter.hittingRatings.speed,
+                    // steals: hitter.hittingRatings.steals
                 },
                 movement: {
                     start: BaseResult.HOME,
@@ -924,6 +923,8 @@ class RollService {
                 },
                 runner: {
                     _id: runner1B._id,
+                    // speed: runner1B.hittingRatings.speed,
+                    // steals: runner1B.hittingRatings.steals
                 },                
                 movement: {
                     start: BaseResult.FIRST,
@@ -942,6 +943,8 @@ class RollService {
                 },
                 runner: {
                     _id: runner2B._id,
+                    // speed: runner2B.hittingRatings.speed,
+                    // steals: runner2B.hittingRatings.steals
                 },
                 movement: {
                     start: BaseResult.SECOND,
@@ -960,6 +963,8 @@ class RollService {
                 },
                 runner: {
                     _id: runner3B._id,
+                    // speed: runner3B.hittingRatings.speed,
+                    // steals: runner3B.hittingRatings.steals
                 },
                 movement: {
                     start: BaseResult.THIRD,
