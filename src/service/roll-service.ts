@@ -5,7 +5,7 @@ import {  RollChartService } from "./roll-chart-service.js"
 import { SeedService } from "./data/seed-service.js"
 import { RollChart } from "../dto/roll-chart.js"
 import { StatService } from "./stat-service.js"
-import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand } from "./enums.js"
+import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand, SimPitchResult } from "./enums.js"
 
 const APPLY_PLAYER_CHANGES = true
 
@@ -41,14 +41,23 @@ class RollService {
         //Check if any runners moved during the at-bat
         try {
     
-            let keepGoing = true
+            let continueAtBat = true
 
-            while (keepGoing) {
-                keepGoing = this.simPitch(command)
+            while (continueAtBat) {
+                let result = this.simPitch(command)
+                continueAtBat = result.continueAtBat
             }
     
-            this.generateRunnerEventsFromPitchLog(command)
-            
+            let pitchIndex=0
+            for (let pitch of command.play.pitchLog.pitches) {
+
+                let canSteal = pitchIndex < command.play.pitchLog.pitches.length - 1 
+
+                this.generateRunnerEventsFromPitch(command, pitch, pitchIndex, canSteal)
+
+                pitchIndex++
+            }
+
             
         } catch(ex) {
             //Ignore inning ending events errors.
@@ -60,7 +69,7 @@ class RollService {
         
     }
 
-    simPitch(command:SimPitchCommand) : boolean {
+    simPitch(command:SimPitchCommand) : SimPitchResult {
 
         //Sort pitcher's pitches by rating
         command.pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
@@ -195,17 +204,25 @@ class RollService {
 
         command.play.pitchLog.count.pitches = command.play.pitchLog.pitches.length
 
+        let continueAtBat = true
+
         //HBP
-        if (pitch.result == PitchResult.HBP) return false
+        if (pitch.result == PitchResult.HBP) continueAtBat = false
         
         //In play?
-        if (pitch.result == PitchResult.IN_PLAY) return false
+        if (pitch.result == PitchResult.IN_PLAY) continueAtBat = false
 
         //Strikeout or walk?
-        if (command.play.pitchLog.count.balls == 4) return false
-        if (command.play.pitchLog.count.strikes == 3) return false
+        if (command.play.pitchLog.count.balls == 4) continueAtBat = false
+        if (command.play.pitchLog.count.strikes == 3) continueAtBat = false
 
-        return true
+
+        let result:SimPitchResult = {
+            continueAtBat: continueAtBat,
+            pitch: pitch
+        }
+
+        return result
 
     }
 
@@ -346,18 +363,10 @@ class RollService {
         this.validateRunners(runnerResult.first, runnerResult.second, runnerResult.third)
     }
 
-    generateRunnerEventsFromPitchLog(command:SimPitchCommand) {
+    // generateRunnerEventsFromPitchLog(command:SimPitchCommand) {
 
-        let pitchIndex=0
-        for (let pitch of command.play.pitchLog.pitches) {
 
-            let canSteal = pitchIndex < command.play.pitchLog.pitches.length - 1 
-
-            this.generateRunnerEventsFromPitch(command, pitch, pitchIndex, canSteal)
-
-            pitchIndex++
-        }
-    }
+    // }
 
     generateRunnerEventsFromPitch(command:SimPitchCommand, pitch:Pitch, pitchIndex:number, canSteal:boolean) {
 
