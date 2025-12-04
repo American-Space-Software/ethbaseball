@@ -170,16 +170,16 @@ function validatePitchProfile(value:PitchingProfile) {
         throw new Error(`Player must have a max of 3 pitches (profile) ${value.pitches.length}`)
     }
 
-    for (let pitch of value.pitches) {
+    // for (let pitch of value.pitches) {
 
-        if (pitch.ratingDelta == undefined || pitch.type == undefined) {
-            throw new Error(`Missing pitch information. (profile) ${pitch.ratingDelta} ${pitch.type}`)
-        }
+    //     if (pitch.ratingDelta == undefined || pitch.type == undefined) {
+    //         throw new Error(`Missing pitch information. (profile) ${pitch.ratingDelta} ${pitch.type}`)
+    //     }
 
-        if (!inRange(pitch.ratingDelta, -10, 10)) {
-            throw new Error(`Invalid pitch (profile) ${pitch.ratingDelta}`)
-        }
-    }
+    //     if (!inRange(pitch.ratingDelta, -10, 10)) {
+    //         throw new Error(`Invalid pitch (profile) ${pitch.ratingDelta}`)
+    //     }
+    // }
 
     if (value.powerDelta == undefined || !inRange(value.powerDelta,  -10, 10)) {
         throw new Error(`Pitcher power invalid (profile) ${value.powerDelta}`)
@@ -250,15 +250,15 @@ function validatePitchRatings(value:PitchRatings) {
         throw new Error(`Player must have a max of 3 pitches`)
     }
 
-    for (let pitch of value.pitches) {
-        if (pitch.rating == undefined || pitch.type == undefined) {
-            throw new Error('Missing pitch information.')
-        }
+    // for (let pitch of value.pitches) {
+    //     if (pitch.rating == undefined || pitch.type == undefined) {
+    //         throw new Error('Missing pitch information.')
+    //     }
 
-        if (!inRange(pitch.rating, 1, 1000)) {
-            throw new Error("Invalid pitch")
-        }
-    }
+    //     if (!inRange(pitch.rating, 1, 1000)) {
+    //         throw new Error("Invalid pitch")
+    //     }
+    // }
 
     if (value.power == undefined || !inRange(value.power, 1, 1000)) {
         throw new Error(`Pitcher power invalid`)

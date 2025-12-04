@@ -64,10 +64,7 @@ describe('PlayerRepository', async () => {
         player.pitchingProfile = {
             controlDelta: .02,
             movementDelta: .16,
-            pitches: [{
-                type: PitchType.FF,
-                ratingDelta: .02
-            }],
+            pitches: [PitchType.FF],
             powerDelta: -.02,
             vsSameHandDelta: -.02,
             contactProfile: {

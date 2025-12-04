@@ -287,10 +287,10 @@ ${pitcherTable.toString()}
             head: pitcherHead
         })
 
-        for (let pitch of player.pitchRatings.pitches) {
-            pitcherHead.push(Object.keys(PitchType)[Object.values(PitchType).indexOf(pitch.type)])
-            // pitcherRow.push(pitch.rating)
-        }
+        // for (let pitch of player.pitchRatings.pitches) {
+        //     pitcherHead.push(Object.keys(PitchType)[Object.values(PitchType).indexOf(pitch.type)])
+        //     // pitcherRow.push(pitch.rating)
+        // }
 
         pitcherTable.push(pitcherRow)
 

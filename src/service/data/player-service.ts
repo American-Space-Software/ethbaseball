@@ -328,7 +328,7 @@ class PlayerService {
     calculatePitchRatings(player: Player): PitchRatings {
 
         let pitchRatings: PitchRatings = {
-            pitches: []
+            pitches: player.pitchingProfile.pitches
         }
 
         //Contact profile gets copied over
@@ -351,10 +351,10 @@ class PlayerService {
             100 + (100 * player.pitchingProfile.movementDelta)
         ]
 
-        //Add pitches
-        for (let pitch of player.pitchingProfile.pitches) {
-            ratings.push(100 + (100 * pitch.ratingDelta))
-        }
+        // //Add pitches
+        // for (let pitch of player.pitchingProfile.pitches) {
+        //     ratings.push(100 + (100 * pitch.ratingDelta))
+        // }
 
         //Adjust based on player's profile and normalize to rating max.
         const normalizedRatings = this.normalizeRatings(ratings, normalizedMax)
@@ -366,16 +366,16 @@ class PlayerService {
             movement: normalizedRatings[2],
         }
 
-        let i = 3
-        for (let pitch of player.pitchingProfile.pitches) {
+        // let i = 3
+        // for (let pitch of player.pitchingProfile.pitches) {
 
-            pitchRatings.pitches.push({
-                rating: normalizedRatings[i],
-                type: pitch.type
-            })
+        //     pitchRatings.pitches.push({
+        //         rating: normalizedRatings[i],
+        //         type: pitch.type
+        //     })
 
-            i++
-        }
+        //     i++
+        // }
 
         let vsSameHand = JSON.parse(JSON.stringify(vsOppositeHand))
         this.modifyHandednessRatings(vsSameHand, -Math.abs(player.pitchingProfile.vsSameHandDelta))
@@ -402,13 +402,7 @@ class PlayerService {
 
     getAveragePitchingRating(pitchRatings:PitchRatings) {
 
-        let pitchTotal = 0
-
-        for (let pitch of pitchRatings.pitches) {
-            pitchTotal += pitch.rating        
-        }
-
-        return (pitchRatings.power + pitchRatings.vsL.control + pitchRatings.vsL.movement + pitchRatings.vsR.control + pitchRatings.vsR.movement + pitchTotal) / (5 + pitchRatings.pitches.length)
+        return (pitchRatings.power + pitchRatings.vsL.control + pitchRatings.vsL.movement + pitchRatings.vsR.control + pitchRatings.vsR.movement ) / 5
     
     }
 
@@ -711,14 +705,14 @@ class PlayerService {
 
             } else {
 
-                //If it's an array (pitches) loop through updating rating
-                for (let pitchRating of ratings[key]) {
-                    pitchRating.rating = Math.round(pitchRating.rating)
+                // //If it's an array (pitches) loop through updating rating
+                // for (let pitchRating of ratings[key]) {
+                //     pitchRating.rating = Math.round(pitchRating.rating)
 
-                    if (pitchRating.rating == 0) pitchRating.rating = 1
+                //     if (pitchRating.rating == 0) pitchRating.rating = 1
 
 
-                }
+                // }
 
             }
 
@@ -997,12 +991,6 @@ class PlayerService {
             }
         ]
 
-        for (let p of player.pitchRatings.pitches) {
-            result.attributes.push(            {
-                trait_type: p.type,
-                value: p.rating.toString()
-            })
-        }
 
         return result
 
@@ -1122,49 +1110,49 @@ class PlayerService {
 
     }
 
-    async getPlayerRowssByTokenIds(tokenIds: number[], options?: any): Promise<PlayerRowViewModel[]> {
+    // async getPlayerRowssByTokenIds(tokenIds: number[], options?: any): Promise<PlayerRowViewModel[]> {
 
-        let vms: PlayerRowViewModel[] = []
+    //     let vms: PlayerRowViewModel[] = []
 
-        let players: Player[] = await this.playerRepository.getByTokenIds(tokenIds, options)
+    //     let players: Player[] = await this.playerRepository.getByTokenIds(tokenIds, options)
 
-        for (let player of players) {
+    //     for (let player of players) {
 
-            let pitchRating = {}
+    //         let pitchRating = {}
 
-            for (let pitchType in PitchType) {
-                pitchRating[pitchType] = 0
-            }
+    //         for (let pitchType in PitchType) {
+    //             pitchRating[pitchType] = 0
+    //         }
 
-            for (let pitch of player.pitchRatings.pitches) {
-                pitchRating[Object.keys(PitchType)[Object.values(PitchType).indexOf(pitch.type)]] = pitch.rating
-            }
+    //         for (let pitch of player.pitchRatings.pitches) {
+    //             pitchRating[Object.keys(PitchType)[Object.values(PitchType).indexOf(pitch.type)]] = pitch.rating
+    //         }
 
 
-            vms.push({
-                _id: player._id,
-                coverImageCid: player.coverImageCid,
-                fullName: `${player.fullName}`,
-                firstName: player.firstName,
-                lastName: player.lastName,
-                primaryPosition: player.primaryPosition,
-                age: player.age,
-                zodiacSign: player.zodiacSign,
-                ownerId: player.ownerId,
-                throws: player.throws,
-                hits: player.hits,
-                lastGamePlayed: player.lastGamePlayed,
+    //         vms.push({
+    //             _id: player._id,
+    //             coverImageCid: player.coverImageCid,
+    //             fullName: `${player.fullName}`,
+    //             firstName: player.firstName,
+    //             lastName: player.lastName,
+    //             primaryPosition: player.primaryPosition,
+    //             age: player.age,
+    //             zodiacSign: player.zodiacSign,
+    //             ownerId: player.ownerId,
+    //             throws: player.throws,
+    //             hits: player.hits,
+    //             lastGamePlayed: player.lastGamePlayed,
 
-                hittingRatings: player.hittingRatings,
-                pitchRatings: player.pitchRatings,
+    //             hittingRatings: player.hittingRatings,
+    //             pitchRatings: player.pitchRatings,
 
-                stats: player.careerStats
-            })
-        }
+    //             stats: player.careerStats
+    //         })
+    //     }
 
-        return vms
+    //     return vms
 
-    }
+    // }
 
     async getPlayerRowHittingRatingsByTokenIds(tokenIds: string[], options?: any): Promise<PlayerRowViewModel[]> {
 

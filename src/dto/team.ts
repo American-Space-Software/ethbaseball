@@ -139,9 +139,9 @@ interface OverallRecord {
     losses:number
     winPercent:number
     gamesBehind:number
-    resultLast10:boolean[]
-    runsScored:number
-    runsAgainst:number
+    resultLast10?:boolean[]
+    runsScored?:number
+    runsAgainst?:number
     rank:number
 }
 

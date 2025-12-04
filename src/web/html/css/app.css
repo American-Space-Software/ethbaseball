@@ -1,6 +1,10 @@
 
 :root {
   
+  --f7-toolbar-bg-color: #0A3161;
+  --f7-toolbar-inner-padding-left: 0px; 
+  --f7-toolbar-inner-padding-right: 0px;
+
   --f7-glass-shadow: unset;
   --f7-glass-bg-color:#0A3161;
   --f7-navbar-bg-color: #0A3161; 
@@ -44,7 +48,6 @@
 .dark .navbar-inner {
   background: #000000;
 }
-
 
 
 html {
@@ -164,10 +167,6 @@ h1 {
     display: none;
   }
 
-  .aurora .toolbar-top-aurora~*, .ios .toolbar-top-ios~*, .md .toolbar-top-md~*, .toolbar-top~* {
-    --f7-page-toolbar-top-offset: var(--f7-toolbar-height);
-  }
-  
 }
 
 
@@ -799,9 +798,17 @@ h1 {
     margin-left: 0px;
 
   }
-  
-
 }
+
+.ios .toolbar.toolbar-bottom .toolbar-inner {
+  padding-bottom: 0px;
+}
+
+/* .toolbar .play {
+  background: #FFFFFF;
+  border: 1px solid #cccccc;
+  text-align: left;
+} */
 
 
 .game-state {
@@ -811,7 +818,6 @@ h1 {
   display: flex;
   margin: 10px auto 0px auto;
   flex-wrap: wrap;
-  
 }
 
 
@@ -857,9 +863,59 @@ h1 {
   font-size: .75em;
 }
 
+.state-info {
+  padding: 3px;
+  font-size: .75em;  
+  background: #f1f1f1;
+  text-align: center;
+  border-left: 1px solid #cccccc;
+  border-right: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
+}
+
+.dark .state-info {
+  background: #464646;
+}
+
+.state-info .inning-wrapper {
+  display: inline-block;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+.state-info .info-wrapper {
+  display: inline-block;
+}
+
+.state-info .info-wrapper .label {
+  display: inline-block;
+  font-weight: bold;
+  margin-left: 3px;
+}
+
+.state-info .diamond-wrapper {
+  display: inline-block;
+  height: 20px;
+  margin-left: 15px;
+}
+
+
+.state-info .diamond-wrapper .diamond {
+  height: 20px;
+  width: 20px;
+  margin-left: 6.5px;
+  margin-top: 6.5px;
+}
+
+.state-info .diamond-wrapper .diamond .base {
+  height: 7px;
+  width: 7px;
+  border: 1px solid #cccccc;
+}
+
+
 .game-state .game-info {
   position: relative;
-  
 }
 
 .game-state .game-info img {
@@ -1039,6 +1095,11 @@ h1 {
     display: block;
   }
 
+  .game-state .state-info {
+    border-right: none;
+    border-left: none;
+  }
+
   
   .game-state .left, .game-state .right, .game-state .center {
     width: 100%;
@@ -1145,53 +1206,7 @@ h1 {
 }
 
 
-.score {
-  font-size: .85em;
-  text-transform: uppercase;
-  color: #ffffff;
-  width: 100%;
-  display: flex;
-  min-width: 100%;
-}
 
-.score .score-wrapper {
-  width: 90px;
-  font-size: 1.2em;
-  line-height: 34px;
-  display: inline-block;
-}
-
-.score .info-wrapper {
-  width: 120px;
-  color: #000000;
-  font-size: .8em;
-  padding-left: 5px;
-  display: inline-block;
-}
-
-.dark .score .info-wrapper {
-  color: white;
-}
-
-
-
-.score .inning-wrapper {
-  width: 15px;
-  color: #000000;
-  background: #cccccc;
-  display: inline-block;
-}
-
-
-.score .diamond-wrapper {
-  width: 65px;
-  display: inline-block;
-  background: #f1f1f1;
-}
-
-.dark .score .diamond-wrapper {
-  background: black;
-}
 
 .game-state .play-wrapper {
   overflow-y: scroll;
@@ -1221,7 +1236,7 @@ h1 {
 }
  */
 
-
+/* 
 
 .score .inning-wrapper .arrow {
   font-weight: bold;
@@ -1267,12 +1282,7 @@ h1 {
   width: 100%;
   text-align: center;
 }
-
-.game-state .label {
-  width: 45px;
-  display: inline-block;
-  font-size: .75em;
-}
+ */
 
 .diamond {
   height: 35px;
@@ -1358,21 +1368,16 @@ h1 {
   min-width: 100%;
 } */
 
-
+/* 
 .game-state .matchup-pitcher, .game-state .matchup-hitter {
   position: absolute;
   width: 25%;
   background: var(--f7-card-bg-color);
   height: 100px;
-}
+} */
 
-.game-state .matchup-pitcher .card-header , .game-state .matchup-hitter .card-header {
-  font-size: .85em;
-  padding: 5px;
-  height: 25px;
-  min-height: 25px;
-}
 
+/* 
 .game-state .matchup-pitcher {
   position: absolute;
   top:50%; 
@@ -1386,11 +1391,11 @@ h1 {
   right: 0%;
   margin-right: 5px;
 
-}
+} */
 
 .game-state .player {
   width: 100%;
-  font-size: .85em;
+  font-size: 1em;
 }
 
 .game-state .player img {
@@ -1459,9 +1464,6 @@ h1 {
     line-height: 34px;
   }
   
-  .game-state .score .info-wrapper {
-    flex: 0 0 120px;
-  }
   
   .game-state .score .inning-wrapper {
     flex: 0 0 15px;
@@ -2093,20 +2095,16 @@ text-align: center;
 
 .rating-table {
   margin-top: 10px;
-  font-size: .65em;
+  font-size: 1em;
   display: flex;
+  width: 100%;
 }
 
 .rating-table .left {
-  flex: 0 0 50%;
-  padding: 5px;
-}
-
-.rating-table .right {
   flex: 1;
-  padding: 5px;
-
 }
+
+
 
 
 

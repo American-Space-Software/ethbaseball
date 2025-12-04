@@ -339,15 +339,15 @@ class RollChartService {
         let laHandednessRatings = hits == Handedness.R ? laPitchRatings.vsR : laPitchRatings.vsL
 
 
-        let pitchesChange:PitchChange[] = []
+        // let pitchesChange:PitchChange[] = []
 
-        for (let pitch of pitchRatings.pitches) {
-            //Get league average
-            pitchesChange.push({
-                type: pitch.type,
-                pitchChange: this.clamp(this.getChange(laPitchRatings.power, pitch.rating), MIN_CHANGE, MAX_CHANGE), //we don't have all pitches in the league averages so just use power
-            })
-        }
+        // for (let pitch of pitchRatings.pitches) {
+        //     //Get league average
+        //     pitchesChange.push({
+        //         type: pitch.type,
+        //         pitchChange: this.clamp(this.getChange(laPitchRatings.power, pitch.rating), MIN_CHANGE, MAX_CHANGE), //we don't have all pitches in the league averages so just use power
+        //     })
+        // }
 
         return {
 
@@ -356,7 +356,7 @@ class RollChartService {
             powerChange: this.clamp(this.getChange(laPitchRatings.power, pitchRatings.power), MIN_CHANGE, MAX_CHANGE),
 
 
-            pitchesChange: pitchesChange
+            // pitchesChange: pitchesChange
         }
     }
 

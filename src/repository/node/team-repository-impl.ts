@@ -494,8 +494,20 @@ class TeamRepositoryNodeImpl implements TeamRepository {
             SELECT 
                 t._id,
                 g.leagueId,
-                SUM(CASE WHEN g.winningTeamId = t._id AND g.isComplete = 1 THEN 1 ELSE 0 END) AS wins,
-                SUM(CASE WHEN g.losingTeamId = t._id AND g.isComplete = 1 THEN 1 ELSE 0 END) AS losses
+                SUM(
+                    CASE 
+                        WHEN g.winningTeamId = t._id AND g.isComplete = 1 
+                        THEN 1 
+                        ELSE 0 
+                    END
+                ) AS wins,
+                SUM(
+                    CASE 
+                        WHEN g.losingTeamId = t._id AND g.isComplete = 1 
+                        THEN 1 
+                        ELSE 0 
+                    END
+                ) AS losses
             FROM team t
             JOIN game g ON g.seasonId = :seasonId
             WHERE g.winningTeamId = t._id OR g.losingTeamId = t._id
@@ -508,45 +520,50 @@ class TeamRepositoryNodeImpl implements TeamRepository {
                 MIN(losses) AS minLosses
             FROM TeamStats
             GROUP BY leagueId
+        ),
+        Ranked AS (
+            SELECT 
+                ts._id,
+                ts.leagueId,
+                ts.wins,
+                ts.losses,
+                (ts.wins + ts.losses) AS games,
+                CASE 
+                    WHEN (ts.wins + ts.losses) > 0 
+                        THEN (CAST(ts.wins AS FLOAT) / (ts.wins + ts.losses))
+                    ELSE 0
+                END AS winPercent,
+                RANK() OVER (
+                    PARTITION BY ts.leagueId
+                    ORDER BY 
+                        CASE 
+                            WHEN (ts.wins + ts.losses) > 0 
+                                THEN (CAST(ts.wins AS FLOAT) / (ts.wins + ts.losses))
+                            ELSE 0
+                        END DESC
+                ) AS 'rank',
+                ((ll.maxWins - ts.wins) + (ts.losses - ll.minLosses)) / 2.0 AS gamesBack
+            FROM TeamStats ts
+            JOIN LeagueLeader ll ON ts.leagueId = ll.leagueId
         )
-        SELECT 
-            ts._id,
-            ts.leagueId,
-            ts.wins,
-            ts.losses,
-            (ts.wins + ts.losses) AS games,
-            CASE 
-                WHEN (ts.wins + ts.losses) > 0 THEN (CAST(ts.wins AS FLOAT) / (ts.wins + ts.losses))
-                ELSE 0
-            END AS winPercent,
-            RANK() OVER (
-                PARTITION BY ts.leagueId
-                ORDER BY 
-                    CASE 
-                        WHEN (ts.wins + ts.losses) > 0 THEN (CAST(ts.wins AS FLOAT) / (ts.wins + ts.losses))
-                        ELSE 0
-                    END DESC
-            ) AS 'rank',
-            ((ll.maxWins - ts.wins) + (ts.losses - ll.minLosses)) / 2.0 AS gamesBack
-        FROM TeamStats ts
-        JOIN LeagueLeader ll ON ts.leagueId = ll.leagueId
-        WHERE ts._id = :teamId
-        ORDER BY ts.leagueId, winPercent DESC
+        SELECT *
+        FROM Ranked
+        WHERE _id = :teamId
+        ORDER BY leagueId, winPercent DESC
         `, Object.assign(queryOptions, options))
 
-        return queryResults.map( qr => {
-            return {
-                _id: qr._id,
-                leagueId: qr.leagueId,
-                overallRecord: {
-                    wins: qr.wins,
-                    losses: qr.losses,
-                    winPercent: qr.winPercent,
-                    rank: qr.rank,
-                    gamesBack: qr.gamesBack
-                }
+        let qr = queryResults[0]
+
+        return {
+            _id: qr._id,
+            overallRecord: {
+                wins: qr.wins,
+                losses: qr.losses,
+                winPercent: qr.winPercent,
+                rank: qr.rank,
+                gamesBehind: qr.gamesBack
             }
-        })
+        }
 
 
     }

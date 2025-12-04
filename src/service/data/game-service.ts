@@ -518,6 +518,9 @@ class GameService {
         game.changed('away', true)
         game.changed('winningPitcherId', true)
         game.changed('losingPitcherId', true)
+        game.changed('winningTeamId', true)
+        game.changed('losingTeamId', true)
+
     }
 
     private finalizePlayer(player:Player, pls:PlayerLeagueSeason, gamePlayer:GamePlayer, hittingRewards:WPAReward, pitchingRewards:WPAReward) {
@@ -1872,9 +1875,9 @@ class GameService {
                hitter:GamePlayer, 
                pitcher:GamePlayer, 
                catcher:GamePlayer, 
-               runner1B:GamePlayer,
-               runner2B:GamePlayer,
-               runner3B:GamePlayer,
+               runner1B:GamePlayer|undefined,
+               runner2B:GamePlayer|undefined,
+               runner3B:GamePlayer|undefined,
                matchupHandedness:MatchupHandedness,
                outs:number,
                score:Score,

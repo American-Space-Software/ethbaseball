@@ -85,7 +85,7 @@ let startWebServer = async () => {
     views: "./src/web-server/views"
   })
 
-  const SECONDS_BETWEEN_SIMS = process.env.SECONDS_BETWEEN_SIMS ?  parseInt(process.env.SECONDS_BETWEEN_SIMS) : 60
+  const SECONDS_BETWEEN_SIMS = process.env.SECONDS_BETWEEN_SIMS ?  parseInt(process.env.SECONDS_BETWEEN_SIMS) : 15
 
 
   const PROVIDER_CHAIN_ID = process.env.PROVIDER_CHAIN_ID ? parseInt(process.env.PROVIDER_CHAIN_ID) : 1337

@@ -310,8 +310,8 @@ class LadderService {
         game.changed("away", true)
         game.changed("home", true)
 
-        homeTLS.overallRecord = homeOverallRecord.overallRecord
-        awayTLS.overallRecord = awayOverallRecord.overallRecord
+        homeTLS.overallRecord = game.home.overallRecord.after
+        awayTLS.overallRecord = game.away.overallRecord.after
 
         homeTLS.changed("overallRecord", true)
         awayTLS.changed("overallRecord", true)

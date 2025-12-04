@@ -927,6 +927,23 @@ class GameWebService {
         })
     }
 
+    //from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+    useDarkFont(bgColor) {
+
+        const hexCode = bgColor.charAt(0) === '#' 
+                            ? bgColor.substr(1, 6)
+                            : bgColor;
+
+        const hexR = parseInt(hexCode.substr(0, 2), 16)
+        const hexG = parseInt(hexCode.substr(2, 2), 16)
+        const hexB = parseInt(hexCode.substr(4, 2), 16)
+        // Gets the average value of the colors
+        const contrastRatio = (hexR + hexG + hexB) / (255 * 3)
+
+        return contrastRatio >= 0.5
+
+    }
+
 
 }
 

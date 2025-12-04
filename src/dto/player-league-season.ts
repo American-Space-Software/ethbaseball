@@ -150,15 +150,15 @@ function validatePitchRatings(value:PitchRatings) {
         throw new Error(`Player must have a max of 3 pitches`)
     }
 
-    for (let pitch of value.pitches) {
-        if (pitch.rating == undefined || pitch.type == undefined) {
-            throw new Error('Missing pitch information.')
-        }
+    // for (let pitch of value.pitches) {
+    //     if (pitch.rating == undefined || pitch.type == undefined) {
+    //         throw new Error('Missing pitch information.')
+    //     }
 
-        if (!inRange(pitch.rating, 1, 1000)) {
-            throw new Error("Invalid pitch")
-        }
-    }
+    //     if (!inRange(pitch.rating, 1, 1000)) {
+    //         throw new Error("Invalid pitch")
+    //     }
+    // }
 
     if (value.power == undefined || !inRange(value.power, 1, 1000)) {
         throw new Error(`Pitcher power invalid`)

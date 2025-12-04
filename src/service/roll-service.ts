@@ -5,7 +5,7 @@ import {  RollChartService } from "./roll-chart-service.js"
 import { SeedService } from "./data/seed-service.js"
 import { RollChart } from "../dto/roll-chart.js"
 import { StatService } from "./stat-service.js"
-import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchProfile, PitchingProfile, PitchRating,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand, SimPitchResult } from "./enums.js"
+import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchingProfile,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand, SimPitchResult } from "./enums.js"
 
 const APPLY_PLAYER_CHANGES = true
 
@@ -43,21 +43,16 @@ class RollService {
     
             let continueAtBat = true
 
-            while (continueAtBat) {
-                let result = this.simPitch(command)
-                continueAtBat = result.continueAtBat
-            }
-    
             let pitchIndex=0
-            for (let pitch of command.play.pitchLog.pitches) {
+            while (continueAtBat) {
 
-                let canSteal = pitchIndex < command.play.pitchLog.pitches.length - 1 
-
-                this.generateRunnerEventsFromPitch(command, pitch, pitchIndex, canSteal)
+                let result = this.simPitch(command)
+            
+                this.generateRunnerEventsFromPitch(command, pitchIndex, result)
 
                 pitchIndex++
+                continueAtBat = result.continueAtBat
             }
-
             
         } catch(ex) {
             //Ignore inning ending events errors.
@@ -66,48 +61,48 @@ class RollService {
 
 
         this.finishPlay(command)
+
+        return command.play
         
     }
 
     simPitch(command:SimPitchCommand) : SimPitchResult {
 
         //Sort pitcher's pitches by rating
-        command.pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
+        // command.pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
 
-        let pitches = command.pitcher.pitchRatings.pitches.map(p => p.type)
+        let pitches = command.pitcher.pitchRatings.pitches
         let weights = [50, 25, 15, 5, 5] //later this can be passed in via strategy
 
         //Choose a pitch type
         let pitchType: PitchType = this.weightedRandom(command.rng, pitches, weights.slice(0, pitches.length))
 
-        //Get pitcher's info about pitch.
-        let pitchChange: PitchChange = JSON.parse(JSON.stringify(command.pitcherChange.pitchesChange.find(p => p.type == pitchType)))
 
         //Hitter will try to guess which pitch. 
-        let hitterPitchGuess:PitchRating = command.pitcher.pitchRatings.pitches[this.getRoll(command.rng, 0, pitches.length - 1)]
-        let guessPitch:boolean = hitterPitchGuess.type == pitchType
+        let hitterPitchGuess:PitchType = command.pitcher.pitchRatings.pitches[this.getRoll(command.rng, 0, pitches.length - 1)]
+        let guessPitch:boolean = hitterPitchGuess == pitchType
 
         if (guessPitch) {
 
-            //If hitter guesses pitch
-            if (pitchChange.pitchChange >= 0) {
-                //If they have a good pitch change then zero it out.
-                pitchChange.pitchChange = 0
-            } else {
-                //If they have a bad pitch change then multiply it.
-                pitchChange.pitchChange *= 1.5
-            }
+            // //If hitter guesses pitch
+            // if (pitchChange.pitchChange >= 0) {
+            //     //If they have a good pitch change then zero it out.
+            //     pitchChange.pitchChange = 0
+            // } else {
+            //     //If they have a bad pitch change then multiply it.
+            //     pitchChange.pitchChange *= 1.5
+            // }
         }
 
 
         //How fast is it going? We can translate this to MPH later. 0-99.
-        let powerQuality = this.getPowerQuality(command.rng, command.pitcherChange.powerChange, pitchChange.pitchChange)
+        let powerQuality = this.getPowerQuality(command.rng, command.pitcherChange.powerChange)
         
         //Did the pitcher throw it where they wanted? 0-99
-        let locationQuality = this.getLocationQuality(command.rng, command.pitcherChange.controlChange, pitchChange.pitchChange)
+        let locationQuality = this.getLocationQuality(command.rng, command.pitcherChange.controlChange)
 
         //How much movement does the pitch have? 0-99
-        let movementQuality = this.getMovementQuality(command.rng, command.pitcherChange.movementChange, pitchChange.pitchChange)
+        let movementQuality = this.getMovementQuality(command.rng, command.pitcherChange.movementChange)
 
         //Average for overall pitch quality
         let pitchQuality = this.getPitchQuality(powerQuality, locationQuality, movementQuality)
@@ -154,8 +149,11 @@ class RollService {
 
         } else {
 
+            //If the batter guesses the pitch reduce the effective quality when the batter swings.
+            let effectivePitchQuality = guessPitch ? pitchQuality * .85 : pitchQuality
+
             //Does the batter swing?
-            let swingResult = this.getSwingResult(command.rng, command.hitterChange, command.leagueAverages, inZone, pitchQuality, guessPitch)
+            let swingResult = this.getSwingResult(command.rng, command.hitterChange, command.leagueAverages, inZone, effectivePitchQuality, guessPitch)
 
 
             //Create pitch. 
@@ -347,6 +345,12 @@ class RollService {
         this.validateRunnerResult(command.play.runner.result.end)
 
         command.play.officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder,command.play.runner.events)
+        command.play.result = playResult
+
+        command.play.fielder = fielderPlayer?.currentPosition
+        command.play.fielderId = fielderPlayer?._id
+        command.play.contact = contact
+        command.play.shallowDeep = shallowDeep
 
         this.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, contact, command.play.officialPlayResult, playResult, command.play.pitchLog)
 
@@ -368,7 +372,7 @@ class RollService {
 
     // }
 
-    generateRunnerEventsFromPitch(command:SimPitchCommand, pitch:Pitch, pitchIndex:number, canSteal:boolean) {
+    generateRunnerEventsFromPitch(command:SimPitchCommand, pitchIndex:number, result:SimPitchResult) {
 
         let runner1B = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
         let runner2B = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
@@ -384,7 +388,7 @@ class RollService {
         )
 
         
-        if (pitch.isWP) {
+        if (result.pitch.isWP) {
 
             //Move runners up on wild pitch.
 
@@ -396,7 +400,7 @@ class RollService {
             }
 
             
-        } if (pitch.isPB) {
+        } if (result.pitch.isPB) {
 
             //Move runners up on passed ball.
 
@@ -413,7 +417,7 @@ class RollService {
                 type: DefenseCreditType.PASSED_BALL
             })
 
-        } if (canSteal) {
+        } if (result.continueAtBat) {
             
             //Stolen bases
             //Even if there's a good chance they can't go on every pitch
@@ -428,7 +432,6 @@ class RollService {
 
         this.validateInningOver( [].concat(command.halfInningRunnerEvents).concat(command.play.runner.events) )
 
-        pitchIndex++
     }
 
     validateInningOver( allEvents:RunnerEvent[]) {
@@ -2346,7 +2349,7 @@ class RollService {
 
     }
 
-    getPowerQuality(gameRNG, powerChange: number, pitchChange:number): number {
+    getPowerQuality(gameRNG, powerChange: number): number {
 
         let roll =  this.getRollUnrounded(gameRNG, 0, 99)
 
@@ -2362,7 +2365,7 @@ class RollService {
 
     }
 
-    getLocationQuality(gameRNG, controlChange: number, pitchChange:number): number {
+    getLocationQuality(gameRNG, controlChange: number): number {
 
         let roll = this.getRollUnrounded(gameRNG, 0, 99)
 
@@ -2377,7 +2380,7 @@ class RollService {
 
     }
 
-    getMovementQuality(gameRNG, movementChange: number, pitchChange:number): number {
+    getMovementQuality(gameRNG, movementChange: number): number {
         
         let roll =  this.getRollUnrounded(gameRNG, 0, 99)
 
@@ -2696,7 +2699,7 @@ class RollService {
 
         let rng = await this.seedService.getRNG()
 
-        let pitches:PitchProfile[]
+        let pitches:PitchType[]
         let nums
         let vsSameHandDelta
 
@@ -2714,7 +2717,7 @@ class RollService {
             }
 
             //Generate distributed ratings
-            nums = this.getRatingDistribution(rng, 4 + numPitches)
+            nums = this.getRatingDistribution(rng, 4)
 
 
             let lowestIndex = 0;
@@ -2738,17 +2741,15 @@ class RollService {
             vsSameHandDelta = -Math.abs(vsSameHandDelta) //make sure it's negative
 
             for (let i = 0; i < numPitches; i++) {
-                pitches.push(this.generatePitchRating(rng, i + 1, nums[3 + i], pitches.map(p => p.type)))
+                pitches.push(this.generatePitchType(rng, i + 1, pitches))
             }
-    
-            pitches.sort((a, b) => b.ratingDelta - a.ratingDelta)
-    
+        
             //Remove any pitches that are 15% worse than league average. Pitchers wouldn't throw them. Except fastball.
             //This probably messes with the actual league average. There's probably a better way to do this.
             //Hitters can have a trash fastball though
-            if (pitches.length > 1) {
-                pitches = pitches.filter( p => p.ratingDelta > -.15 || p.type == PitchType.FF)
-            }
+            // if (pitches.length > 1) {
+            //     pitches = pitches.filter( p => p.ratingDelta > -.15 || p.type == PitchType.FF)
+            // }
 
         } while (pitches.length == 0) //if we don't have any pitches re-roll
 
@@ -2779,7 +2780,7 @@ class RollService {
         return array.reduce((a, b) => a + b) / array.length
     }
 
-    generatePitchRating(playerRNG, pitchNum: number, rating: number, exclude: PitchType[]): PitchProfile {
+    generatePitchType(playerRNG, pitchNum: number, exclude: PitchType[]): PitchType {
 
         let available: PitchType[] = [PitchType.SI, PitchType.SL, PitchType.SV, PitchType.CU, PitchType.CH, PitchType.SC, PitchType.FS, PitchType.FO]
 
@@ -2796,12 +2797,8 @@ class RollService {
         }
 
 
-        let pitchProfile: PitchProfile = {
-            type: type,
-            ratingDelta: rating
-        }
 
-        return pitchProfile
+        return type
 
     }
 
@@ -2935,4 +2932,4 @@ interface RunnerThrowCommand {
 }
 
 
-export { RollService }
+export { RollService, SimPitchCommand}

@@ -6,7 +6,7 @@ import { Owner } from "../../dto/owner.js"
 import { Op, QueryTypes } from "sequelize"
 
 import dayjs from "dayjs"
-import { HittingRatings, PitchRating, PitchRatings, PitchType, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../../service/enums.js"
+import { HittingRatings, PitchRatings, PitchType, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../../service/enums.js"
 import { Team } from "../../dto/team.js"
 
 import { League } from "../../dto/league.js"
@@ -1072,17 +1072,17 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
         const num = (v: any): number | undefined => (v == null ? undefined : Number(v))
         const nonEmpty = <T extends object>(o: T): T | undefined => Object.values(o as any).some(v => v !== undefined) ? o : undefined
 
-        // Convert {"FF": 82.1, "SC": 67.9} -> PitchRating[]
-        const mapPitches = (m: Record<string, number> | null | undefined): PitchRating[] | undefined => {
-            if (!m) return undefined
-            const arr: PitchRating[] = []
-            for (const [code, rating] of Object.entries(m)) {
-                if (rating == null) continue
-                const pt = toPitchType(code)
-                if (pt) arr.push({ type: pt, rating: Number(rating) })
-            }
-            return arr.length ? arr : undefined
-        }
+        // // Convert {"FF": 82.1, "SC": 67.9} -> PitchRating[]
+        // const mapPitches = (m: Record<string, number> | null | undefined): PitchRating[] | undefined => {
+        //     if (!m) return undefined
+        //     const arr: PitchRating[] = []
+        //     for (const [code, rating] of Object.entries(m)) {
+        //         if (rating == null) continue
+        //         const pt = toPitchType(code)
+        //         if (pt) arr.push({ type: pt, rating: Number(rating) })
+        //     }
+        //     return arr.length ? arr : undefined
+        // }
 
         const mapRowToPlayerRatingPercentiles = (row: any): PlayerPercentileRatings => {
             const pitchesMap = parseJsonObject<Record<string, number>>(row.pitches_pct)
@@ -1121,7 +1121,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
                 power: num(row.power_pct),
                 ...(pitchVsR ? { vsR: pitchVsR } : {}),
                 ...(pitchVsL ? { vsL: pitchVsL } : {}),
-                pitches: mapPitches(pitchesMap),
+                // pitches: mapPitches(pitchesMap),
             }
 
             return {

@@ -2,6 +2,20 @@
 
   <div class="page" data-name="player-index">
 
+
+    ${!gameViewModel.game.isComplete ? $h`
+      <div class="toolbar toolbar-bottom">
+        <div class="toolbar-inner">
+
+          <!-- ${gameViewModel.play ? $h`
+            <div class="play" innerHTML="<div class='chip result'><div class='chip-label'>${gameViewModel.play.play?.result}</div></div>${gameViewModel.play.descriptions?.mainDescription}<a data-popup='.play-by-play-popup' class='link popup-open'>Full Play by Play</a>"></div>
+          ` : $h` `} -->
+        </div>
+      </div>
+    ` : $h` `} 
+
+
+
     <div class="page-content">
 
       <div class="hidden-on-load">
@@ -522,6 +536,7 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let gameViewModel = props.gameViewModel
+
     
     let linescoreViewModel = gameViewModel.linescoreViewModel
     let awayBoxscoreViewModel = gameViewModel.awayBoxscoreViewModel

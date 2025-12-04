@@ -350,6 +350,7 @@ interface ContactProfile {
 
 
 interface PitchRatings {
+
     power?:number
 
     contactProfile?:ContactProfile
@@ -357,13 +358,13 @@ interface PitchRatings {
     vsR?:PitchingHandednessRatings
     vsL?:PitchingHandednessRatings
 
-    pitches?:PitchRating[]
+    pitches?:PitchType[]
 }
 
-interface PitchRating {
-    type:PitchType
-    rating:number //1-100
-}
+// interface PitchRating {
+//     type:PitchType
+//     rating:number //1-100
+// }
 
 interface PitchingHandednessRatings {
 
@@ -979,15 +980,15 @@ interface PitchingProfile {
 
     contactProfile:ContactProfile
 
-    pitches:PitchProfile[]
+    pitches:PitchType[]
 
 
 }
 
-interface PitchProfile {
-    type:PitchType
-    ratingDelta:number
-}
+// interface PitchProfile {
+//     type:PitchType
+//     ratingDelta:number
+// }
 
 
 
@@ -1138,7 +1139,7 @@ interface PitcherChange {
     controlChange: number
     movementChange: number
 
-    pitchesChange:PitchChange[]
+    // pitchesChange:PitchChange[]
 
 }
 
@@ -1319,4 +1320,4 @@ export  { SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_E
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
     Handedness, Rating, PitchRatings, HittingRatings, ContactProfile, GamePlayer, HitterStatLine, PitcherStatLine, PitchLog, PitchResult, RunnerEvent, Pitch, PitchCount,
-    PitchProfile, BaseResult, DefensiveCredit, DefenseCreditType, LeagueAverage,ThrowRoll, InZoneByCount, OfficialRunnerResult, ThrowResult, BallTakeByCount, BallSwingByCount, StrikeSwingByCount, StrikeTakeByCount,HittingProfile, PitchingProfile, PitchRating, PlayerStatLines, PersonalityType }
+     BaseResult, DefensiveCredit, DefenseCreditType, LeagueAverage,ThrowRoll, InZoneByCount, OfficialRunnerResult, ThrowResult, BallTakeByCount, BallSwingByCount, StrikeSwingByCount, StrikeTakeByCount,HittingProfile, PitchingProfile, PlayerStatLines, PersonalityType }
