@@ -2101,12 +2101,18 @@ text-align: center;
 }
 
 .rating-table .left {
-  flex: 1;
+  flex: 0 0 50%;
 }
 
 
+.rating-table .right {
+  flex: 1;
+  margin-left: 10px;
+}
 
-
+.rating-table .full {
+  flex: 1;
+}
 
 @media only screen and (max-width: 1024px) {
   .rating-table {
@@ -2122,6 +2128,7 @@ text-align: center;
 
   .rating-table .right {
     margin-top: 10px;
+    margin-left: 0px;
     display: block;
     padding: unset;
   }

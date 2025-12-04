@@ -45,7 +45,7 @@
             <div class="block block-outline block-strong">
                 <div class="rating-table">
 
-                  <div class="left">
+                  <div class="full">
                     <div class="skill-wrapper">
                       <div class="label">Power</div>
                       <div class="skill-bar">
@@ -96,25 +96,13 @@
                       </div>
 
                     </div>
-                  </div>
-                  <div class="right">
 
-                    <h4>Pitches</h4>
+                    <br />
 
-                    ${player.pitchRatings.pitches?.map(p => $h`
-                      <div class="skill-wrapper">
-                        <div class="label">${ p.type }</div>
-                        <div class="skill-bar">
-                          <div class="red" style="flex-basis:${ p.rating }%;">${ p.rating }</div>
-                        </div>
-                      </div>
-                    `)}
+                    <strong>Pitches:</strong> ${player.pitchRatings.pitches?.map( p => playerWebService.getPitchTypeFull(p)).join(", ")}
+
 
                   </div>
-
-
-                  
-
 
                 </div>
             </div>

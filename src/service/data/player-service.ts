@@ -1487,15 +1487,10 @@ class PlayerService {
                 throws: p.player.throws,
                 hits: p.player.hits,
                 lastGamePlayed: p.player.lastGamePlayed,
-                // overallRating: p.overallRating,
-
                 salary: salaryDecimal ? ethers.parseUnits(salaryDecimal.toString(), "ether").toString() : undefined,
                 salaryDecimal: salaryDecimal,
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
-
-                percentileRatings: p.percentileRatings,
-
                 careerStats: p.player.careerStats,
                 seasonStats: p.stats,
 
@@ -1505,7 +1500,7 @@ class PlayerService {
             if (t) {
                 vm.team = {
                     name: t.team.name,
-                    cityName: t.city.name,
+                    cityName: t.city?.name,
                     _id: t.teamId,
                     tokenId: t.team.tokenId,
                     abbrev: t.team.abbrev

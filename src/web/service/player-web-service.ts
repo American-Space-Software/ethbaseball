@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { HitterPitcher, Position } from "../../service/enums.js";
+import { HitterPitcher, PitchType, Position } from "../../service/enums.js";
 import dayjs from "dayjs";
 import { WalletService } from "../../service/wallet-service.js";
 import { Player } from "../../dto/player.js";
@@ -66,6 +66,39 @@ class PlayerWebService {
                 return "Center Field"
             case Position.RIGHT_FIELD:
                 return "Right Field"
+        }
+    }
+
+    getPitchTypeFull(pitchType: PitchType) {
+        switch (pitchType) {
+            case PitchType.FF:
+                return "Fastball"
+            case PitchType.CU:
+                return "Curveball"
+            case PitchType.CH:
+                return "Changeup"
+            case PitchType.FC:
+                return "Cutter"
+            case PitchType.FO:
+                return "Forkball"
+            case PitchType.KN:
+                return "Knuckleball"
+            case PitchType.KC:
+                return "Knuckle Curve"
+            case PitchType.SC:
+                return "Screwball"
+            case PitchType.SI:
+                return "Sinker"
+            case PitchType.SL:
+                return "Slider"
+            case PitchType.SV:
+                return "Slurve"
+            case PitchType.FS:
+                return "Splitter"
+            case PitchType.ST:
+                return "Slutter"  
+            default:
+                return pitchType
         }
     }
 

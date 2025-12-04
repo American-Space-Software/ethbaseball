@@ -417,7 +417,7 @@
 
                 ${vm.matchupHandedness ? $h`
                   <div class="rating-table">
-                    <div class="left">
+                    <div class="full">
                       <div class="skill-wrapper">
                         <div class="skill-bar">
                           <div class="red" style="flex-basis: ${vm.pitcher.pitchRatings.power }%;"><strong>POW</strong> ${ vm.pitcher.pitchRatings.power }</div>
@@ -436,16 +436,7 @@
                         </div>
                       </div>
 
-                      <strong>Pitches</strong>
-
-                      ${vm.pitcher.pitchRatings.pitches?.map(p => $h`
-                        <div class="skill-wrapper">
-                          <div class="skill-bar">
-                            <div class="red" style="flex-basis:${ p.rating }%;"><strong>${ p.type }</strong> ${ p.rating }</div>
-                          </div>
-                        </div>
-                      `)}
-
+                      <strong>Pitches:</strong> ${vm.pitcher.pitchRatings.pitches?.map( p => playerWebService.getPitchTypeFull(p)).join(", ")}
 
                     </div>
 
@@ -468,7 +459,7 @@
                 </div>
 
                 <div class="rating-table">
-                  <div class="left">
+                  <div class="full">
                     <div class="skill-wrapper">
                       <div class="skill-bar">
                         <div class="red" style="flex-basis: ${vm.matchupHitterRatings?.contact }%;"><strong>CON</strong> ${ vm.matchupHitterRatings?.contact }</div>
@@ -573,6 +564,7 @@
   import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
 
 
 
@@ -590,6 +582,7 @@
     let gameWebService = ContainerService.getInstance(GameWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
 
     let statService = ContainerService.getInstance(StatService)
 
