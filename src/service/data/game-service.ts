@@ -655,7 +655,7 @@ class GameService {
         }
 
 
-        if (!result.continueAtBat) {
+        if (!continueAtBat) {
             this.finishPlay(game, command)
         }
         
@@ -664,6 +664,8 @@ class GameService {
 
 
     finishPlay(game:Game, command:SimPitchCommand) {
+
+        this.rollService.resolvePlay(command)
 
         //Reset count
         game.count.balls = 0
@@ -1342,7 +1344,7 @@ class GameService {
         while (!game.isComplete) {
 
             let rng = await this.seedService.getRNG()
-            this.simPlateAppearance(game, rng)
+            this.simPitch(game, rng)
         }        
 
 
