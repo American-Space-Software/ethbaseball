@@ -119,11 +119,11 @@
               <div class="boxscores grid medium-grid-cols-2">
                 
                 <div class="left">
-                  <${Boxscore} vm=${awayBoxscoreViewModel} name=${ `${gameViewModel?.game.away.cityName ? gameViewModel?.game.away.cityName : ''} ${gameViewModel?.game.away.name}`} />
+                  <${Boxscore} vm=${getAwayBoxscoreViewModel} />
                 </div>
 
                 <div class="right">
-                  <${Boxscore} vm=${homeBoxscoreViewModel} name=${ `${gameViewModel?.game.home.cityName ? gameViewModel?.game.home.cityName : ''} ${gameViewModel?.game.home.name}`} />
+                  <${Boxscore} vm=${getHomeBoxscoreViewModel} />
                 </div>
 
               </div> 
@@ -203,7 +203,7 @@
                                   <div class="info-wrapper">
                                     <span class="label">Balls</span>${getBalls(4, p.play.pitchLog.count.balls)}<br />
                                     <span class="label">Strikes</span>${getBalls(3, p.play.pitchLog.count.strikes)}<br />
-                                    <span class="label">Outs</span>${getBalls(3, p.play.count.end.outs)}
+                                    <span class="label">Outs</span>${getBalls(3, p.play.count.end?.outs || gameViewModel.game.count.outs)}
                                   </div>
             
                                   ${p.play.credits?.length > 0 ? $h`
@@ -351,38 +351,73 @@
   const Boxscore = (props, { $on, $, $f7, $h, $update }) => {
 
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
 
-    let vm = props.vm
-    let name = props.name
+    let vm = props.vm()
 
-    let lineup = vm.teamInfo.lineupIds
+    const getBoxscoreInfo = (theVm) => {
 
-    let batters = lineup.map( id => vm.teamInfo.players.find( p => p._id == id))
-    let pitchers = lineup.map( id => vm.teamInfo.players.find( p => p._id == id)).filter( p2 => p2.currentPosition == Position.PITCHER)
+      let lineup = theVm.teamInfo.lineupIds
 
-    let doubles = vm.teamInfo.players.filter(p => p.hitResult.doubles > 0).map( p => {
-      return { _id: p._id, name: p.fullName, value: p.hitResult.doubles }
-    })
+      let batters = lineup.map( id => theVm.teamInfo.players.find( p => p._id == id))
+      let pitchers = lineup.map( id => theVm.teamInfo.players.find( p => p._id == id)).filter( p2 => p2.currentPosition == Position.PITCHER)
 
-    let triples = vm.teamInfo.players.filter(p => p.hitResult.triples > 0).map( p => {
-      return {  _id: p._id, name: p.fullName, value: p.hitResult.triples }
-    })
+      let doubles = theVm.teamInfo.players.filter(p => p.hitResult.doubles > 0).map( p => {
+        return { _id: p._id, name: p.fullName, value: p.hitResult.doubles }
+      })
 
-    let hr = vm.teamInfo.players.filter(p => p.hitResult.homeRuns > 0).map( p => {
-      return {  _id: p._id, name: p.fullName, value: p.hitResult.homeRuns }
-    })
+      let triples = theVm.teamInfo.players.filter(p => p.hitResult.triples > 0).map( p => {
+        return {  _id: p._id, name: p.fullName, value: p.hitResult.triples }
+      })
 
-    let tb = vm.teamInfo.players.filter(p => p.hitResult.tb > 0).map( p => {
-      return {  _id: p._id, name: p.fullName, value: p.hitResult.tb }
-    })
+      let hr = theVm.teamInfo.players.filter(p => p.hitResult.homeRuns > 0).map( p => {
+        return {  _id: p._id, name: p.fullName, value: p.hitResult.homeRuns }
+      })
 
-    let rbi = vm.teamInfo.players.filter(p => p.hitResult.rbi > 0).map( p => {
-      return { name: p.fullName, value: p.hitResult.rbi }
+      let tb = theVm.teamInfo.players.filter(p => p.hitResult.tb > 0).map( p => {
+        return {  _id: p._id, name: p.fullName, value: p.hitResult.tb }
+      })
+
+      let rbi = theVm.teamInfo.players.filter(p => p.hitResult.rbi > 0).map( p => {
+        return { name: p.fullName, value: p.hitResult.rbi }
+      })
+
+      return { lineup, batters, pitchers, doubles, triples, hr, tb, rbi }
+
+    }
+
+    let info = getBoxscoreInfo(vm)
+
+    let lineup = info.lineup
+    let batters  = info.batters
+    let pitchers  = info.pitchers
+    let doubles = info.doubles
+    let triples = info.triples
+    let hr = info.hr
+    let tb = info.tb
+    let rbi = info.rbi
+    
+    $f7.on('gameUpdate', (gameViewModel) => {
+
+      Object.assign(vm, props.vm())
+
+      info = getBoxscoreInfo(vm)
+
+      lineup = info.lineup
+      batters  = info.batters
+      pitchers  = info.pitchers
+      doubles = info.doubles
+      triples = info.triples
+      hr = info.hr
+      tb = info.tb
+      rbi = info.rbi
+
+      $update()
     })
 
 
     return () => $h`<div class="card">
-        <div class="card-header">${name}</div>
+        <div class="card-header">${teamWebService.getTeamName(vm.teamInfo)}</div>
         <div class="card-content">
 
             <div class="stat-table-wrapper">
@@ -488,8 +523,6 @@
     </div>`;
 
 
-
-
   }
 
 
@@ -536,11 +569,15 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let gameViewModel = props.gameViewModel
-
+    console.log(gameViewModel)
     
     let linescoreViewModel = gameViewModel.linescoreViewModel
     let awayBoxscoreViewModel = gameViewModel.awayBoxscoreViewModel
     let homeBoxscoreViewModel = gameViewModel.homeBoxscoreViewModel
+
+    const getAwayBoxscoreViewModel = () => { return awayBoxscoreViewModel }
+    const getHomeBoxscoreViewModel = () => { return homeBoxscoreViewModel }
+
 
     let loading 
     let timeoutId

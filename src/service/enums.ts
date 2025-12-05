@@ -1,3 +1,4 @@
+import { Game } from "../dto/game.js"
 import { League } from "../dto/league.js"
 import { ContactTypeRollInput, PowerRollInput } from "../dto/roll-input.js"
 import { OverallRecord } from "../dto/team.js"
@@ -750,6 +751,7 @@ interface WPAReward {
 
 interface SimPitchCommand {
 
+    game:Game
     play:Play
 
     offense:TeamInfo
@@ -764,6 +766,8 @@ interface SimPitchCommand {
     catcher:GamePlayer
 
     halfInningRunnerEvents:RunnerEvent[]
+    halfInning:HalfInning
+    
     leagueAverages: LeagueAverage
 
     rng:any

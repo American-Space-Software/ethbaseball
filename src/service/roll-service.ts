@@ -46,10 +46,8 @@ class RollService {
             let pitchIndex=0
             while (continueAtBat) {
 
-                let result = this.simPitch(command)
+                let result = this.simPitch(command, pitchIndex)
             
-                this.generateRunnerEventsFromPitch(command, pitchIndex, result)
-
                 pitchIndex++
                 continueAtBat = result.continueAtBat
             }
@@ -66,7 +64,7 @@ class RollService {
         
     }
 
-    simPitch(command:SimPitchCommand) : SimPitchResult {
+    simPitch(command:SimPitchCommand, pitchIndex:number) : SimPitchResult {
 
         //Sort pitcher's pitches by rating
         // command.pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
@@ -81,19 +79,6 @@ class RollService {
         //Hitter will try to guess which pitch. 
         let hitterPitchGuess:PitchType = command.pitcher.pitchRatings.pitches[this.getRoll(command.rng, 0, pitches.length - 1)]
         let guessPitch:boolean = hitterPitchGuess == pitchType
-
-        if (guessPitch) {
-
-            // //If hitter guesses pitch
-            // if (pitchChange.pitchChange >= 0) {
-            //     //If they have a good pitch change then zero it out.
-            //     pitchChange.pitchChange = 0
-            // } else {
-            //     //If they have a bad pitch change then multiply it.
-            //     pitchChange.pitchChange *= 1.5
-            // }
-        }
-
 
         //How fast is it going? We can translate this to MPH later. 0-99.
         let powerQuality = this.getPowerQuality(command.rng, command.pitcherChange.powerChange)
@@ -205,20 +190,34 @@ class RollService {
         let continueAtBat = true
 
         //HBP
-        if (pitch.result == PitchResult.HBP) continueAtBat = false
+        if (pitch.result == PitchResult.HBP) {
+            command.play.result = PlayResult.HIT_BY_PITCH
+            continueAtBat = false
+        }
         
         //In play?
         if (pitch.result == PitchResult.IN_PLAY) continueAtBat = false
 
         //Strikeout or walk?
-        if (command.play.pitchLog.count.balls == 4) continueAtBat = false
-        if (command.play.pitchLog.count.strikes == 3) continueAtBat = false
+        if (command.play.pitchLog.count.balls == 4) {
+            command.play.result = PlayResult.BB
+            continueAtBat = false
+        }
 
+        if (command.play.pitchLog.count.strikes == 3) {
+            command.play.result = PlayResult.STRIKEOUT
+            continueAtBat = false
+        }
 
         let result:SimPitchResult = {
             continueAtBat: continueAtBat,
             pitch: pitch
         }
+
+        this.generateRunnerEventsFromPitch(command, pitchIndex, result)
+
+        command.game.count.balls = command.play.pitchLog.count.balls
+        command.game.count.strikes = command.play.pitchLog.count.strikes
 
         return result
 
@@ -226,19 +225,20 @@ class RollService {
 
     finishPlay(command:SimPitchCommand) {
 
-        let playResult:PlayResult
         let fielderPlayer:GamePlayer
         let fielder:Position
         let contact:Contact
         let shallowDeep:ShallowDeep 
 
-        if (command.play.pitchLog.count.strikes == 3) {
-            playResult = PlayResult.STRIKEOUT
-        } else if (command.play.pitchLog.count.balls == 4) {
-            playResult = PlayResult.BB
-        } else if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.HBP)) {
-            playResult = PlayResult.HIT_BY_PITCH
-        } else if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)) {
+        // if (command.play.pitchLog.count.strikes == 3) {
+        //     playResult = PlayResult.STRIKEOUT
+        // } else if (command.play.pitchLog.count.balls == 4) {
+        //     playResult = PlayResult.BB
+        // } else if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.HBP)) {
+        //     playResult = PlayResult.HIT_BY_PITCH
+        /*} else*/ 
+
+        if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)) {
 
             //In play
             let pitch = command.play.pitchLog.pitches[command.play.pitchLog.pitches.length - 1]
@@ -293,21 +293,21 @@ class RollService {
             let powerRollChart:RollChart = this.getMatchupPowerRollChart(command.leagueAverages, command.hitterChange, command.pitcherChange)
 
             //O, 1B, 2B, 3B, or HR
-            playResult = powerRollChart.entries.get(hitQuality) as PlayResult
+            command.play.result = powerRollChart.entries.get(hitQuality) as PlayResult
 
 
             //No pop up/line drive hits to IF. 
-            while (this.isInAir(contact) && !this.isToOF(fielder) && playResult != PlayResult.OUT) {
+            while (this.isInAir(contact) && !this.isToOF(fielder) && command.play.result != PlayResult.OUT) {
                 pickFielder(contact)
             }
 
             //No ground ball outs to the OF. Redirect to infielder.
-            while (contact == Contact.GROUNDBALL && this.isToOF(fielder) && playResult == PlayResult.OUT) {
+            while (contact == Contact.GROUNDBALL && this.isToOF(fielder) && command.play.result == PlayResult.OUT) {
                 pickFielder(contact)
             }
 
             //No doubles or triples to infielders
-            while ( (playResult == PlayResult.DOUBLE || playResult == PlayResult.TRIPLE) && this.isToInfielder(fielder)) {
+            while ( (command.play.result == PlayResult.DOUBLE || command.play.result == PlayResult.TRIPLE) && this.isToInfielder(fielder)) {
                 pickFielder(contact)
             }
 
@@ -316,7 +316,7 @@ class RollService {
                 shallowDeep = this.getShallowDeep(command.rng, command.leagueAverages)
             }
 
-            if (playResult == PlayResult.HR) {
+            if (command.play.result == PlayResult.HR) {
                 if (contact == Contact.GROUNDBALL) {
                     contact = hitQuality > 70 ? Contact.LINE_DRIVE : Contact.FLY_BALL
                 }
@@ -324,13 +324,16 @@ class RollService {
                 shallowDeep = ShallowDeep.DEEP
             } 
 
-            if (playResult == PlayResult.TRIPLE) {
+            if (command.play.result == PlayResult.TRIPLE) {
                 shallowDeep = ShallowDeep.DEEP //Triples always deep for now.
             } 
 
         } else {
-            throw new Error("Error with pitchlog")
+            if (command.play.result != PlayResult.STRIKEOUT && command.play.result != PlayResult.BB &&  command.play.result != PlayResult.HIT_BY_PITCH) {
+                throw new Error("Error with pitchlog")
+            }
         }
+
 
         //Players could have moved. Grab the correct base runners.
         let runner1B = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
@@ -339,20 +342,19 @@ class RollService {
 
         //Add in-play runner events
         this.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.runner.events, command.play.credits, 
-                             command.leagueAverages, playResult, contact, shallowDeep, command.hitter, fielderPlayer, runner1B, runner2B, runner3B, 
+                             command.leagueAverages, command.play.result, contact, shallowDeep, command.hitter, fielderPlayer, runner1B, runner2B, runner3B, 
                              command.offense, command.defense, command.pitcher, command.play.pitchLog.count.pitches - 1)
         
         this.validateRunnerResult(command.play.runner.result.end)
 
-        command.play.officialPlayResult = this.getOfficialPlayResult(playResult, contact, shallowDeep, fielder,command.play.runner.events)
-        command.play.result = playResult
+        command.play.officialPlayResult = this.getOfficialPlayResult(command.play.result, contact, shallowDeep, fielder,command.play.runner.events)
 
         command.play.fielder = fielderPlayer?.currentPosition
         command.play.fielderId = fielderPlayer?._id
         command.play.contact = contact
         command.play.shallowDeep = shallowDeep
 
-        this.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, contact, command.play.officialPlayResult, playResult, command.play.pitchLog)
+        this.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, contact, command.play.officialPlayResult, command.play.result, command.play.pitchLog)
 
     }
 

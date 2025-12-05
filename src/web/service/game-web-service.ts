@@ -71,30 +71,12 @@ class GameWebService {
 
     async getGameViewModel(game) {
 
-        // //Expand season and career stats
-        // let allPlayers:GamePlayer[] = [].concat(game.away.players).concat(game.home.players).filter( gp => gp != undefined)
-
-        // for (let p of allPlayers) {
-
-        //     p.seasonStats.after = {
-        //         //@ts-ignore
-        //         hitting: this.statService.mergeHitResultsToStatLine(p.seasonStats?.before?.hitting, p.hitResult),
-        //         //@ts-ignore
-        //         pitching: this.statService.mergePitchResultsToStatLine(p.seasonStats?.before?.pitching, p.pitchResult)
-        //     }
-
-        //     p.careerStats.after = {
-        //         //@ts-ignore
-        //         hitting: this.statService.mergeHitResultsToStatLine(p.careerStats?.before?.hitting, p.hitResult),
-        //         //@ts-ignore
-        //         pitching: this.statService.mergePitchResultsToStatLine(p.careerStats?.before?.pitching, p.pitchResult)
-        //     }
-
-        // }
-
         let linescore = this.getLineScore(game)
         let playByPlay = this.getPlayByPlay(game)
-        let play = playByPlay?.length > 0 ? playByPlay[0] : undefined
+
+        let play = playByPlay?.length > 0 ?  playByPlay.find( p => p.play.result != undefined) : undefined
+
+        console.log(playByPlay, play)
 
         let awayBoxscoreViewModel = {
             homeaway:"AWAY",

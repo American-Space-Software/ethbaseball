@@ -18,6 +18,7 @@ class ProcessConfig {
         config.universe = process.env.UNIVERSE_ADDRESS
         config.clear = theArgs.clear
         config.generate = theArgs.generate
+        config.skipSim = theArgs.skipSim
 
         config.web = process.env.WEB
 
@@ -35,7 +36,8 @@ class ProcessConfig {
         const args = arg(
         {
             '--clear': String,
-            '--generate': String
+            '--generate': String,
+            '--skip-sim': String
 
         },
         {
@@ -46,7 +48,8 @@ class ProcessConfig {
     
         return {
             clear:  args['--clear'] == "true",
-            generate:  args['--generate'] == "true"
+            generate:  args['--generate'] == "true",
+            skipSim: args['--skip-sim'] == "true"
 
         }
     

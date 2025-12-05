@@ -129,8 +129,6 @@
 
         <div class="state-info">
 
-          ${vm.play ? $h`
-            
             <div class="inning-wrapper">
                 ${vm?.game.isTopInning ? $h`
                   Top ${vm?.game.currentInning}
@@ -152,9 +150,6 @@
                 <div class="third base ${vm.runner3B ? $h`runner` : $h` `}"></div>
               </div>
             </div>
-
-
-          ` : $h` `}
 
 
         </div>

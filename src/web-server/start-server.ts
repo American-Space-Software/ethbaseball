@@ -87,7 +87,6 @@ let startWebServer = async () => {
 
   const SECONDS_BETWEEN_SIMS = process.env.SECONDS_BETWEEN_SIMS ?  parseInt(process.env.SECONDS_BETWEEN_SIMS) : 15
 
-
   const PROVIDER_CHAIN_ID = process.env.PROVIDER_CHAIN_ID ? parseInt(process.env.PROVIDER_CHAIN_ID) : 1337
   const PROVIDER_CHAIN_NAME = process.env.PROVIDER_CHAIN_NAME ? process.env.PROVIDER_CHAIN_NAME : "localhost"
   const PROVIDER_CHAIN_RPC_URL = process.env.PROVIDER_CHAIN_RPC_URL ? process.env.PROVIDER_CHAIN_RPC_URL : "http://127.0.0.1:8545/"
@@ -2030,7 +2029,11 @@ let startWebServer = async () => {
     setTimeout(async () => { await gameLoop() }, SECONDS_BETWEEN_SIMS*1000)
   }
 
-  await gameLoop()
+  if (!config.skipSim) {
+    await gameLoop()
+  }
+
+
 
 
   console.log(`

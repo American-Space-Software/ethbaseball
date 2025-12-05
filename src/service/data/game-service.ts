@@ -1,10 +1,7 @@
 import { inject, injectable } from "inversify"
-
-import fs from "fs"
-
 import { Game, GameTeam, GamePlayer as GP } from "../../dto/game.js"
 import {  Player } from "../../dto/player.js"
-import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand } from "../enums.js"
+import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand, InningEndingEvent, SimPitchResult } from "../enums.js"
 
 import { RollService,  } from "../roll-service.js"
 import { GameRepository } from "../../repository/game-repository.js"
@@ -19,7 +16,6 @@ import { Season } from "../../dto/season.js"
 import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { PlayerLeagueSeason } from "../../dto/player-league-season.js"
 import { GameTeamRepository } from "../../repository/game-team-repository.js"
-import { FinanceService } from "../finance-service.js"
 import { StatService } from "../stat-service.js"
 import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
@@ -43,7 +39,6 @@ class GameService {
     constructor(
         private rollService: RollService,
         private seedService:SeedService,
-        private financeService:FinanceService,
         private playerService:PlayerService,
         private statService:StatService,
         @inject('config') private _config:Function,
@@ -135,7 +130,6 @@ class GameService {
 
         return games
     }
-
 
     async getByDateAndTeams(date:Date, teams:Team[], options?:any) {
 
@@ -418,6 +412,11 @@ class GameService {
         game.home = homeInfo
 
         game.startDate = command.date
+        game.count = {
+            balls: 0,
+            strikes: 0,
+            outs: 0
+        }
         
         game.changed('leagueAverages', true)
         game.changed('away', true)
@@ -442,7 +441,7 @@ class GameService {
         } else {
 
             //Just increment a single pitch
-            this.simPlateAppearance(game, rng)
+            this.simPitch(game, rng)
         }
 
         game.changed('home', true)
@@ -628,117 +627,84 @@ class GameService {
 
     simPlateAppearance(game:Game, rng:any) {
 
-        let halfInning:HalfInning = game.halfInnings.find(i => i.num == game.currentInning && i.top == game.isTopInning)
-
-        if (!halfInning) {
-            halfInning = this.initHalfInning(game.currentInning, game.isTopInning) 
-            game.halfInnings.push(halfInning)
-        }
-
-        let offense:TeamInfo = this.getOffense(game)
-        let defense:TeamInfo = this.getDefense(game)
-
-        let matchup:UpcomingMatchup = this.getUpcomingMatchup(game)
-
-        let halfInningRunnerEvents:RunnerEvent[] = halfInning.plays.map(p => p.runner?.events).reduce((accumulator, reArray) => accumulator.concat(reArray), []) 
-
-        let hitter:GamePlayer = offense.players.find( p => p._id == matchup.hitter._id)
-        let pitcher = defense.players.find( p => p._id == matchup.pitcher._id)
-        let catcher:GamePlayer = defense.players.find( p => p.currentPosition == Position.CATCHER)
-
-        let runner1B = offense.players.find( p => p._id == offense.runner1BId)
-        let runner2B = offense.players.find( p => p._id == offense.runner2BId)
-        let runner3B = offense.players.find( p => p._id == offense.runner3BId)
-
-        let matchupHandedness: MatchupHandedness = this.getMatchupHandedness(hitter, pitcher)
-
-        let hitterChange:HitterChange = matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
-        let pitcherChange:PitcherChange = matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
-
-        let play:Play = this.createPlay(game.playIndex, 
-                                   hitter, 
-                                   pitcher, 
-                                   catcher, 
-                                   runner1B, 
-                                   runner2B, 
-                                   runner3B, 
-                                   matchupHandedness, 
-                                   game.count.outs, 
-                                   game.score, 
-                                   game.currentInning, 
-                                   game.isTopInning
-                                )
-
-        //Add play to half inning
-        halfInning.plays.push(play)
-
-        let command:SimPitchCommand = {
-            play:play,
-
-            offense:offense,
-            defense:defense,
-
-            hitter:hitter,
-            pitcher:pitcher,
-
-            hitterChange:hitterChange,
-            pitcherChange:pitcherChange,
-
-            catcher:catcher,
-
-            halfInningRunnerEvents:halfInningRunnerEvents,
-            leagueAverages: game.leagueAverages,
-
-            rng:rng
-
-        }
-
+        let command:SimPitchCommand = this.createSimPitchCommand(game, rng)
 
         //Do matchup
         this.rollService.simMatchup(command)
 
+        this.finishPlay(game, command)
 
+    }
+
+    simPitch(game:Game, rng:any) {
+
+        let command:SimPitchCommand = this.createSimPitchCommand(game, rng)
+
+        let result:SimPitchResult
+
+        let continueAtBat = true
+
+        //Do matchup
+        try {
+            result = this.rollService.simPitch(command, command.play.pitchLog.pitches?.length || 0)
+            continueAtBat = result.continueAtBat
+        } catch(ex) {
+            //Ignore inning ending events errors.
+            if (!(ex instanceof InningEndingEvent)) throw ex
+            continueAtBat = false
+        }
+
+
+        if (!result.continueAtBat) {
+            this.finishPlay(game, command)
+        }
+        
+
+    }
+
+
+    finishPlay(game:Game, command:SimPitchCommand) {
 
         //Reset count
         game.count.balls = 0
         game.count.strikes = 0
 
         //Increase outs
-        game.count.outs += play.runner?.events.filter( re => re.movement.isOut).length
+        game.count.outs += command.play.runner?.events.filter( re => re.movement.isOut).length
 
         game.playIndex++
 
         //Set runners
-        offense.runner1BId = play.runner?.result.end.first
-        offense.runner2BId = play.runner?.result.end.second
-        offense.runner3BId = play.runner?.result.end.third
+        command.offense.runner1BId = command.play.runner?.result.end.first
+        command.offense.runner2BId = command.play.runner?.result.end.second
+        command.offense.runner3BId = command.play.runner?.result.end.third
 
         //Add result to line score and gamescore
-        this.updateLinescoreRuns(game, halfInning, play)
-        this.updateLinescoreHits(game, halfInning, play)
-        this.updateGameRuns(game, play)
+        this.updateLinescoreRuns(game, command.halfInning, command.play)
+        this.updateLinescoreHits(game, command.halfInning, command.play)
+        this.updateGameRuns(game, command.play)
         
 
         //Make sure the play has the end count. Clone so we don't accidentally change them.
-        play.count.end = JSON.parse(JSON.stringify(game.count))
-        play.score.end = JSON.parse(JSON.stringify(game.score))
+        command.play.count.end = JSON.parse(JSON.stringify(game.count))
+        command.play.score.end = JSON.parse(JSON.stringify(game.score))
 
         //Move lineup to next hitter except on failed stolen bases that end an inning.
-        if (play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_2B && play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_3B) {
-            this.nextHitter(offense)
+        if (command.play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_2B && command.play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_3B) {
+            this.nextHitter(command.offense)
         }
 
         if (game.count.outs >= 3 || (game.currentInning >=9 && !game.isTopInning && game.score.home > game.score.away) ) {
 
             //Update linescore LOB
-            let leftOnBase = [offense.runner1BId, offense.runner2BId, offense.runner3BId ].filter( r => r != undefined).length
+            let leftOnBase = [command.offense.runner1BId, command.offense.runner2BId, command.offense.runner3BId ].filter( r => r != undefined).length
 
             if (leftOnBase > 0) {
-                this.updateLinescoreLOB(halfInning, leftOnBase)
+                this.updateLinescoreLOB(command.halfInning, leftOnBase)
             }
 
             //Clear runners
-            this.clearRunners(offense)
+            this.clearRunners(command.offense)
 
             //Clear outs
             game.count.outs = 0
@@ -765,6 +731,97 @@ class GameService {
     }
 
 
+    createSimPitchCommand(game:Game, rng:any) {
+        
+        let halfInning:HalfInning = game.halfInnings.find(i => i.num == game.currentInning && i.top == game.isTopInning)
+
+        if (!halfInning) {
+            halfInning = this.initHalfInning(game.currentInning, game.isTopInning) 
+            game.halfInnings.push(halfInning)
+        }
+
+        let offense:TeamInfo = this.getOffense(game)
+        let defense:TeamInfo = this.getDefense(game)
+
+        let matchup:UpcomingMatchup = this.getUpcomingMatchup(game)
+
+        let halfInningRunnerEvents:RunnerEvent[] = halfInning.plays.map(p => p.runner?.events).reduce((accumulator, reArray) => accumulator.concat(reArray), []) 
+
+        let hitter:GamePlayer = offense.players.find( p => p._id == matchup.hitter._id)
+        let pitcher = defense.players.find( p => p._id == matchup.pitcher._id)
+        let catcher:GamePlayer = defense.players.find( p => p.currentPosition == Position.CATCHER)
+
+        let matchupHandedness: MatchupHandedness = this.getMatchupHandedness(hitter, pitcher)
+
+        let hitterChange:HitterChange = matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
+        let pitcherChange:PitcherChange = matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
+
+        let runner1B = offense.players.find( p => p._id == offense.runner1BId)
+        let runner2B = offense.players.find( p => p._id == offense.runner2BId)
+        let runner3B = offense.players.find( p => p._id == offense.runner3BId)
+
+        
+        let allPlays:Play[] = this.getPlays(game)
+
+        //Either grab the play in progress or create a new one.
+        let play:Play
+
+        if (allPlays?.length > 0) {
+
+            let lastPlay = allPlays[allPlays.length - 1]
+
+            if (!lastPlay.result) {
+                play = lastPlay
+            }
+        }
+        
+        if (!play) {
+
+            play = this.createPlay(
+                game.playIndex, 
+                hitter, 
+                pitcher, 
+                catcher, 
+                runner1B, 
+                runner2B, 
+                runner3B, 
+                matchupHandedness, 
+                game.count.outs, 
+                game.score, 
+                game.currentInning, 
+                game.isTopInning
+          )
+
+          //Add play to half inning
+          halfInning.plays.push(play)
+
+        }
+
+
+        return {
+
+            game: game,
+            play:play,
+
+            offense:offense,
+            defense:defense,
+
+            hitter:hitter,
+            pitcher:pitcher,
+
+            hitterChange:hitterChange,
+            pitcherChange:pitcherChange,
+
+            catcher:catcher,
+
+            halfInningRunnerEvents:halfInningRunnerEvents,
+            halfInning: halfInning,
+            leagueAverages: game.leagueAverages,
+
+            rng:rng
+
+        }
+    }
 
     getMatchupHandedness(hitter:GamePlayer, pitcher:GamePlayer): MatchupHandedness {
 
@@ -1393,7 +1450,7 @@ class GameService {
 
         let wpa 
 
-        if (play) {
+        if (play?.play?.result) {
             wpa = this.getWPAFromPlay(play.play, matchup.hitter, matchup.pitcher, game.isComplete)
         }
 
@@ -1549,18 +1606,6 @@ class GameService {
         let total = gamePlayers.map(p => p.age).reduce((a, b) => a + b)
         return total / gamePlayers.length
     }
-
-    // async updateLatestInfo() {
-
-    //     if (!fs.existsSync(`${this._config().publicPath}/games`)) {
-    //       fs.mkdirSync(`${this._config().publicPath}/games`, { recursive: true })
-    //     }
-    
-    //     fs.writeFileSync(`${this._config().publicPath}/games/latest.json`, Buffer.from(JSON.stringify({
-    //       lastUpdated: new Date(new Date().toUTCString())
-    //     })))
-  
-    // }
 
     getWinExpectancy(inning:number, top:boolean, runner1B:boolean, runner2B:boolean, runner3B:boolean, outs:number, score:Score, isComplete:boolean) : number {
 
@@ -1946,6 +1991,7 @@ class GameService {
 
 
     }
+
 
 }
 
