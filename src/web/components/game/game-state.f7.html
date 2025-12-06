@@ -151,8 +151,7 @@
               </div>
             </div>
 
-
-        </div>
+          </div>
 
         <div class="game-info">
 
@@ -407,7 +406,7 @@
                 <div class="player">
                   <img src="/player/image/${vm.pitcher._id}" width="35" height="35" style="border: 3px solid ${vm.pitcher.color1}; " /> 
                   <a href="/p/${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a><br />
-                  ${gameWebService.pitcherGameStatsShort(vm.pitcher)}
+                  ${gameWebService.pitcherGameStats(vm.pitcher)}
                 </div>
 
                 ${vm.matchupHandedness ? $h`

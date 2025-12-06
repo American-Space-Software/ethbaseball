@@ -696,7 +696,7 @@ class GameWebService {
 
         return `
         ${pitcher.pitchResult.ip} IP, 
-        ${pitcher.pitchResult.er} ER, ${pitcher.pitchResult.so} K, ${pitcher.pitchResult.bb} BB`
+        ${pitcher.pitchResult.er} ER, ${pitcher.pitchResult.so} K, ${pitcher.pitchResult.bb} BB, ${pitcher.pitchResult.pitches} PC`
 
     }
 
