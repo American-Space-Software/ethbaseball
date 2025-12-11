@@ -89,37 +89,34 @@
 
         <div class="content">
 
-          ${vm.showLineup ? $h`
-            <div class="card">
-              <div class="card-header">${vm.atBatBoxscoreViewModel.teamInfo.name}</div>
-              <div class="card-content card-content-padding">
-                
-                <table class="lineup">
-                  <thead>
-                    <th class="num order">#</th>
-                    <th class="image"></th>
-                    <th class="name">Name</th>
-                    <th>Bats</th>
-                    <th>POS</th>
-                    <th class="stats">Today</th>
-                  </thead>
-                  <tbody>
-                    ${vm.atBatBoxscoreViewModel.teamInfo.lineupIds.map( id => vm.atBatBoxscoreViewModel.teamInfo.players.find( p2 => p2._id == id) ).map( (p, index) => $h`
-                    <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
-                      <td class="num order">${index + 1}</td>
-                      <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
-                      <td class="name"><a href="/p/${p._id}">${p.displayName}</a></td>
-                      <td>${p.hits}</td>
-                      <td class="pos">${p.currentPosition}</td>
-                      <td class="stats">${gameWebService.hitterGameStatsShort(p)}</td>
-                    </tr>
-                    `)}
-                  </tbody>
-                </table>
+          <div class="card ${vm.awayBoxscoreViewModel.teamInfo._id == vm.atBatBoxscoreViewModel.teamInfo._id ? 'card-atbat' : 'card-notatbat'}">
+            <div class="card-content card-content-padding">
+              
+              <table class="lineup">
+                <thead>
+                  <th class="num order">#</th>
+                  <th class="image"></th>
+                  <th class="name">Name</th>
+                  <th>Bats</th>
+                  <th>POS</th>
+                  <th class="stats">Today</th>
+                </thead>
+                <tbody>
+                  ${vm.awayBoxscoreViewModel.teamInfo.lineupIds.map( id => vm.awayBoxscoreViewModel.teamInfo.players.find( p2 => p2._id == id) ).map( (p, index) => $h`
+                  <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
+                    <td class="num order">${index + 1}</td>
+                    <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
+                    <td class="name"><a href="/p/${p._id}">${p.displayName}</a></td>
+                    <td>${p.hits}</td>
+                    <td class="pos">${p.currentPosition}</td>
+                    <td class="stats">${gameWebService.hitterGameStatsShort(p)}</td>
+                  </tr>
+                  `)}
+                </tbody>
+              </table>
 
-              </div>
             </div>
-          ` : $h` `}
+          </div>
 
         </div>
 
@@ -138,8 +135,6 @@
             </div>
 
             <div class="info-wrapper">
-              <span class="label">Balls</span>${gameWebService.getBalls(4, vm.balls)}
-              <span class="label">Strikes</span>${gameWebService.getBalls(3, vm.strikes)}
               <span class="label">Outs</span>${gameWebService.getBalls(3, vm.outs)}
             </div>
 
@@ -151,7 +146,9 @@
               </div>
             </div>
 
-          </div>
+            
+
+        </div>
 
         <div class="game-info">
 
@@ -245,152 +242,290 @@
             </a>
           ` : $h` `}
 
-          <a href="/p/${vm.pitcher._id}" class="defender p" data-pos="P">
-            <div class="wrapper" style="border: 2px solid ${vm.pitcher.color1};">
-              <div class="text" style="background: ${vm.pitcher.color1}; color: ${getFontColor(vm.pitcher.color1)}; ">
-                ${vm.pitcher.displayName}
-              </div>
-              <div class="game-stats">${gameWebService.pitcherGameStatsShort(vm.pitcher)}</div>
-            </div>
+          ${vm.showPitcher ? $h`
 
-            <div class="image">
-              <img src="/player/image/${vm.pitcher._id}" style="border: 1px solid ${vm.pitcher.color1};" />
-            </div>
-
-          </a>
-
-          <a href="/p/${vm.catcher._id}" class="defender c top" data-pos="C">
-
-            <div class="image">
-              <img src="/player/image/${vm.catcher._id}" style="border: 1px solid ${vm.catcher.color1}; " />
-            </div>
-
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.catcher.color1}; display:none;">
-              <div class="text" style="background: ${vm.catcher.color1}; color: ${getFontColor(vm.catcher.color1)}; ">
-                ${vm.catcher.displayName}
-              </div>
-  
-              <div class="game-stats">C DEF: ${vm.catcher.hittingRatings.defense} / ARM: ${vm.catcher.hittingRatings.arm}</div>
-            </div>
-
-          </a>
-
-          <a href="/p/${vm.firstBase._id}" class="defender firstBase" data-pos="1B">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.firstBase.color1}; display:none;">
-              <div class="text" style="background: ${vm.firstBase.color1}; color: ${getFontColor(vm.firstBase.color1)}; ">
-                ${vm.firstBase.displayName}
-              </div>
-              <div class="game-stats">1B DEF: ${vm.firstBase.hittingRatings.defense}</div>
-            </div>
-            <div class="image">
-              <img src="/player/image/${vm.firstBase._id}" style="border: 1px solid ${vm.firstBase.color1};" />
-            </div>
-          </a>
-
-          <a href="/p/${vm.secondBase._id}" class="defender secondBase" data-pos="2B">
-
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.secondBase.color1}; display:none;">
-              <div class="text" style="background: ${vm.secondBase.color1}; color: ${getFontColor(vm.secondBase.color1)}; ">
-                ${vm.secondBase.displayName}
-              </div>
-  
-              <div class="game-stats">2B DEF: ${vm.secondBase.hittingRatings.defense}</div>
-            </div>
-
-            <div class="image">
-              <img src="/player/image/${vm.secondBase._id}" style="border: 1px solid ${vm.secondBase.color1};" />
-            </div>
-          </a>
-
-          <a href="/p/${vm.thirdBase._id}" class="defender thirdBase" data-pos="3B">
-
-            <div class="wrapper large-only-block" style="border: 3px solid ${vm.thirdBase.color1}; display:none;">
-              <div class="text"  style="background: ${vm.thirdBase.color1}; color: ${getFontColor(vm.thirdBase.color1)}; ">
-                ${vm.thirdBase.displayName}
-              </div>
-              <div class="game-stats">3B DEF: ${vm.thirdBase.hittingRatings.defense}</div>
-            </div>
-
-            <div class="image">
-              <img src="/player/image/${vm.thirdBase._id}" style="border: 1px solid ${vm.thirdBase.color1};" />
-            </div>
-          </a>
-
-          <a href="/p/${vm.ss._id}" class="defender ss" data-pos="SS">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.ss.color1}; display:none;">
-              <div class="text" style="background: ${vm.ss.color1}; color: ${getFontColor(vm.ss.color1)}; ">
-                ${vm.ss.displayName}
-              </div>
-              <div class="game-stats">SS DEF: ${vm.ss.hittingRatings.defense}</div>
-            </div>
-
-            <div class="image">
-              <img src="/player/image/${vm.ss._id}" style="border: 1px solid ${vm.ss.color1}; "/>
-            </div>
-          </a>
-
-          <a href="/p/${vm.lf._id}" class="defender lf" data-pos="LF">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.lf.color1}; display:none;">
-              <div class="text" style="background: ${vm.lf.color1}; color: ${getFontColor(vm.lf.color1)}; ">
-                ${vm.lf.displayName}
-              </div>
-              <div class="game-stats">LF DEF: ${vm.lf.hittingRatings.defense}</div>
-            </div>
-
-            <div class="image">
-              <img src="/player/image/${vm.lf._id}" style="border: 1px solid ${vm.lf.color1}; "/>
-            </div>
-          </a>
-
-          <a href="/p/${vm.cf._id}" class="defender cf" data-pos="CF">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.cf.color1}; display:none;">
-              <div class="text" style="background: ${vm.cf.color1}; color: ${getFontColor(vm.cf.color1)}; ">
-                ${vm.cf.displayName}
-              </div>
-              <div class="game-stats">CF DEF: ${vm.cf.hittingRatings.defense}</div>
-            </div>
-
-            <div class="image">
-              <img src="/player/image/${vm.cf._id}" style="border: 1px solid ${vm.cf.color1}; "/>
-            </div>
-          </a>
-
-          <a href="/p/${vm.rf._id}" class="defender rf" data-pos="RF">
-            <div class="wrapper large-only-block" style="border: 2px solid ${vm.rf.color1}; display:none;">
-              <div class="text" style="background: ${vm.rf.color1}; color: ${getFontColor(vm.rf.color1)}; ">
-                ${vm.rf.displayName}
-              </div>
-              <div class="game-stats">RF DEF: ${vm.rf.hittingRatings.defense}</div>
-            </div>
-
-            <div class="image">
-              <img src="/player/image/${vm.rf._id}" style="border: 1px solid ${vm.rf.color1}; " />
-            </div>
-          </a>
-
-        </div>
-
-        ${vm.play ? $h`
-          <div class="play">
-            <div class="card recap">
-              <div class="card-content play-description">
-
-                <div class="chip result">
-                  <div class="chip-label">${vm.play.play?.result}</div>
+            <a href="/p/${vm.pitcher._id}" class="defender p" data-pos="P">
+              <div class="wrapper" style="border: 2px solid ${vm.pitcher.color1};">
+                <div class="text" style="background: ${vm.pitcher.color1}; color: ${getFontColor(vm.pitcher.color1)}; ">
+                  ${vm.pitcher.displayName}
                 </div>
-
-                <div innerHTML="${vm.play.descriptions?.mainDescription}"></div>
-
-                <ul>
-                  ${vm.play?.descriptions?.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
-                </ul>
-
-                <a data-popup=".play-by-play-popup" class="link popup-open">Full Play by Play</a>
-
+                <div class="game-stats">${gameWebService.pitcherGameStatsShort(vm.pitcher)}</div>
               </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.pitcher._id}" style="border: 1px solid ${vm.pitcher.color1};" />
+              </div>
+
+            </a>
+
+            <a href="/p/${vm.catcher._id}" class="defender c top" data-pos="C">
+
+              <div class="image">
+                <img src="/player/image/${vm.catcher._id}" style="border: 1px solid ${vm.catcher.color1}; " />
+              </div>
+
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.catcher.color1};">
+                <div class="text" style="background: ${vm.catcher.color1}; color: ${getFontColor(vm.catcher.color1)}; ">
+                  ${vm.catcher.displayName}
+                </div>
+    
+                <div class="game-stats">C DEF: ${vm.catcher.hittingRatings.defense} / ARM: ${vm.catcher.hittingRatings.arm}</div>
+              </div>
+
+            </a>
+
+            <a href="/p/${vm.firstBase._id}" class="defender firstBase" data-pos="1B">
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.firstBase.color1};">
+                <div class="text" style="background: ${vm.firstBase.color1}; color: ${getFontColor(vm.firstBase.color1)}; ">
+                  ${vm.firstBase.displayName}
+                </div>
+                <div class="game-stats">1B DEF: ${vm.firstBase.hittingRatings.defense}</div>
+              </div>
+              <div class="image">
+                <img src="/player/image/${vm.firstBase._id}" style="border: 1px solid ${vm.firstBase.color1};" />
+              </div>
+            </a>
+
+            <a href="/p/${vm.secondBase._id}" class="defender secondBase" data-pos="2B">
+
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.secondBase.color1}; ">
+                <div class="text" style="background: ${vm.secondBase.color1}; color: ${getFontColor(vm.secondBase.color1)}; ">
+                  ${vm.secondBase.displayName}
+                </div>
+    
+                <div class="game-stats">2B DEF: ${vm.secondBase.hittingRatings.defense}</div>
+              </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.secondBase._id}" style="border: 1px solid ${vm.secondBase.color1};" />
+              </div>
+            </a>
+
+            <a href="/p/${vm.thirdBase._id}" class="defender thirdBase" data-pos="3B">
+
+              <div class="wrapper large-only-block" style="border: 3px solid ${vm.thirdBase.color1}; ">
+                <div class="text"  style="background: ${vm.thirdBase.color1}; color: ${getFontColor(vm.thirdBase.color1)}; ">
+                  ${vm.thirdBase.displayName}
+                </div>
+                <div class="game-stats">3B DEF: ${vm.thirdBase.hittingRatings.defense}</div>
+              </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.thirdBase._id}" style="border: 1px solid ${vm.thirdBase.color1};" />
+              </div>
+            </a>
+
+            <a href="/p/${vm.ss._id}" class="defender ss" data-pos="SS">
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.ss.color1}; ">
+                <div class="text" style="background: ${vm.ss.color1}; color: ${getFontColor(vm.ss.color1)}; ">
+                  ${vm.ss.displayName}
+                </div>
+                <div class="game-stats">SS DEF: ${vm.ss.hittingRatings.defense}</div>
+              </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.ss._id}" style="border: 1px solid ${vm.ss.color1}; "/>
+              </div>
+            </a>
+
+            <a href="/p/${vm.lf._id}" class="defender lf" data-pos="LF">
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.lf.color1}; ">
+                <div class="text" style="background: ${vm.lf.color1}; color: ${getFontColor(vm.lf.color1)}; ">
+                  ${vm.lf.displayName}
+                </div>
+                <div class="game-stats">LF DEF: ${vm.lf.hittingRatings.defense}</div>
+              </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.lf._id}" style="border: 1px solid ${vm.lf.color1}; "/>
+              </div>
+            </a>
+
+            <a href="/p/${vm.cf._id}" class="defender cf" data-pos="CF">
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.cf.color1}; ">
+                <div class="text" style="background: ${vm.cf.color1}; color: ${getFontColor(vm.cf.color1)}; ">
+                  ${vm.cf.displayName}
+                </div>
+                <div class="game-stats">CF DEF: ${vm.cf.hittingRatings.defense}</div>
+              </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.cf._id}" style="border: 1px solid ${vm.cf.color1}; "/>
+              </div>
+            </a>
+
+            <a href="/p/${vm.rf._id}" class="defender rf" data-pos="RF">
+              <div class="wrapper large-only-block" style="border: 2px solid ${vm.rf.color1};">
+                <div class="text" style="background: ${vm.rf.color1}; color: ${getFontColor(vm.rf.color1)}; ">
+                  ${vm.rf.displayName}
+                </div>
+                <div class="game-stats">RF DEF: ${vm.rf.hittingRatings.defense}</div>
+              </div>
+
+              <div class="image">
+                <img src="/player/image/${vm.rf._id}" style="border: 1px solid ${vm.rf.color1}; " />
+              </div>
+            </a>
+
+          ` : $h` `}
+
+          <div class="at-bat-ended">
+            <div class="header">${vm.lastPlay?.play?.result}</div>
+            <div class="result block">
+              <div innerHTML="${vm.lastPlay?.descriptions?.mainDescription}"></div>
+              <ul>
+                ${vm.lastPlay?.descriptions?.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
+              </ul>
+            </div>
+
+          </div>
+          
+          <div class="at-bat-started">
+            <div class="header">Pitching Matchup</div>
+            <div class="matchup-pitcher">
+              ${vm.pitcher ? $h`
+
+                    <strong>Pitching</strong>
+
+                    <div class="player">
+                      <img src="/player/image/${vm.pitcher._id}" width="35" height="35" style="border: 3px solid ${vm.pitcher.color1}; " /> 
+                      <a href="/p/${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a>
+
+                      <div class="game-stats">
+                        ${gameWebService.pitcherGameStats(vm.pitcher)}
+                      </div>
+
+                    </div>
+
+
+
+                    ${vm.matchupHandedness ? $h`
+                      <div class="rating-table">
+                        <div class="full">
+                          <div class="skill-wrapper">
+                            <div class="skill-bar">
+                              <div class="red" style="flex-basis: ${vm.pitcher.pitchRatings.power }%;"><strong>POW</strong> ${ vm.pitcher.pitchRatings.power }</div>
+                            </div>
+                          </div>
+
+                          <div class="skill-wrapper">
+                            <div class="skill-bar">
+                              <div class="red" style="flex-basis:${ vm.matchupPitcherRatings?.control }%;"><strong>CON</strong> ${ vm.matchupPitcherRatings?.control }</div>
+                            </div>
+                          </div>
+
+                          <div class="skill-wrapper">
+                            <div class="skill-bar">
+                              <div class="red" style="flex-basis:${ vm.matchupPitcherRatings?.movement }%;"><strong>MOV</strong> ${ vm.matchupPitcherRatings?.movement }</div>
+                            </div>
+                          </div>
+
+                          <strong>Pitches:</strong> ${vm.pitcher.pitchRatings.pitches?.map( p => playerWebService.getPitchTypeFull(p)).join(", ")}
+
+                        </div>
+
+                      </div>
+                    ` : $h` ` }
+              ` : $h` `}
+            </div>
+
+            <div class="matchup-hitter">
+              ${vm.hitter ? $h`
+
+                    <strong>At Bat</strong>
+
+                    <div class="player">
+                      <img src="/player/image/${vm.hitter._id}" width="35" height="35" style="border: 3px solid ${vm.hitter.color1};" /> 
+                      <a href="/p/${vm.hitter._id}" class="player">${vm.hitter.fullName}</a>
+
+                      <div class="game-stats">
+                          ${gameWebService.hitterGameStatsShort(vm.hitter)}
+                      </div>
+
+                      
+                    </div>
+
+
+                    
+
+                    <div class="rating-table">
+                      <div class="full">
+                        <div class="skill-wrapper">
+                          <div class="skill-bar">
+                            <div class="red" style="flex-basis: ${vm.matchupHitterRatings?.contact }%;"><strong>CON</strong> ${ vm.matchupHitterRatings?.contact }</div>
+                          </div>
+                        </div>
+
+                        <div class="skill-wrapper">
+                          <div class="skill-bar">
+                            <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.gapPower }%;"><strong>GAP</strong> ${ vm.matchupHitterRatings?.gapPower }</div>
+                          </div>
+                        </div>
+
+                        <div class="skill-wrapper">
+                          <div class="skill-bar">
+                            <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.homerunPower }%;"><strong>HR</strong> ${ vm.matchupHitterRatings?.homerunPower }</div>
+                          </div>
+                        </div>
+
+                        <div class="skill-wrapper">
+                          <div class="skill-bar">
+                            <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.plateDiscipline }%;"><strong>EYE</strong> ${ vm.matchupHitterRatings?.plateDiscipline }</div>
+                          </div>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+              ` : $h` `}
             </div>
           </div>
-        ` : $h` `}
+
+          <div class="at-bat-ongoing">
+            <div class="header">
+              <div class="info-wrapper">
+                <span class="label">Balls</span>${gameWebService.getBalls(4, vm.balls)}
+                <span class="label">Strikes</span>${gameWebService.getBalls(3, vm.strikes)}
+              </div>
+            </div>
+            <div class="matchup-pitcher">
+              ${vm.pitcher ? $h`
+
+                    <strong>Pitching</strong>
+
+                    <div class="player">
+                      <img src="/player/image/${vm.pitcher._id}" width="35" height="35" style="border: 3px solid ${vm.pitcher.color1}; " /> 
+                      <a href="/p/${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a><br />
+                    </div>
+
+              ` : $h` `}
+            </div>
+
+            <div class="matchup-hitter">
+              ${vm.hitter ? $h`
+
+                    <strong>At Bat</strong>
+
+                    <div class="player">
+                      <img src="/player/image/${vm.hitter._id}" width="35" height="35" style="border: 3px solid ${vm.hitter.color1};" /> 
+                      <a href="/p/${vm.hitter._id}" class="player">${vm.hitter.fullName}</a>
+                    </div>
+
+              ` : $h` `}
+            </div>
+
+            <div class="matchup-pitches">
+              <ul>
+                ${vm.currentPlay?.play?.pitchLog?.pitches.map ( p => $h`
+                  <li>${p.count.balls}-${p.count.strikes} ${playerWebService.getPitchTypeFull(p.type)} - ${p.result} - ${p.swing ? 'SWING' : 'TAKE'}</li>
+                `)}
+              </ul>
+            </div>
+
+          </div>
+          
+        </div>
 
       </div>
 
@@ -398,94 +533,35 @@
 
         <div class="content">
 
-          ${vm.pitcher ? $h`
-            <div class="card card-header-divider matchup-pitcher">
-              <div class="card-header">Pitching</div>
-              <div class="card-content card-content-padding">
+          <div class="card ${vm.homeBoxscoreViewModel.teamInfo._id == vm.atBatBoxscoreViewModel.teamInfo._id ? 'card-atbat' : 'card-notatbat'}">
+            <div class="card-content card-content-padding">
+              
+              <table class="lineup">
+                <thead>
+                  <th class="num order">#</th>
+                  <th class="image"></th>
+                  <th class="name">Name</th>
+                  <th>Bats</th>
+                  <th>POS</th>
+                  <th class="stats">Today</th>
+                </thead>
+                <tbody>
+                  ${vm.homeBoxscoreViewModel.teamInfo.lineupIds.map( id => vm.homeBoxscoreViewModel.teamInfo.players.find( p2 => p2._id == id) ).map( (p, index) => $h`
+                  <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
+                    <td class="num order">${index + 1}</td>
+                    <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
+                    <td class="name"><a href="/p/${p._id}">${p.displayName}</a></td>
+                    <td>${p.hits}</td>
+                    <td class="pos">${p.currentPosition}</td>
+                    <td class="stats">${gameWebService.hitterGameStatsShort(p)}</td>
+                  </tr>
+                  `)}
+                </tbody>
+              </table>
 
-                <div class="player">
-                  <img src="/player/image/${vm.pitcher._id}" width="35" height="35" style="border: 3px solid ${vm.pitcher.color1}; " /> 
-                  <a href="/p/${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a><br />
-                  ${gameWebService.pitcherGameStats(vm.pitcher)}
-                </div>
-
-                ${vm.matchupHandedness ? $h`
-                  <div class="rating-table">
-                    <div class="full">
-                      <div class="skill-wrapper">
-                        <div class="skill-bar">
-                          <div class="red" style="flex-basis: ${vm.pitcher.pitchRatings.power }%;"><strong>POW</strong> ${ vm.pitcher.pitchRatings.power }</div>
-                        </div>
-                      </div>
-
-                      <div class="skill-wrapper">
-                        <div class="skill-bar">
-                          <div class="red" style="flex-basis:${ vm.matchupPitcherRatings?.control }%;"><strong>CON</strong> ${ vm.matchupPitcherRatings?.control }</div>
-                        </div>
-                      </div>
-
-                      <div class="skill-wrapper">
-                        <div class="skill-bar">
-                          <div class="red" style="flex-basis:${ vm.matchupPitcherRatings?.movement }%;"><strong>MOV</strong> ${ vm.matchupPitcherRatings?.movement }</div>
-                        </div>
-                      </div>
-
-                      <strong>Pitches:</strong> ${vm.pitcher.pitchRatings.pitches?.map( p => playerWebService.getPitchTypeFull(p)).join(", ")}
-
-                    </div>
-
-                  </div>
-                ` : $h` ` }
-
-              </div>
             </div>
-          ` : $h` `}
-
-          ${vm.hitter ? $h`
-            <div class="card card-header-divider matchup-hitter">
-              <div class="card-header">At Bat</div>
-              <div class="card-content card-content-padding">
-
-                <div class="player">
-                  <img src="/player/image/${vm.hitter._id}" width="35" height="35" style="border: 3px solid ${vm.hitter.color1};" /> 
-                  <a href="/p/${vm.hitter._id}" class="player">${vm.hitter.fullName}</a><br />
-                  ${gameWebService.hitterGameStatsShort(vm.hitter)}
-                </div>
-
-                <div class="rating-table">
-                  <div class="full">
-                    <div class="skill-wrapper">
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis: ${vm.matchupHitterRatings?.contact }%;"><strong>CON</strong> ${ vm.matchupHitterRatings?.contact }</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.gapPower }%;"><strong>GAP</strong> ${ vm.matchupHitterRatings?.gapPower }</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.homerunPower }%;"><strong>HR</strong> ${ vm.matchupHitterRatings?.homerunPower }</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.plateDiscipline }%;"><strong>EYE</strong> ${ vm.matchupHitterRatings?.plateDiscipline }</div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-          ` : $h` `}
-
+          </div>
+    
           </div>
 
       </div>
@@ -571,29 +647,65 @@
     }).format(num)
   }
 
-  export default (props, { $on, $, $f7, $update }) => {
+  export default (props, { $on, $, $f7, $update, $onBeforeUnmount, $onMounted }) => {
 
     let gameWebService = ContainerService.getInstance(GameWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
-
     let statService = ContainerService.getInstance(StatService)
+
+    let allPopups = ['.at-bat-started', '.at-bat-ongoing', '.at-bat-ended']
+
+    const showPopup = (popup) => {
+      for (let p of allPopups) {
+        if (p != popup) {
+          $(p).hide()
+        }
+      }
+      $(popup).css('display', 'flex')
+    }
+
+    const closeAllPopups = () => {
+      for (let p of allPopups) {
+        $(p).hide()
+      }
+    }
 
     const getFontColor = (bgColor) => {
       return gameWebService.useDarkFont(bgColor) ? "#000000" : "#ffffff"
     }
 
+
+    const syncPopup = (vm) => {
+
+      let lastPlayEnded = vm.lastPlay?.play?.result != undefined
+      let currentPlayEnded = vm.currentPlay?.play?.result != undefined
+      let currentPlayHasPitches = vm.currentPlay?.play?.pitchLog?.pitches?.length > 0
+      let halfInningStart = vm.game.halfInnings[vm.game.halfInnings?.length - 1]?.plays?.length == 0
+
+      //At bat just started. No pitches.
+      if ( vm.currentPlay && !currentPlayHasPitches && !currentPlayEnded  ) {
+        showPopup('.at-bat-started')
+      //At bat ongoing.
+      } else if (   vm.currentPlay && currentPlayHasPitches && !currentPlayEnded   ) {
+        showPopup('.at-bat-ongoing')
+
+      //At bat just ended.
+      } else if (lastPlayEnded && !vm.currentPlay) {
+        showPopup('.at-bat-ended')
+      } 
+
+    }
+    
     let vm = props.vm
+
     let linescoreViewModel = vm.linescoreViewModel
     let awayBoxscoreViewModel = vm.awayBoxscoreViewModel
     let homeBoxscoreViewModel = vm.homeBoxscoreViewModel
-    let lastPlayText = dayjs(vm.game.lastUpdated).fromNow()
 
     let playIndex = vm.play?.play?.index
-
-
-
+    
     $f7.on('gameUpdate', (gameViewModel) => {
 
       Object.assign(vm, gameViewModel)
@@ -601,8 +713,6 @@
       Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
       Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
       
-      lastPlayText = dayjs(vm.game.lastUpdated).fromNow()
-
       //If playindex has changed then animate runners.
       // if (playIndex != vm.play?.play?.index) {
       //   gameWebService.animateRunnersForPlay(vm.play.play)
@@ -610,7 +720,16 @@
 
       playIndex = vm.play?.play?.index
 
+      syncPopup(gameViewModel)
+
       $update()
+
+    })
+
+    $onBeforeUnmount(() => {
+
+      // Destroy popup when page removed
+      if (popup) popup.destroy()
 
     })
 

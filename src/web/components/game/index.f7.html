@@ -3,16 +3,20 @@
   <div class="page" data-name="player-index">
 
 
-    ${!gameViewModel.game.isComplete ? $h`
-      <div class="toolbar toolbar-bottom">
-        <div class="toolbar-inner">
+    <div class="toolbar toolbar-bottom">
 
-          <!-- ${gameViewModel.play ? $h`
-            <div class="play" innerHTML="<div class='chip result'><div class='chip-label'>${gameViewModel.play.play?.result}</div></div>${gameViewModel.play.descriptions?.mainDescription}<a data-popup='.play-by-play-popup' class='link popup-open'>Full Play by Play</a>"></div>
-          ` : $h` `} -->
-        </div>
+      <div class="toolbar-inner">
+
+        ${gameViewModel.playByPlay?.length > 0 ? $h`
+          <a data-popup=".play-by-play-popup" class="button button-outline popup-open">Play by Play</a>  
+        ` : $h` `}
+
+        ${!gameViewModel.game.isComplete ? $h`
+          <a data-popup=".box-score-popup" class="button button-outline popup-open ">Box Score</a> 
+        ` : $h` `}
+         
       </div>
-    ` : $h` `} 
+    </div>
 
 
 
@@ -24,10 +28,8 @@
               
             ${gameViewModel?.game.isStarted ? $h`
             
-              ${!gameViewModel.game.isComplete ? $h`
-                <${GameState} vm=${gameViewModel} />
-              ` : $h` 
-                
+              ${gameViewModel.game.isComplete ? $h`
+
                 <div class="game-banner">
 
                     <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
@@ -113,20 +115,61 @@
                     </div>
 
                 </div>
-              
+
+                <div class="boxscores grid medium-grid-cols-2">
+                  
+                  <div class="left">
+                    <${Boxscore} vm=${getAwayBoxscoreViewModel} />
+                  </div>
+
+                  <div class="right">
+                    <${Boxscore} vm=${getHomeBoxscoreViewModel} />
+                  </div>
+
+                </div> 
+
+
+              ` : $h` 
+
+                <${GameState} vm=${gameViewModel} /> 
+
+                <div class="popup box-score-popup popup-tablet-fullscreen">
+                  <div class="view">
+                    <div class="page">
+                      <div class="navbar">
+                        <div class="navbar-bg"></div>
+                        <div class="navbar-inner">
+                          <div class="title">
+                            Box Score
+                          </div>
+                          <div class="right">
+                            <!-- Link to close popup -->
+                            <a class="link popup-close">Close</a>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="page-content">
+
+                        <div class="boxscores grid medium-grid-cols-2">
+                          
+                          <div class="left">
+                            <${Boxscore} vm=${getAwayBoxscoreViewModel} />
+                          </div>
+
+                          <div class="right">
+                            <${Boxscore} vm=${getHomeBoxscoreViewModel} />
+                          </div>
+
+                        </div> 
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
               `} 
       
-              <div class="boxscores grid medium-grid-cols-2">
-                
-                <div class="left">
-                  <${Boxscore} vm=${getAwayBoxscoreViewModel} />
-                </div>
 
-                <div class="right">
-                  <${Boxscore} vm=${getHomeBoxscoreViewModel} />
-                </div>
-
-              </div> 
       
               <div class="popup play-by-play-popup">
                 <div class="view">
@@ -147,7 +190,7 @@
 
                       <div class="list cards-list">
                         <ul>
-                            ${gameViewModel.playByPlay?.map( p => $h`
+                            ${gameViewModel.playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
                               <li class="card recap card-header-divider card-outline">
             
                                 <div class="card-header">
@@ -228,7 +271,7 @@
                   </div>
                 </div>
               </div>
-    
+                  
               <div class="block">
                 <br />
               </div>
@@ -569,7 +612,7 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let gameViewModel = props.gameViewModel
-    console.log(gameViewModel)
+
     
     let linescoreViewModel = gameViewModel.linescoreViewModel
     let awayBoxscoreViewModel = gameViewModel.awayBoxscoreViewModel

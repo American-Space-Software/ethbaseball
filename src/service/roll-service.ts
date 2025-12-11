@@ -180,6 +180,8 @@ class RollService {
 
         }
 
+        
+
         command.play.pitchLog.pitches.push(pitch)
 
         command.play.pitchLog.count.pitches = command.play.pitchLog.pitches.length
@@ -215,6 +217,8 @@ class RollService {
 
         command.game.count.balls = command.play.pitchLog.count.balls
         command.game.count.strikes = command.play.pitchLog.count.strikes
+
+        pitch.count = command.game.count
 
         return result
 

@@ -74,9 +74,8 @@ class GameWebService {
         let linescore = this.getLineScore(game)
         let playByPlay = this.getPlayByPlay(game)
 
-        let play = playByPlay?.length > 0 ?  playByPlay.find( p => p.play.result != undefined) : undefined
-
-        console.log(playByPlay, play)
+        let lastPlay = playByPlay?.length > 0 ?  playByPlay.find( p => p.play.result != undefined) : undefined
+        let currentPlay = playByPlay?.length > 0 ?  playByPlay.find( p => !p.play.result) : undefined
 
         let awayBoxscoreViewModel = {
             homeaway:"AWAY",
@@ -92,7 +91,6 @@ class GameWebService {
             isTopInning: game.isTopInning
         }
 
-
         let gameViewModel = {
 
             game: game,
@@ -104,7 +102,7 @@ class GameWebService {
                 awayName: game.away.abbrev,
                 homeName: game.home.abbrev,
                 linescore: linescore,
-                wpa: play?.play?.wpa
+                wpa: lastPlay?.play?.wpa
             },
 
             awayBoxscoreViewModel: awayBoxscoreViewModel,
@@ -121,17 +119,14 @@ class GameWebService {
             score: game.score,
 
             showHitter: false,
-            showLinescore: false,
-            showLineup: false,
-
-
+            showLinescore: false
         }
 
         if (game.isStarted) {
 
             let gamePlayers = this.gamePlayers(game)
     
-            let hitter = this.getHitter(game)
+            let hitter = this.getHitter(game, currentPlay)
             let pitcher = this.getPitcher(game)
     
             let defense = this.getDefense(game)
@@ -173,10 +168,11 @@ class GameWebService {
                 pitcher: pitcher,
     
                 showHitter: hitter != undefined ,
+                showPitcher: pitcher != undefined,
                 showLinescore: true,
-                showLineup: true,
 
-                play: play,
+                lastPlay: lastPlay,
+                currentPlay: currentPlay,
 
                 matchupHandedness: hitter ? matchupHandedness : undefined,
                 matchupPitcherRatings: hitter ? this.getEffectivePitchRatings(pitcher, matchupHandedness.hits) : undefined,
@@ -276,9 +272,9 @@ class GameWebService {
         }
     }
 
-    getHitter(game) {
+    getHitter(game, currentPlay) {
 
-        if (game.isComplete) return
+        if (game.isComplete || !currentPlay) return
 
         if (game.isTopInning) {
             return game.away.players.find((p) => p._id == game.away.lineupIds[game.away.currentHitterIndex])

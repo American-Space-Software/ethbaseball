@@ -418,11 +418,14 @@ class GameService {
             strikes: 0,
             outs: 0
         }
+
+        game.isStarted = true
         
         game.changed('leagueAverages', true)
         game.changed('away', true)
         game.changed('home', true)
         game.changed('startDate', true)
+        game.changed('isStarted', true)
 
         return game 
     }
@@ -640,6 +643,37 @@ class GameService {
     simPitch(game:Game, rng:any) {
 
         let command:SimPitchCommand = this.createSimPitchCommand(game, rng)
+
+
+        if (!command.play) {
+
+            let runner1B = command.offense.players.find( p => p._id == command.offense.runner1BId)
+            let runner2B = command.offense.players.find( p => p._id == command.offense.runner2BId)
+            let runner3B = command.offense.players.find( p => p._id == command.offense.runner3BId)
+
+            command.play = this.createPlay(
+                game.playIndex, 
+                command.hitter, 
+                command.pitcher, 
+                command.catcher, 
+                runner1B, 
+                runner2B, 
+                runner3B, 
+                command.matchupHandedness, 
+                game.count.outs, 
+                game.score, 
+                game.currentInning, 
+                game.isTopInning
+          )
+
+          //Add play to half inning
+          command.halfInning.plays.push(command.play)
+
+          //Just add the play.
+          return
+
+        }
+
 
         let result:SimPitchResult
 
@@ -879,11 +913,6 @@ class GameService {
 
         let hitterChange:HitterChange = matchupHandedness.throws == Handedness.L ? hitter.hitterChange.vsL : hitter.hitterChange.vsR
         let pitcherChange:PitcherChange = matchupHandedness.hits == Handedness.L ? pitcher.pitcherChange.vsL : pitcher.pitcherChange.vsR
-
-        let runner1B = offense.players.find( p => p._id == offense.runner1BId)
-        let runner2B = offense.players.find( p => p._id == offense.runner2BId)
-        let runner3B = offense.players.find( p => p._id == offense.runner3BId)
-
         
         let allPlays:Play[] = this.getPlays(game)
 
@@ -899,29 +928,7 @@ class GameService {
             }
         }
         
-        if (!play) {
-
-            play = this.createPlay(
-                game.playIndex, 
-                hitter, 
-                pitcher, 
-                catcher, 
-                runner1B, 
-                runner2B, 
-                runner3B, 
-                matchupHandedness, 
-                game.count.outs, 
-                game.score, 
-                game.currentInning, 
-                game.isTopInning
-          )
-
-          //Add play to half inning
-          halfInning.plays.push(play)
-
-        }
-
-
+    
         return {
 
             game: game,
@@ -941,6 +948,8 @@ class GameService {
             halfInningRunnerEvents:halfInningRunnerEvents,
             halfInning: halfInning,
             leagueAverages: game.leagueAverages,
+
+            matchupHandedness:matchupHandedness,
 
             rng:rng
 

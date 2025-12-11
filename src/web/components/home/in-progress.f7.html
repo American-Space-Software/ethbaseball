@@ -6,10 +6,10 @@
         <td colspan="2" class="inning">
             ${game.isStarted ? $h`
               
-              ${game.play?.play.inningTop ? $h`
-                Top ${game.play?.play.inningNum}
+              ${game.linescoreViewModel.isTopInning ? $h`
+                Top ${game.linescoreViewModel.currentInning}
               ` : $h`
-                Bottom ${game.play?.play.inningNum}
+                Bottom ${game.linescoreViewModel.currentInning}
               `}
 
             ` : $h` `}
@@ -75,7 +75,6 @@
         }
 
         let game = props.game
-
 
         return $render
     }

@@ -770,6 +770,8 @@ interface SimPitchCommand {
     
     leagueAverages: LeagueAverage
 
+    matchupHandedness:MatchupHandedness
+
     rng:any
 
 }
@@ -812,6 +814,7 @@ interface PitchLog {
 
 interface Pitch {
     result: PitchResult,
+    count?: Count,
     type: PitchType,
     quality: number
     powQ: number

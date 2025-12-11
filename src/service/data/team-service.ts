@@ -376,7 +376,6 @@ n
 
     getTeamStandingsViewModel(tls:TeamLeagueSeason, rank:number) {
     
-
         return {
             _id: tls.team._id,
             logoId: tls.logoId,

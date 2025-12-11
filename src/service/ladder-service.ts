@@ -304,14 +304,14 @@ class LadderService {
         let homeOverallRecord = await this.teamService.getOverallRecordBySeason(home, season, options)
         let awayOverallRecord = await this.teamService.getOverallRecordBySeason(away, season, options)
 
-        game.home.overallRecord.after = homeOverallRecord.overallRecord
-        game.away.overallRecord.after = awayOverallRecord.overallRecord
+        game.home.overallRecord.after = JSON.parse(JSON.stringify(homeOverallRecord.overallRecord))
+        game.away.overallRecord.after = JSON.parse(JSON.stringify(awayOverallRecord.overallRecord))
 
         game.changed("away", true)
         game.changed("home", true)
 
-        homeTLS.overallRecord = game.home.overallRecord.after
-        awayTLS.overallRecord = game.away.overallRecord.after
+        homeTLS.overallRecord = JSON.parse(JSON.stringify(game.home.overallRecord.after))
+        awayTLS.overallRecord = JSON.parse(JSON.stringify(game.away.overallRecord.after))
 
         homeTLS.changed("overallRecord", true)
         awayTLS.changed("overallRecord", true)

@@ -1,7 +1,7 @@
 
 :root {
   
-  --f7-toolbar-bg-color: #0A3161;
+  /* --f7-toolbar-bg-color: #0A3161; */
   --f7-toolbar-inner-padding-left: 0px; 
   --f7-toolbar-inner-padding-right: 0px;
 
@@ -417,13 +417,8 @@ h1 {
   background: #585858;
 }
 
-.lineup .at-bat {
-  background: #f1f1f1;
-}
 
-.dark .lineup .at-bat {
-  background: #585858;
-}
+
 
 
 .stat-table .queue {
@@ -858,6 +853,16 @@ h1 {
   flex: 1;
   /* min-width: 300px; */
 }
+
+.game-state .right .content .play-by-play-button {
+  top: 100%;
+  right: 0%;
+  width: 150px;
+  float: right;
+  margin-right: calc(var(--f7-card-margin-horizontal) + var(--f7-safe-area-left));
+  margin-left: calc(var(--f7-card-margin-horizontal) + var(--f7-safe-area-right));
+}
+
 
 .game-state .card {
   font-size: .75em;
@@ -1320,12 +1325,31 @@ h1 {
 
 
 
+
+.game-state .card-notatbat .lineup .at-bat, .dark .game-state .card-notatbat .lineup .at-bat {
+  background: unset;
+  border-left: unset;
+  border-right: unset;
+  border-top: unset;
+}
+
+.game-state .lineup .at-bat {
+  background: #f1f1f1;
+  border: 1px solid #cccccc;
+}
+
+.dark .game-state .lineup .at-bat {
+  background: #585858;
+}
+
+
+
 .game-state .lineup {
   font-size: 11px;
   width: 100%;
-  background: var(--f7-card-bg-color);
+  /* background: var(--f7-card-bg-color); */
   display: block;
-  border: none;
+  border-collapse:collapse
 }
 
 .game-state .lineup .name {
@@ -1358,44 +1382,98 @@ h1 {
 }
 
 
-/* .game-state .play {
+
+
+
+
+
+.game-state .play {
   font-size: .7em;
-} */
+} 
 
-/* .game-state .matchup-wrapper {
-  display: flex;
-  width: 100%;
-  min-width: 100%;
-} */
 
-/* 
-.game-state .matchup-pitcher, .game-state .matchup-hitter {
-  position: absolute;
-  width: 25%;
+
+
+.game-state .at-bat-ongoing, .game-state .at-bat-ended, .game-state .inning-ended, .game-state .at-bat-started {
+  height: 320px;
+  width: 320px;
+  max-width: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
   background: var(--f7-card-bg-color);
-  height: 100px;
-} */
-
-
-/* 
-.game-state .matchup-pitcher {
   position: absolute;
-  top:50%; 
-  left: 0%;
-  margin-left: 5px;
+  border: 1px solid #707070;
+  display: none;
+  flex-wrap: wrap;
+  font-size: .7em;
+}
+
+
+
+.game-state .at-bat-ongoing .header, .game-state .at-bat-ended .header, .game-state .at-bat-started .header, .game-state .inning-ended .header {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  font-weight: bold;
+  background: #f1f1f1;
+  border-bottom: 1px solid #cccccc;
+  height: 25px;
+  flex: 1 1 100%;
+}
+
+
+.dark .game-state .at-bat-ongoing .header, .dark .game-state .at-bat-started .header, .dark .game-state .at-bat-ended .header, .dark .game-state .inning-ended .header  {
+  background: #464646;
+}
+
+
+.game-state .matchup-pitcher, .game-state .matchup-hitter {
+  background: var(--f7-card-bg-color);
+  padding: 5px;
+  height: calc(320px - 25px);
+} 
+
+.game-state .at-bat-ongoing .matchup-pitcher, .game-state .at-bat-ongoing .matchup-hitter {
+  height: 60px;
+} 
+
+.game-state .result {
+  flex: 1 1 100%;
+  height: calc(320px - 25px);
+}
+
+.game-state .matchup-pitcher {
+  flex: 0 0 50%;
 }
 
 .game-state .matchup-hitter {
-  position: absolute;
-  top:50%; 
-  right: 0%;
-  margin-right: 5px;
+  flex: 1;
+} 
 
-} */
+.game-state .matchup-pitches {
+  border-top: 1px solid #cccccc;
+  flex: 1 1 100%;
+  height: calc(320px - 60px - 25px);
+} 
+
+.game-state .matchup-pitcher .game-stats, .game-state .matchup-hitter .game-stats {
+  font-size: .9em;
+  color: #353535;
+} 
+
+.dark .game-state .matchup-pitcher .game-stats, .dark .game-state .matchup-hitter .game-stats {
+  color: #CCCCCC;
+} 
+
+
+
 
 .game-state .player {
   width: 100%;
-  font-size: 1em;
+  font-size: .9em;
+  display: block;
 }
 
 .game-state .player img {
@@ -1405,6 +1483,9 @@ h1 {
   height: 25px;
   font-size: 1.2em;
 }
+
+
+
 
 
 
@@ -1663,13 +1744,17 @@ h1 {
   height: 25px;
 }
 
-.card-unsaved {
-  background : lightyellow;
+.card-unsaved, .card-atbat {
+  background : #dbdbdb;
+  border: 1px solid #cccccc;
 }
 
-.dark .card-unsaved {
-  background: rgb(48, 48, 0);
+.dark .card-unsaved, .dark .card-atbat {
+  background: rgb(77, 77, 0);
+
 }
+
+
 
 .card-unsaved .image {
   background : lightyellow;
