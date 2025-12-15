@@ -813,6 +813,8 @@ interface PitchLog {
 }
 
 interface Pitch {
+    intentZone:PitchZone,
+    actualZone:PitchZone,
     result: PitchResult,
     count?: Count,
     type: PitchType,
@@ -827,6 +829,27 @@ interface Pitch {
     con:boolean
     guess:boolean
 }
+
+enum PitchZone {
+  LOW_AWAY    = "LOW_AWAY",
+  LOW_MIDDLE  = "LOW_MIDDLE",
+  LOW_INSIDE  = "LOW_INSIDE",
+
+  MID_AWAY    = "MID_AWAY",
+  MID_MIDDLE  = "MID_MIDDLE",
+  MID_INSIDE  = "MID_INSIDE",
+
+  HIGH_AWAY   = "HIGH_AWAY",
+  HIGH_MIDDLE = "HIGH_MIDDLE",
+  HIGH_INSIDE = "HIGH_INSIDE"
+}
+
+const ALL_PITCH_ZONES: readonly PitchZone[] = [
+  PitchZone.LOW_AWAY, PitchZone.LOW_MIDDLE, PitchZone.LOW_INSIDE,
+  PitchZone.MID_AWAY, PitchZone.MID_MIDDLE, PitchZone.MID_INSIDE,
+  PitchZone.HIGH_AWAY, PitchZone.HIGH_MIDDLE, PitchZone.HIGH_INSIDE,
+] as const
+
 
 enum PitchResult {
     BALL = "BALL",
@@ -1322,7 +1345,7 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
 
 
 
-export  { SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+export  { PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimPitchCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

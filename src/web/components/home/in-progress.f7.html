@@ -17,11 +17,9 @@
       </tr>
       <tr class="${game.play?.play.inningTop ? 'at-bat' : ' '}">
         <td class="name">
-          <a href="${universeWebService.startDateLink(`/t/${game.away.tokenId}`)}" class="team-link">
             <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo"/>
             <span class="small">${game.away.cityName}</span><br />
             ${game.away.name}
-          </a>
 
           
         </td>
@@ -29,12 +27,9 @@
       </tr>
       <tr class="${game.play?.play.inningTop ? ' ' : 'at-bat'}">
         <td class="name">
-          
-          <a href="${universeWebService.startDateLink(`/t/${game.home.tokenId}`)}" class="team-link">
             <img src="/image/thumbnail/${game.home.logoId}" class="profilePic"  alt="${game.home.cityName} ${game.home.name} Logo"/>
             <span class="small">${game.home.cityName}</span><br />
             ${game.home.name}
-          </a>
           
         </td>
         <td class="runs">${game.score.home}</td>

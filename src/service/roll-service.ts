@@ -5,7 +5,7 @@ import {  RollChartService } from "./roll-chart-service.js"
 import { SeedService } from "./data/seed-service.js"
 import { RollChart } from "../dto/roll-chart.js"
 import { StatService } from "./stat-service.js"
-import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchingProfile,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand, SimPitchResult } from "./enums.js"
+import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchingProfile,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand, SimPitchResult, PitchZone, ALL_PITCH_ZONES } from "./enums.js"
 
 const APPLY_PLAYER_CHANGES = true
 
@@ -92,7 +92,12 @@ class RollService {
         //Is it in the strike zone?
         let inZone = this.isInZone(command.rng, locationQuality, command.leagueAverages.inZoneRate)
 
+        let intentZone = this.getIntentZone(command.rng)
+        let actualZone = this.getActualZone(intentZone, locationQuality)
+
         let pitch: Pitch = {
+            intentZone: intentZone,
+            actualZone: actualZone,
             type: pitchType,
             quality: pitchQuality,
             locQ: locationQuality,
@@ -218,7 +223,7 @@ class RollService {
         command.game.count.balls = command.play.pitchLog.count.balls
         command.game.count.strikes = command.play.pitchLog.count.strikes
 
-        pitch.count = command.game.count
+        pitch.count = JSON.parse(JSON.stringify( command.game.count ))
 
         return result
 
@@ -2217,6 +2222,58 @@ class RollService {
 
         }
 
+    }
+
+    getIntentZone(rng) {
+        const index = Math.floor(rng() * ALL_PITCH_ZONES.length)
+        return ALL_PITCH_ZONES[index]
+    }
+
+    getActualZone(intentZone: PitchZone, locQ: number): PitchZone {
+
+        // 67–99 => on target, 34–66 => off by 1 zone, 0–33 => off by 2 zones
+        let missSize: 0 | 1 | 2 = 0
+        if (locQ <= 33) missSize = 2
+        else if (locQ <= 66) missSize = 1
+
+        if (missSize === 0) return intentZone
+
+        // Deterministic direction from locQ (no RNG)
+        // 0=up, 1=down, 2=away, 3=inside
+        const direction = locQ % 4
+
+        // Parse intentZone like "LOW_AWAY"
+        const [verticalText, horizontalText] = intentZone.split("_")
+
+        // Convert to 0..2 indices
+        let vertical: 0 | 1 | 2 =
+            verticalText === "LOW" ? 0 :
+            verticalText === "MID" ? 1 : 2
+
+        let horizontal: 0 | 1 | 2 =
+            horizontalText === "AWAY" ? 0 :
+            horizontalText === "MIDDLE" ? 1 : 2
+
+        // Apply miss
+        let v = vertical
+        let h = horizontal
+
+        if (direction === 0) v = (v + missSize) as any       // up
+        else if (direction === 1) v = (v - missSize) as any  // down
+        else if (direction === 2) h = (h - missSize) as any  // away
+        else h = (h + missSize) as any                       // inside
+
+        // Clamp to 0..2
+        if (v < 0) v = 0
+        if (v > 2) v = 2
+        if (h < 0) h = 0
+        if (h > 2) h = 2
+
+        // Convert back to PitchZone
+        const newVerticalText = v === 0 ? "LOW" : v === 1 ? "MID" : "HIGH"
+        const newHorizontalText = h === 0 ? "AWAY" : h === 1 ? "MIDDLE" : "INSIDE"
+
+        return `${newVerticalText}_${newHorizontalText}` as PitchZone
     }
 
     getPowerQuality(gameRNG, powerChange: number): number {

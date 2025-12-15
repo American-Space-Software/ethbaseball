@@ -1,10 +1,11 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { BaseResult, Contact, GamePlayer, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Play, PlayResult, Position, RunnerEvent, ShallowDeep, ThrowResult } from "../../service/enums.js";
+import { BaseResult, Contact, Count, GamePlayer, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Pitch, PitchResult, PitchZone, Play, PlayResult, Position, RunnerEvent, RunnerResult, ShallowDeep, ThrowResult } from "../../service/enums.js";
 import dayjs from "dayjs";
 import { Game } from "../../dto/game.js";
 
 import { SocketWebService } from "./socket-web-service.js";
+import { PlayerWebService } from "./player-web-service.js";
 
 
 @injectable()
@@ -12,6 +13,7 @@ class GameWebService {
     
     constructor(
         private socketWebService: SocketWebService,
+        private playerWebService:PlayerWebService,
         @inject('env') private env:any
     ) { }
 
@@ -31,7 +33,6 @@ class GameWebService {
     async unwatchGame(_id:string) {
         this.socketWebService.gameSocket.emit("unwatch-game", _id)
     }
-
 
     async getGames(dateString:string, rank:number) {
 
@@ -60,7 +61,6 @@ class GameWebService {
 
         return result.data
     }
-
 
     async playBot() {
         //Download it.
@@ -199,8 +199,6 @@ class GameWebService {
 
     }
 
-
-
     getLineScore(game) {
 
         if (!game) return
@@ -329,7 +327,7 @@ class GameWebService {
 
             for (let play of plays) {
                 results.push({
-                    descriptions: this.getPlayDescription(game, play),
+                    descriptions: this.getPlayDescriptions(game, play),
                     play: play
                 })
             }
@@ -340,15 +338,65 @@ class GameWebService {
 
     }
 
-    getPlayDescription(game, play: Play) {
+
+
+    getPlayDescriptions(game, play: Play) : PlayDescription[] {
+
+        let descriptions:PlayDescription[] = []
+
 
         // let defense = this.getDefense(game)
 
         let gamePlayers = this.gamePlayers(game)
 
-
         let hitter: GamePlayer = gamePlayers[play.hitterId]
         let pitcher = gamePlayers[play.pitcherId]
+
+        descriptions.push( { type: PlayDescriptionType.RECAP, text: `That will bring up ${hitter.fullName}`})
+
+        const getOutsText = (outs) => {
+
+            switch(outs) {
+
+                case 0: 
+                    return "There are no outs."
+                case 1: 
+                    return "There is one out."
+                case 2: 
+                    return"There are two outs."                
+            }
+        } 
+
+        descriptions.push( { type: PlayDescriptionType.RECAP, text: getOutsText(play.count.start.outs) })
+
+        
+        const getRunnersDescription = (runnerResult:RunnerResult) => {
+
+            if (runnerResult.first && !runnerResult.second && !runnerResult.third) {
+                return "There is a runner on first base."
+            } else if (runnerResult.first && runnerResult.second && !runnerResult.third) {
+                return "There are runners on first and second base."
+            } else if (runnerResult.first && runnerResult.second && runnerResult.third) {
+                return "The bases are loaded."
+            } else if (runnerResult.first && !runnerResult.second && runnerResult.third) {
+                return "There are runners on first and third base."
+            } else if (!runnerResult.first && runnerResult.second && !runnerResult.third) {
+                return "There is a runner on second base."
+            } else if(!runnerResult.first && !runnerResult.second && runnerResult.third) {
+                return "There is a runner on third base."
+            } else if (!runnerResult.first && runnerResult.second && runnerResult.third) {
+                return "There are runners on second and third base."
+            } else if (!runnerResult.first && !runnerResult.second && !runnerResult.third) {
+                return "The bases are empty."
+            }
+        }
+
+        descriptions.push( { type: PlayDescriptionType.RECAP, text: getRunnersDescription(play.runner.result.start) })
+
+
+        for (let pitch of play.pitchLog.pitches) {
+            descriptions.push( { type: PlayDescriptionType.RECAP, text: this.getPitchDescription(pitch) })
+        }
 
 
         let fielderPlayer: GamePlayer
@@ -356,28 +404,25 @@ class GameWebService {
             fielderPlayer = gamePlayers[play.fielderId]
         }
 
-
-        let mainDescription
-        let descriptions = []
-
-
         let runner1bRA = play.runner?.events.find(re => re.movement.start==BaseResult.FIRST)
         let runner2bRA = play.runner?.events.find(re => re.movement.start==BaseResult.SECOND)
         let runner3bRA = play.runner?.events.find(re => re.movement.start==BaseResult.THIRD)
+
+
+
 
         // let hitterRA = play.runner?.events.find(re => re.movement.start==BaseResult.HOME)
 
         switch (play.result) {
 
-            
             case PlayResult.STRIKEOUT:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> strikes out.`
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} strikes out.`})
                 break
             case PlayResult.BB:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> draws a walk.`
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} draws a walk.`})
                 break
             case PlayResult.HIT_BY_PITCH:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> gets hit by a pitch.`
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} gets hit by a pitch.`})
                 break
             case PlayResult.OUT:
 
@@ -392,56 +437,233 @@ class GameWebService {
                 }
 
                 if (play.officialPlayResult == OfficialPlayResult.FIELDERS_CHOICE) {
-                    mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), false)} to ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>. The throw gets the lead runner at ${fcRunnerRA?.movement?.outBase}. Fielder's choice.`
+                    descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), false)} to ${this.getPositionDescriptionNoun(play.fielder)} ${fielderPlayer.fullName}. The throw gets the lead runner at ${fcRunnerRA?.movement?.outBase}. Fielder's choice.`})
                 } else if (play.officialPlayResult == OfficialPlayResult.GROUNDED_INTO_DP) {
-                    mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>. Fielder throws to ${fcRunnerRA.movement.outBase} for the first out and relays to first for the double play.`
+                    descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to ${this.getPositionDescriptionNoun(play.fielder)} ${fielderPlayer.fullName}. Fielder throws to ${fcRunnerRA.movement.outBase} for the first out and relays to first for the double play.`})
                 } else {
-                    mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to the ${this.getPositionDescriptionNoun(play.fielder)} <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`
+                    descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to the ${this.getPositionDescriptionNoun(play.fielder)} ${fielderPlayer.fullName}.`})
                 }
 
                 break
             case PlayResult.SINGLE:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} single to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
-                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`)
+                
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} single to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`})
+                descriptions.push({ type: PlayDescriptionType.RECAP, text: `The ball is fielded by ${fielderPlayer.fullName}.`})
                 break
             case PlayResult.DOUBLE:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} double to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
-                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`)
+
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} double to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`})
+                descriptions.push({ type: PlayDescriptionType.RECAP, text: `The ball is fielded by ${fielderPlayer.fullName}.`})
+
                 break
             case PlayResult.TRIPLE:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} triple to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`
-                descriptions.push(`The ball is fielded by <a href="/p/${fielderPlayer._id}">${fielderPlayer.fullName}</a>.`)
+
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} triple to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`})
+                descriptions.push({ type: PlayDescriptionType.RECAP, text: `The ball is fielded by ${fielderPlayer.fullName}.`})
+
                 break
             case PlayResult.HR:
-                mainDescription = `<a href="/p/${hitter._id}">${hitter.fullName}</a> hits a home run.`
+
+                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits a home run.`})
                 break
         }
 
         //Runs?
         if (play.runner?.result?.end?.scored?.length > 0) {
-            descriptions.push(`${play.runner.result.end.scored?.length} runs score.`)
-            descriptions.push(`The score is ${play.score.end.away} - ${play.score.end.home}.`)
+            descriptions.push({ type: PlayDescriptionType.RECAP, text: `${play.runner.result.end.scored?.length} runs score.`})
+            descriptions.push({ type: PlayDescriptionType.RECAP, text: `The score is ${play.score.end.away} - ${play.score.end.home}.`})
         }
 
         //End inning?
         if (play.runner?.result?.end?.out?.length > 0) {
 
             if (play.count.end.outs == 3) {
-                descriptions.push(`There's 3 outs and the inning is complete.`)
+                descriptions.push({ type: PlayDescriptionType.RECAP, text: `There's 3 outs and the inning is complete.`})
             } else {
-                descriptions.push(`There ${this.getOutsPhrase(play.count.end.outs)}.`)
+                descriptions.push({ type: PlayDescriptionType.RECAP, text: `There ${this.getOutsPhrase(play.count.end.outs)}.`})
             }
 
         }
 
-        return {
-            mainDescription: mainDescription,
-            descriptions: descriptions,
-            play: play
-        }
-
+        return descriptions
 
     }
+
+    getPitchDescription(pitch: Pitch): string {
+
+        const pitchTypePhrases = [
+            this.playerWebService.getPitchTypeFull(pitch.type).toLowerCase()
+        ]
+
+        const introPhrases = [
+            "Here comes a",
+            "The pitch is a",
+            "Now a"
+        ]
+
+        const startPhrases = [
+            "starts",
+            "begins",
+            "comes in"
+        ]
+
+        const endPhrases = [
+            "ends",
+            "finishes",
+            "breaks"
+        ]
+
+        const strikeTakePhrases = [
+            "Taken for a strike",
+            "Called a strike",
+            "Strike called"
+        ]
+
+        const ballTakePhrases = [
+            "Taken for a ball",
+            "Outside for a ball",
+            "Misses for a ball"
+        ]
+
+        const swingMissPhrases = [
+            "The batter swings and misses",
+            "The batter comes up empty",
+            "Swing and a miss"
+        ]
+
+        const foulPhrases = [
+            "The batter swings and fouls it off",
+            "The batter snaps it foul",
+            "Fouled straight back"
+        ]
+
+        const inPlayPhrases = [
+            "The batter swings and puts it in play",
+            "Contact made, ball in play",
+            "The batter puts it in play"
+        ]
+
+        const wildPitchPhrases = [
+            "It skips past the catcher for a wild pitch",
+            "That one gets away for a wild pitch"
+        ]
+
+        const passedBallPhrases = [
+            "It gets away from the catcher",
+            "Passed ball"
+        ]
+
+        const hbpPhrases = [
+            "The batter is hit by the pitch",
+            "Hit by pitch"
+        ]
+
+        const countPhrases = [
+            (c: Count) => `The count is ${c.balls}-${c.strikes}`,
+            (c: Count) => `${c.balls} and ${c.strikes}`,
+            (c: Count) => `Now ${c.balls}-${c.strikes}`
+        ]
+
+        // ---------- helpers ----------
+
+        const pick = (list: any[]): any =>
+            list[pitch.quality % list.length]
+
+        const describeZone = (zone: PitchZone): string => {
+            const [vertical, horizontal] = zone.split("_")
+
+            const v =
+            vertical === "LOW" ? "low" :
+            vertical === "MID" ? "middle" :
+            "high"
+
+            const h =
+            horizontal === "AWAY" ? "away" :
+            horizontal === "MIDDLE" ? "over the plate" :
+            "inside"
+
+            return h === "over the plate"
+            ? `${v} ${h}`
+            : `${v} and ${h}`
+        }
+
+        // ---------- location sentence ----------
+
+        const pitchTypeText = pick(pitchTypePhrases)
+        const introText = pick(introPhrases)
+
+        let locationSentence = ""
+
+        if (pitch.intentZone === pitch.actualZone) {
+            locationSentence =
+            `${introText} ${pitchTypeText} ${describeZone(pitch.actualZone)}.`
+        } else {
+            locationSentence =
+            `${introText} ${pitchTypeText} ${pick(startPhrases)} ${describeZone(pitch.intentZone)}, ` +
+            `${pick(endPhrases)} ${describeZone(pitch.actualZone)}.`
+        }
+
+        // ---------- outcome sentence ----------
+
+        let outcomeSentence = ""
+
+        if (pitch.isWP) {
+            outcomeSentence = pick(wildPitchPhrases)
+        } else if (pitch.isPB) {
+            outcomeSentence = pick(passedBallPhrases)
+        } else {
+            switch (pitch.result) {
+
+            case PitchResult.IN_PLAY:
+                outcomeSentence = pick(inPlayPhrases)
+                break
+
+            case PitchResult.FOUL:
+                outcomeSentence = pick(foulPhrases)
+                break
+
+            case PitchResult.HBP:
+                outcomeSentence = pick(hbpPhrases)
+                break
+
+            case PitchResult.STRIKE:
+                outcomeSentence = pitch.swing
+                ? pick(swingMissPhrases)
+                : pick(strikeTakePhrases)
+                break
+
+            case PitchResult.BALL:
+                outcomeSentence = pitch.swing
+                ? pick(swingMissPhrases)
+                : pick(ballTakePhrases)
+                break
+            }
+        }
+
+        // ---------- count sentence (only if NOT in play) ----------
+
+        let countSentence = ""
+
+        if (
+            pitch.result !== PitchResult.IN_PLAY &&
+            pitch.result !== PitchResult.HBP &&
+            pitch.result !== PitchResult.FOUL &&
+            pitch.count
+        ) {
+            countSentence = pick(countPhrases)(pitch.count) + "."
+        }
+
+        // ---------- final output ----------
+
+        return [
+            locationSentence,
+            outcomeSentence + ".",
+            countSentence
+        ]
+            .filter(Boolean)
+            .join(" ")
+    }
+
 
     getRunnerDescription(game:Game, runnerEvent:RunnerEvent) {
 
@@ -922,7 +1144,53 @@ class GameWebService {
 
     }
 
+    getAtBatState(vm) : AtBatState {
 
+      let lastPlayEnded = vm.lastPlay?.play?.result != undefined
+      let currentPlayEnded = vm.currentPlay?.play?.result != undefined
+      let currentPlayHasPitches = vm.currentPlay?.play?.pitchLog?.pitches?.length > 0
+    //   let halfInningStart = vm.game.halfInnings[vm.game.halfInnings?.length - 1]?.plays?.length == 0
+
+      //At bat just started. No pitches.
+      if ( vm.currentPlay && !currentPlayHasPitches && !currentPlayEnded  ) {
+        return AtBatState.STARTED
+      //At bat ongoing.
+      } else if (   vm.currentPlay && currentPlayHasPitches && !currentPlayEnded   ) {
+        return AtBatState.ONGOING
+
+      //At bat just ended.
+      } else if (lastPlayEnded && !vm.currentPlay) {
+        return AtBatState.ENDED
+      } 
+    }
+
+    getMessagesFromPlay(game:Game, play:Play) {
+        
+        let descriptions = this.getPlayDescriptions(game, play)
+
+        return descriptions?.map( d => {  return { text: d.text, type: "received" } })
+
+    }
+
+
+}
+
+interface PlayDescription {
+    text: string,
+    type: PlayDescriptionType
+}
+
+enum PlayDescriptionType {
+    RESULT = "RESULT",
+    RUNNER = "RUNNER", 
+    DEFENSE = "DEFENSE", 
+    RECAP = "RECAP"
+}
+
+enum AtBatState {
+    STARTED,
+    ONGOING,
+    ENDED
 }
 
 type PointPct = { top: number, right: number }
@@ -946,7 +1214,7 @@ const BASE_ORDER = ['home','1B','2B','3B','home']
 
 
 export {
-    GameWebService
+    GameWebService, AtBatState
 }
 
 

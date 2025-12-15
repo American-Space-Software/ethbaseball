@@ -9,28 +9,26 @@
 
       <div class="left">
 
-        <a href="/" class="link" aria-label="Home">
-          <img src="${logo}" width="42" height="42" alt="Logo" class="logo" />
+        <a href="/" class="logo" aria-label="Home">
+          <img src="${logo}" alt="Logo" class="logo" />
         </a>
 
       </div>
 
-      <div class="title">
+      <div class="title" style="display: flex;">
 
         <div class="small-only-flex">
 
-            <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
-            <a href="${universeWebService.fullLink(`/games`)}" class="link  ${tabLink == '/games' ? 'active' : ''}">Scores</a>
-            <a href="${universeWebService.fullLink(`/players/`)}"  class="link  ${tabLink == '/players/' ? 'active' : ''}">Players</a>
-
-            <a href="#" class="popover-open link ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">More</a>
-
+            <a href="#" class="first popover-open link ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">Menu</a>
             
             <div class="popover popover-menu">
                 <div class="popover-angle"></div>
                 <div class="popover-inner">
                   <div class="list inset list-strong list-dividers-ios">
                     <ul>
+                      <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a></li>
+                      <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">Scores</a></li>
+                      <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">Players</a></li>
                       <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li>
                       <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
                       <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
@@ -72,9 +70,9 @@
       <div class="right">
 
         ${authInfo ? $h`
-          <a data-popup=".logged-in-popup" href="#" class="popup-open"><i class="f7-icons text-color-white">person_circle</i></a>
+          <a data-popup=".logged-in-popup" href="#" class="popup-open link">Profile</a>
         ` : $h`
-          <a data-popup=".login-popup" href="#" class="popup-open">Login</a>
+          <a data-popup=".login-popup" href="#" class="popup-open link">Login</a>
         `}
 
         

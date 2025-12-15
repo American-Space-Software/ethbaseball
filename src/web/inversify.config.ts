@@ -59,13 +59,14 @@ import Swiper from 'framework7/components/swiper'
 import Panel from 'framework7/components/panel'
 import DataTable from 'framework7/components/data-table'
 
+import Messages from 'framework7/components/messages'
 
 
 import { OwnerWebService } from "./service/owner-web-service.js";
 import { PlayerWebService } from "./service/player-web-service.js";
 import { TransactionWebService } from "./service/transaction-web-service.js";
 
-Framework7.use([ DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
+Framework7.use([ Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
 
 
 import TransactionRow from './components/common/transaction-row.f7.html'

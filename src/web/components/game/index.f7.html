@@ -3,24 +3,7 @@
   <div class="page" data-name="player-index">
 
 
-    <div class="toolbar toolbar-bottom">
-
-      <div class="toolbar-inner">
-
-        ${gameViewModel.playByPlay?.length > 0 ? $h`
-          <a data-popup=".play-by-play-popup" class="button button-outline popup-open">Play by Play</a>  
-        ` : $h` `}
-
-        ${!gameViewModel.game.isComplete ? $h`
-          <a data-popup=".box-score-popup" class="button button-outline popup-open ">Box Score</a> 
-        ` : $h` `}
-         
-      </div>
-    </div>
-
-
-
-    <div class="page-content">
+    <div class="page-content game-page messages-content">
 
       <div class="hidden-on-load">
 
@@ -133,6 +116,7 @@
 
                 <${GameState} vm=${gameViewModel} /> 
 
+
                 <div class="popup box-score-popup popup-tablet-fullscreen">
                   <div class="view">
                     <div class="page">
@@ -150,6 +134,53 @@
                       </div>
                       <div class="page-content">
 
+                        <div class="linescore-wrapper">
+                          <table class="linescore">
+                            <thead>
+                              <tr>
+                                <th></th>
+                                ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                                  <th>${num}</th>                          
+                                `)}
+                        
+                                <th>R</th>
+                                <th>H</th>
+                                <th>E</th>        
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+
+                                <td class="abbrev">
+                                  <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                                </td>
+                        
+                                ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                                  <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
+                                `)}
+                        
+                                <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
+                                <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
+                                <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
+                              </tr>
+                              <tr>
+                            
+                                <td class="abbrev">
+                                  <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
+                                </td>
+                            
+                                ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                                  <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
+                                `)}
+                        
+                                <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
+                                <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
+                                <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
+                              </tr>
+                            </tbody>	
+                          </table>
+                        </div>
+
                         <div class="boxscores grid medium-grid-cols-2">
                           
                           <div class="left">
@@ -166,11 +197,8 @@
                   </div>
                 </div>
 
-
               `} 
-      
-
-      
+            
               <div class="popup play-by-play-popup">
                 <div class="view">
                   <div class="page">
@@ -190,6 +218,7 @@
 
                       <div class="list cards-list">
                         <ul>
+
                             ${gameViewModel.playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
                               <li class="card recap card-header-divider card-outline">
             
@@ -212,37 +241,10 @@
                                     <div class="chip-label">${p.play.result}</div>
                                   </div>
                             
-                                  ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.length > 0 ? $h`
-                                    <div class="runners">
-                                      <strong>Stolen Bases</strong>
-                                      <ul>
-                                        ${p.play.runnerEvents?.filter(re => re.isStolenBaseAttempt)?.map( re => $h`
-                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(gameViewModel.game, re)}</li>
-                                        `)}                            
-                                      </ul>
-                                    </div>                          
-                                  ` : $h` `}
-          
-          
-          
-                                  <div innerHTML="${p.descriptions.mainDescription}"></div>
-                            
                                   <ul>
-                                    ${p.descriptions.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
+                                    ${p.descriptions.map( (d, index) => $h`<li class="${d.type == 'RESULT' ? 'main' : ''}">${d.text}</li>`)}
                                   </ul>
           
-                                  ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt)?.length > 0 ? $h`
-                                    <div class="runners">
-                                      <strong>Runners</strong>
-                                      <ul>
-                                        ${p.play.runnerEvents?.filter(re => !re.isStolenBaseAttempt).map( re => $h`
-                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[re.runner._id].fullName} ${gameWebService.getRunnerDescription(gameViewModel.game, re)}</li>
-                                        `)}                            
-                                      </ul>
-                                    </div>                          
-                                  ` : $h` `}
-          
-                          
                                   <div class="info-wrapper">
                                     <span class="label">Balls</span>${getBalls(4, p.play.pitchLog.count.balls)}<br />
                                     <span class="label">Strikes</span>${getBalls(3, p.play.pitchLog.count.strikes)}<br />
@@ -621,6 +623,7 @@
     const getAwayBoxscoreViewModel = () => { return awayBoxscoreViewModel }
     const getHomeBoxscoreViewModel = () => { return homeBoxscoreViewModel }
 
+    let messages
 
     let loading 
     let timeoutId
@@ -635,7 +638,7 @@
       Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
       Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
 
-      $f7.emit('gameUpdate', gameViewModel)
+      $f7.emit('gameUpdate', gameViewModel, messages)
 
       await $update()
 
@@ -652,8 +655,10 @@
 
     $on('pageBeforeIn', async (e) => {
               
-      $f7.emit('gameUpdate', gameViewModel)
+      messages = $f7.messages.create({ el: '.messages' })
 
+      $f7.emit('gameUpdate', gameViewModel, messages)
+      
       await $update()
 
       if (gameViewModel.linescoreViewModel) {

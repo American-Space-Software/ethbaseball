@@ -254,6 +254,7 @@ class TeamRepositoryNodeImpl implements TeamRepository {
                 t.*
             FROM team t 
             INNER JOIN team_league_season tls on tls.leagueId = :leagueId AND tls.seasonId = :seasonId and tls.teamId = t._id
+            ORDER by t.seasonRating->>"$.rating" DESC
         `, Object.assign(queryOptions, options))
 
         return queryResults

@@ -1,21 +1,18 @@
 
 :root {
   
+  --f7-messages-content-bg-color: unset;
+  --f7-toolbar-height: 170px;
   /* --f7-toolbar-bg-color: #0A3161; */
-  --f7-toolbar-inner-padding-left: 0px; 
-  --f7-toolbar-inner-padding-right: 0px;
+  --f7-toolbar-inner-padding-left: calc(100vw - 1250px) / 2; 
+  --f7-toolbar-inner-padding-right: calc(100vw - 1250px) / 2;
 
-  --f7-glass-shadow: unset;
-  --f7-glass-bg-color:#0A3161;
+  /* --f7-glass-shadow: unset;
+  --f7-glass-bg-color:#0A3161; */
   --f7-navbar-bg-color: #0A3161; 
-  --f7-navbar-link-color: #FFFFFF;
-  --f7-navbar-font-size: 15px;
-  --f7-navbar-height: 75px;
-/* 
-  --f7-theme-color: #315c15;
-  --f7-theme-color-rgb: 49, 92, 21;
-  --f7-theme-color-shade: #1f3b0d;
-  --f7-theme-color-tint: #437d1d;  */
+  /* --f7-navbar-link-color: #FFFFFF; */
+  /* --f7-navbar-font-size: 15px; */
+  /* --f7-navbar-height: 75px; */
 
   --f7-page-navbar-offset: 0px;
   --f7-page-toolbar-top-offset: 0px;
@@ -41,8 +38,21 @@
 
 }
 
+.logo {
+  height: 50px;
+  width: 50px;
+}
+
+/* .ios .toolbar-pane {
+  background: unset;
+} */
+
 .navbar-inner {
   background: #0A3161;
+}
+
+.navbar-inner .title a {
+  color: white;
 }
 
 .dark .navbar-inner {
@@ -65,12 +75,14 @@ html {
   background: #000000;
 }
 
-.ios.navbar .left, .ios.navbar .right {
+.ios .navbar .left {
+  backdrop-filter: unset;
   box-shadow: unset;
   background-color: unset;
 }
 
-.dark.ios .navbar .left, .dark.ios .navbar .right {
+.dark.ios .navbar .left {
+  backdrop-filter: unset;
   box-shadow: unset;
   background-color: unset;
 }
@@ -80,7 +92,7 @@ html {
   --f7-navbar-bg-color: unset; 
   --f7-navbar-link-color: unset;
   color-scheme: dark;
-}
+} 
 
 
 .dark a {
@@ -148,7 +160,8 @@ h1 {
 @media only screen and (max-width: 1024px) {
 
   :root {
-    --f7-navbar-height: 50px;
+    --f7-toolbar-inner-padding-left: 5px; 
+    --f7-toolbar-inner-padding-right: 5px;
   }
 
   .small-only  {
@@ -778,7 +791,7 @@ h1 {
   padding: 2px;
 }
 
-
+/* 
 .smart-select {
   border: 1px solid #cccccc;
   width: 300px;
@@ -793,11 +806,11 @@ h1 {
     margin-left: 0px;
 
   }
-}
+} */
 
-.ios .toolbar.toolbar-bottom .toolbar-inner {
+/* .ios .toolbar.toolbar-bottom .toolbar-inner {
   padding-bottom: 0px;
-}
+} */
 
 /* .toolbar .play {
   background: #FFFFFF;
@@ -806,6 +819,29 @@ h1 {
 } */
 
 
+.game-main .game-buttons .segmented {
+  height: 20px;
+  width: 100%;
+  padding: 15px;
+}
+
+.ios .messages {
+  padding-bottom: 0px;
+  min-height: unset;
+  position: absolute;
+  z-index: 10000;
+  bottom: 0px;
+  width: 1250px;
+  max-width: 100%;
+  margin: 10px auto 0px auto;
+
+}
+
+.game-page {
+    background: #00a831;
+    padding-top: 66px;
+}
+
 .game-state {
   width: 1250px;
   max-width: 100%;
@@ -813,8 +849,16 @@ h1 {
   display: flex;
   margin: 10px auto 0px auto;
   flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: center;
+  position: relative;
+  height: calc(100vh - var(--f7-navbar-height) );
 }
 
+.game-state .game-main {
+  flex: 1 1 100%;
+  display: flex;
+}
 
 
 .game-state .left .content, .game-state .right .content {
@@ -870,12 +914,9 @@ h1 {
 
 .state-info {
   padding: 3px;
-  font-size: .75em;  
+  font-size: .65em;  
   background: #f1f1f1;
   text-align: center;
-  border-left: 1px solid #cccccc;
-  border-right: 1px solid #cccccc;
-  border-bottom: 1px solid #cccccc;
 }
 
 .dark .state-info {
@@ -928,6 +969,7 @@ h1 {
   max-width: 100%;
   aspect-ratio: 1.3;
 }
+
 
 .game-state .game-info .defender {
   width: 15%;
@@ -1091,20 +1133,25 @@ h1 {
   right: 5%;
 }
 
+/* 
+@media only screen and (max-width: 650px) {
 
+  .game-state .middle {
+    flex: 1;
+    width: 500px;
+  }
+
+
+} */
 
 @media only screen and (max-width: 1024px) {
 
   .game-state {
     width: 100%;
-    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    /* display: block; */
   }
-
-  .game-state .state-info {
-    border-right: none;
-    border-left: none;
-  }
-
   
   .game-state .left, .game-state .right, .game-state .center {
     width: 100%;
@@ -1112,6 +1159,11 @@ h1 {
 
   .game-state .left, .game-state .right {
     display: none;
+  }
+  
+  .game-state .middle {
+    flex: 1;
+    width: 650px;
   }
 
   .game-state .game-info .defender, .game-state .game-info .runner {
@@ -1394,27 +1446,30 @@ h1 {
 
 
 
-.game-state .at-bat-ongoing, .game-state .at-bat-ended, .game-state .inning-ended, .game-state .at-bat-started {
-  height: 320px;
-  width: 320px;
-  max-width: 100%;
+.game-state .at-bat-ongoing, .game-state .inning-ended, .game-state .at-bat-started, .game-state .at-bat-ended {
+  height: 375px;
+  width: 375px;
+  max-width: 90%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
   background: var(--f7-card-bg-color);
   position: absolute;
-  border: 1px solid #707070;
+  border: 1px solid #cccccc;
   display: none;
   flex-wrap: wrap;
   font-size: .7em;
 }
 
 
+.game-state .at-bat-ended .result {
+  padding: 10px;
+}
 
-.game-state .at-bat-ongoing .header, .game-state .at-bat-ended .header, .game-state .at-bat-started .header, .game-state .inning-ended .header {
-  margin-top: 5px;
-  margin-bottom: 5px;
+
+.game-state .at-bat-ongoing .header, .game-state .at-bat-started .header, .game-state .at-bat-ended .header {
+  padding-top: 5px;
   text-align: center;
   font-weight: bold;
   background: #f1f1f1;
@@ -1424,7 +1479,7 @@ h1 {
 }
 
 
-.dark .game-state .at-bat-ongoing .header, .dark .game-state .at-bat-started .header, .dark .game-state .at-bat-ended .header, .dark .game-state .inning-ended .header  {
+.dark .game-state .at-bat-ongoing .header, .dark .game-state .at-bat-started .header , .dark .game-state .at-bat-ended .header {
   background: #464646;
 }
 
@@ -1437,12 +1492,10 @@ h1 {
 
 .game-state .at-bat-ongoing .matchup-pitcher, .game-state .at-bat-ongoing .matchup-hitter {
   height: 60px;
+  border-bottom: 1px solid #cccccc;
 } 
 
-.game-state .result {
-  flex: 1 1 100%;
-  height: calc(320px - 25px);
-}
+
 
 .game-state .matchup-pitcher {
   flex: 0 0 50%;
@@ -1452,10 +1505,22 @@ h1 {
   flex: 1;
 } 
 
-.game-state .matchup-pitches {
-  border-top: 1px solid #cccccc;
+.game-state .at-bat-ongoing .info-wrapper, .game-state .at-bat-ended .info-wrapper {
   flex: 1 1 100%;
-  height: calc(320px - 60px - 25px);
+  height: 50px;
+  padding: 5px;
+} 
+
+.game-state .info-wrapper .label {
+  width: 50px;
+  display: inline-block;
+}
+
+.game-state .matchup-pitches {
+  /* border-top: 1px solid #cccccc; */
+  padding: 15px;
+  flex: 1 1 100%;
+  height: 320px;
 } 
 
 .game-state .matchup-pitcher .game-stats, .game-state .matchup-hitter .game-stats {
@@ -1517,6 +1582,7 @@ h1 {
 
 
 @media only screen and (max-width: 1024px) {
+
 
   .linescore {
     width: 100%;
@@ -1656,21 +1722,23 @@ h1 {
 }
 
 
-
-
 .recap .play-description ul {
   text-align: left;
-  font-size: .85em;
-  padding-left: 20px;
+  font-size: .75em;
+  padding-left: 0px;
   list-style: circle;
 }
 
 .recap .play-description li {
   text-align: left;
+  margin-left: 40px;
 }
 
-.recap .play-description .main-description {
+.recap .play-description li.main {
+  list-style-type: none;
+  font-size: 1.3em;
   margin-bottom: 5px;
+  margin-left: 0px;
 }
 
 .recap .rewards, .recap .defense, .recap .runners {
@@ -2507,7 +2575,8 @@ td.action, th.action {
   min-width: 100%;
   display: flex;
   background: var(--f7-card-bg-color);
-  height: 85px;
+  height: 100px;
+  flex-wrap: wrap;
 }
 
 .game-banner .away {
@@ -2580,12 +2649,17 @@ td.action, th.action {
   color: white;
 }
 
-
+.game-banner .state-info {
+  flex: 1 1 100%;
+  overflow: hidden;
+  text-wrap: nowrap;
+}
 
 @media only screen and (max-width: 1024px) {
 
   .game-banner {
-    height: 65px;
+    height: 100px;
+    padding-top: 5px;
   }
 
   .game-banner .profilePic {
@@ -2977,3 +3051,4 @@ td.action, th.action {
   margin-bottom: 5px;
   font-size: .90em;
 }
+

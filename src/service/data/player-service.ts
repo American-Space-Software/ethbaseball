@@ -664,14 +664,7 @@ class PlayerService {
                     ratings[key] *= modifier
                 }
 
-            } else {
-
-                //If it's an array (pitches) loop through updating rating
-                for (let pitchRating of ratings[key]) {
-                    pitchRating.rating *= modifier
-                }
-
-            }
+            } 
 
         }
 
