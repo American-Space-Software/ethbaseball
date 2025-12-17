@@ -56,9 +56,10 @@
                   <div class="third base ${vm.runner3B ? $h`runner` : $h` `}"></div>
                 </div>
               </div>
-              
+
 
           </div>
+
       </div>
 
       <div class="game-main">
@@ -115,7 +116,7 @@
                   </div>
                 ` : $h` `}
 
-                <div class="wrapper" style="border: 2px solid ${vm.hitter.color1};">
+                <div class="wrapper" class="large-only-block" style="border: 2px solid ${vm.hitter.color1};">
                   <div class="text" style="background: ${vm.hitter.color1}; color: ${getFontColor(vm.hitter.color1)}; ">
                     ${vm.hitter.displayName}
                   </div>
@@ -197,7 +198,7 @@
             ${vm.showPitcher ? $h`
 
               <a href="/p/${vm.pitcher._id}" class="defender p" data-pos="P">
-                <div class="wrapper" style="border: 2px solid ${vm.pitcher.color1};">
+                <div class="wrapper" class="large-only-block" style="border: 2px solid ${vm.pitcher.color1};">
                   <div class="text" style="background: ${vm.pitcher.color1}; color: ${getFontColor(vm.pitcher.color1)}; ">
                     ${vm.pitcher.displayName}
                   </div>
@@ -376,109 +377,56 @@
 
       </div>
 
-      <div class="messages"></div>
 
-      <div class="at-bat-started">
-            <div class="header">Matchup</div>
-            <div class="matchup-pitcher">
-              ${vm.pitcher ? $h`
+      <div class="bottom-bar page-content messages-content" style="padding-top: 0px;">
 
-                    <strong>Pitching</strong>
+        <div class="matchup">
+          
+          ${vm.awayPlayer ? $h`
+            <div class="matchup-left">
 
-                    <div class="player">
-                      <img src="/player/image/${vm.pitcher._id}" width="35" height="35" style="border: 3px solid ${vm.pitcher.color1}; " /> 
-                      <a href="/p/${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a>
+              <strong>${vm.awayPlayer.currentPostion == "P" ? 'Pitching' : 'At Bat'}</strong><br />
 
-                      <div class="game-stats">
-                        ${gameWebService.pitcherGameStats(vm.pitcher)}
-                      </div>
+              <div class="player">
 
-                    </div>
+                <img src="/player/image/${vm.awayPlayer._id}" width="35" height="35" style="border: 3px solid ${vm.awayPlayer.color1}; " /> 
+
+                <a href="/p/${vm.awayPlayer._id}" class="player">${vm.awayPlayer.fullName}</a>
+
+                <div class="game-stats">
+                  ${vm.awayPlayer.currentPosition == "P" ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
+                </div>
 
 
-
-                    ${vm.matchupHandedness ? $h`
-                      <div class="rating-table">
-                        <div class="full">
-                          <div class="skill-wrapper">
-                            <div class="skill-bar">
-                              <div class="red" style="flex-basis: ${vm.pitcher.pitchRatings.power }%;"><strong>POW</strong> ${ vm.pitcher.pitchRatings.power }</div>
-                            </div>
-                          </div>
-
-                          <div class="skill-wrapper">
-                            <div class="skill-bar">
-                              <div class="red" style="flex-basis:${ vm.matchupPitcherRatings?.control }%;"><strong>CON</strong> ${ vm.matchupPitcherRatings?.control }</div>
-                            </div>
-                          </div>
-
-                          <div class="skill-wrapper">
-                            <div class="skill-bar">
-                              <div class="red" style="flex-basis:${ vm.matchupPitcherRatings?.movement }%;"><strong>MOV</strong> ${ vm.matchupPitcherRatings?.movement }</div>
-                            </div>
-                          </div>
-
-                          <strong>Pitches:</strong> ${vm.pitcher.pitchRatings.pitches?.map( p => playerWebService.getPitchTypeFull(p)).join(", ")}
-
-                        </div>
-
-                      </div>
-                    ` : $h` ` }
-              ` : $h` `}
+              </div>
             </div>
+          ` : $h` `}
+                
+          ${vm.homePlayer ? $h`
+            <div class="matchup-right">
+              <div class="player">
 
-            <div class="matchup-hitter">
-              ${vm.hitter ? $h`
+                <strong>${vm.homePlayer.currentPosition == "P" ? 'Pitching' : 'At Bat'}</strong><br />
 
-                    <strong>At Bat</strong>
+                <img src="/player/image/${vm.homePlayer._id}" width="35" height="35" style="border: 3px solid ${vm.homePlayer.color1}; " /> 
+                
+                
+                <a href="/p/${vm.homePlayer._id}" class="player">${vm.homePlayer.fullName}</a>
 
-                    <div class="player">
-                      <img src="/player/image/${vm.hitter._id}" width="35" height="35" style="border: 3px solid ${vm.hitter.color1};" /> 
-                      <a href="/p/${vm.hitter._id}" class="player">${vm.hitter.fullName}</a>
+                <div class="game-stats">
+                  ${vm.homePlayer.currentPosition == "P" ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
+                </div>
 
-                      <div class="game-stats">
-                          ${gameWebService.hitterGameStatsShort(vm.hitter)}
-                      </div>
-
-                      
-                    </div>
-
-
-                    
-
-                    <div class="rating-table">
-                      <div class="full">
-                        <div class="skill-wrapper">
-                          <div class="skill-bar">
-                            <div class="red" style="flex-basis: ${vm.matchupHitterRatings?.contact }%;"><strong>CON</strong> ${ vm.matchupHitterRatings?.contact }</div>
-                          </div>
-                        </div>
-
-                        <div class="skill-wrapper">
-                          <div class="skill-bar">
-                            <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.gapPower }%;"><strong>GAP</strong> ${ vm.matchupHitterRatings?.gapPower }</div>
-                          </div>
-                        </div>
-
-                        <div class="skill-wrapper">
-                          <div class="skill-bar">
-                            <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.homerunPower }%;"><strong>HR</strong> ${ vm.matchupHitterRatings?.homerunPower }</div>
-                          </div>
-                        </div>
-
-                        <div class="skill-wrapper">
-                          <div class="skill-bar">
-                            <div class="red" style="flex-basis:${ vm.matchupHitterRatings?.plateDiscipline }%;"><strong>EYE</strong> ${ vm.matchupHitterRatings?.plateDiscipline }</div>
-                          </div>
-                        </div>
-
-                      </div>
-
-                    </div>
-
-              ` : $h` `}
+              </div>
             </div>
+          ` : $h` `}
+
+        </div>
+
+        <div class="messages"></div>
+
       </div>
+      
 
       <!-- <div class="at-bat-ongoing">
         <div class="header">
@@ -610,41 +558,72 @@
 
     let atBatEndedPopup
 
-    const syncMessages = (atBatState, messages, vm) => {
+    const getNewMessages = (existingMessages, allMessages) => {
+      
+      const same = (a, b) => a && b && a.text === b.text && a.type === b.type
 
-      messages.clear()
+      let i = 0
+      while (i < existingMessages.length && i < allMessages.length && same(existingMessages[i], allMessages[i])) {
+        i++
+      }
+
+      return allMessages.slice(i)
+
+    }
+
+
+    let messageSyncQueue = Promise.resolve()
+    let messageSyncVersion = 0
+
+    const syncMessages = async (atBatState, messages, vm, version, showDelay) => {
 
       let play = atBatState == AtBatState.ENDED ? vm.lastPlay : vm.currentPlay
 
       if (play) {
 
-        let m = gameWebService.getMessagesFromPlay(vm.game, play.play)
+        let playMessages = gameWebService.getMessagesFromPlay(vm.game, play.play)
 
-        if (m?.length > 0) {
-          messages.addMessages(m)
+        //Check the first message against the first message in the actual component because we might need to clear them.
+        if (messages.messages?.length > 0 && (  playMessages[0]?.type != messages.messages[0].type || playMessages[0]?.text != messages.messages[0].text) ) {
+          messages.clear()
+        }
+
+
+        let newMessages = getNewMessages(messages.messages, playMessages)
+
+        if (newMessages?.length > 0) {
+
+          for (let i = 0; i < newMessages.length; i++) {
+
+            // if a newer sync started, stop this one
+            if (version !== messageSyncVersion) return
+
+            if (showDelay) {
+              messages.showTyping()
+              await new Promise(resolve => setTimeout(resolve, 500))
+            }
+
+            if (version !== messageSyncVersion) return
+
+            messages.addMessage(newMessages[i])
+            messages.hideTyping()
+
+          }
+          
         }
 
       }
 
-      console.log(messages.messages)
-      // messages.renderMessages()
 
     }
 
     const syncPopup = (atBatState, vm) => {
 
-      switch(atBatState)  {
-        case AtBatState.STARTED:
-          showPopup('.at-bat-started')
-          return
-       case AtBatState.ONGOING:
-         closeAllPopups()
-         return
-       case AtBatState.ENDED:
-         closeAllPopups()
-         return
+      if (atBatState == AtBatState.STARTED) {
+        showPopup('.at-bat-started')
+      } else {
+        closeAllPopups()
       }
-
 
     }
     
@@ -653,33 +632,35 @@
     let linescoreViewModel = vm.linescoreViewModel
     let awayBoxscoreViewModel = vm.awayBoxscoreViewModel
     let homeBoxscoreViewModel = vm.homeBoxscoreViewModel
-
-    // let playIndex = vm.play?.play?.index
     
-    $f7.on('gameUpdate', (gameViewModel, messages) => {
+    const onGameUpdate = (gameViewModel, messages, showDelay) => {
 
       Object.assign(vm, gameViewModel)
       Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
       Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
       Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
-      //If playindex has changed then animate runners.
-      // if (playIndex != vm.play?.play?.index) {
-      //   gameWebService.animateRunnersForPlay(vm.play.play)
-      // }
 
-      // playIndex = vm.play?.play?.index
-
-      let atBatState = gameWebService.getAtBatState(vm)
+      const atBatState = gameWebService.getAtBatState(vm)
 
       syncPopup(atBatState, gameViewModel)
-      syncMessages(atBatState, messages, gameViewModel)
+
+      // bump version FIRST so any in-flight writer stops
+      messageSyncVersion++
+      const v = messageSyncVersion
+
+      // serialize message updates (ONLY place we call syncMessages)
+      messageSyncQueue = messageSyncQueue.then(() =>
+        syncMessages(atBatState, messages, gameViewModel, v, showDelay)
+      )
 
       $update()
+    }
 
+    $f7.on('gameUpdate', onGameUpdate)
+
+    $onBeforeUnmount(() => {
+      $f7.off('gameUpdate', onGameUpdate)
     })
-
-
-
 
 
     return $render

@@ -1,0 +1,536 @@
+<template>
+
+  <div class="page" data-name="player-index">
+
+
+    <div class="page-content game-page">
+
+      <div class="hidden-on-load">
+
+          ${gameViewModel?.game ? $h`
+              
+              <${GameState} vm=${gameViewModel} /> 
+
+              <div class="popup box-score-popup popup-tablet-fullscreen">
+                <div class="view">
+                  <div class="page">
+                    <div class="navbar">
+                      <div class="navbar-bg"></div>
+                      <div class="navbar-inner">
+                        <div class="title">
+                          Box Score
+                        </div>
+                        <div class="right">
+                          <!-- Link to close popup -->
+                          <a class="link popup-close">Close</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="page-content">
+
+                      <div class="linescore-wrapper">
+                        <table class="linescore">
+                          <thead>
+                            <tr>
+                              <th></th>
+                              ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                                <th>${num}</th>                          
+                              `)}
+                      
+                              <th>R</th>
+                              <th>H</th>
+                              <th>E</th>        
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+
+                              <td class="abbrev">
+                                <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                              </td>
+                      
+                              ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                                <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
+                              `)}
+                      
+                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
+                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
+                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
+                            </tr>
+                            <tr>
+                          
+                              <td class="abbrev">
+                                <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
+                              </td>
+                          
+                              ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                                <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
+                              `)}
+                      
+                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
+                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
+                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
+                            </tr>
+                          </tbody>	
+                        </table>
+                      </div>
+
+                      <div class="boxscores grid medium-grid-cols-2">
+                        
+                        <div class="left">
+                          <${Boxscore} vm=${getAwayBoxscoreViewModel} />
+                        </div>
+
+                        <div class="right">
+                          <${Boxscore} vm=${getHomeBoxscoreViewModel} />
+                        </div>
+
+                      </div> 
+                    </div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="popup play-by-play-popup">
+                <div class="view">
+                  <div class="page">
+                    <div class="navbar">
+                      <div class="navbar-bg"></div>
+                      <div class="navbar-inner">
+                        <div class="title">
+                          Play by Play
+                        </div>
+                        <div class="right">
+                          <!-- Link to close popup -->
+                          <a class="link popup-close">Close</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="page-content">
+
+                      <div class="list cards-list">
+                        <ul>
+
+                            ${gameViewModel.playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
+                              <li class="card recap card-header-divider card-outline">
+            
+                                <div class="card-header">
+                                  ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
+                                
+                                  <div class="diamond-wrapper">
+                                    <div class="diamond">
+                                      <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
+                                      <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
+                                      <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
+                                    </div>
+                                  </div>
+                                
+                                </div>
+            
+                                <div class="card-content card-content-padding play-description">
+                            
+                                  <div class="chip result">
+                                    <div class="chip-label">${p.play.result}</div>
+                                  </div>
+                            
+                                  <ul>
+                                    ${p.descriptions.map( (d, index) => $h`<li class="${d.type == 'RESULT' ? 'main' : ''}">${d.text}</li>`)}
+                                  </ul>
+          
+                                  <div class="info-wrapper">
+                                    <span class="label">Balls</span>${getBalls(4, p.play.pitchLog.count.balls)}<br />
+                                    <span class="label">Strikes</span>${getBalls(3, p.play.pitchLog.count.strikes)}<br />
+                                    <span class="label">Outs</span>${getBalls(3, p.play.count.end?.outs || gameViewModel.game.count.outs)}
+                                  </div>
+            
+                                  ${p.play.credits?.length > 0 ? $h`
+                                    <div class="defense">
+                                      <strong>Defense</strong>
+                                      <ul>
+                                        ${p.play.credits.map( c => $h`
+                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[c._id].currentPosition} ${gameWebService.gamePlayers(gameViewModel.game)[c._id].fullName} - ${c.type}</li>
+                                        `)}                            
+                                      </ul>
+                                    </div>                          
+                                  ` : $h` `}
+          
+                                </div>
+                                
+                              </li>
+                            `)}
+                          </ul>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+                  
+              <div class="block">
+                <br />
+              </div>
+
+          ` : $h`
+            <div class="block">
+              No game found.
+            </div>
+          `}
+
+
+
+      </div>
+
+      <div class="hide-on-pageinit">
+
+        <div class="card skeleton-text">
+            <div class="card-header">Game</div>
+            <div class="card-content card-content-padding data-table">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+                lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
+            </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</template>
+
+<script>
+
+
+  import Navbar from "../common/navbar.f7.html"
+  import LineScore from "./linescore.f7.html"
+  import GameState from "./game-state.f7.html"
+
+
+
+  import dayjs from "dayjs"
+
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
+
+  import { Position } from "../../../service/enums.ts"
+
+  import InProgress from "../game/in-progress.f7.html"
+  import Scheduled from "../game/scheduled.f7.html"
+  import Result from "../game/result.f7.html"
+
+  const arrayToStr = (arr) => {
+
+    let mapped = arr.map( v => `${v.name} ${v.value > 1 ? `${v.value}` : ``}`.trim())
+    return `${mapped.join("; ")}`
+  }
+
+
+  const Boxscore = (props, { $on, $, $f7, $h, $update }) => {
+
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+
+    let vm = props.vm()
+
+    const getBoxscoreInfo = (theVm) => {
+
+      let lineup = theVm.teamInfo.lineupIds
+
+      let batters = lineup.map( id => theVm.teamInfo.players.find( p => p._id == id))
+      let pitchers = lineup.map( id => theVm.teamInfo.players.find( p => p._id == id)).filter( p2 => p2.currentPosition == Position.PITCHER)
+
+      let doubles = theVm.teamInfo.players.filter(p => p.hitResult.doubles > 0).map( p => {
+        return { _id: p._id, name: p.fullName, value: p.hitResult.doubles }
+      })
+
+      let triples = theVm.teamInfo.players.filter(p => p.hitResult.triples > 0).map( p => {
+        return {  _id: p._id, name: p.fullName, value: p.hitResult.triples }
+      })
+
+      let hr = theVm.teamInfo.players.filter(p => p.hitResult.homeRuns > 0).map( p => {
+        return {  _id: p._id, name: p.fullName, value: p.hitResult.homeRuns }
+      })
+
+      let tb = theVm.teamInfo.players.filter(p => p.hitResult.tb > 0).map( p => {
+        return {  _id: p._id, name: p.fullName, value: p.hitResult.tb }
+      })
+
+      let rbi = theVm.teamInfo.players.filter(p => p.hitResult.rbi > 0).map( p => {
+        return { name: p.fullName, value: p.hitResult.rbi }
+      })
+
+      return { lineup, batters, pitchers, doubles, triples, hr, tb, rbi }
+
+    }
+
+    let info = getBoxscoreInfo(vm)
+
+    let lineup = info.lineup
+    let batters  = info.batters
+    let pitchers  = info.pitchers
+    let doubles = info.doubles
+    let triples = info.triples
+    let hr = info.hr
+    let tb = info.tb
+    let rbi = info.rbi
+    
+    $f7.on('gameUpdate', (gameViewModel) => {
+
+      Object.assign(vm, props.vm())
+
+      info = getBoxscoreInfo(vm)
+
+      lineup = info.lineup
+      batters  = info.batters
+      pitchers  = info.pitchers
+      doubles = info.doubles
+      triples = info.triples
+      hr = info.hr
+      tb = info.tb
+      rbi = info.rbi
+
+      $update()
+    })
+
+
+    return () => $h`<div class="card">
+        <div class="card-header">${teamWebService.getTeamName(vm.teamInfo)}</div>
+        <div class="card-content">
+
+            <div class="stat-table-wrapper">
+                <table class="data-table small-font game-table">
+                <thead>
+                    <tr>
+                    <th class="image"></th>
+                    <th class="name">Batting</th>
+                    <th class="numeric-cell">POS</th>
+                    <th class="numeric-cell">AB</th>
+                    <th class="numeric-cell">R</th>
+                    <th class="numeric-cell">H</th>
+                    <th class="numeric-cell">2B</th>
+                    <th class="numeric-cell">3B</th>
+                    <th class="numeric-cell">HR</th>
+                    <th class="numeric-cell">RBI</th>
+                    <th class="numeric-cell">BB</th>
+                    <th class="numeric-cell">HBP</th>
+                    <th class="numeric-cell">SO</th>       
+                    </tr>                
+                </thead>
+                <tbody>
+                    ${batters.map( (p, index) => $h`
+                    <tr class="${vm.teamInfo.lineupIds[vm.teamInfo.currentHitterIndex] == p._id && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=='AWAY' || !vm.isTopInning && vm.homeaway=='HOME' ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
+                        <td class="image"><img src="/player/image/${p._id}" width="25" height="25" /></td>
+                        <td class="name"> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a></td>
+                        <td class="pos">${p.currentPosition}</td>
+                        <td class="numeric-cell">${p.hitResult.atBats}</td>
+                        <td class="numeric-cell">${p.hitResult.runs}</td>
+                        <td class="numeric-cell">${p.hitResult.hits}</td>
+                        <td class="numeric-cell">${p.hitResult.doubles}</td>
+                        <td class="numeric-cell">${p.hitResult.triples}</td>
+                        <td class="numeric-cell">${p.hitResult.homeRuns}</td>
+                        <td class="numeric-cell">${p.hitResult.rbi}</td>
+                        <td class="numeric-cell">${p.hitResult.bb}</td>
+                        <td class="numeric-cell">${p.hitResult.hbp}</td>
+                        <td class="numeric-cell">${p.hitResult.so}</td>
+                    </tr>
+                    `)}
+
+
+                </tbody>                            
+                </table>
+            </div>
+
+            <div class="stat-table-wrapper">
+                <table class="data-table small-font game-table">
+                <thead>
+                    <tr>
+                    <th class="image"></th>
+                    <th>Pitching</th>
+                    <th class="pos">POS</th>
+                    <th class="numeric-cell">W</th>
+                    <th class="numeric-cell">L</th>
+                    <th class="numeric-cell">IP</th>
+                    <th class="numeric-cell">H</th>
+                    <th class="numeric-cell">R</th>
+                    <th class="numeric-cell">ER</th>
+                    <th class="numeric-cell">HR</th>
+                    <th class="numeric-cell">BB</th>
+                    <th class="numeric-cell">SO</th>
+                    <th class="numeric-cell">HBP</th>
+                    <th class="numeric-cell">BF</th>     
+                    <th class="numeric-cell">PIT</th>                  
+                    <th class="numeric-cell">STR</th>                  
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pitchers.map( (p, index) => $h`
+                    <tr class="${vm.teamInfo.currentPitcherId == p._id && (vm.isTopInning && vm.homeaway=='HOME' || !vm.isTopInning && vm.homeaway=='AWAY') && !vm.isComplete ? $h`pitching` : $h``}">
+                        <td class="image"><img src="/player/image/${p._id}" width="25" height="25" /></td>
+                        <td class="name">${p.throws} <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a></td>
+                        <td class="pos">${p.currentPosition}</td>
+                        <td class="numeric-cell">${p.pitchResult.wins}</td>
+                        <td class="numeric-cell">${p.pitchResult.losses}</td>
+                        <td class="numeric-cell">${p.pitchResult.ip}</td>
+                        <td class="numeric-cell">${p.pitchResult.hits}</td>
+                        <td class="numeric-cell">${p.pitchResult.runs}</td>
+                        <td class="numeric-cell">${p.pitchResult.er}</td>
+                        <td class="numeric-cell">${p.pitchResult.homeRuns}</td>
+                        <td class="numeric-cell">${p.pitchResult.bb}</td>
+                        <td class="numeric-cell">${p.pitchResult.so}</td>
+                        <td class="numeric-cell">${p.pitchResult.hbp}</td>
+                        <td class="numeric-cell">${p.pitchResult.battersFaced}</td>
+                        <td class="numeric-cell">${p.pitchResult.pitches}</td>
+                        <td class="numeric-cell">${p.pitchResult.strikes}</td>
+                    </tr>
+                    `)}
+
+                </tbody>                            
+                </table>
+            </div>
+
+            <div class="batter-summary">
+                ${doubles?.length > 0 ? $h`<strong>2B:</strong> ${arrayToStr(doubles)}<br />` : $h``}
+                ${triples?.length > 0 ? $h`<strong>3B:</strong> ${arrayToStr(triples)}<br />` : $h``}
+                ${hr?.length > 0 ? $h`<strong>HR:</strong> ${arrayToStr(hr)}<br />` : $h``}
+                ${tb?.length > 0 ? $h`<strong>TB:</strong> ${arrayToStr(tb)}<br />` : $h``}
+                ${rbi?.length > 0 ? $h`<strong>RBI:</strong> ${arrayToStr(rbi)}<br />` : $h``}
+            </div>
+
+        </div>
+    </div>`;
+
+
+  }
+
+
+  function percentageFormatter(num) {
+    return new Intl.NumberFormat('default', {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num)
+  }
+
+  const getRating = (game, team) => {
+    return team.ratingBefore?.toFixed(0)
+  }
+
+  const getRecord = (game, team) => {
+    return game.isComplete ? `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}` : `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}`
+  }
+
+  const getBalls = (total, filled) => {
+
+    let result = []
+
+    Array.from({ length: total }, (x, i) => {
+      if ((i + 1) <= filled) {
+        result.push(`🟡`)
+      } else {
+        result.push(`⚪`)
+      }
+    })
+
+    return result.join('')
+
+  }
+
+
+  export default (props, { $on, $, $f7, $update, $ref }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+
+    let gameViewModel = props.gameViewModel
+
+    
+    let linescoreViewModel = gameViewModel.linescoreViewModel
+    let awayBoxscoreViewModel = gameViewModel.awayBoxscoreViewModel
+    let homeBoxscoreViewModel = gameViewModel.homeBoxscoreViewModel
+
+    const getAwayBoxscoreViewModel = () => { return awayBoxscoreViewModel }
+    const getHomeBoxscoreViewModel = () => { return homeBoxscoreViewModel }
+
+    let messages
+
+    let loading 
+    let timeoutId
+    let timeoutTime = 10*1000
+    let lastGameUpdate
+
+    const onGameUpdate = async (game) => {
+
+      Object.assign(gameViewModel, await gameWebService.getGameViewModel(game))
+      Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
+
+      Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
+      Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
+
+      $f7.emit('gameUpdate', gameViewModel, messages, true)
+
+      await $update()
+
+      if (game.isStarted) {
+        $f7.preloader.hide()
+      }
+      
+
+    }
+
+    //Start watching game
+    gameWebService.watchGame(gameViewModel.game._id, onGameUpdate)
+    
+
+    $on('pageBeforeIn', async (e) => {
+              
+      messages = $f7.messages.create({ el: '.messages'})
+
+
+      $f7.emit('gameUpdate', gameViewModel, messages, false)
+      
+      await $update()
+
+      if (gameViewModel.linescoreViewModel) {
+
+          eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+              detail: { tabLink: "/games", breadcrumbs:[], visible: false }
+          }))
+
+
+          universeWebService.setMetadata(
+              `${gameViewModel.game.away.cityName ? gameViewModel.game.away.cityName : ''} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName ? gameViewModel.game.home.cityName : ''} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}- Ethereum Baseball League`, 
+              window.location.href, 
+              `${env.WEB}/logo.png`, 
+              `${gameViewModel.game.away.cityName ? gameViewModel.game.away.cityName : ''} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName ? gameViewModel.game.home.cityName : ''} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")}`
+          ) 
+
+      }
+
+
+      if (!gameViewModel.game.isStarted) {
+        $f7.preloader.showIn("#progress-div")
+      }
+
+      $('.hide-on-pageinit').hide()
+      $('.hidden-on-load').removeClass('hidden-on-load')
+
+    })
+
+
+    $on('pageBeforeOut', async () => {
+      messages.clear()
+      clearTimeout(timeoutId)
+      timeoutId = undefined
+    })
+
+    return $render
+
+  }
+</script>

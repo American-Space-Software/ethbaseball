@@ -1,7 +1,8 @@
 import { inject, injectable } from 'inversify';
 
 import GameListComponent from '../components/game/list.f7.html'
-import GameIndexComponent from '../components/game/index.f7.html'
+import GameInProgressComponent from '../components/game/full-in-progress.f7.html'
+import GameCompletedComponent from '../components/game/full-complete.f7.html'
 
 import { ModelView } from '../../util/model-view.js';
 import { routeMap } from '../../util/route-map.js';
@@ -68,20 +69,28 @@ class GameController {
 
 
     @routeMap("/g/:id")
-    async showIndex(): Promise<ModelView> {
+    async showIndex(to): Promise<ModelView> {
         
+        let id = to?.params?.id
+
+        let game = await this.gameWebService.get(id)
+
+        let component = GameInProgressComponent
+
+        if (game.isComplete) {
+            component = GameCompletedComponent
+        }
+        
+        let gameViewModel = await this.gameWebService.getGameViewModel(game)
+
         return new ModelView(async (routeTo) => {
-
-            let id = routeTo?.params?.id
-
-            let game = await this.gameWebService.get(id)
-            let gameViewModel = await this.gameWebService.getGameViewModel(game)
-
+            
             return {
                 gameViewModel: gameViewModel,
                 discord: this.discord
             }
-        }, GameIndexComponent)
+
+        }, component)
 
     }
 

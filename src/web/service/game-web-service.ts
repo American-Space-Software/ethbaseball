@@ -166,6 +166,9 @@ class GameWebService {
 
                 hitter: hitter,
                 pitcher: pitcher,
+
+                homePlayer: game.isTopInning ? pitcher : hitter,
+                awayPlayer: game.isTopInning ? hitter : pitcher,
     
                 showHitter: hitter != undefined ,
                 showPitcher: pitcher != undefined,
@@ -338,8 +341,6 @@ class GameWebService {
 
     }
 
-
-
     getPlayDescriptions(game, play: Play) : PlayDescription[] {
 
         let descriptions:PlayDescription[] = []
@@ -352,47 +353,10 @@ class GameWebService {
         let hitter: GamePlayer = gamePlayers[play.hitterId]
         let pitcher = gamePlayers[play.pitcherId]
 
-        descriptions.push( { type: PlayDescriptionType.RECAP, text: `That will bring up ${hitter.fullName}`})
-
-        const getOutsText = (outs) => {
-
-            switch(outs) {
-
-                case 0: 
-                    return "There are no outs."
-                case 1: 
-                    return "There is one out."
-                case 2: 
-                    return"There are two outs."                
-            }
-        } 
-
-        descriptions.push( { type: PlayDescriptionType.RECAP, text: getOutsText(play.count.start.outs) })
-
-        
-        const getRunnersDescription = (runnerResult:RunnerResult) => {
-
-            if (runnerResult.first && !runnerResult.second && !runnerResult.third) {
-                return "There is a runner on first base."
-            } else if (runnerResult.first && runnerResult.second && !runnerResult.third) {
-                return "There are runners on first and second base."
-            } else if (runnerResult.first && runnerResult.second && runnerResult.third) {
-                return "The bases are loaded."
-            } else if (runnerResult.first && !runnerResult.second && runnerResult.third) {
-                return "There are runners on first and third base."
-            } else if (!runnerResult.first && runnerResult.second && !runnerResult.third) {
-                return "There is a runner on second base."
-            } else if(!runnerResult.first && !runnerResult.second && runnerResult.third) {
-                return "There is a runner on third base."
-            } else if (!runnerResult.first && runnerResult.second && runnerResult.third) {
-                return "There are runners on second and third base."
-            } else if (!runnerResult.first && !runnerResult.second && !runnerResult.third) {
-                return "The bases are empty."
-            }
-        }
-
-        descriptions.push( { type: PlayDescriptionType.RECAP, text: getRunnersDescription(play.runner.result.start) })
-
+        descriptions.push({
+            type: PlayDescriptionType.RECAP,
+            text: this.getMatchupDescription(game, play)
+        })
 
         for (let pitch of play.pitchLog.pitches) {
             descriptions.push( { type: PlayDescriptionType.RECAP, text: this.getPitchDescription(pitch) })
@@ -404,69 +368,8 @@ class GameWebService {
             fielderPlayer = gamePlayers[play.fielderId]
         }
 
-        let runner1bRA = play.runner?.events.find(re => re.movement.start==BaseResult.FIRST)
-        let runner2bRA = play.runner?.events.find(re => re.movement.start==BaseResult.SECOND)
-        let runner3bRA = play.runner?.events.find(re => re.movement.start==BaseResult.THIRD)
 
-
-
-
-        // let hitterRA = play.runner?.events.find(re => re.movement.start==BaseResult.HOME)
-
-        switch (play.result) {
-
-            case PlayResult.STRIKEOUT:
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} strikes out.`})
-                break
-            case PlayResult.BB:
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} draws a walk.`})
-                break
-            case PlayResult.HIT_BY_PITCH:
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} gets hit by a pitch.`})
-                break
-            case PlayResult.OUT:
-
-                let fcRunnerRA
-
-                if (runner3bRA?.movement?.isOut) {
-                    fcRunnerRA = runner3bRA
-                } else if (runner2bRA?.movement?.isOut) {
-                    fcRunnerRA = runner2bRA
-                } else if (runner1bRA?.movement?.isOut) {
-                    fcRunnerRA = runner1bRA
-                }
-
-                if (play.officialPlayResult == OfficialPlayResult.FIELDERS_CHOICE) {
-                    descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), false)} to ${this.getPositionDescriptionNoun(play.fielder)} ${fielderPlayer.fullName}. The throw gets the lead runner at ${fcRunnerRA?.movement?.outBase}. Fielder's choice.`})
-                } else if (play.officialPlayResult == OfficialPlayResult.GROUNDED_INTO_DP) {
-                    descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to ${this.getPositionDescriptionNoun(play.fielder)} ${fielderPlayer.fullName}. Fielder throws to ${fcRunnerRA.movement.outBase} for the first out and relays to first for the double play.`})
-                } else {
-                    descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} ${this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))} to the ${this.getPositionDescriptionNoun(play.fielder)} ${fielderPlayer.fullName}.`})
-                }
-
-                break
-            case PlayResult.SINGLE:
-                
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} single to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`})
-                descriptions.push({ type: PlayDescriptionType.RECAP, text: `The ball is fielded by ${fielderPlayer.fullName}.`})
-                break
-            case PlayResult.DOUBLE:
-
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} double to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`})
-                descriptions.push({ type: PlayDescriptionType.RECAP, text: `The ball is fielded by ${fielderPlayer.fullName}.`})
-
-                break
-            case PlayResult.TRIPLE:
-
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))} triple to ${this.getShallowDeepDescription(play.shallowDeep)} ${this.getPositionDescription(play.fielder)}.`})
-                descriptions.push({ type: PlayDescriptionType.RECAP, text: `The ball is fielded by ${fielderPlayer.fullName}.`})
-
-                break
-            case PlayResult.HR:
-
-                descriptions.push( { type: PlayDescriptionType.RESULT, text: `${hitter.fullName} hits a home run.`})
-                break
-        }
+        descriptions.push(...this.getPlayResultDescription(play, hitter, fielderPlayer))
 
         //Runs?
         if (play.runner?.result?.end?.scored?.length > 0) {
@@ -489,28 +392,227 @@ class GameWebService {
 
     }
 
-    getPitchDescription(pitch: Pitch): string {
+    getPlayResultDescription(play: Play, hitter: GamePlayer, fielderPlayer?: GamePlayer) {
+        const descriptions: PlayDescription[] = []
 
+        const hash = (s: string) => {
+            let h = 2166136261
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i)
+                h = Math.imul(h, 16777619)
+            }
+            return h >>> 0
+        }
+
+        const seed =
+            (play?.index ?? 0) * 1009 +
+            hash(String(play?.hitterId ?? "")) +
+            hash(String(play?.pitcherId ?? "")) * 3 +
+            hash(String(play?.fielderId ?? "")) * 7 +
+            hash(String(play?.result ?? "")) * 11 +
+            hash(String(play?.officialPlayResult ?? "")) * 13
+
+        const pick = <T>(list: T[], n: number) => list[Math.abs(n) % list.length]
+
+        const hitterName = hitter?.fullName ?? "The batter"
+        const fielderName = fielderPlayer?.fullName ?? "the fielder"
+        const fielderPosNoun = play.fielder ? this.getPositionDescriptionNoun(play.fielder) : "fielder"
+        const fielderPos = play.fielder ? this.getPositionDescription(play.fielder) : "field"
+
+        const contactDesc = () =>
+            this.getContactDescription(play.contact, this.isToOF(play.fielder), this.isHit(play.result))
+        const contactOutDesc = () => this.getContactDescriptionOut(play.contact, this.isToOF(play.fielder))
+
+        const runner1bRA = play.runner?.events.find(re => re.movement.start == BaseResult.FIRST)
+        const runner2bRA = play.runner?.events.find(re => re.movement.start == BaseResult.SECOND)
+        const runner3bRA = play.runner?.events.find(re => re.movement.start == BaseResult.THIRD)
+
+        const getLeadOutRunner = () => {
+            if (runner3bRA?.movement?.isOut) return runner3bRA
+            if (runner2bRA?.movement?.isOut) return runner2bRA
+            if (runner1bRA?.movement?.isOut) return runner1bRA
+            return undefined
+        }
+
+        // --- Contact helpers (adjust the matching if your enum differs) ---
+        const contactType = (play as any)?.contact?.type ?? (play as any)?.contact
+        const isGroundBall =
+            contactType === "GROUND_BALL" || contactType === "GB" || contactType === "GROUND" || contactType === 0
+
+        // --- Result phrases ---
+        const strikeoutPhrases = [
+            () => `${hitterName} strikes out.`,
+            () => `${hitterName} goes down on strikes for the strikeout.`,
+            () => `Strike three. ${hitterName} strikes out.`
+        ]
+
+        const walkPhrases = [
+            () => `${hitterName} draws a walk.`,
+            () => `${hitterName} takes ball four for a walk.`,
+            () => `Ball four. ${hitterName} reaches on a walk.`
+        ]
+
+        const hbpPhrases = [
+            () => `${hitterName} gets hit by a pitch.`,
+            () => `Hit by pitch. ${hitterName} takes first.`,
+            () => `${hitterName} is clipped and will head to first base.`
+        ]
+
+        const outPhrases = [
+            () => `${hitterName} ${contactOutDesc()} to ${fielderPosNoun} ${fielderName}.`,
+            () => `${hitterName} ${contactOutDesc()} to ${fielderName} at ${fielderPosNoun}.`,
+            () => `${hitterName} ${contactOutDesc()} and ${fielderName} makes the play.`
+        ]
+
+        // Singles: split grounders vs everything else to avoid “drops a ground ball…” (bunt-y wording)
+        const singleGrounderPhrases = [
+            () => `${hitterName} chops ${contactDesc()} ground ball through the infield for a single.`,
+            () => `${hitterName} bounces ${contactDesc()} grounder through the right side for a single.`,
+            () => `${hitterName} ${contactDesc()} grounder finds a hole for a single.`
+        ]
+
+        const singleOtherPhrases = [
+            () => `${hitterName} hits ${contactDesc()} single to ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`,
+            () => `${hitterName} lines ${contactDesc()} single into the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`,
+            () => `${hitterName} drops ${contactDesc()} single into the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`
+        ]
+
+        const doublePhrases = [
+            () => `${hitterName} hits ${contactDesc()} double to the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`,
+            () => `${hitterName} drives ${contactDesc()} double into the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`,
+            () => `${hitterName} rips ${contactDesc()} double to the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`
+        ]
+
+        const triplePhrases = [
+            () => `${hitterName} hits ${contactDesc()} triple to the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`,
+            () => `${hitterName} drives ${contactDesc()} triple into the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`,
+            () => `${hitterName} legs out a ${contactDesc()} triple to the ${this.getShallowDeepDescription(play.shallowDeep)} ${fielderPos}.`
+        ]
+
+        const hrPhrases = [
+            () => `${hitterName} hits a home run.`,
+            () => `${hitterName} launches a home run.`,
+            () => `Home run for ${hitterName}.`
+        ]
+
+        const fieldedPhrases = [
+            () => `The ball is fielded by ${fielderName}.`,
+            () => `${fielderName} fields it cleanly.`,
+            () => `${fielderName} is there to field it.`
+        ]
+
+        const fcPhrases = [
+            (outBase: string) =>
+                `${hitterName} hits ${this.getContactDescription(play.contact, this.isToOF(play.fielder), false)} to ${fielderPosNoun} ${fielderName}. The lead runner is out at ${outBase}. Fielder's choice.`,
+            (outBase: string) =>
+                `${hitterName} puts it on the ground to ${fielderPosNoun} ${fielderName}. The throw goes to ${outBase} for the out. Fielder's choice.`,
+            (outBase: string) =>
+                `${hitterName} ${contactOutDesc()} to ${fielderPosNoun} ${fielderName}. They get the lead runner at ${outBase}. Fielder's choice.`
+        ]
+
+        const gidpPhrases = [
+            (outBase: string) =>
+                `${hitterName} ${contactOutDesc()} to ${fielderPosNoun} ${fielderName}. Throw to ${outBase} for one, relay to first for the double play.`,
+            (outBase: string) =>
+                `${hitterName} rolls it to ${fielderPosNoun} ${fielderName}. ${outBase} gets the lead runner, and the relay completes the double play.`,
+            (outBase: string) =>
+                `${hitterName} ${contactOutDesc()} and it's turned. Out at ${outBase}, and the double play to first.`
+        ]
+
+        switch (play.result) {
+            case PlayResult.STRIKEOUT:
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(strikeoutPhrases, seed)() })
+                break
+
+            case PlayResult.BB:
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(walkPhrases, seed)() })
+                break
+
+            case PlayResult.HIT_BY_PITCH:
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(hbpPhrases, seed)() })
+                break
+
+            case PlayResult.OUT: {
+                const lead = getLeadOutRunner()
+                const outBase = lead?.movement?.outBase
+
+                if (play.officialPlayResult == OfficialPlayResult.FIELDERS_CHOICE && outBase) {
+                    descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(fcPhrases, seed)(outBase) })
+                } else if (play.officialPlayResult == OfficialPlayResult.GROUNDED_INTO_DP && outBase) {
+                    descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(gidpPhrases, seed)(outBase) })
+                } else {
+                    descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(outPhrases, seed)() })
+                }
+
+                break
+            }
+
+            case PlayResult.SINGLE: {
+                const phrases = isGroundBall ? singleGrounderPhrases : singleOtherPhrases
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(phrases, seed)() })
+                if (fielderPlayer) descriptions.push({ type: PlayDescriptionType.RECAP, text: pick(fieldedPhrases, seed + 3)() })
+                break
+            }
+
+            case PlayResult.DOUBLE:
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(doublePhrases, seed)() })
+                if (fielderPlayer) descriptions.push({ type: PlayDescriptionType.RECAP, text: pick(fieldedPhrases, seed + 3)() })
+                break
+
+            case PlayResult.TRIPLE:
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(triplePhrases, seed)() })
+                if (fielderPlayer) descriptions.push({ type: PlayDescriptionType.RECAP, text: pick(fieldedPhrases, seed + 3)() })
+                break
+
+            case PlayResult.HR:
+                descriptions.push({ type: PlayDescriptionType.RESULT, text: pick(hrPhrases, seed)() })
+                break
+        }
+
+        return descriptions
+    }
+
+
+    getMatchupDescription(game, play: Play): string {
+        const gamePlayers = this.gamePlayers(game)
+        const hitter: GamePlayer = gamePlayers[play.hitterId]
+
+        const outs = play.count.start.outs
+
+        const outsPhrase =
+            outs === 0 ? "no outs" :
+            outs === 1 ? "one out" :
+            outs === 2 ? "two outs" :
+            `${outs} outs`
+
+        const outsSentence =
+            outs === 1 ? `There's ${outsPhrase}` : `There are ${outsPhrase}`
+
+        const runnersPhrase = (() => {
+            const { first, second, third } = play.runner.result.start
+
+            if (first && second && third) return "the bases loaded"
+            if (first && second) return "runners on first and second"
+            if (first && third) return "runners on first and third"
+            if (second && third) return "runners on second and third"
+            if (first) return "a runner on first"
+            if (second) return "a runner on second"
+            if (third) return "a runner on third"
+            return "the bases empty"
+        })()
+
+        return `That will bring up ${hitter.fullName}. ${outsSentence} and ${runnersPhrase}.`
+    }
+
+    getPitchDescription(pitch: Pitch): string {
         const pitchTypePhrases = [
             this.playerWebService.getPitchTypeFull(pitch.type).toLowerCase()
         ]
 
         const introPhrases = [
             "Here comes a",
-            "The pitch is a",
-            "Now a"
-        ]
-
-        const startPhrases = [
-            "starts",
-            "begins",
-            "comes in"
-        ]
-
-        const endPhrases = [
-            "ends",
-            "finishes",
-            "breaks"
+            "Now a",
+            "The pitch is a"
         ]
 
         const strikeTakePhrases = [
@@ -521,26 +623,32 @@ class GameWebService {
 
         const ballTakePhrases = [
             "Taken for a ball",
-            "Outside for a ball",
-            "Misses for a ball"
+            "Just misses for a ball",
+            "Outside for a ball"
         ]
 
         const swingMissPhrases = [
             "The batter swings and misses",
             "The batter comes up empty",
-            "Swing and a miss"
+            "The batter swings through it"
+        ]
+
+        const chaseMissPhrases = [
+            "The batter chases and misses",
+            "The batter goes after it and misses",
+            "The batter swings at a pitch out of the zone and misses"
         ]
 
         const foulPhrases = [
-            "The batter swings and fouls it off",
+            "The batter fouls it straight back",
             "The batter snaps it foul",
             "Fouled straight back"
         ]
 
         const inPlayPhrases = [
+            "The batter puts it in play",
             "The batter swings and puts it in play",
-            "Contact made, ball in play",
-            "The batter puts it in play"
+            "Contact made, ball in play"
         ]
 
         const wildPitchPhrases = [
@@ -560,104 +668,138 @@ class GameWebService {
 
         const countPhrases = [
             (c: Count) => `The count is ${c.balls}-${c.strikes}`,
-            (c: Count) => `${c.balls} and ${c.strikes}`,
+            (c: Count) => `It's ${c.balls} and ${c.strikes}`,
             (c: Count) => `Now ${c.balls}-${c.strikes}`
         ]
 
-        // ---------- helpers ----------
+        const seed =
+            (pitch.quality ?? 0) +
+            (Number(pitch.type) || 0) * 7 +
+            (pitch.intentZone ? pitch.intentZone.length : 0) * 11 +
+            (pitch.actualZone ? pitch.actualZone.length : 0) * 13 +
+            (pitch.locQ ? Math.floor(pitch.locQ) : 0)
 
-        const pick = (list: any[]): any =>
-            list[pitch.quality % list.length]
+        const pick = <T>(list: T[], n: number): T => list[Math.abs(n) % list.length]
 
         const describeZone = (zone: PitchZone): string => {
             const [vertical, horizontal] = zone.split("_")
 
             const v =
-            vertical === "LOW" ? "low" :
-            vertical === "MID" ? "middle" :
-            "high"
+                vertical === "LOW" ? "low" :
+                    vertical === "MID" ? "middle" :
+                        "high"
 
             const h =
-            horizontal === "AWAY" ? "away" :
-            horizontal === "MIDDLE" ? "over the plate" :
-            "inside"
+                horizontal === "AWAY" ? "away" :
+                    horizontal === "MIDDLE" ? "over the plate" :
+                        "inside"
 
             return h === "over the plate"
-            ? `${v} ${h}`
-            : `${v} and ${h}`
+                ? `${v} ${h}`
+                : `${v} and ${h}`
         }
 
-        // ---------- location sentence ----------
+        const isProbablyInZone = (z: PitchZone) =>
+            z.endsWith("MIDDLE") || z.startsWith("MID_")
 
-        const pitchTypeText = pick(pitchTypePhrases)
-        const introText = pick(introPhrases)
+        const getCountSentence = (): string => {
+            if (!pitch.count) return ""
+
+            const rawBalls = pitch.count.balls ?? 0
+            const rawStrikes = pitch.count.strikes ?? 0
+
+            if (rawBalls >= 4) return "Ball four."
+
+            const spoken: Count = {
+                balls: Math.min(rawBalls, 3),
+                strikes: Math.min(rawStrikes, 2),
+                outs: pitch.count.outs
+            }
+
+            return pick(countPhrases, seed + 19)(spoken) + "."
+        }
+
+        const pitchTypeText = pick(pitchTypePhrases, seed)
+        const introText = pick(introPhrases, seed + 3)
 
         let locationSentence = ""
-
         if (pitch.intentZone === pitch.actualZone) {
-            locationSentence =
-            `${introText} ${pitchTypeText} ${describeZone(pitch.actualZone)}.`
+            locationSentence = `${introText} ${pitchTypeText} ${describeZone(pitch.actualZone)}.`
         } else {
-            locationSentence =
-            `${introText} ${pitchTypeText} ${pick(startPhrases)} ${describeZone(pitch.intentZone)}, ` +
-            `${pick(endPhrases)} ${describeZone(pitch.actualZone)}.`
-        }
+            const intent = describeZone(pitch.intentZone)
+            const actual = describeZone(pitch.actualZone)
 
-        // ---------- outcome sentence ----------
+            const missVerbs = [
+                "misses",
+                "leaks",
+                "drifts",
+                "runs"
+            ]
+
+            locationSentence = `${introText} ${pitchTypeText} ${intent}, ${pick(missVerbs, seed + 5)} ${actual}.`
+        }
 
         let outcomeSentence = ""
 
         if (pitch.isWP) {
-            outcomeSentence = pick(wildPitchPhrases)
+            outcomeSentence = pick(wildPitchPhrases, seed + 7)
         } else if (pitch.isPB) {
-            outcomeSentence = pick(passedBallPhrases)
+            outcomeSentence = pick(passedBallPhrases, seed + 7)
         } else {
             switch (pitch.result) {
+                case PitchResult.IN_PLAY:
+                    outcomeSentence = pick(inPlayPhrases, seed + 9)
+                    break
 
-            case PitchResult.IN_PLAY:
-                outcomeSentence = pick(inPlayPhrases)
-                break
+                case PitchResult.FOUL:
+                    outcomeSentence = pick(foulPhrases, seed + 9)
+                    break
 
-            case PitchResult.FOUL:
-                outcomeSentence = pick(foulPhrases)
-                break
+                case PitchResult.HBP:
+                    outcomeSentence = pick(hbpPhrases, seed + 9)
+                    break
 
-            case PitchResult.HBP:
-                outcomeSentence = pick(hbpPhrases)
-                break
+                case PitchResult.STRIKE:
+                    outcomeSentence = pitch.swing
+                        ? pick(swingMissPhrases, seed + 11)
+                        : pick(strikeTakePhrases, seed + 11)
+                    break
 
-            case PitchResult.STRIKE:
-                outcomeSentence = pitch.swing
-                ? pick(swingMissPhrases)
-                : pick(strikeTakePhrases)
-                break
+                case PitchResult.BALL: {
+                    if (!pitch.swing) {
+                        outcomeSentence = pick(ballTakePhrases, seed + 11)
+                        break
+                    }
 
-            case PitchResult.BALL:
-                outcomeSentence = pitch.swing
-                ? pick(swingMissPhrases)
-                : pick(ballTakePhrases)
-                break
+                    const chase = !isProbablyInZone(pitch.actualZone)
+                    outcomeSentence = chase
+                        ? pick(chaseMissPhrases, seed + 13)
+                        : pick(swingMissPhrases, seed + 13)
+                    break
+                }
             }
         }
 
-        // ---------- count sentence (only if NOT in play) ----------
+        const isFinalStrikeoutPitch =
+        pitch.result === PitchResult.STRIKE &&
+        (pitch.count?.strikes ?? 0) >= 2
 
-        let countSentence = ""
+        const isFinalWalkPitch =
+        pitch.result === PitchResult.BALL &&
+        (pitch.count?.balls ?? 0) >= 3
 
-        if (
-            pitch.result !== PitchResult.IN_PLAY &&
-            pitch.result !== PitchResult.HBP &&
-            pitch.result !== PitchResult.FOUL &&
-            pitch.count
-        ) {
-            countSentence = pick(countPhrases)(pitch.count) + "."
-        }
+        const includeCount =
+        !!pitch.count &&
+        !isFinalStrikeoutPitch &&
+        !isFinalWalkPitch &&
+        pitch.result !== PitchResult.IN_PLAY &&
+        pitch.result !== PitchResult.HBP
 
-        // ---------- final output ----------
+        const countSentence = includeCount ? getCountSentence() : ""
 
         return [
             locationSentence,
-            outcomeSentence + ".",
+            outcomeSentence ? outcomeSentence + "." : "",
             countSentence
         ]
             .filter(Boolean)
@@ -1168,7 +1310,7 @@ class GameWebService {
         
         let descriptions = this.getPlayDescriptions(game, play)
 
-        return descriptions?.map( d => {  return { text: d.text, type: "received" } })
+        return descriptions?.map( d => {  return { text: d.text, type: "received", name: "Gamelog" } })
 
     }
 
