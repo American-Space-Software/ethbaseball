@@ -437,6 +437,22 @@
 
       </div>
       
+
+      <div class="at-bat-ended">
+
+        <div class="card">
+          <div class="card-content">
+
+            <div class="result-wrapper">
+              <div class="result">${vm.lastPlay?.descriptions?.find( d => d.type=="RESULT").text}</div>
+            </div>
+
+          </div>
+        </div>
+
+        
+      </div>
+
     </div>
 
 </template>
@@ -565,6 +581,8 @@
 
       if (atBatState == AtBatState.STARTED) {
         showPopup('.at-bat-started')
+      } else if (atBatState == AtBatState.ENDED) {
+        showPopup('.at-bat-ended')
       } else {
         closeAllPopups()
       }
