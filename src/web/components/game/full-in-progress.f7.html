@@ -461,8 +461,6 @@
     let messages
 
     let loading 
-    let timeoutId
-    let timeoutTime = 10*1000
     let lastGameUpdate
 
     const onGameUpdate = async (game) => {
@@ -490,8 +488,7 @@
 
     $on('pageBeforeIn', async (e) => {
               
-      messages = $f7.messages.create({ el: '.messages'})
-
+      messages = $f7.messages.get('.messages')
 
       $f7.emit('gameUpdate', gameViewModel, messages, false)
       
@@ -513,10 +510,12 @@
 
       }
 
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          messages.scroll(0)
+        })
+      })
 
-      if (!gameViewModel.game.isStarted) {
-        $f7.preloader.showIn("#progress-div")
-      }
 
       $('.hide-on-pageinit').hide()
       $('.hidden-on-load').removeClass('hidden-on-load')
@@ -524,11 +523,13 @@
     })
 
 
-    $on('pageBeforeOut', async () => {
-      messages.clear()
-      clearTimeout(timeoutId)
-      timeoutId = undefined
-    })
+    // $on('pageBeforeOut', async () => {
+    //   messages.clear()
+    // })
+
+
+
+
 
     return $render
 

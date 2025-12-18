@@ -74,62 +74,74 @@ html {
   height: 200px;
   display: flex;
   width: 100%;
-  flex-wrap: wrap;
   margin: 10px auto 0px auto;
   width: 1250px;
   max-width: 100%;
-  overflow: hidden;
-  background: #008b2a81;
+  background: #cfcfcf;
+
+  flex-direction: column; 
+  overflow: hidden;   
+
+}
+
+.dark .bottom-bar {
+  background: #3d3d3d;
+
+}
+
+.bottom-bar .messages-content {
+  padding-top: 0px; 
+  width: 100%;
+
+  flex: 1 1 auto;        
+  min-height: 0;            
+  overflow-y: auto;         
+  -webkit-overflow-scrolling: touch;
 
 }
 
 .ios .messages {
   padding-bottom: 0px;
-  flex: 1 1 100%;
+
 }
+
+
 
 .matchup {
-  display: flex;
-  height: 75px;
-  flex: 1 1 100%;
-  overflow: hidden;
-  font-size: .75em;
-  gap: 10px;
-  background: #00461581;
-
-}
-
-.matchup .matchup-left, .matchup .matchup-right {
-  padding: 5px;
-} 
-
-.matchup .matchup-left {
-  flex: 0 0 calc(50% - 5px);
-  text-align: right;
-}
-
-.matchup .matchup-right {
-    flex: 0 0 calc(50% - 5px);
-} 
-
-
-.matchup .player {
-  width: 100%;
-  font-size: .9em;
   display: block;
+  height: 70px;
+  font-size: .75em;
+  background: #00461581;
+  width: 100%;
 }
 
-.matchup .player img {
-  float: left;
-  margin-right: 3px;
-  width: 25px;
+.matchup .matchup-detail {
+  display: flex;
+  align-items: center;   /* ← vertical centering */
   height: 25px;
-  font-size: 1.2em;
+  width: 100%;
+  padding: 5px;
 }
 
-.matchup .matchup-left .player img {
-  float: right;
+.matchup .matchup-detail .label {
+  display: inline-block;
+  width: 60px;
+  font-weight: bold;
 }
+
+.matchup .game-stats, .matchup .player-ratings {
+  margin-left: 10px;
+  font-size: .8em;
+}
+
+.matchup  img {
+  margin-right: 3px;
+  width: 20px;
+  height: 20px;
+  font-size: 1.1em;
+  display: inline-block;
+}
+
 
 
 

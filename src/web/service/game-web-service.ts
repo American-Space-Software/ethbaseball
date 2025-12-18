@@ -178,8 +178,6 @@ class GameWebService {
                 currentPlay: currentPlay,
 
                 matchupHandedness: hitter ? matchupHandedness : undefined,
-                matchupPitcherRatings: hitter ? this.getEffectivePitchRatings(pitcher, matchupHandedness.hits) : undefined,
-                matchupHitterRatings: hitter ? this.getEffectiveHittingRatings(hitter, matchupHandedness.throws) : undefined,
     
                 defense: defense,
     
@@ -1044,13 +1042,21 @@ class GameWebService {
     getEffectivePitchRatings(pitcher: GamePlayer, hitterHandedness: Handedness) {
 
         if (hitterHandedness == Handedness.R) {
-            return pitcher.pitchRatings.vsR
+            return Object.assign({ power: pitcher.pitchRatings.power}, pitcher.pitchRatings.vsR)
         } else {
-            return pitcher.pitchRatings.vsL
+            return Object.assign({ power: pitcher.pitchRatings.power}, pitcher.pitchRatings.vsL)
         }
 
     }
 
+    pitcherRatings(pitchRatings) {
+
+        return `POW ${pitchRatings.power }, CON ${ pitchRatings.control }, MOV ${ pitchRatings.movement }`
+    }
+
+    hitterRatings(hitterRatings) {
+        return `CON ${hitterRatings.contact}, GAP ${hitterRatings.gapPower}, HR ${hitterRatings.homerunPower}, EYE ${hitterRatings.plateDiscipline}`
+    }
 
     pitcherGameStats(pitcher) {
 

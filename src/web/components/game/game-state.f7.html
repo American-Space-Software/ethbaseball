@@ -378,121 +378,65 @@
       </div>
 
 
-      <div class="bottom-bar page-content messages-content" style="padding-top: 0px;">
+      <div class="bottom-bar">
 
         <div class="matchup">
           
           ${vm.awayPlayer ? $h`
-            <div class="matchup-left">
+            <div class="matchup-detail" style="background-color: ${vm.awayPlayer.color1}; color: ${getFontColor(vm.awayPlayer.color1)};">
 
-              <strong>${vm.awayPlayer.currentPostion == "P" ? 'Pitching' : 'At Bat'}</strong><br />
+              <span class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</span>
 
-              <div class="player">
+              <img src="/player/image/${vm.awayPlayer._id}" style="border: 1px solid ${vm.awayPlayer.color1}; " /> 
+              <a href="/p/${vm.awayPlayer._id}" class="player" style="color: ${getFontColor(vm.awayPlayer.color1)};">${vm.awayPlayer.fullName}</a>
 
-                <img src="/player/image/${vm.awayPlayer._id}" width="35" height="35" style="border: 3px solid ${vm.awayPlayer.color1}; " /> 
+              ${showPlayerStats ? $h`
+                <span class="game-stats">
+                ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
+                </span>
+              ` : $h` 
 
-                <a href="/p/${vm.awayPlayer._id}" class="player">${vm.awayPlayer.fullName}</a>
+                <span class="player-ratings">
+                  ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.awayPlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.awayPlayer, vm.matchupHandedness?.throws))}
+                </span>
+              
+              `}
 
-                <div class="game-stats">
-                  ${vm.awayPlayer.currentPosition == "P" ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
-                </div>
-
-
-              </div>
             </div>
           ` : $h` `}
                 
           ${vm.homePlayer ? $h`
-            <div class="matchup-right">
-              <div class="player">
+            <div class="matchup-detail" style="background-color: ${vm.homePlayer.color1}; color: ${getFontColor(vm.homePlayer.color1)};">
 
-                <strong>${vm.homePlayer.currentPosition == "P" ? 'Pitching' : 'At Bat'}</strong><br />
+              <span class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</span>
 
-                <img src="/player/image/${vm.homePlayer._id}" width="35" height="35" style="border: 3px solid ${vm.homePlayer.color1}; " /> 
-                
-                
-                <a href="/p/${vm.homePlayer._id}" class="player">${vm.homePlayer.fullName}</a>
+              <img src="/player/image/${vm.homePlayer._id}" style="border: 1px solid ${vm.homePlayer.color1}; " /> 
+              <a href="/p/${vm.homePlayer._id}" class="player" style="color: ${getFontColor(vm.homePlayer.color1)};">${vm.homePlayer.fullName}</a>
 
-                <div class="game-stats">
-                  ${vm.homePlayer.currentPosition == "P" ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
-                </div>
+              ${showPlayerStats ? $h`
+                <span class="game-stats">
+                ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
+                </span>
+              ` : $h` 
 
-              </div>
+                <span class="player-ratings">
+                  ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.homePlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.homePlayer, vm.matchupHandedness?.throws))}
+                </span>
+              
+              `}
+
             </div>
-          ` : $h` `}
+            ` : $h` `}
 
         </div>
 
-        <div class="messages"></div>
+        <div class="page-content messages-content">
+          <div class="messages messages-init"></div>
+        </div>
+        
 
       </div>
       
-
-      <!-- <div class="at-bat-ongoing">
-        <div class="header">
-          Matchup
-        </div>
-        <div class="matchup-pitcher">
-          ${vm.pitcher ? $h`
-
-                <strong>Pitching</strong>
-
-                <div class="player">
-                  <img src="/player/image/${vm.pitcher._id}" width="35" height="35" style="border: 3px solid ${vm.pitcher.color1}; " /> 
-                  <a href="/p/${vm.pitcher._id}" class="player">${vm.pitcher.fullName}</a><br />
-                </div>
-
-          ` : $h` `}
-        </div>
-
-        <div class="matchup-hitter">
-          ${vm.hitter ? $h`
-
-                <strong>At Bat</strong>
-
-                <div class="player">
-                  <img src="/player/image/${vm.hitter._id}" width="35" height="35" style="border: 3px solid ${vm.hitter.color1};" /> 
-                  <a href="/p/${vm.hitter._id}" class="player">${vm.hitter.fullName}</a>
-                </div>
-
-          ` : $h` `}
-        </div>
-
-        <div class="matchup-pitches">
-          <ul>
-            ${vm.currentPlay?.play?.pitchLog?.pitches.map ( p => $h`
-              <li>${p.count.balls}-${p.count.strikes} ${playerWebService.getPitchTypeFull(p.type)} - ${p.result} - ${p.swing ? 'SWING' : 'TAKE'}</li>
-            `)}
-          </ul>
-
-        </div>
-
-      </div>
-      
-      <div class="at-bat-ended">
-        <div class="header">
-          Matchup
-        </div>
-
-        <div class="matchup-pitches">
-          <ul>
-            ${vm.lastPlay?.play?.pitchLog?.pitches.map ( p => $h`
-              <li>${p.count.balls}-${p.count.strikes} ${playerWebService.getPitchTypeFull(p.type)} - ${p.result} - ${p.swing ? 'SWING' : 'TAKE'}</li>
-            `)}
-          </ul>
-
-          <strong>${vm.lastPlay?.play?.result}</strong>
-          <div class="result">
-            <div innerHTML="${vm.lastPlay?.descriptions?.mainDescription}"></div>
-            <ul>
-              ${vm.lastPlay?.descriptions?.descriptions?.map( (d, index) => $h`<li innerHTML="${d}"></li>`)}
-            </ul>
-          </div>
-
-        </div>
-
-      </div> -->
-
     </div>
 
 </template>
@@ -518,7 +462,6 @@
 
 
 
-
   function percentageFormatter(num) {
     return new Intl.NumberFormat('default', {
       style: 'percent',
@@ -534,6 +477,7 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let statService = ContainerService.getInstance(StatService)
+
 
     let allPopups = ['.at-bat-started', '.at-bat-ongoing', '.at-bat-ended']
 
@@ -632,7 +576,9 @@
     let linescoreViewModel = vm.linescoreViewModel
     let awayBoxscoreViewModel = vm.awayBoxscoreViewModel
     let homeBoxscoreViewModel = vm.homeBoxscoreViewModel
-    
+
+    let showPlayerStats = true
+
     const onGameUpdate = (gameViewModel, messages, showDelay) => {
 
       Object.assign(vm, gameViewModel)
@@ -653,8 +599,13 @@
         syncMessages(atBatState, messages, gameViewModel, v, showDelay)
       )
 
+      //Flip this 
+      showPlayerStats = !showPlayerStats
+
       $update()
     }
+
+
 
     $f7.on('gameUpdate', onGameUpdate)
 
