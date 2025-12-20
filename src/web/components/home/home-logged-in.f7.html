@@ -52,6 +52,36 @@
           ` : $h` `}
 
 
+          <div class="block-title block-title-small">Rewards & Transactions</div>
+
+          <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
+              <ul>
+
+                ${vm.offChainEvents.events.map( oce => $h`
+                  <li>
+                    <div class="item-content">
+                        <div class="item-media">
+                            <i class="f7-icons">plus_square_fill</i>
+                        </div>
+                        <div class="item-inner">
+
+                            <div class="item-title">
+                              ${getOffChainDescription(oce)}
+                              <div class="item-footer">${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}</div>
+                            </div>
+
+                            <div class="item-after">
+                                ${getOffChainAmount(oce)}
+                            </div>
+                        </div>
+                    </div>
+                  </li>                          
+                `)}
+
+              </ul>
+          </div>
+
+
           ${completedGames?.length > 0 ? $h`
 
               <div class="block-title block-title-small">Recent Games</div>
@@ -98,6 +128,7 @@
 
   import GameTransactions from "../activity/game-transaction-events.f7.html"
   import OnChainEvents from "../activity/onchain-events.f7.html"
+  import OffChainEvents from "../activity/offchain-events.f7.html"
 
 
   import { ContainerService } from "../../../service/container-service"
@@ -107,6 +138,7 @@
 
   import { StatService } from "../../../service/stat-service.ts"
   import { Position } from "../../../service/enums.ts"
+  import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
 
   import dayjs from "dayjs"
 
@@ -128,6 +160,7 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let statService = ContainerService.getInstance(StatService)
     let gameWebService = ContainerService.getInstance(GameWebService)
+    let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
 
     let authInfo = props.authInfo
     let vm = props.vm
@@ -136,6 +169,18 @@
     
     let completedGames = props.completedGames
     let inProgressGame = props.inProgressGame
+
+    const getOffChainDescription = (oce) => {
+        return offChainEventWebService.getOffChainDescription(oce)
+    }
+
+    const getOffChainAmount = (oce) => {
+        if (oce.event == "Transfer") {
+            if (oce.toAddress == "0x0000000000000000000000000000000000000000") return `-${universeWebService.displayDiamonds(oce.amount)}`
+            if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return universeWebService.displayDiamonds(oce.amount)
+        }
+    }
+
 
 
     const playBotClick = async (e) => {

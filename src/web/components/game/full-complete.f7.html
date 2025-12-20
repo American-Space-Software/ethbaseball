@@ -107,80 +107,8 @@
 
               </div> 
 
-              <div class="popup play-by-play-popup">
-                <div class="view">
-                  <div class="page">
-                    <div class="navbar">
-                      <div class="navbar-bg"></div>
-                      <div class="navbar-inner">
-                        <div class="title">
-                          Play by Play
-                        </div>
-                        <div class="right">
-                          <!-- Link to close popup -->
-                          <a class="link popup-close">Close</a>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="page-content">
+              <${GamelogPopup} vm=${gameViewModel} />
 
-                      <div class="list cards-list">
-                        <ul>
-
-                            ${gameViewModel.playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
-                              <li class="card recap card-header-divider card-outline">
-            
-                                <div class="card-header">
-                                  ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
-                                
-                                  <div class="diamond-wrapper">
-                                    <div class="diamond">
-                                      <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
-                                      <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
-                                      <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
-                                    </div>
-                                  </div>
-                                
-                                </div>
-            
-                                <div class="card-content card-content-padding play-description">
-                            
-                                  <div class="chip result">
-                                    <div class="chip-label">${p.play.result}</div>
-                                  </div>
-                            
-                                  <ul>
-                                    ${p.descriptions.map( (d, index) => $h`<li class="${d.type == 'RESULT' ? 'main' : ''}">${d.text}</li>`)}
-                                  </ul>
-          
-                                  <div class="info-wrapper">
-                                    <span class="label">Balls</span>${getBalls(4, p.play.pitchLog.count.balls)}<br />
-                                    <span class="label">Strikes</span>${getBalls(3, p.play.pitchLog.count.strikes)}<br />
-                                    <span class="label">Outs</span>${getBalls(3, p.play.count.end?.outs || gameViewModel.game.count.outs)}
-                                  </div>
-            
-                                  ${p.play.credits?.length > 0 ? $h`
-                                    <div class="defense">
-                                      <strong>Defense</strong>
-                                      <ul>
-                                        ${p.play.credits.map( c => $h`
-                                          <li>${gameWebService.gamePlayers(gameViewModel.game)[c._id].currentPosition} ${gameWebService.gamePlayers(gameViewModel.game)[c._id].fullName} - ${c.type}</li>
-                                        `)}                            
-                                      </ul>
-                                    </div>                          
-                                  ` : $h` `}
-          
-                                </div>
-                                
-                              </li>
-                            `)}
-                          </ul>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
                   
               <div class="block">
                 <br />
@@ -222,6 +150,7 @@
   import Navbar from "../common/navbar.f7.html"
   import LineScore from "./linescore.f7.html"
   import GameState from "./game-state.f7.html"
+  import GamelogPopup from "./gamelog-popup.f7.html"
 
 
 
@@ -419,37 +348,23 @@
   }
 
 
-  function percentageFormatter(num) {
-    return new Intl.NumberFormat('default', {
-      style: 'percent',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num)
-  }
+  // function percentageFormatter(num) {
+  //   return new Intl.NumberFormat('default', {
+  //     style: 'percent',
+  //     minimumFractionDigits: 2,
+  //     maximumFractionDigits: 2,
+  //   }).format(num)
+  // }
 
-  const getRating = (game, team) => {
-    return team.ratingBefore?.toFixed(0)
-  }
+  // const getRating = (game, team) => {
+  //   return team.ratingBefore?.toFixed(0)
+  // }
 
-  const getRecord = (game, team) => {
-    return game.isComplete ? `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}` : `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}`
-  }
+  // const getRecord = (game, team) => {
+  //   return game.isComplete ? `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}` : `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}`
+  // }
 
-  const getBalls = (total, filled) => {
 
-    let result = []
-
-    Array.from({ length: total }, (x, i) => {
-      if ((i + 1) <= filled) {
-        result.push(`🟡`)
-      } else {
-        result.push(`⚪`)
-      }
-    })
-
-    return result.join('')
-
-  }
 
 
   export default (props, { $on, $, $f7, $update, $ref }) => {

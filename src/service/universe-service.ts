@@ -297,41 +297,41 @@ Join us at [https://playebl.com](https://playebl.com)`,
         pathMap["banner"] = `${openSeaBanner.cid}.png`
 
 
-        //First go through all of the NFTs and write the image to the image folder
-        for (let tls of tlss) {
+        // //First go through all of the NFTs and write the image to the image folder
+        // for (let tls of tlss) {
 
-            let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+        //     let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
 
-            console.time(`Exporting image for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
+        //     console.time(`Exporting image for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
-            let image = await this.imageService.get(tls.logoId, options)
+        //     let image = await this.imageService.get(tls.logoId, options)
 
-            //Export to IPFS
-            pathMap[tls.teamId] = await this.exportImageIPFS(ipfsDirectory, image)
+        //     //Export to IPFS
+        //     pathMap[tls.teamId] = await this.exportImageIPFS(ipfsDirectory, image)
 
-            console.timeEnd(`Exporting image for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
+        //     console.timeEnd(`Exporting image for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
-        }
+        // }
 
         //Get the cid of the image directory
         let ipfsImagesStat = await this.ipfsService.heliaStat(`${ipfsDirectory}/images`)
         let imagesCid = ipfsImagesStat.cid.toString()
 
         //Now go through the teams and generate metadata
-        for (let tls of tlss) {
+        // for (let tls of tlss) {
 
-            let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+        //     let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
 
-            console.time(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
+        //     console.time(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
-            // let metadata = await this.teamService.createNFTMetadata(tlsPlain.city, tlsPlain.team, `${imagesCid}/${pathMap[tls.teamId]}` )
+        //     // let metadata = await this.teamService.createNFTMetadata(tlsPlain.city, tlsPlain.team, `${imagesCid}/${pathMap[tls.teamId]}` )
 
-            //Export to IPFS
-            // await this.exportTeamIPFS(ipfsDirectory, tlsPlain.team, metadata)
+        //     //Export to IPFS
+        //     // await this.exportTeamIPFS(ipfsDirectory, tlsPlain.team, metadata)
 
-            console.timeEnd(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
+        //     console.timeEnd(`Generating metadata for ${tlsPlain.city.name} ${tlsPlain.team.name}`)
 
-        }
+        // }
 
 
         await this.exportToIPFS(ipfsDirectory, `${imagesCid}/${pathMap["logo"]}`, `${imagesCid}/${pathMap["banner"]}`,  options)

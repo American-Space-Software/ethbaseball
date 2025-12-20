@@ -21,8 +21,8 @@ class OffChainEventWebService {
             }
             if (oce.fromAddress == "0x0000000000000000000000000000000000000000") {
 
-                if (oce.toTokenId) {
-                    return "Revenue"
+                if (oce.toTeamId) {
+                    return "Daily Revenue"
                 } else {
                     return "Reward"
                 }

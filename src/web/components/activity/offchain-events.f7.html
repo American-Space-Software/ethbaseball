@@ -34,8 +34,8 @@
 
                                     <span class="event-arrow">➡️</span>
                                     
-                                    ${oce.toTokenId ? $h`
-                                        <a href="${universeWebService.startDateLink(`/t/${oce.toTokenId}`)}">${getTeamName(oce.toTokenId)}</a>
+                                    ${oce.toTeamId ? $h`
+                                        <a href="${universeWebService.startDateLink(`/t/${oce.toTeamId}`)}">${getTeamName(oce.toTeamId)}</a>
                                     ` : $h` `} 
 
                                     ${oce.toAddress ? $h`
@@ -97,15 +97,15 @@
 
         let eventsViewModel = props.model
 
-        const getTeam = (tokenId) => {
-            return eventsViewModel.teams?.find( t => t.tokenId == tokenId)
+        const getTeam = (teamId) => {
+            return eventsViewModel.teams?.find( t => t._id == teamId)
         }
 
-        const getTeamName = (tokenId) => {
+        const getTeamName = (teamId) => {
             
-            let team = getTeam(tokenId)
+            let team = getTeam(teamId)
 
-            return `${team.cityName} ${team.name}`
+            return `${team.cityName ? team.cityName : ''} ${team.name}`
 
         }
 

@@ -195,13 +195,11 @@ class LadderService {
                                 }
             
             
-                                universe.currentDate.setDate(universe.currentDate.getDate() + 1)
-                                universe.changed('currentDate', true)
-                                await this.universeRepository.put(universe, options)
-
                             }
 
-                            
+                            universe.currentDate.setDate(universe.currentDate.getDate() + 1)
+                            universe.changed('currentDate', true)
+                            await this.universeRepository.put(universe, options)
 
 
                         }

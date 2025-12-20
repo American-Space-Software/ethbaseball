@@ -98,8 +98,10 @@ class UserService {
             let games:Game[] = await this.gameService.getByTeam(team, { limit: 10 } )
             vm.games = games.map( g => this.gameService.getGameSummaryViewModel(g))
 
-        }
+            let events = await this.offchainEventService.getByTeamId(ContractType.DIAMONDS, team._id, { limit: 5, offset: 0})
+            vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
 
+        }
 
 
         return vm
