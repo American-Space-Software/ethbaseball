@@ -68,11 +68,11 @@ class LadderService {
     ) {}
 
 
-    async runGameRunner(universeId:string) {
+    async runGameRunner(universeId:string) : Promise<string[]> {
 
         let s = await this.sequelize()
 
-        let gameIds:string[]
+        let gameIds:string[] = []
 
         await s.transaction(async (t1) => {
 
@@ -93,7 +93,7 @@ class LadderService {
                 if (season) {
 
                     //Play games
-                    await this.processGames(leagues, universe.currentDate, options)
+                    gameIds.push(...await this.processGames(leagues, universe.currentDate, options))
                     
         
                     //Check if we've moved past universe.currentDate AND that all games from that day have ended.
@@ -244,14 +244,18 @@ class LadderService {
     }
 
 
-    async processGames(leagues:League[], date:Date, options?:any)  {
+    async processGames(leagues:League[], date:Date, options?:any) : Promise<string[]> {
+
+        let allGameIds:string[] = []
 
         let rng = await this.seedService.getRNG(options)
 
         for (let league of leagues) {
             
             let gameIds:string[] = await this.gameService.getUnfinishedByLeagueIds(league, options)
-            if (gameIds.length == 0) continue
+            if (gameIds.length == 0) continue            
+
+            allGameIds.push(...gameIds)
 
             console.time(`Processing ${dayjs(date).format("YYYY/MM/DD")} and league #${league.rank} (${gameIds.length} games)`)
             
@@ -264,6 +268,8 @@ class LadderService {
             console.timeEnd(`Processing ${dayjs(date).format("YYYY/MM/DD")} and league #${league.rank} (${gameIds.length} games)`)
 
         }
+
+        return allGameIds
 
     }
 

@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:1.7
 ARG NODE_VERSION=22.18.0
 
-########### builder ###########
+############################
+## 1) Builder
+############################
 FROM node:${NODE_VERSION}-bookworm-slim AS builder
 WORKDIR /app
 
-# Toolchain for any native deps used during build
+# Toolchain (for native deps during build)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 build-essential git \
  && rm -rf /var/lib/apt/lists/*
@@ -13,39 +15,77 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package*.json ./
 RUN npm ci --no-audit --no-fund
 
-# Bring in source and build the web bundles
+# Bring in source and build
 COPY . .
 RUN npm run build:web
 
-# Sanity checks (fail fast if outputs/paths you rely on are missing)
-RUN test -f ./contracts.json || (echo "contracts.json missing after build" >&2; exit 1)
-RUN test -d ./public || (echo "public/ missing after build" >&2; exit 1)
-RUN test -d ./src/web-server/views || (echo "src/web-server/views missing" >&2; exit 1)
+# Sanity checks so the image fails fast if something is missing
+RUN test -f ./contracts.json || (echo "contracts.json missing after build." >&2; exit 1)
+RUN test -d ./public          || (echo "public/ missing after build." >&2; exit 1)
+RUN test -d ./src/web-server/views || (echo "src/web-server/views missing." >&2; exit 1)
 
-########### runtime ###########
+############################
+## 2) Runtime
+############################
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
+ENV NODE_ENV=production
 WORKDIR /app
 
-# nginx to reverse-proxy :80 -> node :8080 (+service helper)
+# nginx (reverse-proxy :80 -> node :8080)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx ca-certificates curl sysvinit-utils \
+    nginx ca-certificates curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Minimal nginx.conf (note: use 127.0.0.1 to avoid IPv6 surprises)
-RUN echo 'worker_processes auto;' > /etc/nginx/nginx.conf && \
-    echo 'events { worker_connections 1024; }' >> /etc/nginx/nginx.conf && \
-    echo 'http { server { listen 80; location / { proxy_pass http://127.0.0.1:8080; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; } } }' >> /etc/nginx/nginx.conf
+# --- nginx.conf ---
+# - Explicit /socket.io upgrade block (covers both /socket.io and /socket.io/)
+# - HTTP/1.1 to upstream, Upgrade/Connection headers
+# - Long read/send timeouts for WebSockets
+# - Buffering off (prevents frame coalescing/latency)
+RUN set -eux; \
+  printf 'worker_processes auto;\n' > /etc/nginx/nginx.conf; \
+  printf 'events { worker_connections 1024; }\n' >> /etc/nginx/nginx.conf; \
+  printf 'http {\n' >> /etc/nginx/nginx.conf; \
+  printf '  server {\n' >> /etc/nginx/nginx.conf; \
+  printf '    listen 80;\n' >> /etc/nginx/nginx.conf; \
+  printf '    # Socket.IO / Engine.IO WebSocket upgrades\n' >> /etc/nginx/nginx.conf; \
+  printf '    location ^~ /socket.io {\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_http_version 1.1;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header Upgrade $http_upgrade;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header Connection "Upgrade";\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header Host $host;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header X-Real-IP $remote_addr;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header X-Forwarded-Proto $scheme;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_read_timeout 3600s;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_send_timeout 3600s;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_buffering off;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_pass http://127.0.0.1:8080;\n' >> /etc/nginx/nginx.conf; \
+  printf '    }\n' >> /etc/nginx/nginx.conf; \
+  printf '    # Everything else\n' >> /etc/nginx/nginx.conf; \
+  printf '    location / {\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_pass http://127.0.0.1:8080;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header Host $host;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header X-Real-IP $remote_addr;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_set_header X-Forwarded-Proto $scheme;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_read_timeout 3600s;\n' >> /etc/nginx/nginx.conf; \
+  printf '      proxy_send_timeout 3600s;\n' >> /etc/nginx/nginx.conf; \
+  printf '    }\n' >> /etc/nginx/nginx.conf; \
+  printf '  }\n' >> /etc/nginx/nginx.conf; \
+  printf '}\n' >> /etc/nginx/nginx.conf
 
 # Bring runtime bits from builder
-COPY --from=builder /app/package*.json     ./
-COPY --from=builder /app/node_modules      ./node_modules
-COPY --from=builder /app/dist              ./dist
-COPY --from=builder /app/public            ./public
-COPY --from=builder /app/contracts.json    ./contracts.json
-COPY --from=builder /app/src/web-server/views ./src/web-server/views
+COPY --from=builder /app/package*.json           ./
+COPY --from=builder /app/node_modules            ./node_modules
+COPY --from=builder /app/dist                    ./dist
+COPY --from=builder /app/contracts.json          ./contracts.json
+COPY --from=builder /app/public                  ./public
+COPY --from=builder /app/src/web-server/views    ./src/web-server/views
 
-# Only the production web env file
+# Supply only the production web env file at build time:
 ARG NODE_ENV
 COPY .env.web.${NODE_ENV} .env
 
-CMD ["sh", "-c", "service nginx start && node --env-file=.env --enable-source-maps dist/web-server.js"]
+EXPOSE 80
+# Start nginx (daemonizes) then exec Node so Node is PID1
+CMD ["bash","-lc","nginx && exec node --env-file=.env --enable-source-maps dist/web-server.js"]

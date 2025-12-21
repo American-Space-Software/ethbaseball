@@ -55,16 +55,8 @@
         let universeWebService = ContainerService.getInstance(UniverseWebService)
         let gameWebService = ContainerService.getInstance(GameWebService)
 
-        const percentageFormatter = (num) => {
-            return new Intl.NumberFormat('default', {
-                style: 'percent',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(num)
-        }
 
         let game = props.game
-        console.log(game)
 
         return $render
     }

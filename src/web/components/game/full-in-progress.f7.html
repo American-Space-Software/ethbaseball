@@ -391,6 +391,9 @@
       if (game.isStarted) {
         $f7.preloader.hide()
       }
+
+      const bytes = new TextEncoder().encode(JSON.stringify(game)).length
+      console.log("[recv] game bytes=", bytes)
       
     }
 

@@ -11,6 +11,8 @@ import { TeamWebService } from "./team-web-service.js";
 @injectable()
 class GameWebService {
     
+    private gameHandlers = new Map<string, (g:any) => void>()
+
     constructor(
         private socketWebService: SocketWebService,
         private playerWebService:PlayerWebService,
@@ -18,21 +20,33 @@ class GameWebService {
         @inject('env') private env:any
     ) { }
 
-    async watchGame(_id:string, onGameUpdate:Function) {
+    
+    async watchGame(_id: string, onGameUpdate: (g:any)=>void) {
+        const socket = this.socketWebService.gameSocket
 
-        let socket = this.socketWebService.gameSocket
+        // If we were already watching this game, remove the old handler
+        const prev = this.gameHandlers.get(_id)
+        if (prev) socket.off("game", prev)
 
-        socket.emit("watch-game", _id)
+        // Store handler so unwatch can remove it later
+        this.gameHandlers.set(_id, onGameUpdate)
 
-        socket.on("game", (data) => {
-            // console.log(data)
-            onGameUpdate(data)
-        })
-
+        socket.on("game", onGameUpdate)
+        this.socketWebService.watch(_id)
     }
 
-    async unwatchGame(_id:string) {
-        this.socketWebService.gameSocket.emit("unwatch-game", _id)
+    async unwatchGame(_id: string) {
+
+        const socket = this.socketWebService.gameSocket
+
+        const handler = this.gameHandlers.get(_id)
+        if (handler) {
+            socket.off("game", handler)
+            this.gameHandlers.delete(_id)
+        }
+
+        this.socketWebService.unwatch(_id)
+
     }
 
     async getGames(dateString:string, rank:number) {

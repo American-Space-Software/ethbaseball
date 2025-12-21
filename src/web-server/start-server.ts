@@ -2010,21 +2010,29 @@ let startWebServer = async () => {
 
   const gameLoop = async () => {
 
+    console.time(`Game loop`)
+
+
     let date = new Date(new Date().toUTCString())
 
     //Simulate games 
-    await ladderService.runGameRunner(universe._id)
+    let gameIds = await ladderService.runGameRunner(universe._id)
 
-    let updatedGames = await gameService.getUpdatedSince(date)
+    if (gameIds?.length > 0) {
 
-    for (let game of updatedGames) {
+      let updatedGames = await gameService.getByIds(gameIds)
 
-      //Send websocket updates to connected clients.
-      socketService.gameUpdate(game)
+      for (let game of updatedGames) {
+        //Send websocket updates to connected clients.
+        socketService.gameUpdate(game)
 
+      }
+      
     }
 
-    console.log(`Game loop complete...waiting...`)
+
+
+    console.timeEnd(`Game loop`)
 
     setTimeout(async () => { await gameLoop() }, SECONDS_BETWEEN_SIMS*1000)
   }
