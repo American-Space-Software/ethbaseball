@@ -2,13 +2,16 @@ import { inject, injectable } from "inversify";
 
 import { Server } from "socket.io"
 import { Game } from "../dto/game.js";
+import { GameService } from "./data/game-service.js";
 
 @injectable()
 class SocketService {
 
     private _gameNamespace
 
-    constructor() {}
+    constructor(
+        private gameService:GameService
+    ) {}
 
     init(server, sessionMiddleware) {
 
@@ -18,25 +21,22 @@ class SocketService {
         })
 
 
-
         io.engine.use(sessionMiddleware)
 
         this._gameNamespace = io.of("/game")
 
         this._gameNamespace.on('connection', (socket) => {
 
-            socket.on("watch-game", (gid: string, ack?: (resp: any) => void) => {
-                const room = `game-${gid}`
-                socket.join(room)
+            socket.on("watch-game", async (_id: string) => {
+                
+                socket.join(`game-${_id}`)
+
+                const game = await this.gameService.get(_id)
+                socket.emit("game", game) // send immediately on (re)watch
             })
 
-            
-            socket.on("watch-game", (arg) => {
-                socket.join(`game-${arg}`)
-            })
-
-            socket.on("unwatch-game", (arg) => {
-                socket.leave(`game-${arg}`)
+            socket.on("unwatch-game", (_id: string) => {
+                socket.leave(`game-${_id}`)
             })
 
         })

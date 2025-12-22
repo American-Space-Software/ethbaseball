@@ -84,13 +84,21 @@ class GameWebService {
 
     }
 
+    getLastPlay(game) {
+        let plays:Play[] = this.getPlays(game)
+        return plays?.length > 0 ?  plays.find( p => p.result != undefined) : undefined
+    }
+
+    getCurrentPlay(game) {
+        let plays:Play[] = this.getPlays(game)
+        return plays?.length > 0 ?  plays.find( p => !p.result) : undefined
+    }
+
     async getGameViewModel(game) {
 
         let linescore = this.getLineScore(game)
-        let playByPlay = this.getPlayByPlay(game)
 
-        let lastPlay = playByPlay?.length > 0 ?  playByPlay.find( p => p.play.result != undefined) : undefined
-        let currentPlay = playByPlay?.length > 0 ?  playByPlay.find( p => !p.play.result) : undefined
+        let currentPlay = this.getCurrentPlay(game)
 
         let awayBoxscoreViewModel = {
             homeaway:"AWAY",
@@ -117,14 +125,14 @@ class GameWebService {
                 awayName: game.away.abbrev,
                 homeName: game.home.abbrev,
                 linescore: linescore,
-                wpa: lastPlay?.play?.wpa
+                // wpa: lastPlay?.play?.wpa
             },
 
             awayBoxscoreViewModel: awayBoxscoreViewModel,
             homeBoxscoreViewModel: homeBoxscoreViewModel,
             atBatBoxscoreViewModel: game.isTopInning ? awayBoxscoreViewModel : homeBoxscoreViewModel,
             
-            playByPlay: playByPlay,
+            // playByPlay: playByPlay,
 
             isTopInning: game.isTopInning,
             currentInning: game.currentInning,
@@ -175,6 +183,7 @@ class GameWebService {
     
 
             Object.assign(gameViewModel, {
+
                 runner1B: runner1B,
                 runner2B: runner2B,
                 runner3B: runner3B,
@@ -189,8 +198,8 @@ class GameWebService {
                 showPitcher: pitcher != undefined,
                 showLinescore: true,
 
-                lastPlay: lastPlay,
-                currentPlay: currentPlay,
+                // lastPlay: lastPlay,
+                // currentPlay: currentPlay,
 
                 matchupHandedness: hitter ? matchupHandedness : undefined,
     
@@ -322,37 +331,16 @@ class GameWebService {
 
     getPlays(game): Play[] {
 
-        let plays: Play[] = game.halfInnings.map((inning) => inning.plays).reduce((accumulator, playsArray) => accumulator.concat(playsArray), []).reverse() // Flatten into a single array
+        let plays: Play[] = []
+
+        if (game.halfInnings?.length > 0) {
+            plays.push(...game.halfInnings?.map((inning) => inning.plays).reduce((accumulator, playsArray) => accumulator.concat(playsArray), []).reverse())
+        } 
 
         return plays
 
     }
 
-    getPlayByPlay(game) {
-
-        let halfInnings = JSON.parse(JSON.stringify(game.halfInnings))
-
-        halfInnings.reverse()
-
-        let results = []
-
-        for (let hi of halfInnings) {
-
-            let plays = JSON.parse(JSON.stringify(hi.plays))
-            plays.reverse()
-
-            for (let play of plays) {
-                results.push({
-                    descriptions: this.getPlayDescriptions(game, play),
-                    play: play
-                })
-            }
-
-        }
-
-        return results
-
-    }
 
     isFirstPlayOfHalfInning(game, play: Play): boolean {
         const half = game.halfInnings?.find(h => h.num === play.inningNum && h.top === play.inningTop)
@@ -458,7 +446,7 @@ class GameWebService {
         return descriptions
     }
 
-    getGameStartDescriptions(game, play:Play): PlayDescription[] {
+    getGameStartDescriptions(game): PlayDescription[] {
 
         const descriptions: PlayDescription[] = []
 
@@ -467,16 +455,16 @@ class GameWebService {
 
         const gamePlayers = this.gamePlayers(game)
         
-        const hitter:GamePlayer = gamePlayers[play.hitterId]
-        const pitcher:GamePlayer = gamePlayers[play.pitcherId]
+        // const hitter:GamePlayer = gamePlayers[play.hitterId]
+        // const pitcher:GamePlayer = gamePlayers[play.pitcherId]
 
-        const pitcherName =
-            pitcher ? `${pitcher.firstName ?? ""} ${pitcher.lastName ?? ""}`.trim() : "the starter"
+        // const pitcherName =
+        //     pitcher ? `${pitcher.firstName ?? ""} ${pitcher.lastName ?? ""}`.trim() : "the starter"
 
 
 
-        const hitterName =
-            hitter ? `${hitter.firstName ?? ""} ${hitter.lastName ?? ""}`.trim() : "the leadoff hitter"
+        // const hitterName =
+        //     hitter ? `${hitter.firstName ?? ""} ${hitter.lastName ?? ""}`.trim() : "the leadoff hitter"
 
 
         // Infer the *other* starter by team
@@ -510,11 +498,11 @@ class GameWebService {
             text: `${homePitcher.fullName} gets the start for ${homeName}.`
         })
 
-        // 3) Leadoff hitter
-        descriptions.push({
-            type: PlayDescriptionType.RECAP,
-            text: `${hitterName} will lead it off for ${awayName}.`
-        })
+        // // 3) Leadoff hitter
+        // descriptions.push({
+        //     type: PlayDescriptionType.RECAP,
+        //     text: `${hitterName} will lead it off for ${awayName}.`
+        // })
 
 
         return descriptions
@@ -597,152 +585,151 @@ class GameWebService {
         return descriptions
     }
 
-    getPlayDescriptions(game, play: Play) : PlayDescription[] {
+    getCurrentDescriptions(vm) : PlayDescription[] {
 
         let descriptions:PlayDescription[] = []
 
+        let atBatState = this.getAtBatState(vm)
+        let play = atBatState == AtBatState.ENDED ? this.getLastPlay(vm.game) : this.getCurrentPlay(vm.game)
 
-        // let defense = this.getDefense(game)
+        let gamePlayers = this.gamePlayers(vm.game)
 
-        let gamePlayers = this.gamePlayers(game)
+        const isFirst = this.isFirstPlayOfHalfInning(vm.game, play)
 
-        let hitter: GamePlayer = gamePlayers[play.hitterId]
-        let pitcher = gamePlayers[play.pitcherId]
-
-
-        const isFirst = this.isFirstPlayOfHalfInning(game, play)
-
-        if (isFirst && play.inningNum == 1 && play.inningTop) {
-            descriptions.push(...this.getGameStartDescriptions(game, play))
-
+        if (vm.game.halfInnings?.length == 0) {
+            descriptions.push(...this.getGameStartDescriptions(vm.game))
         } else {
             descriptions.push(...this.getInningStartDescriptions(play))
         }
 
-
-
-        descriptions.push({
-            type: PlayDescriptionType.RECAP,
-            text: this.getMatchupDescription(game, play, { omitState: isFirst }), 
-        })
-
-
-        /** pitches */
-
-        const isBatterRunnerPrimaryEvent = (e: RunnerEvent) =>
-            e.runner?._id === play.hitterId &&
-            e.movement?.start === BaseResult.HOME
-
-        let i=0
-        for (let pitch of play.pitchLog.pitches) {
-
+        if (play) {
+            
             descriptions.push({
                 type: PlayDescriptionType.RECAP,
-                text: this.getPitchDescription(pitch)
+                text: this.getMatchupDescription(play, vm.hitter, { omitState: isFirst }), 
             })
 
-            // Runner events that occurred on this pitch
-            const runnerEvents = play.runner?.events?.filter(e => e.pitchIndex === i) ?? []
 
-            for (const runnerEvent of runnerEvents) {
+            /** pitches */
 
-                // Prevent duplicate X is out. / X advances to 1B. for the hitter
-                if (isBatterRunnerPrimaryEvent(runnerEvent)) continue
+            const isBatterRunnerPrimaryEvent = (e: RunnerEvent) =>
+                e.runner?._id === play.hitterId &&
+                e.movement?.start === BaseResult.HOME
 
-                const runnerText = this.getRunnerDescription(game, runnerEvent)
-                if (runnerText) {
-                    descriptions.push({
-                    type: PlayDescriptionType.RECAP,
-                    text: runnerText
-                    })
-                }
-
-            }
-
-            i++
-        }
-        /** pitches */
-
-
-        let fielderPlayer: GamePlayer
-        if (play.fielderId) {
-            fielderPlayer = gamePlayers[play.fielderId]
-        }
-
-
-        descriptions.push(...this.getPlayResultDescription(play, hitter, fielderPlayer))
-
-        
-        descriptions.push(...this.getRunnerRecapDescription(game, play))
-
-
-        let announcedScoreThisPlay = false
-
-        //Runs?
-        const runs = play.runner?.result?.end?.scored?.length ?? 0
-        if (runs > 0) {
-            descriptions.push({
-                type: PlayDescriptionType.RECAP,
-                text: runs === 1 ? "1 run scores." : `${runs} runs score.`
-            })
-
-            // announce score change immediately
-            descriptions.push({
-                type: PlayDescriptionType.RECAP,
-                text: `The score is ${play.score.end.away} - ${play.score.end.home}.`
-            })
-
-            announcedScoreThisPlay = true
-        }
-
-        //End inning?
-        if (play.runner?.result?.end?.out?.length > 0) {
-
-            if (play.count.end.outs == 3) {
+            let i=0
+            for (let pitch of play.pitchLog.pitches) {
 
                 descriptions.push({
                     type: PlayDescriptionType.RECAP,
-                    text: `There's 3 outs and the inning is complete.`
+                    text: this.getPitchDescription(pitch)
                 })
 
-                if (this.isGameEndingPlay(game, play)) {
+                // Runner events that occurred on this pitch
+                const runnerEvents = play.runner?.events?.filter(e => e.pitchIndex === i) ?? []
 
-                    descriptions.push(...this.getGameRecapDescriptions(game, play))
+                for (const runnerEvent of runnerEvents) {
+
+                    // Prevent duplicate X is out. / X advances to 1B. for the hitter
+                    if (isBatterRunnerPrimaryEvent(runnerEvent)) continue
+
+                    const runnerText = this.getRunnerDescription(vm.game, runnerEvent)
+                    if (runnerText) {
+                        descriptions.push({
+                        type: PlayDescriptionType.RECAP,
+                        text: runnerText
+                        })
+                    }
+
+                }
+
+                i++
+            }
+            /** pitches */
+
+
+            let fielderPlayer: GamePlayer
+            if (play.fielderId) {
+                fielderPlayer = gamePlayers[play.fielderId]
+            }
+
+
+            descriptions.push(...this.getPlayResultDescription(play, vm.hitter, fielderPlayer))
+
+            
+            descriptions.push(...this.getRunnerRecapDescription(vm.game, play))
+
+
+            let announcedScoreThisPlay = false
+
+            //Runs?
+            const runs = play.runner?.result?.end?.scored?.length ?? 0
+            if (runs > 0) {
+                descriptions.push({
+                    type: PlayDescriptionType.RECAP,
+                    text: runs === 1 ? "1 run scores." : `${runs} runs score.`
+                })
+
+                // announce score change immediately
+                descriptions.push({
+                    type: PlayDescriptionType.RECAP,
+                    text: `The score is ${play.score.end.away} - ${play.score.end.home}.`
+                })
+
+                announcedScoreThisPlay = true
+            }
+
+            //End inning?
+            if (play.runner?.result?.end?.out?.length > 0) {
+
+                if (play.count.end.outs == 3) {
+
+                    descriptions.push({
+                        type: PlayDescriptionType.RECAP,
+                        text: `There's 3 outs and the inning is complete.`
+                    })
+
+                    if (this.isGameEndingPlay(vm.game, play)) {
+
+                        descriptions.push(...this.getGameRecapDescriptions(vm.game, play))
+
+                    } else {
+
+                        const half = play.inningTop ? "top" : "bottom"
+                        const inning = play.inningNum
+
+                        // Always announce inning-end score.
+                        // If we already announced "The score is X - Y." on this play, use a different sentence here.
+                        const inningEndScoreLine = announcedScoreThisPlay
+                        ? `End of the ${half} of the ${ordinal(inning)}. It's ${play.score.end.away} - ${play.score.end.home}.`
+                        : `We'll switch sides. The score is ${play.score.end.away} - ${play.score.end.home}.`
+
+
+                        descriptions.push({ type: PlayDescriptionType.RECAP, text: inningEndScoreLine })
+
+                    }
 
                 } else {
 
-                    const half = play.inningTop ? "top" : "bottom"
-                    const inning = play.inningNum
-
-                    // Always announce inning-end score.
-                    // If we already announced "The score is X - Y." on this play, use a different sentence here.
-                    const inningEndScoreLine = announcedScoreThisPlay
-                    ? `End of the ${half} of the ${ordinal(inning)}. It's ${play.score.end.away} - ${play.score.end.home}.`
-                    : `We'll switch sides. The score is ${play.score.end.away} - ${play.score.end.home}.`
-
-
-                    descriptions.push({ type: PlayDescriptionType.RECAP, text: inningEndScoreLine })
+                    descriptions.push({
+                        type: PlayDescriptionType.RECAP,
+                        text: `There ${this.getOutsPhrase(play.count.end.outs)}.`
+                    })
 
                 }
-
-            } else {
-
-                descriptions.push({
-                    type: PlayDescriptionType.RECAP,
-                    text: `There ${this.getOutsPhrase(play.count.end.outs)}.`
-                })
-
             }
+
+
+            let playMeta = {
+                result: play.result,
+                runner: play.runner.result.end,
+                score: play.score.end
+            }
+
+            descriptions[descriptions.length - 1].meta = playMeta
+
+
         }
-
-
-        let playMeta = {
-            result: play.result,
-            runner: play.runner.result.end,
-            score: play.score.end
-        }
-
-        descriptions[descriptions.length - 1].meta = playMeta
+        
 
         return descriptions
 
@@ -972,10 +959,8 @@ class GameWebService {
         return descriptions
     }
 
-    getMatchupDescription(game, play: Play, opts?: { omitState?: boolean }): string {
+    getMatchupDescription(play: Play, hitter: GamePlayer, opts?: { omitState?: boolean }): string {
 
-        const gamePlayers = this.gamePlayers(game)
-        const hitter: GamePlayer = gamePlayers[play.hitterId]
         const hitterName = hitter?.fullName ?? "The batter"
 
         if (opts?.omitState) {
@@ -1702,46 +1687,33 @@ class GameWebService {
 
     getAtBatState(vm) : AtBatState {
 
-      let lastPlayEnded = vm.lastPlay?.play?.result != undefined
-      let currentPlayEnded = vm.currentPlay?.play?.result != undefined
-      let currentPlayHasPitches = vm.currentPlay?.play?.pitchLog?.pitches?.length > 0
+      let lastPlay = this.getLastPlay(vm.game)
+      let currentPlay = this.getCurrentPlay(vm.game)
+
+      let lastPlayEnded = lastPlay?.result != undefined
+      let currentPlayEnded = currentPlay?.result != undefined
+      let currentPlayHasPitches = currentPlay?.pitchLog?.pitches?.length > 0
     //   let halfInningStart = vm.game.halfInnings[vm.game.halfInnings?.length - 1]?.plays?.length == 0
 
       //At bat just started. No pitches.
-      if ( vm.currentPlay && !currentPlayHasPitches && !currentPlayEnded  ) {
+      if ( currentPlay && !currentPlayHasPitches && !currentPlayEnded  ) {
         return AtBatState.STARTED
       //At bat ongoing.
-      } else if (   vm.currentPlay && currentPlayHasPitches && !currentPlayEnded   ) {
+      } else if (   currentPlay && currentPlayHasPitches && !currentPlayEnded   ) {
         return AtBatState.ONGOING
 
       //At bat just ended.
-      } else if (lastPlayEnded && !vm.currentPlay) {
+      } else if (lastPlayEnded && !currentPlay) {
         return AtBatState.ENDED
       } 
     }
 
-    getMessagesFromPlay(game, play:Play) {
+    getMessagesFromPlayDescriptions(descriptions) {
         
-        let descriptions = this.getPlayDescriptions(game, play)
-
         return descriptions?.map( d => {  return { text: d.text, type: "received", name: "Gamelog" } })
 
     }
 
-
-    getMessagesFromGame(game) {
-        
-        let plays:Play[] = this.getPlays(game)
-
-        let descriptions = []
-
-        for (let play of plays) {
-            descriptions.push(...this.getPlayDescriptions(game, play))
-        }
-
-        return descriptions?.map( d => {  return { text: d.text, type: "received", name: "Gamelog" } })
-
-    }
 
 }
 

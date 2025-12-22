@@ -5,11 +5,20 @@ import { io, Socket } from "socket.io-client"
 class SocketWebService {
 
   private _gameSocket: Socket | null = null
-  private watched = new Set<string>()
+  private _watched = new Set<string>()
+  private _instantNextUpdate = false
+
+  
 
   constructor(
     @inject("env") private env: any
   ) {}
+
+  public consumeInstantNextUpdate() {
+    const v = this._instantNextUpdate
+    this._instantNextUpdate = false
+    return v
+  }
 
   public get gameSocket(): Socket {
     if (this._gameSocket) return this._gameSocket
@@ -18,7 +27,7 @@ class SocketWebService {
       path: "/socket.io",
       withCredentials: true,
       reconnection: true,
-      reconnectionAttempts: 100,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 500,
       reconnectionDelayMax: 5000,
       transports: ["websocket", "polling"]
@@ -27,13 +36,14 @@ class SocketWebService {
     this._gameSocket = s
 
     const rejoin = () => {
-      for (const gid of this.watched) {
+      for (const gid of this._watched) {
         s.emit("watch-game", gid)
       }
     }
 
     s.on("connect", () => {
       console.log("[socket] connected", s.id)
+      this._instantNextUpdate = true
       rejoin()
     })
 
@@ -51,6 +61,7 @@ class SocketWebService {
 
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
+        this._instantNextUpdate = true
         if (!s.connected) s.connect()
         rejoin()
       }
@@ -60,14 +71,14 @@ class SocketWebService {
   }
 
   public watch(_id: string) {
-    this.watched.add(_id)
+    this._watched.add(_id)
     if (this.gameSocket.connected) {
       this.gameSocket.emit("watch-game", _id)
     }
   }
 
   public unwatch(_id: string) {
-    this.watched.delete(_id)
+    this._watched.delete(_id)
     if (this.gameSocket.connected) {
       this.gameSocket.emit("unwatch-game", _id)
     }

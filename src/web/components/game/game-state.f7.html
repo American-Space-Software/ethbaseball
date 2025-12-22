@@ -35,31 +35,6 @@
             
           </div>
 
-          <div class="state-info">
-
-              ${vm?.game.isTopInning ? $h`
-                ▲ ${vm?.game.currentInning}
-              ` : $h`
-                ▼ ${vm?.game.currentInning}
-              `}
-
-              <div class="info-wrapper">
-                <span class="label">Balls</span>${gameWebService.getBalls(3, vm.balls)}
-                <span class="label">Strikes</span>${gameWebService.getBalls(2, vm.strikes)}
-                <span class="label">Outs</span>${gameWebService.getBalls(2, vm.outs)}
-              </div>
-
-              <div class="diamond-wrapper">
-                <div class="diamond">
-                  <div class="first base ${vm.runner1B ? $h`runner` : $h` `}"></div>
-                  <div class="second base ${vm.runner2B ? $h`runner` : $h` `}"></div>
-                  <div class="third base ${vm.runner3B ? $h`runner` : $h` `}"></div>
-                </div>
-              </div>
-
-
-          </div>
-
       </div>
 
       <div class="game-main">
@@ -380,6 +355,31 @@
 
       <div class="bottom-bar">
 
+        <div class="state-info">
+
+            ${vm?.game.isTopInning ? $h`
+              ▲ ${vm?.game.currentInning}
+            ` : $h`
+              ▼ ${vm?.game.currentInning}
+            `}
+
+            <div class="info-wrapper">
+              <span class="label">Balls</span>${gameWebService.getBalls(3, vm.balls)}
+              <span class="label">Strikes</span>${gameWebService.getBalls(2, vm.strikes)}
+              <span class="label">Outs</span>${gameWebService.getBalls(2, vm.outs)}
+            </div>
+
+            <div class="diamond-wrapper">
+              <div class="diamond">
+                <div class="first base ${vm.runner1B ? $h`runner` : $h` `}"></div>
+                <div class="second base ${vm.runner2B ? $h`runner` : $h` `}"></div>
+                <div class="third base ${vm.runner3B ? $h`runner` : $h` `}"></div>
+              </div>
+            </div>
+
+
+        </div>
+
         <div class="matchup">
           
           ${vm.awayPlayer ? $h`
@@ -444,7 +444,7 @@
           <div class="card-content">
 
             <div class="result-wrapper">
-              <div class="result">${vm.lastPlay?.descriptions?.find( d => d.type=="RESULT").text}</div>
+              <div class="result">${lastPlayDescription}</div>
             </div>
 
           </div>
@@ -475,6 +475,7 @@
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
   import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { SocketWebService } from "../../service/socket-web-service.ts"
 
 
 
@@ -493,7 +494,9 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let statService = ContainerService.getInstance(StatService)
+    let socketWebService = ContainerService.getInstance(SocketWebService)
 
+    let lastPlayDescription
 
     let allPopups = ['.at-bat-started', '.at-bat-ongoing', '.at-bat-ended']
 
@@ -535,53 +538,45 @@
     let messageSyncQueue = Promise.resolve()
     let messageSyncVersion = 0
 
-    const syncMessages = async (atBatState, messages, vm, version, showDelay) => {
+    const syncMessages = async (messagesComponent, allMessages, version, showDelay) => {
 
-      let play = atBatState == AtBatState.ENDED ? vm.lastPlay : vm.currentPlay
+      //Check the first message against the first message in the actual component because we might need to clear them.
+      if (messagesComponent.messages?.length > 0 && (  allMessages[0]?.type != messagesComponent.messages[0].type || allMessages[0]?.text != messagesComponent.messages[0].text) ) {
+        messagesComponent.clear()
+      }
 
-      if (play) {
+      let newMessages = getNewMessages(messagesComponent.messages, allMessages)
 
-        let playMessages = gameWebService.getMessagesFromPlay(vm.game, play.play)
+      if (newMessages?.length > 0) {
 
-        //Check the first message against the first message in the actual component because we might need to clear them.
-        if (messages.messages?.length > 0 && (  playMessages[0]?.type != messages.messages[0].type || playMessages[0]?.text != messages.messages[0].text) ) {
-          messages.clear()
-        }
+        for (let i = 0; i < newMessages.length; i++) {
 
+          // if a newer sync started, stop this one
+          if (version !== messageSyncVersion) return
 
-        let newMessages = getNewMessages(messages.messages, playMessages)
-
-        if (newMessages?.length > 0) {
-
-          for (let i = 0; i < newMessages.length; i++) {
-
-            // if a newer sync started, stop this one
-            if (version !== messageSyncVersion) return
-
-            if (showDelay) {
-              messages.showTyping()
-              await new Promise(resolve => setTimeout(resolve, 500))
-            }
-
-            if (version !== messageSyncVersion) return
-
-            messages.addMessage(newMessages[i])
-            messages.hideTyping()
-
+          if (showDelay) {
+            messagesComponent.showTyping()
+            await new Promise(resolve => setTimeout(resolve, 500))
           }
-          
-        }
 
+          if (version !== messageSyncVersion) return
+
+          messagesComponent.addMessage(newMessages[i])
+          messagesComponent.hideTyping()
+
+        }
+        
       }
 
 
     }
 
-    const syncPopup = (atBatState, vm) => {
+    const syncPopup = (atBatState, playDescriptions) => {
 
       if (atBatState == AtBatState.STARTED) {
         showPopup('.at-bat-started')
       } else if (atBatState == AtBatState.ENDED) {
+        lastPlayDescription = playDescriptions?.find( d => d.type=="RESULT")?.text
         showPopup('.at-bat-ended')
       } else {
         closeAllPopups()
@@ -604,17 +599,27 @@
       Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
       Object.assign(homeBoxscoreViewModel, gameViewModel.homeBoxscoreViewModel)
 
+
+      let descriptions = gameWebService.getCurrentDescriptions(vm)
+      let allMessages = gameWebService.getMessagesFromPlayDescriptions(descriptions)
+
+
       const atBatState = gameWebService.getAtBatState(vm)
 
-      syncPopup(atBatState, gameViewModel)
+      syncPopup(atBatState, descriptions)
 
       // bump version FIRST so any in-flight writer stops
+
+      const isInstant = socketWebService.consumeInstantNextUpdate()
+      const effectiveShowDelay = isInstant ? false : showDelay
+
+
       messageSyncVersion++
       const v = messageSyncVersion
 
       // serialize message updates (ONLY place we call syncMessages)
       messageSyncQueue = messageSyncQueue.then(() =>
-        syncMessages(atBatState, messages, gameViewModel, v, showDelay)
+        syncMessages(messages, allMessages, v, effectiveShowDelay)
       )
 
       //Flip this 
