@@ -2,37 +2,52 @@
 
     <div class="game-state">
 
-      <div class="game-banner">
+      <div class="game-summary">
 
-          <div class="away ${vm?.game.isComplete && vm?.game.score.away > vm?.game.score.home ? $h`winner` : $h` `}">
-            <div class="name">
-
-              <a href="${universeWebService.startDateLink(`/t/index/${vm.game.away._id}`)}">
-                <img src="/image/thumbnail/100/${vm?.game.away.logoId}" class="profilePic" />
-                <span class="record">${vm?.game.away.overallRecord.after?.wins || vm?.game.away.overallRecord.before?.wins}-${vm?.game.away.overallRecord.after?.losses || vm?.game.away.overallRecord.before?.losses}<br /></span>
-              
-                ${teamWebService.getTeamName(vm?.game.away)}
-
-              </a>
-
-            </div>
-            <div class="runs">${vm?.game.score.away}</div>
+          <div class="game-score">
+            <table>
+              <tr class="${vm.game.isTopInning ? 'at-bat' : ' '}">
+                <td class="name" style="background-color: ${vm.game.away.color1};">
+                    <img src="/image/thumbnail/${vm.game.away.logoId}" class="profilePic" alt="${vm.game.away.cityName} ${vm.game.away.name} Logo"/>
+                    <a href="${universeWebService.startDateLink(`/t/index/${vm.game.away._id}`)}" style="color: ${getFontColor(vm.game.away.color1)};">
+                      ${teamWebService.getTeamName(vm.game.away)}
+                    </a>
+                </td>
+                <td class="runs">${vm.game.score.away}</td>
+                <td class="inning" rowspan="2" style="line-height: 20px;">
+                  ${vm?.game.isTopInning ? $h`▲ ${vm?.game.currentInning}` : $h`${vm?.game.currentInning} ▼`}
+                </td>
+              </tr>
+              <tr class="${vm.game.isTopInning ? ' ' : 'at-bat'}">
+                <td class="name" style="background-color: ${vm.game.home.color1};">
+                    <img src="/image/thumbnail/${vm.game.home.logoId}" class="profilePic"  alt="${vm.game.home.cityName} ${vm.game.home.name} Logo"/>
+                    <a href="${universeWebService.startDateLink(`/t/index/${vm.game.home._id}`)}" style="color: ${getFontColor(vm.game.home.color1)};">
+                      ${teamWebService.getTeamName(vm.game.home)}
+                    </a>
+                </td>
+                <td class="runs">${vm.game.score.home}</td>
+              </tr>
+            </table>
           </div>
 
-          <div class="home ${vm?.game.isComplete && vm?.game.score.home > vm?.game.score.away ? $h`winner` : $h` `}">
-            
-            <div class="runs">${vm?.game.score.home}</div>
-            
-            <div class="name">
 
-              <a href="${universeWebService.startDateLink(`/t/index/${vm.game.home._id}`)}">
-                <img src="/image/thumbnail/100/${vm?.game.home.logoId}" class="profilePic" />
-                <span class="record">${vm?.game.home.overallRecord.after?.wins || vm?.game.home.overallRecord.before?.wins}-${vm?.game.home.overallRecord.after?.losses || vm?.game.home.overallRecord.before?.losses}<br /></span>
-                ${teamWebService.getTeamName(vm?.game.home)}
-              </a>
+          <div class="state-info">
 
-            </div>
-            
+              <div class="info-wrapper">
+                <span class="label">B</span>${gameWebService.getBalls(3, vm.balls)}<br />
+                <span class="label">S</span>${gameWebService.getBalls(2, vm.strikes)}<br />
+                <span class="label">O</span>${gameWebService.getBalls(2, vm.outs)}
+              </div>
+
+              <div class="diamond-wrapper">
+                <div class="diamond">
+                  <div class="first base ${vm.runner1B ? $h`runner` : $h` `}"></div>
+                  <div class="second base ${vm.runner2B ? $h`runner` : $h` `}"></div>
+                  <div class="third base ${vm.runner3B ? $h`runner` : $h` `}"></div>
+                </div>
+              </div>
+
+
           </div>
 
       </div>
@@ -43,9 +58,8 @@
 
           <div class="content">
 
-            <div class="card ${vm.awayBoxscoreViewModel.teamInfo._id == vm.atBatBoxscoreViewModel.teamInfo._id ? 'card-atbat' : 'card-notatbat'}">
-              <div class="card-content card-content-padding">
-                
+            <div class="block-header">${teamWebService.getTeamName(vm.awayBoxscoreViewModel.teamInfo)}</div>
+            <div class="block ${vm.awayBoxscoreViewModel.teamInfo._id == vm.atBatBoxscoreViewModel.teamInfo._id ? 'card-atbat' : 'card-notatbat'}">
                 <table class="lineup">
                   <thead>
                     <th class="num order">#</th>
@@ -68,8 +82,6 @@
                     `)}
                   </tbody>
                 </table>
-
-              </div>
             </div>
 
           </div>
@@ -306,9 +318,8 @@
 
           <div class="content">
 
-            <div class="card ${vm.homeBoxscoreViewModel.teamInfo._id == vm.atBatBoxscoreViewModel.teamInfo._id ? 'card-atbat' : 'card-notatbat'}">
-              <div class="card-content card-content-padding">
-                
+            <div class="block-header">${teamWebService.getTeamName(vm.homeBoxscoreViewModel.teamInfo)}</div>
+            <div class="block ${vm.homeBoxscoreViewModel.teamInfo._id == vm.atBatBoxscoreViewModel.teamInfo._id ? 'card-atbat' : 'card-notatbat'}">
                 <table class="lineup">
                   <thead>
                     <th class="num order">#</th>
@@ -331,15 +342,12 @@
                     `)}
                   </tbody>
                 </table>
-
-              </div>
             </div>
       
-
             <div class="game-buttons">
               <div class="segmented">
                 
-                <a data-popup=".play-by-play-popup" class="button button-fill ${vm.playByPlay?.filter(p => p?.play?.result != undefined)?.length > 0 ? 'popup-open' : 'disabled'}">Play by Play</a>  
+                <a href="/g/${vm.game._id}/gamelog" class="button button-fill ${vm.game.halfInnings?.length > 0 ? 'popup-open' : 'disabled'}">Game Log</a>  
               
                 ${!vm.game.isComplete ? $h`
                   <a data-popup=".box-score-popup" class="button button-outline popup-open ">Box Score</a> 
@@ -355,40 +363,17 @@
 
       <div class="bottom-bar">
 
-        <div class="state-info">
-
-            ${vm?.game.isTopInning ? $h`
-              ▲ ${vm?.game.currentInning}
-            ` : $h`
-              ▼ ${vm?.game.currentInning}
-            `}
-
-            <div class="info-wrapper">
-              <span class="label">Balls</span>${gameWebService.getBalls(3, vm.balls)}
-              <span class="label">Strikes</span>${gameWebService.getBalls(2, vm.strikes)}
-              <span class="label">Outs</span>${gameWebService.getBalls(2, vm.outs)}
-            </div>
-
-            <div class="diamond-wrapper">
-              <div class="diamond">
-                <div class="first base ${vm.runner1B ? $h`runner` : $h` `}"></div>
-                <div class="second base ${vm.runner2B ? $h`runner` : $h` `}"></div>
-                <div class="third base ${vm.runner3B ? $h`runner` : $h` `}"></div>
-              </div>
-            </div>
-
-
-        </div>
-
         <div class="matchup">
           
           ${vm.awayPlayer ? $h`
-            <div class="matchup-detail" style="background-color: ${vm.awayPlayer.color1}; color: ${getFontColor(vm.awayPlayer.color1)};">
+            <div class="matchup-detail away" style="background-color: ${vm.awayPlayer.color1}; color: ${getFontColor(vm.awayPlayer.color1)};">
 
-              <span class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</span>
-
-              <img src="/player/image/${vm.awayPlayer._id}" style="border: 1px solid ${vm.awayPlayer.color1}; " /> 
+              <img src="/player/image/${vm.awayPlayer._id}" /> 
+              
+              <div class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
               <a href="/p/${vm.awayPlayer._id}" class="player" style="color: ${getFontColor(vm.awayPlayer.color1)};">${vm.awayPlayer.fullName}</a>
+
+              <br />
 
               ${showPlayerStats ? $h`
                 <span class="game-stats">
@@ -402,16 +387,20 @@
               
               `}
 
+
             </div>
           ` : $h` `}
                 
           ${vm.homePlayer ? $h`
             <div class="matchup-detail" style="background-color: ${vm.homePlayer.color1}; color: ${getFontColor(vm.homePlayer.color1)};">
 
-              <span class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</span>
-
-              <img src="/player/image/${vm.homePlayer._id}" style="border: 1px solid ${vm.homePlayer.color1}; " /> 
+              <img src="/player/image/${vm.homePlayer._id}" /> 
+              
+              
+              <div class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
               <a href="/p/${vm.homePlayer._id}" class="player" style="color: ${getFontColor(vm.homePlayer.color1)};">${vm.homePlayer.fullName}</a>
+
+              <br />
 
               ${showPlayerStats ? $h`
                 <span class="game-stats">
@@ -477,15 +466,6 @@
   import { PlayerWebService } from "../../service/player-web-service.ts"
   import { SocketWebService } from "../../service/socket-web-service.ts"
 
-
-
-  function percentageFormatter(num) {
-    return new Intl.NumberFormat('default', {
-      style: 'percent',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num)
-  }
 
   export default (props, { $on, $, $f7, $update, $onBeforeUnmount, $onMounted }) => {
 
@@ -592,7 +572,7 @@
 
     let showPlayerStats = true
 
-    const onGameUpdate = (gameViewModel, messages, showDelay) => {
+    const onGameUpdate = (gameViewModel, messagesComponent, showDelay) => {
 
       Object.assign(vm, gameViewModel)
       Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
@@ -609,17 +589,15 @@
       syncPopup(atBatState, descriptions)
 
       // bump version FIRST so any in-flight writer stops
+      messageSyncVersion++
+      const v = messageSyncVersion
 
       const isInstant = socketWebService.consumeInstantNextUpdate()
       const effectiveShowDelay = isInstant ? false : showDelay
 
 
-      messageSyncVersion++
-      const v = messageSyncVersion
-
-      // serialize message updates (ONLY place we call syncMessages)
       messageSyncQueue = messageSyncQueue.then(() =>
-        syncMessages(messages, allMessages, v, effectiveShowDelay)
+        syncMessages(messagesComponent, allMessages, v, effectiveShowDelay)
       )
 
       //Flip this 

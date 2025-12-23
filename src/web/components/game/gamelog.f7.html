@@ -1,0 +1,120 @@
+<template>
+
+
+  <div class="page page-with-subnavbar" data-name="gamelog">
+    <div class="page-content ">
+      <div class="list cards-list">
+        <ul>
+
+            ${playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
+              <li class="card recap card-header-divider card-outline">
+
+                <div class="card-header">
+                  ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
+                
+                  <div class="diamond-wrapper">
+                    <div class="diamond">
+                      <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
+                      <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
+                      <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
+                    </div>
+                  </div>
+                
+                </div>
+
+                <div class="card-content card-content-padding play-description">
+            
+                  <div class="chip result">
+                    <div class="chip-label">${p.play.result}</div>
+                  </div>
+            
+
+                  ${p.descriptions.map( (d, index) => $h`
+
+                    <div class="message message-received ${d.type == 'RESULT' ? 'main' : ''}">
+                      <div class="message-content">
+                        <!-- Bubble with text -->
+                        <div class="message-bubble">
+                          <div class="message-text">${d.text}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                  `)}
+
+                  <div class="info-wrapper">
+                    <span class="label">Outs</span>${gameWebService.getBalls(3, p.play.count.end.outs)}
+                  </div>
+
+                  ${p.play.credits?.length > 0 ? $h`
+                    <div class="defense">
+                      <strong>Defense</strong>
+                      <ul>
+                        ${p.play.credits.map( c => $h`
+                          <li>${gamePlayers[c._id].currentPosition} ${gamePlayers[c._id].fullName} - ${c.type}</li>
+                        `)}                            
+                      </ul>
+                    </div>                          
+                  ` : $h` `}
+
+                </div>
+                
+              </li>
+            `)}
+          </ul>
+      </div>
+    </div>
+  </div>
+
+</template>
+
+<style>
+
+
+</style>
+
+<script>
+
+ 
+
+  import { ContainerService } from "../../../service/container-service.ts"
+  import { GameWebService, AtBatState } from "../../service/game-web-service.ts"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import dayjs from "dayjs"
+
+ 
+  export default (props, { $on, $, $f7, $update, $onBeforeUnmount, $onMounted }) => {
+
+    let gameWebService = ContainerService.getInstance(GameWebService)
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let env = ContainerService.getInstance("env")()
+
+    let playByPlay = props.playByPlay
+    let gamePlayers = props.gamePlayers
+    let gameViewModel = props.gameViewModel
+
+
+    $on('pageBeforeIn', async (e) => {
+                
+
+      eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+          detail: { tabLink: "/games", breadcrumbs:[{ text: "Home", path: "/" }, { text: "Game", path: `/g/${gameViewModel.game._id}` }, { text: "Game Log"}], visible: true }
+      }))
+
+
+      universeWebService.setMetadata(
+          `${gameViewModel.game.away.cityName ? gameViewModel.game.away.cityName : ''} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName ? gameViewModel.game.home.cityName : ''} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")} Game Log - Ethereum Baseball League`, 
+          window.location.href, 
+          `${env.WEB}/logo.png`, 
+          `${gameViewModel.game.away.cityName ? gameViewModel.game.away.cityName : ''} ${gameViewModel.game.away.name} @ ${gameViewModel.game.home.cityName ? gameViewModel.game.home.cityName : ''} ${gameViewModel.game.home.name} on ${dayjs(gameViewModel.game.gameDate).format("YYYY-MM-DD")} Game Log`
+      ) 
+
+
+    })
+    
+    return $render
+
+
+  }
+</script>

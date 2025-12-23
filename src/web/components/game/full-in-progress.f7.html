@@ -1,124 +1,103 @@
 <template>
 
-  <div class="page" data-name="player-index">
-
+  <div class="page" data-name="game-in-progress">
 
     <div class="page-content game-page">
 
-      <div class="hidden-on-load">
+      ${gameViewModel?.game ? $h`
+          
+          <${GameState} vm=${gameViewModel} /> 
 
-          ${gameViewModel?.game ? $h`
-              
-              <${GameState} vm=${gameViewModel} /> 
-
-              <div class="popup box-score-popup popup-tablet-fullscreen">
-                <div class="view">
-                  <div class="page">
-                    <div class="navbar">
-                      <div class="navbar-bg"></div>
-                      <div class="navbar-inner">
-                        <div class="title">
-                          Box Score
-                        </div>
-                        <div class="right">
-                          <!-- Link to close popup -->
-                          <a class="link popup-close">Close</a>
-                        </div>
-                      </div>
+          <div class="popup box-score-popup popup-tablet-fullscreen">
+            <div class="view">
+              <div class="page">
+                <div class="navbar">
+                  <div class="navbar-bg"></div>
+                  <div class="navbar-inner">
+                    <div class="title">
+                      Box Score
                     </div>
-                    <div class="page-content">
-
-                      <div class="linescore-wrapper">
-                        <table class="linescore">
-                          <thead>
-                            <tr>
-                              <th></th>
-                              ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                                <th>${num}</th>                          
-                              `)}
-                      
-                              <th>R</th>
-                              <th>H</th>
-                              <th>E</th>        
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-
-                              <td class="abbrev">
-                                <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
-                              </td>
-                      
-                              ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                                <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
-                              `)}
-                      
-                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
-                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
-                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
-                            </tr>
-                            <tr>
-                          
-                              <td class="abbrev">
-                                <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
-                              </td>
-                          
-                              ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                                <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
-                              `)}
-                      
-                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
-                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
-                              <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
-                            </tr>
-                          </tbody>	
-                        </table>
-                      </div>
-
-                      <div class="boxscores grid medium-grid-cols-2">
-                        
-                        <div class="left">
-                          <${Boxscore} vm=${getAwayBoxscoreViewModel} />
-                        </div>
-
-                        <div class="right">
-                          <${Boxscore} vm=${getHomeBoxscoreViewModel} />
-                        </div>
-
-                      </div> 
+                    <div class="right">
+                      <!-- Link to close popup -->
+                      <a class="link popup-close">Close</a>
                     </div>
                   </div>
                 </div>
-              </div>
-            
-              <${GamelogPopup} vm=${gameViewModel} />
+                <div class="page-content">
+
+                  <div class="linescore-wrapper">
+                    <table class="linescore">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                            <th>${num}</th>                          
+                          `)}
                   
-              <div class="block">
-                <br />
+                          <th>R</th>
+                          <th>H</th>
+                          <th>E</th>        
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+
+                          <td class="abbrev">
+                            <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                          </td>
+                  
+                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                            <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
+                          `)}
+                  
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
+                        </tr>
+                        <tr>
+                      
+                          <td class="abbrev">
+                            <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
+                          </td>
+                      
+                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                            <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
+                          `)}
+                  
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
+                        </tr>
+                      </tbody>	
+                    </table>
+                  </div>
+
+                  <div class="boxscores grid medium-grid-cols-2">
+                    
+                    <div class="left">
+                      <${Boxscore} vm=${getAwayBoxscoreViewModel} />
+                    </div>
+
+                    <div class="right">
+                      <${Boxscore} vm=${getHomeBoxscoreViewModel} />
+                    </div>
+
+                  </div> 
+                </div>
               </div>
-
-          ` : $h`
-            <div class="block">
-              No game found.
             </div>
-          `}
+          </div>
+        
 
+          <div class="block">
+            <br />
+          </div>
 
-
-      </div>
-
-      <div class="hide-on-pageinit">
-
-        <div class="card skeleton-text">
-            <div class="card-header">Game</div>
-            <div class="card-content card-content-padding data-table">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-                lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
-            </div>
-
+      ` : $h`
+        <div class="block">
+          No game found.
         </div>
-
-      </div>
+      `}
 
     </div>
 
@@ -132,8 +111,6 @@
   import Navbar from "../common/navbar.f7.html"
   import LineScore from "./linescore.f7.html"
   import GameState from "./game-state.f7.html"
-  import GamelogPopup from "./gamelog-popup.f7.html"
-
 
 
   import dayjs from "dayjs"
@@ -432,8 +409,6 @@
       })
 
 
-      $('.hide-on-pageinit').hide()
-      $('.hidden-on-load').removeClass('hidden-on-load')
 
     })
 

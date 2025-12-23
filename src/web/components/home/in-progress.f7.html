@@ -1,44 +1,59 @@
 <template>
 
-  <a href="${universeWebService.startDateLink(`/g/${game._id}`)}">
-    <table class="game-result">
-      <tr>
-        <td colspan="2" class="inning">
-            ${game.isStarted ? $h`
-              
-              ${game.linescoreViewModel.isTopInning ? $h`
-                Top ${game.linescoreViewModel.currentInning}
-              ` : $h`
-                Bottom ${game.linescoreViewModel.currentInning}
-              `}
+  <li>
+      <a href="${universeWebService.startDateLink(`/g/${game._id}`)}" class="item-link">
 
-            ` : $h` `}
-        </td>
-      </tr>
-      <tr class="${game.play?.play.inningTop ? 'at-bat' : ' '}">
-        <td class="name">
-            <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo"/>
-            <span class="small">${game.away.cityName}</span><br />
-            ${game.away.name}
+        <div class="item-content">
+          <div class="item-inner">
 
-          
-        </td>
-        <td class="runs">${game.score.away}</td>
-      </tr>
-      <tr class="${game.play?.play.inningTop ? ' ' : 'at-bat'}">
-        <td class="name">
-            <img src="/image/thumbnail/${game.home.logoId}" class="profilePic"  alt="${game.home.cityName} ${game.home.name} Logo"/>
-            <span class="small">${game.home.cityName}</span><br />
-            ${game.home.name}
-          
-        </td>
-        <td class="runs">${game.score.home}</td>
-      </tr>
+            <table class="game-result">
+              <tr>
+                <td colspan="2" class="inning">
+                    ${game.play.play.inningTop ? $h`
+                      Top ${game.play.play.inningNum}
+                    ` : $h`
+                      Bottom ${game.play.play.inningNum}
+                    `}
 
+                </td>
+              </tr>
+              <tr class="${game.play.play.inningTop ? 'at-bat' : ' '}">
+                <td class="name">
+                  <a href="${universeWebService.startDateLink(`/t/${game.away.tokenId}`)}" class="team-link">
+                    <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo"/>
+                    <span class="small">${game.away.cityName}</span><br />
+                    ${game.away.name}
+                  </a>
 
-    </table>
-  </a>
+                  
+                </td>
+                <td class="runs">${game.score.away}</td>
+              </tr>
+              <tr class="${game.play.play.inningTop ? ' ' : 'at-bat'}">
+                <td class="name">
+                  
+                  <a href="${universeWebService.startDateLink(`/t/${game.home.tokenId}`)}" class="team-link">
+                    <img src="/image/thumbnail/${game.home.logoId}" class="profilePic"  alt="${game.home.cityName} ${game.home.name} Logo"/>
+                    <span class="small">${game.home.cityName}</span><br />
+                    ${game.home.name}
+                  </a>
+                  
+                </td>
+                <td class="runs">${game.score.home}</td>
+              </tr>
 
+              <tr >
+                <td colspan="2" class="summary-matchup">
+                  <strong>P</strong> <a href="${universeWebService.startDateLink(`/p/${game.matchup.pitcher._id}`)}">${game.matchup.pitcher.fullName}</a> <span class="small-gray">${gameWebService.pitcherGameStatsShort(game.matchup.pitcher)}</span><br />
+                  <strong>B</strong> <a href="${universeWebService.startDateLink(`/p/${game.matchup.hitter._id}`)}">${game.matchup.hitter.fullName}</a>  <span class="small-gray">${gameWebService.hitterGameStatsShort(game.matchup.hitter)}</span>
+                </td>
+              </tr>
+
+            </table>
+          </div>
+        </div>
+      </a>
+  </li>
 </template>
 
 

@@ -44,7 +44,7 @@
 
           ${inProgressGame ? $h`
               <div class="block-title block-title-small">In Progress</div>
-              <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
+              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul style="padding: 15px;">
                     <${InProgress} game=${inProgressGame} />
                   </ul>
@@ -54,7 +54,7 @@
 
           <div class="block-title block-title-small">Rewards & Transactions</div>
 
-          <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
+          <div class="list list-outline-ios list-strong-ios list-dividers-ios">
               <ul>
 
                 ${vm.offChainEvents.events.map( oce => $h`
@@ -85,8 +85,8 @@
           ${completedGames?.length > 0 ? $h`
 
               <div class="block-title block-title-small">Recent Games</div>
-              <div class="list list-dividers-ios list-outline-ios list-outline list-strong-ios list-strong">
-                  <ul style="padding: 15px;">
+              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
       
                       ${completedGames.map( game => $h`
                           <${Result} game=${game} />                      

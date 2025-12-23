@@ -602,6 +602,30 @@ let startWebServer = async () => {
 
   })
 
+  app.get("/g/:id/gamelog", async function (req, res) {
+
+      try {
+
+        let gameId = req.params.id
+
+        let game = await gameService.get(gameId)
+
+        await renderIndex(res,{ 
+          twitter: TWITTER,
+          title: `${game.away.cityName ? game.away.cityName : ''} ${game.away.name} @ ${game.home.cityName ? game.home.cityName : ''} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")} Game Log - Ethereum Baseball League`,
+          description: `${game.away.cityName ? game.away.cityName : ''} ${game.away.name} @ ${game.home.cityName ? game.home.cityName : ''} ${game.home.name} on ${dayjs(game.gameDate).format("YYYY-MM-DD")} - Game Log`,
+          VERSION: version,
+          url: req.originalUrl,
+          image: `${process.env.WEB}/ebl-512.png`
+        })
+
+      } catch (ex) {
+        res.sendStatus(500)
+      }
+
+  })
+
+
   app.get("/players/", async function (req, res) {
 
       try {
