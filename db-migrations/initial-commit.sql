@@ -631,6 +631,8 @@ CREATE TABLE `offchain_event` (
 
   `event` varchar(255) DEFAULT NULL,
 
+  `source` json DEFAULT NULL,
+
   `processedEventId` varchar(255) DEFAULT NULL,
 
   `lastUpdated` datetime DEFAULT NULL,
@@ -644,47 +646,6 @@ CREATE TABLE `offchain_event` (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-
-
-
---
--- Table structure for table `game_transaction`
---
-
-DROP TABLE IF EXISTS `game_transaction`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `game_transaction` (
-  `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `seasonId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-
-  `events` json NOT NULL,
-  
-  `signingInfo` json DEFAULT NULL,
-  `links` json NOT NULL,
-  `isFinalized` tinyint(1) NOT NULL,
-
-  `date` datetime NOT NULL,
-
-  `lastUpdated` datetime DEFAULT NULL,
-  `dateCreated` datetime DEFAULT NULL,
-
-  PRIMARY KEY (`_id`),
-  KEY `seasonId` (`seasonId`),
-
-  INDEX leagueIds( (CAST(links->'$.leagueIds' AS UNSIGNED ARRAY)) ),
-  INDEX teamIds( (CAST(links->'$.teamIds' AS UNSIGNED ARRAY)) ),
-  INDEX playerIds( (CAST(links->'$.playerIds' AS UNSIGNED ARRAY)) ),
-  CONSTRAINT `gt_ibfk_1` FOREIGN KEY (`seasonId`) REFERENCES `season` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
-
-
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-
-
 
 
 

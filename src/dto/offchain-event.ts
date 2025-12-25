@@ -1,6 +1,6 @@
 import {Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryKey, Index, ForeignKey, BelongsTo, AllowNull, BelongsToMany } from 'sequelize-typescript'
-import { Game } from './game.js'
 import { Player } from './player.js'
+import { OffChainEventSource } from '../service/enums.js'
 // import { ProcessedEvent } from './processed-transaction.js'
 
 
@@ -29,7 +29,6 @@ class OffchainEvent extends Model {
     @Column(DataType.STRING)
     declare toAddress?:string
 
-
     @Column(DataType.STRING)
     declare fromTeamId?:string
 
@@ -38,6 +37,9 @@ class OffchainEvent extends Model {
     
     @Column(DataType.STRING)
     declare event?:string 
+
+    @Column(DataType.STRING)
+    declare source?:OffChainEventSource
 
     @Index
     @ForeignKey(() => Player)
@@ -55,6 +57,7 @@ class OffchainEvent extends Model {
     declare dateCreated?:Date
 
 }
+
 
 export {
     OffchainEvent

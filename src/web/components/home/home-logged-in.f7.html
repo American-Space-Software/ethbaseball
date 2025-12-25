@@ -52,34 +52,38 @@
           ` : $h` `}
 
 
-          <div class="block-title block-title-small">Rewards & Transactions</div>
+          ${vm.offchainEvents?.events?.length > 0 ? $h`
 
-          <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-              <ul>
+            <div class="block-title block-title-small">Rewards & Transactions</div>
+            <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                <ul>
 
-                ${vm.offChainEvents.events.map( oce => $h`
-                  <li>
-                    <div class="item-content">
-                        <div class="item-media">
-                            <i class="f7-icons">plus_square_fill</i>
-                        </div>
-                        <div class="item-inner">
+                  ${vm.offChainEvents.events.map( oce => $h`
+                    <li>
+                      <div class="item-content">
+                          <div class="item-media">
+                              <i class="f7-icons">plus_square_fill</i>
+                          </div>
+                          <div class="item-inner">
 
-                            <div class="item-title">
-                              ${getOffChainDescription(oce)}
-                              <div class="item-footer">${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}</div>
-                            </div>
+                              <div class="item-title">
+                                ${getOffChainDescription(oce)}
+                                <div class="item-footer">${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}</div>
+                              </div>
 
-                            <div class="item-after">
-                                ${getOffChainAmount(oce)}
-                            </div>
-                        </div>
-                    </div>
-                  </li>                          
-                `)}
+                              <div class="item-after">
+                                  ${getOffChainAmount(oce)}
+                              </div>
+                          </div>
+                      </div>
+                    </li>                          
+                  `)}
 
-              </ul>
-          </div>
+                </ul>
+            </div>
+
+          ` : $h` `}
+
 
 
           ${completedGames?.length > 0 ? $h`
@@ -169,7 +173,7 @@
     
     let completedGames = props.completedGames
     let inProgressGame = props.inProgressGame
-
+    console.log(vm)
     const getOffChainDescription = (oce) => {
         return offChainEventWebService.getOffChainDescription(oce)
     }

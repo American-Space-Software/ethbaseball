@@ -52,17 +52,14 @@
                     <ul>
                         <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">📝 Activity</a></li>
                         <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>   
+
+                        ${games?.length > 0 ? $h`
+                            <a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> 
+                        ` : $h` `}
+
                     </ul>
                 </div>
 
-                <div class="block-title block-title-medium">Recent Games</div>
-                <div class="block block-outline block-strong">
-                    <${ResultTable} logs="${games}" _id=${teamComponentService.team._id} />
-
-                    ${games?.length > 0 ? $h`
-                         <a class="button button-outline small-button" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">All Games</a> 
-                    ` : $h` `}
-                </div>
 
                 <div class="block-title block-title-medium">Lineup</div>
 

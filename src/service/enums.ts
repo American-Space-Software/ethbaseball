@@ -1343,9 +1343,13 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
   'pitching.wpa':             'CAST(stats->>"$.pitching.wpa" AS DECIMAL(10,3))',
 }
 
+interface OffChainEventSource {
+    type:string
+    fromDate:Date
+}
 
 
-export  { PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+export  { OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimPitchCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

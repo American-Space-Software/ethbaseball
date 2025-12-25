@@ -457,29 +457,18 @@ class GameWebService {
 
         const gamePlayers = this.gamePlayers(game)
         
-        // const hitter:GamePlayer = gamePlayers[play.hitterId]
-        // const pitcher:GamePlayer = gamePlayers[play.pitcherId]
-
-        // const pitcherName =
-        //     pitcher ? `${pitcher.firstName ?? ""} ${pitcher.lastName ?? ""}`.trim() : "the starter"
-
-
-
-        // const hitterName =
-        //     hitter ? `${hitter.firstName ?? ""} ${hitter.lastName ?? ""}`.trim() : "the leadoff hitter"
-
 
         // Infer the *other* starter by team
         const awayPitcher:GamePlayer = 
             Object.values(gamePlayers).find(
                 (p: GamePlayer) =>
-                    p.teamId === game.away._id && p.currentPosition === Position.PITCHER
+                    p._id == game.away.currentPitcherId
             ) as GamePlayer
 
         const homePitcher:GamePlayer =
             Object.values(gamePlayers).find(
                 (p: GamePlayer) =>
-                    p.teamId === game.home._id && p.currentPosition === Position.PITCHER
+                    p._id == game.home.currentPitcherId
             ) as GamePlayer
 
 
@@ -499,12 +488,6 @@ class GameWebService {
             type: PlayDescriptionType.RECAP,
             text: `${homePitcher.fullName} gets the start for ${homeName}.`
         })
-
-        // // 3) Leadoff hitter
-        // descriptions.push({
-        //     type: PlayDescriptionType.RECAP,
-        //     text: `${hitterName} will lead it off for ${awayName}.`
-        // })
 
 
         return descriptions
@@ -1706,20 +1689,30 @@ class GameWebService {
         })
     }
 
-    //from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
     useDarkFont(bgColor) {
 
-        const hexCode = bgColor.charAt(0) === '#' 
-                            ? bgColor.substr(1, 6)
-                            : bgColor;
+        const hex = (bgColor || '')
+            .replace('#', '')
+            .toLowerCase()
 
-        const hexR = parseInt(hexCode.substr(0, 2), 16)
-        const hexG = parseInt(hexCode.substr(2, 2), 16)
-        const hexB = parseInt(hexCode.substr(4, 2), 16)
-        // Gets the average value of the colors
-        const contrastRatio = (hexR + hexG + hexB) / (255 * 3)
+        if (!/^[0-9a-f]{6}$/.test(hex)) return false
 
-        return contrastRatio >= 0.5
+        const r = parseInt(hex.slice(0, 2), 16) / 255
+        const g = parseInt(hex.slice(2, 4), 16) / 255
+        const b = parseInt(hex.slice(4, 6), 16) / 255
+
+        const toLinear = c =>
+            c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+
+        const luminance =
+            0.2126 * toLinear(r) +
+            0.7152 * toLinear(g) +
+            0.0722 * toLinear(b)
+
+        const contrastBlack = (luminance + 0.05) / 0.05
+        const contrastWhite = 1.05 / (luminance + 0.05)
+
+        return contrastBlack >= contrastWhite
 
     }
 

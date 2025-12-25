@@ -38,6 +38,8 @@
 
   --bottom-bar-h: clamp(220px, 40vh, 420px);
   --field-top-ui: 160px; 
+  --runner-defender-width: 90px;
+  --runner-defender-image-width: 30px;
 }
 
 .logo {
@@ -120,6 +122,8 @@ html {
   width: 50px;
   height: 50px;
   background: white;
+  border-radius: 50%;
+
 }
 
 .dark .matchup img {
@@ -165,30 +169,46 @@ html {
   padding-top: 0px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
+
+.bottom-bar .messages-action {
+  position: absolute;
+  right: 25px;
+  bottom: 12px;
+  z-index: 1000;
+}
+
+
 
 .ios .messages {
   padding-bottom: 0px;
 }
 
 .at-bat-ended {
-  height: 250px;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+
+  bottom: calc(var(--bottom-bar-h) + 12px);
+
   width: 250px;
   max-width: 90%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  position: absolute;
+
+  max-height: calc(100dvh - var(--bottom-bar-h) - 24px);
+  height: min(250px, calc(100dvh - var(--bottom-bar-h) - 24px));
+
+  z-index: 20000;
   display: none;
   font-size: .7em;
+  color: white;
 }
 
 .at-bat-ended .card {
   width: 100%;
   height: 100%;
+  max-height: inherit;
   margin: 0;
-  background: unset;
 }
 
 .at-bat-ended .card::before {
@@ -333,6 +353,8 @@ h1 {
   .large-only-flex {
     display: none;
   }
+
+  
 
 }
 
@@ -927,11 +949,17 @@ h1 {
   position: relative;
   height: 100%;
   overflow: hidden;
-
   box-sizing: border-box;
-
   padding-bottom: var(--bottom-bar-h);
 }
+
+.game-complete-page .game-state {
+  overflow: unset;
+  justify-content: left;
+  height: unset;
+  background: unset;
+}
+
 
 .game-state .game-main {
   flex: 1 1 100%;
@@ -1042,36 +1070,48 @@ h1 {
 .game-state .game-info {
   position: relative;
   width: 100%;
-  aspect-ratio: 650 / 500; 
-  max-height: calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui));
-  margin-bottom: 0; 
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: visible;
 }
 
-.game-state .game-info > img{
+.game-state .game-info .field-layer {
+  position: relative;
+  width: min(100%, calc((min(calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui)), 500px)) * (650 / 500)));
+  height: min(calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui)), 500px);
+  aspect-ratio: 650 / 500;
+  margin: 0 auto;
+}
+
+.game-state .game-info .field-layer > img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
+  object-position: center;
   display: block;
-  object-fit: contain;   
-  object-position: center;  
 }
 
-.game-state .game-info .defender {
-  width: 15%;
-  min-width: 15%;
-  max-width: 15%;
-  position: absolute;
-}
-
+.game-state .game-info .defender,
 .game-state .game-info .runner {
-  width: 15%;
-  min-width: 15%;
-  max-width: 15%;
   position: absolute;
+  width: var(--runner-defender-width);
+  min-width: var(--runner-defender-width);
+  max-width: var(--runner-defender-width);
+  display: flex;
+  align-content: center;
+  flex-wrap: wrap;
 }
 
-.game-state .game-info .runner .image, .game-state .game-info .defender .image {
+.game-state .game-info .defender .wrapper,
+.game-state .game-info .runner .wrapper {
+  flex: 1 1 100%;
+  overflow: hidden;
+}
+
+.game-state .game-info .runner .image,
+.game-state .game-info .defender .image {
   width: 100%;
   height: 25px;
   display: flex;
@@ -1079,19 +1119,24 @@ h1 {
   margin-top: 2px;
 }
 
-.game-state .game-info .runner img, .game-state .game-info .defender img {
+.game-state .game-info .runner img,
+.game-state .game-info .defender img {
   width: 22px;
   height: 22px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid #cccccc;
+  border-radius: 50%;
+
 }
 
-.dark .game-state .game-info .runner img, .dark .game-state .game-info .defender img {
+.dark .game-state .game-info .runner img,
+.dark .game-state .game-info .defender img {
   background: black;
   border: 1px solid black;
 }
 
-.game-state .game-info .defender .text, .game-state .game-info .runner .text {
+.game-state .game-info .defender .text,
+.game-state .game-info .runner .text {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -1100,16 +1145,25 @@ h1 {
   font-size: 12px;
   font-weight: bold;
   display: block;
-  padding: 3px;
+  width: 100%;
 }
 
 .game-state .game-info .hitter {
-  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: calc(var(--runner-defender-width) + 30px);
+  min-width: calc(var(--runner-defender-width) + 30px);
+  max-width: calc(var(--runner-defender-width) + 30px);
 }
 
 .game-state .game-info .hitter .wrapper {
-  width: 100%;
-  min-width: 100%;
+  flex: 0 0 90px;
+  min-width: 0;
+}
+
+.game-state .game-info .hitter .image {
+  flex: 0 0 30px;
+  width: 30px;
 }
 
 .game-state .game-info .hitter.lhb .image {
@@ -1125,180 +1179,211 @@ h1 {
 }
 
 .game-state .game-info .hitter.rhb .text {
-  flex: 1;
+  width: 100%;
 }
 
-.game-state .game-info .defender .game-stats, .game-state .game-info .runner .game-stats {
+.game-state .game-info .defender .game-stats,
+.game-state .game-info .runner .game-stats {
   color: #f1f1f1;
   background: #757575;
   font-size: 10px;
   padding: 2px;
   font-weight: bold;
+  text-wrap: nowrap;
 }
 
 .game-state .game-info .defender.p {
-  top:52%; 
-  right: 41.9%; 
+  top: 53%;
+  right: 42.4%;
 }
 
 .game-state .game-info .defender.c {
-  top:88%; 
-  right: 41.8%; 
+  top: 88%;
+  right: 42.4%;
+}
+
+.game-state .game-info .runner .image img {
+  background: #ddff1b;
 }
 
 .game-state .game-info .runner.hitter {
-  top:81.5%; 
+  top: 81.5%;
 }
 
 .game-state .game-info .runner.rhb {
-  right: 51.3%;
+  right: 51.7%;
 }
 
 .game-state .game-info .runner.lhb {
-  right: 32.5%;
+  right: 28.9%;
 }
 
 .game-state .game-info .runner.firstBase {
-  top:60%; 
+  top: 60%;
   right: 24%;
 }
 
 .game-state .game-info .defender.firstBase {
-  top:39%; 
+  top: 39%;
   right: 22%;
 }
 
 .game-state .game-info .runner.secondBase {
-  top:36.5%; 
-  right: 42%;
+    top: 28.5%;
+    right: 42.4%;
+    z-index: 5;
 }
 
 .game-state .game-info .defender.secondBase {
-  top:18%; 
+  top: 18%;
   right: 29%;
 }
 
 .game-state .game-info .runner.thirdBase {
-  top:59%; 
-  right: 59.5%;
+  top: 59%;
+  right: 60.6%;
 }
 
 .game-state .game-info .defender.thirdBase {
-  top:39%; 
+  top: 39%;
   right: 59%;
 }
 
 .game-state .game-info .defender.ss {
-  top:18%; 
+  top: 18%;
   right: 54%;
 }
 
 .game-state .game-info .defender.lf {
-  top:6%; 
+  top: 6%;
   right: 75%;
 }
 
 .game-state .game-info .defender.cf {
-  top:1%; 
-  right: 41.8%; 
+  top: 1%;
+  right: 42.4%;
 }
 
 .game-state .game-info .defender.rf {
-  top:6%; 
+  top: 6%;
   right: 5%;
 }
-/* <=1024: layout only (NO per-position overrides here) */
+
+@media (min-width: 1025px) {
+  :root {
+    --bottom-bar-h: clamp(210px, 18vh, 270px);
+  }
+
+  .at-bat-ended {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    height: 250px;
+  }
+
+  .game-state .game-info .field-layer {
+    height: min(calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui)), 650px);
+    width: min(100%, calc((min(calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui)), 650px)) * (650 / 500)));
+  }
+}
+
 @media only screen and (max-width: 1024px) {
-  .ios .messages { /* width: 100%; */ }
-  .game-state { width: 100%; max-width: 100%; overflow: hidden; }
-  .game-state .left,
-  .game-state .right,
-  .game-state .center { width: 100%; }
-  .game-state .left,
-  .game-state .right { display: none; }
-  .game-state .middle { flex: 0 0 100%; width: 100%; }
-}
 
-/* iPhone SE (375×667) */
-@media (max-width: 375px) and (max-height: 667px) {
-  :root { --field-top-ui: 160px; }
+  .game-state .game-info .runner,   .game-state .game-info .defender {
+    
+    width: var(--runner-defender-image-width);
+    min-width: var(--runner-defender-image-width);
+    max-width: var(--runner-defender-image-width);
+  } 
 
-  .game-state .game-info {
-    aspect-ratio: 650 / 500;
-    height: auto;
-    max-height: calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui));
+  .game-state .game-info .runner .wrapper,   .game-state .game-info .defender .wrapper {
+    display: none;
+  } 
+
+
+  .game-state .game-info .hitter {
+    flex-wrap: nowrap;
+    align-items: center;
+    width: var(--runner-defender-image-width);
+    min-width: var(--runner-defender-image-width);
+    max-width: var(--runner-defender-image-width);
   }
 
-  .game-state .game-info > img {
-    object-fit: contain;
+
+  .game-state .left .content,
+  .game-state .right .content { display: none; }
+
+  .bottom-bar .messages-action {
+    right: 12px;
+    bottom: 12px;
   }
 
-  .game-state .game-info .runner.hitter { top: 79%; }
-  .game-state .game-info .runner.rhb { right: 44%; }
-  .game-state .game-info .runner.secondBase { top: 20%; }
-  .game-state .game-info .defender.p { top: 57%; }
-
-  .game-state .game-info .defender.firstBase { top: 49%; right: 22%; }
-  .game-state .game-info .defender.secondBase { top: 28%; right: 29%; }
-  .game-state .game-info .defender.thirdBase { top: 49%; right: 59%; }
-  .game-state .game-info .defender.ss { top: 28%; right: 54%; }
-}
-
-/* Tall phones (XR / Pixel / 14 Pro Max class): height-driven field */
-@media (max-width: 450px) and (min-height: 800px) {
-  .game-state .game-info {
-    aspect-ratio: auto;
-    height: calc(100dvh - var(--bottom-bar-h) - var(--field-top-ui) - 40px);
-    max-height: none;
+  .game-state .game-info .runner.secondBase {
+      top: 35.5%;
+      right: 46%;
   }
 
-  .game-state .game-info > img {
-    object-fit: cover;
+  .game-state .game-info .runner.firstBase {
+    right: 28%;
   }
-}
 
-/* iPhone XR / general tall phones: smaller effective top deduction */
-@media (min-width: 376px) and (max-width: 430px) and (min-height: 760px) {
-  :root { --field-top-ui: 110px; }
-}
+  .game-state .game-info .runner.thirdBase {
+    right: 64.5%;
+  }
 
-/* iPhone 12 / 13 / 14 Pro class */
-@media (min-width: 390px) and (max-width: 430px) and (min-height: 800px) and (max-height: 920px) {
-  .game-state .game-info .runner.hitter { top: 82%; }
-  .game-state .game-info .defender.p { top: 61%; }
-  .game-state .game-info .runner.lhb { right: 33.5%; }
-  .game-state .game-info .runner.secondBase { top: 25%; z-index: 1000; }
 
-  .game-state .game-info .defender.c { top: 90%; right: 41.8%; }
+  .game-state .game-info .defender.p {
+    top: 60%;
+    right: 46%;
+  }
 
-  .game-state .game-info .defender.firstBase { top: 51%; right: 22%; }
-  .game-state .game-info .defender.secondBase { top: 30%; right: 29%; }
-  .game-state .game-info .defender.thirdBase { top: 51%; right: 59%; }
-  .game-state .game-info .defender.ss { top: 30%; right: 54%; }
 
-  .game-state .game-info .defender.lf { top: 8%; right: 72%; }
-  .game-state .game-info .defender.cf { top: 3%; right: 41.8%; }
-  .game-state .game-info .defender.rf { top: 8%; right: 13%; }
-}
 
-/* iPhone 14 Pro Max */
-@media (min-width: 428px) and (max-width: 432px) and (min-height: 920px) {
-  .game-state .game-info .runner.hitter { top: 82%; }
-  .game-state .game-info .defender.p { top: 61%; }
-  .game-state .game-info .runner.rhb { right: 42.8%; }
-  .game-state .game-info .runner.lhb { right: 33.5%; }
-  .game-state .game-info .runner.secondBase { top: 25%; z-index: 1000; }
+  .game-state .game-info .defender.c {
+    right: 46%;
+  }
 
-  .game-state .game-info .defender.c { top: 90%; right: 41.8%; }
 
-  .game-state .game-info .defender.firstBase { top: 51%; right: 22%; }
-  .game-state .game-info .defender.secondBase { top: 30%; right: 29%; }
-  .game-state .game-info .defender.thirdBase { top: 51%; right: 59%; }
-  .game-state .game-info .defender.ss { top: 30%; right: 54%; }
 
-  .game-state .game-info .defender.lf { top: 8%; right: 72%; }
-  .game-state .game-info .defender.cf { top: 3%; right: 41.8%; }
-  .game-state .game-info .defender.rf { top: 8%; right: 15%; }
+  .game-state .game-info .defender.firstBase {
+    top: 46%;
+    right: 27%;
+  }
+
+
+  .game-state .game-info .defender.secondBase {
+    top: 24%;
+    right: 34%;
+  }
+
+  .game-state .game-info .defender.thirdBase {
+    top: 46%;
+    right: 63%;
+  }
+
+  .game-state .game-info .defender.ss {
+    top: 24%;
+    right: 59%;
+  }
+
+
+
+  .game-state .game-info .defender.cf {
+    right: 46%;
+  }
+
+  .game-state .game-info .defender.rf {
+    right: 10%;
+  }
+
+  .game-state .game-info .defender.lf {
+    right: 80%;
+  }
+
+  .game-state .game-info .runner.lhb {
+      right: 41.9%;
+  }
+  
 }
 
 
@@ -1405,7 +1490,6 @@ h1 {
 }
 
 .game-state .lineup {
-  font-size: 11px;
   width: 100%;
   /* background: var(--f7-card-bg-color); */
   display: block;
@@ -1426,6 +1510,11 @@ h1 {
   white-space: nowrap;
 }
 
+.game-state .lineup img {
+  border-radius: 50%;
+
+}
+/* 
 .game-state .lineup.home {
   right:2%;
   top: 62%;
@@ -1442,7 +1531,7 @@ h1 {
 
 .game-state .play {
   font-size: .7em;
-} 
+}  */
 
 .game-summary {
   flex: 1 1 100%;
@@ -1499,27 +1588,27 @@ h1 {
   display: flex;
   background: var(--f7-card-bg-color);
   flex-wrap: wrap;
-  height: 67px;
+  height: auto;
   padding-top: 5px;
 }
 
-.game-banner .away {
-  flex: 1;
+.game-banner .away,
+.game-banner .home {
+  flex: 0 0 50%;
+  max-width: 50%;
   display: flex;
   padding: 5px;
+  box-sizing: border-box;
 }
+
 
 .game-banner .linescore-wrapper {
-  flex: 0 0 475px;
-  max-width: 475px;
+  flex: 0 0 100%;
+  max-width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
-.game-banner .home {
-  flex: 1;
-  display: flex;
-  padding: 5px;
-}
 
 .game-banner .name {
   flex: 0 0 70%;
@@ -1624,17 +1713,11 @@ h1 {
     margin-bottom: 5px;
   }
 
-  .boxscores {
+  /* .boxscores {
     display: block;
-  }
+  } */
 
-  .boxscores .left {
-    width: 100%;
-  }
-  
-  .boxscores .right {
-    width: 100%;
-  }
+
 }
 
 .game-id {
@@ -2364,6 +2447,7 @@ td.diamonds {
   min-width: 175px;
 }
 
+
 .boxscores .name {
   width: 200px;
   min-width: 200px;
@@ -2701,3 +2785,6 @@ td.action, th.action {
   margin-bottom: 5px;
   font-size: .90em;
 }
+
+
+

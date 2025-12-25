@@ -4,7 +4,7 @@ import { Owner } from "../../dto/owner.js";
 import { OffchainEvent } from "../../dto/offchain-event.js";
 import { OffchainEventRepository } from "../../repository/offchain-event-repository.js";
 import { v4 as uuidv4 } from 'uuid';
-import { ContractType, TeamSeasonId } from "../enums.js";
+import { ContractType, OffChainEventSource, TeamSeasonId } from "../enums.js";
 import { Season } from "../../dto/season.js";
 import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 import { TeamLeagueSeasonService } from "./team-league-season-service.js";
@@ -53,7 +53,7 @@ class OffchainEventService {
         await this.put(offChainEvent, options)
     }
 
-    async createTeamMintEvent(toTeamId:string, amount:string, options?:any) {
+    async createTeamMintEvent(toTeamId:string, amount:string, source:OffChainEventSource, options?:any) {
 
         if (BigInt(amount) <= 0) throw new Error("Mint amount can not be negative.")
 

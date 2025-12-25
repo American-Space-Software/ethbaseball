@@ -180,6 +180,12 @@ async function getContainer(env, footerRoutes) {
                 hideOnPageScroll: true
             },
 
+            popover: {
+                closeByBackdropClick: true,
+                closeByOutsideClick: true,
+                closeOnEscape: true
+            }
+
         })
     
     }
