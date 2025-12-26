@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 
-import { Colors, DiamondMintPass, FinanceSeason, Lineup, RotationPitcher, Team, TEAM_COLORS } from "../../dto/team.js";
+import { Colors, DiamondMintPass, FinanceSeason, Lineup, OverallRecord, RotationPitcher, Team, TEAM_COLORS } from "../../dto/team.js";
 import { TeamRepository } from "../../repository/team-repository.js";
 
 import { Player } from "../../dto/player.js";
@@ -704,7 +704,6 @@ n
         return startingPitcher
     }
 
-
     getNextStartDate(team: Team): Date {
 
         let mostRecentStartDate: Date = team.lastGamePlayed
@@ -804,28 +803,6 @@ n
 
     async fillAndValidateRoster(tls: TeamLeagueSeason, roster: PlayerLeagueSeason[], season: Season, date: Date, minimumOnly: boolean, options?: any) {
 
-        //Remove unrostered players from the lineup and rotation. Shouldn't be here...but they are sometimes.
-        // for (let spot of tls.lineups[0].order) {
-        //     if (!roster.map( p => p.playerId).includes(spot._id)) {
-        //         delete spot._id
-        //         if (spot.position != Position.PITCHER) {
-        //             delete spot.position
-        //         }
-        //     }
-        // }
-
-        // for (let spot of tls.lineups[0].rotation) {
-        //     if (!roster.map( p => p.playerId).includes(spot._id)) {
-        //         delete spot._id
-        //     }
-        // }
-
-        // //Force spot 9 to be the pitcher without an ID
-        // tls.lineups[0].order[8]= {
-        //     position: Position.PITCHER
-        // }
-
-
         let added = {
             players:[],
             plss:[]
@@ -841,17 +818,6 @@ n
 
 
         let fillCount=0
-
-        // const updateFinances = async (team, season, options) => {
-
-        //     let updatedRoster:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-
-        //     //Recalculate finances.
-        //     let tlsPlain = tls.get({ plain: true })
-        //     // let projectedPayrollTotal = this.financeService.calculateProjectedPayroll(updatedRoster.map(r => r.get({ plain: true })))
-        //     this.financeService.setFinancialProjections(tls, tlsPlain.league, tlsPlain.city, tlsPlain.stadium)
-
-        // }
 
 
         for (let position of shuffled) {
@@ -1005,8 +971,6 @@ n
 
     }
 
-
-
     async dropPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date) {
 
         let s = await this.sequelize()
@@ -1067,24 +1031,24 @@ n
 
     }
 
+    async updateSeasonRecord(team:Team, season:Season, options?:any) : Promise<OverallRecord> {
+
+        let result = await this.getOverallRecordBySeason(team, season, options)
+
+        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+
+        tls.overallRecord = JSON.parse(JSON.stringify(result.overallRecord))
+        tls.changed("overallRecord", true)
+
+        await this.teamLeagueSeasonService.put(tls, options)
+
+        return tls.overallRecord
+
+    }
     
 
 }
 
-interface TokenMintInfo {
-    error?:string
-    eth?:MintInfo
-    diamonds?:MintInfo
-}
-
-interface MintInfo {
-
-    revenueWithMultiplier: string,
-    totalDiamonds?: string
-
-    tokenId:number
-    ethCost?:string
-}
 
 interface TeamViewModel {
 

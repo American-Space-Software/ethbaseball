@@ -163,6 +163,7 @@ class TeamLeagueSeasonService {
         return this.teamLeagueSeasonRepository.getByTeamSeasonIds(tokenSeasonIds, options)
     }
 
+
 }
 
 export {

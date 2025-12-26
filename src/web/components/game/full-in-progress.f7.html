@@ -367,8 +367,9 @@
 
       await $update()
 
-      if (game.isStarted) {
-        $f7.preloader.hide()
+
+      if (game.isComplete) {
+        $f7.views.main.router.refreshPage()
       }
 
       

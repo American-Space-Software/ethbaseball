@@ -31,7 +31,7 @@
 
           <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
               <ul>
-                  <li><a class="link" href="/t/index/${vm.team._id}">✏️ Set Lineup</a></li>
+                  <li><a class="link" href="/t/index/${vm.team._id}">👥 Manage Team</a></li>
 
                   ${!inProgressGame ? $h`
                     <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
@@ -45,16 +45,16 @@
           ${inProgressGame ? $h`
               <div class="block-title block-title-small">In Progress</div>
               <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul style="padding: 15px;">
+                  <ul>
                     <${InProgress} game=${inProgressGame} />
                   </ul>
               </div>
           ` : $h` `}
 
 
-          ${vm.offchainEvents?.events?.length > 0 ? $h`
+          <div class="block-title block-title-small">Daily Rewards & Transactions</div>
+          ${vm.offChainEvents?.events?.length > 0 ? $h`
 
-            <div class="block-title block-title-small">Rewards & Transactions</div>
             <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                 <ul>
 
@@ -82,7 +82,11 @@
                 </ul>
             </div>
 
-          ` : $h` `}
+          ` : $h`
+            <div class="block block-outline block-strong">
+              No rewards yet. Play at least one game each day to earn rewards.
+            </div>          
+          `}
 
 
 

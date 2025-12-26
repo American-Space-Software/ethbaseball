@@ -937,28 +937,8 @@ let startWebServer = async () => {
 
       let startDate = dayjs(req.params.startDate).toDate()
       let season: Season = await seasonService.getByDate(startDate)
-      // let leagueOne:League = await leagueService.getByRank(1)
 
-      // let tlss: TeamLeagueSeason[] = await teamLeagueSeasonService.listByLeagueAndSeason(leagueOne, season, { limit: 10 })
-
-      // let featuredPost:Post = await postService.getFeatured()
-
-
-
-
-      let vm = {
-        // featuredPost: featuredPost,
-        // todaysGames: await gameService.getGames(universe.currentDate, leagueOne),
-        // onChainTransactions: await processedTransactionService.listWithEvents({ limit: 10, offset: 0 }),
-        // topTeams: tlss.map((t, index) => {
-        //   t = t.get({ plain: true })
-        //   return teamService.getTeamStandingsViewModel(t, index + 1)
-        // }
-    // ),
-        // topNews:[]
-      }
-
-
+      let vm = {}
 
       //@ts-ignore
       let userId = req.session?.passport?.user

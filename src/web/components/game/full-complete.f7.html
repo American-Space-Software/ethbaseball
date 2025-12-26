@@ -9,6 +9,8 @@
 
           <div class="game-state">
 
+            <div class="block-title">Final Score</div>
+
             <div class="game-banner">
 
                 <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
@@ -45,7 +47,6 @@
                   </div>
                   
                 </div>
-
 
                 <div class="linescore-wrapper">
                   <table class="linescore">
@@ -212,11 +213,10 @@
     })
 
 
-    return () => $h`<div class="card">
-        <div class="card-header">${teamWebService.getTeamName(vm.teamInfo)}</div>
-        <div class="card-content">
+    return () => $h`<div class="block block-outline block-strong">
+        <div class="block-header">${teamWebService.getTeamName(vm.teamInfo)}</div>
 
-            <div class="stat-table-wrapper">
+          <div class="stat-table-wrapper">
                 <table class="data-table small-font game-table">
                 <thead>
                     <tr>
@@ -315,7 +315,6 @@
                 ${rbi?.length > 0 ? $h`<strong>RBI:</strong> ${arrayToStr(rbi)}<br />` : $h``}
             </div>
 
-        </div>
     </div>`;
 
 

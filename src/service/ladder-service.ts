@@ -289,12 +289,10 @@ class LadderService {
     async finishGame(game:Game, options?:any) {
 
         let season:Season = await this.seasonService.get(game.seasonId, options)
-
-        let home:Team = await this.teamService.get(game.home._id, options)
+        
         let away:Team = await this.teamService.get(game.away._id, options)
+        let home:Team = await this.teamService.get(game.home._id, options)
 
-        let homeTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
-        let awayTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
 
         let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
         let plssIds = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
@@ -305,21 +303,15 @@ class LadderService {
 
         await this.gameService.put(game, options)
 
-        let homeOverallRecord = await this.teamService.getOverallRecordBySeason(home, season, options)
-        let awayOverallRecord = await this.teamService.getOverallRecordBySeason(away, season, options)
 
-        game.home.overallRecord.after = JSON.parse(JSON.stringify(homeOverallRecord.overallRecord))
-        game.away.overallRecord.after = JSON.parse(JSON.stringify(awayOverallRecord.overallRecord))
+        let homeRecord = await this.teamService.updateSeasonRecord(home, season, options)
+        let awayRecord = await this.teamService.updateSeasonRecord(away, season, options)
+
+        game.home.overallRecord.after = JSON.parse(JSON.stringify(homeRecord))
+        game.away.overallRecord.after = JSON.parse(JSON.stringify(awayRecord))
 
         game.changed("away", true)
         game.changed("home", true)
-
-        homeTLS.overallRecord = JSON.parse(JSON.stringify(game.home.overallRecord.after))
-        awayTLS.overallRecord = JSON.parse(JSON.stringify(game.away.overallRecord.after))
-
-        homeTLS.changed("overallRecord", true)
-        awayTLS.changed("overallRecord", true)
-
 
         //Update results for players
         let ghr:GameHitResult[] = []
@@ -335,17 +327,6 @@ class LadderService {
 
         await this.playerLeagueSeasonService.updateGameFields(plss, options)
         await this.playerService.updateGameFields(players, options)
-
-
-        for (let tls of [homeTLS, awayTLS]) {
-            await this.teamLeagueSeasonService.put(tls, options)
-        }
-
-        for (let team of [home, away]) {
-            await this.teamService.put(team, options)
-        }
-
-
 
     }
 
