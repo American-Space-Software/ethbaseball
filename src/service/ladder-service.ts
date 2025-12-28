@@ -82,7 +82,7 @@ class LadderService {
 
             let logDate = dayjs(universe.currentDate).format("YYYY/MM/DD")
 
-            console.log(`Running game runner (${logDate})...`)
+            console.time(`Running game runner (${logDate})...`)
 
             if (this.isDateBeforeOrEqualToToday(universe.currentDate)) {
 
@@ -95,7 +95,6 @@ class LadderService {
                     //Play games
                     gameIds.push(...await this.processGames(leagues, universe.currentDate, options))
                     
-        
                     //Check if we've moved past universe.currentDate AND that all games from that day have ended.
                     if (this.isDateBeforeToday(universe.currentDate)) {
 
@@ -212,6 +211,9 @@ class LadderService {
                 
             }
 
+            console.timeEnd(`Running game runner (${logDate})...`)
+
+
         })
 
         return gameIds
@@ -293,7 +295,6 @@ class LadderService {
         let away:Team = await this.teamService.get(game.away._id, options)
         let home:Team = await this.teamService.get(game.home._id, options)
 
-
         let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
         let plssIds = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
 
@@ -302,7 +303,6 @@ class LadderService {
         this.gameService.finishGame(game, players, plss)
 
         await this.gameService.put(game, options)
-
 
         let homeRecord = await this.teamService.updateSeasonRecord(home, season, options)
         let awayRecord = await this.teamService.updateSeasonRecord(away, season, options)

@@ -11,6 +11,7 @@ import { Owner } from "../../dto/owner.js"
 import { TeamSeasonId, TokenSeasonId } from "../../service/enums.js"
 import { Op } from "sequelize"
 import { User } from "../../dto/user.js"
+import { Sequelize } from "sequelize-typescript"
 
 
 
@@ -190,26 +191,40 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
     }
 
 
-
     async listByLeagueAndSeason(league: League, season: Season, options?: any): Promise<TeamLeagueSeason[]> {
 
-        let query = {
+        const tlsAlias = TeamLeagueSeason.name
 
+        let query = {
             where: {
                 seasonId: season._id,
                 leagueId: league._id,
+
+                [Op.and]: [
+                    Sequelize.literal(`
+                        EXISTS (
+                            SELECT 1
+                            FROM game_team gt
+                            JOIN game g ON g._id = gt.gameId
+                            WHERE gt.teamId = \`${tlsAlias}\`.\`teamId\`
+                            AND g.seasonId = :seasonId
+                            AND g.isComplete = 1
+                        )
+                    `)
+                ]
+            },
+            replacements: {
+                seasonId: season._id
             },
             order: [
                 ['longTermRating.rating', 'desc'],
-                ['seasonRating.rating', 'desc'],
+                ['seasonRating.rating', 'desc']
             ],
             include: [Team, League, Season, City, Stadium]
-
         }
 
         return TeamLeagueSeason.findAll(Object.assign(query, options))
     }
-
 
     async listBySeason(season: Season, options?: any): Promise<TeamLeagueSeason[]> {
 

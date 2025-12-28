@@ -16,6 +16,8 @@ import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import { SeasonService } from "./season-service.js"
 import { Season } from "../../dto/season.js"
 import { Team } from "../../dto/team.js"
+import { PlayerService } from "./player-service.js"
+import { Player } from "../../dto/player.js"
 
 @injectable()
 class ProcessedTransactionService {
@@ -25,6 +27,7 @@ class ProcessedTransactionService {
 
     constructor(
         private teamService:TeamService,
+        private playerService:PlayerService,
         private seasonService:SeasonService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private ownerService:OwnerService,
@@ -179,17 +182,8 @@ class ProcessedTransactionService {
 
         let transactions = await this.getByIds( events.map( e => e.processedTransactionId), options)
 
-
-        let season:Season = await this.seasonService.getMostRecent()
-        let teams:Team[] = await this.teamService.getByTokenIds(events.map( e => e.tokenId), options)
-
-        let tlss:TeamLeagueSeason[] = [ ]
-
-        for (let team of teams ) {
-            tlss.push( await this.teamLeagueSeasonService.getByTeamSeason(team, season, options))
-        }
-
-        let tlssPlain:TeamLeagueSeason[] = tlss.map( tls => tls.get({ plain: true}))
+        // let season:Season = await this.seasonService.getMostRecent()
+        let players:Player[] = await this.playerService.getByTokenIds(events.map( e => e.tokenId), options)
 
         return {
             transactions: transactions.map( t => {
@@ -198,7 +192,7 @@ class ProcessedTransactionService {
                     events: events.filter( e => e.processedTransactionId == t._id ),
                 }
             }),
-            teams: tlssPlain.map( tls => { return { _id: tls.teamId, name: tls.team.name, cityName: tls.city.name, logoId: tls.logoId } })
+            players: players.map( p => { return { _id: p._id, name: p.fullName } })
         }
 
     }

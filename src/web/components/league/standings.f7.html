@@ -52,7 +52,7 @@
 
                 </div>
 
-                <div class="block-title block-title-large">${viewModel?.leagueVm?.league?.name} (updated daily)</div>
+                <div class="block-title block-title-large">${viewModel?.leagueVm?.league?.name}<div class="subtitle">Ratings updated nightly</div></div>
                 <div class="block block-outline block-strong">
                     <div class="stat-table-wrapper">
                         <table class="data-table standings">
@@ -62,13 +62,13 @@
                                 <thead>
                                     <tr>
                                         <th class="image"></th>
-                                        <th @click=${sortStandings} class="name lock-name label-cell" data-sort="city.name">Name</th>
-                                        <th @click=${sortStandings} data-sort="overallRecord.wins" class="numeric-cell" style="width: 30px;">Wins</th>
-                                        <th @click=${sortStandings} data-sort="overallRecord.losses" class="numeric-cell" style="width: 30px;">Losses</th>
-                                        <th @click=${sortStandings} data-sort="overallRecord.winPercent" class="numeric-cell" style="width: 30px;">Win%</th>
-                                        <!-- <th @click=${sortStandings} data-sort="overallRecord.gamesBack" class="numeric-cell" style="width: 30px;">GB</th> -->
-                                        <th @click=${sortStandings} data-sort="longTermRating.rating" class="numeric-cell" style="width: 30px;">Rating</th>
-                                        <th @click=${sortStandings} data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell" style="width: 30px;">Cash</th>
+                                        <th class="name lock-name label-cell" data-sort="city.name">Name</th>
+                                        <th data-sort="overallRecord.wins" class="numeric-cell" style="width: 30px;">Wins</th>
+                                        <th data-sort="overallRecord.losses" class="numeric-cell" style="width: 30px;">Losses</th>
+                                        <th data-sort="overallRecord.winPercent" class="numeric-cell" style="width: 30px;">Win%</th>
+                                        <!-- <th data-sort="overallRecord.gamesBack" class="numeric-cell" style="width: 30px;">GB</th> -->
+                                        <th data-sort="longTermRating.rating" class="numeric-cell" style="width: 30px;">Rating</th>
+                                        <th data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell" style="width: 30px;">Cash</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -184,8 +184,7 @@
         let leagueVm
 
         let previousPage = viewModel.page == 1 ? undefined : viewModel.page - 1
-        let nextPage = viewModel.leagueVm?.leagues?.length > 25 ? undefined : viewModel.page + 1
-
+        let nextPage = viewModel.leagueVm?.viewModels?.length == 25 ? viewModel.page + 1 : undefined
 
         const isPromoted = (t) => {
             if (!viewModel.season.promotionRelegationLog) return false
@@ -225,12 +224,6 @@
 
         }
 
-
-        const sortStandings = (e) => {
-            playerWebService.sort($, e, '.standings', viewModel.leagueVm.viewModels)
-            $update()
-
-        }
 
 
 

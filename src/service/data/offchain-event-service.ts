@@ -64,6 +64,7 @@ class OffchainEventService {
         offChainEvent.fromAddress = "0x0000000000000000000000000000000000000000"
         offChainEvent.toTeamId = toTeamId
         offChainEvent.amount = amount
+        offChainEvent.source = JSON.parse(JSON.stringify(source))
 
         await this.put(offChainEvent, options)
 

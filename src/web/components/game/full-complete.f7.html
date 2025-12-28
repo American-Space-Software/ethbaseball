@@ -321,25 +321,6 @@
   }
 
 
-  // function percentageFormatter(num) {
-  //   return new Intl.NumberFormat('default', {
-  //     style: 'percent',
-  //     minimumFractionDigits: 2,
-  //     maximumFractionDigits: 2,
-  //   }).format(num)
-  // }
-
-  // const getRating = (game, team) => {
-  //   return team.ratingBefore?.toFixed(0)
-  // }
-
-  // const getRecord = (game, team) => {
-  //   return game.isComplete ? `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}` : `${team.overallRecord.before.wins}-${team.overallRecord.before.losses}`
-  // }
-
-
-
-
   export default (props, { $on, $, $f7, $update, $ref }) => {
 
     let env = ContainerService.getInstance("env")()

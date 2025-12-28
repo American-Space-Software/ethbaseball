@@ -8,8 +8,6 @@ class SocketWebService {
   private _watched = new Set<string>()
   private _instantNextUpdate = false
 
-  
-
   constructor(
     @inject("env") private env: any
   ) {}
@@ -21,6 +19,7 @@ class SocketWebService {
   }
 
   public get gameSocket(): Socket {
+
     if (this._gameSocket) return this._gameSocket
 
     const s = io(`${this.env().WEB_SOCKET}/game`, {
@@ -78,10 +77,18 @@ class SocketWebService {
   }
 
   public unwatch(_id: string) {
+
     this._watched.delete(_id)
+    
     if (this.gameSocket.connected) {
       this.gameSocket.emit("unwatch-game", _id)
     }
+
+    if (this._watched.size == 0) {
+      this.gameSocket.close()
+      delete this._gameSocket
+    }
+
   }
 }
 

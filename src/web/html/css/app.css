@@ -2788,3 +2788,7 @@ td.action, th.action {
 
 
 
+.block-title .subtitle {
+  font-size: .65em;
+  font-weight: normal;
+}
