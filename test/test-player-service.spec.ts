@@ -311,24 +311,22 @@ describe('PlayerService', async () => {
         assert.equal(player.hits, "R")
 
 
-
-
         assert.deepStrictEqual(player.hittingRatings, {
-          contactProfile: { groundball: 370, flyBall: 370, lineDrive: 260 },
-          speed: 12,
-          steals: 7,
-          defense: 26,
-          arm: 16,
-          vsR: { contact: 32, gapPower: 12, homerunPower: 21, plateDiscipline: 30 },
-          vsL: { contact: 32, gapPower: 12, homerunPower: 21, plateDiscipline: 30 }
+          contactProfile: { groundball: 365, flyBall: 364, lineDrive: 271 },
+          speed: 19,
+          steals: 27,
+          defense: 15,
+          arm: 32,
+          vsR: { contact: 29, gapPower: 15, homerunPower: 25, plateDiscipline: 25 },
+          vsL: { contact: 29, gapPower: 15, homerunPower: 25, plateDiscipline: 25 }
         })
 
         assert.deepStrictEqual(player.pitchRatings, {
           pitches: [ 'FF' ],
-          contactProfile: { groundball: 365, flyBall: 364, lineDrive: 271 },
-          power: 7,
-          vsR: { control: 7, movement: 8 },
-          vsL: { control: 7, movement: 8 }
+          contactProfile: { groundball: 272, flyBall: 454, lineDrive: 274 },
+          power: 8,
+          vsR: { control: 3, movement: 6 },
+          vsL: { control: 3, movement: 6 }
         })
 
 
@@ -341,28 +339,27 @@ describe('PlayerService', async () => {
         let player:Player = await service.scoutPlayer({ type: Position.PITCHER, onDate: dayjs(simDate).format("YYYY-MM-DD") })
         
         assert.equal(player.primaryPosition, Position.PITCHER)
-        assert.equal(player.fullName, "Rickie Legros")
-        assert.equal(player.throws, "L")
+        assert.equal(player.fullName, "Barry Mayert")
+        assert.equal(player.throws, "R")
         assert.equal(player.hits, "R")
 
-
         assert.deepStrictEqual(player.hittingRatings, {
-          contactProfile: { groundball: 259, flyBall: 401, lineDrive: 340 },
-          speed: 4,
-          steals: 7,
-          defense: 2,
-          arm: 6,
-          vsR: { contact: 7, gapPower: 4, homerunPower: 6, plateDiscipline: 5 },
-          vsL: { contact: 8, gapPower: 4, homerunPower: 6, plateDiscipline: 5 }
+          contactProfile: { groundball: 516, flyBall: 219, lineDrive: 265 },
+          speed: 2,
+          steals: 5,
+          defense: 8,
+          arm: 2,
+          vsR: { contact: 5, gapPower: 7, homerunPower: 3, plateDiscipline: 3 },
+          vsL: { contact: 5, gapPower: 8, homerunPower: 3, plateDiscipline: 3 }
         })
 
 
         assert.deepStrictEqual(player.pitchRatings, {
-          pitches: [ 'FF', 'CU', 'SC', 'SV' ],
-          contactProfile: { groundball: 445, flyBall: 387, lineDrive: 168 },
-          power: 20,
-          vsL: { control: 27, movement: 17 },
-          vsR: { control: 32, movement: 20 }
+          pitches: [ 'FF', 'SV', 'CU', 'SL' ],
+          contactProfile: { groundball: 426, flyBall: 264, lineDrive: 310 },
+          power: 18,
+          vsR: { control: 29, movement: 18 },
+          vsL: { control: 32, movement: 20 }
         })
 
     })

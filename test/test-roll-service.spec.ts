@@ -98,7 +98,7 @@ describe('RollService', async () => {
         //Act
         let result = await rollChartService.buildHitterPowerRollInput(la, hitterChange )
 
-        assert.deepStrictEqual(result,{ out: 699, singles: 100, doubles: 57, triples: 6, hr: 77 })
+        assert.deepStrictEqual(result,{ out: 696, singles: 103, doubles: 59, triples: 6, hr: 77 })
 
     })
 
@@ -107,7 +107,7 @@ describe('RollService', async () => {
         //Act
         let result = await rollChartService.buildPitcherPowerRollInput(la, pitcherChange)
 
-        assert.deepStrictEqual(result, { out: 507, singles: 281, doubles: 105, triples: 11, hr: 96 })
+        assert.deepStrictEqual(result, { out: 513, singles: 278, doubles: 104, triples: 11, hr: 94 })
 
     })
 
@@ -943,17 +943,18 @@ describe('RollService', async () => {
 
         let profile:HittingProfile = await service.generateHittingProfile()
         
+
         assert.deepStrictEqual(profile, {
-            plateDisciplineDelta: -0.55,
-            contactDelta: 0.44,
-            gapPowerDelta: 0.44,
-            homerunPowerDelta: -0.1,
-            speedDelta: 0.08,
-            stealsDelta: 0.44,
-            defenseDelta: -0.28,
-            armDelta: -0.55,
-            vsSameHandDelta: -0.08,
-            contactProfile: { groundball: 272, flyBall: 454, lineDrive: 274 }
+            plateDisciplineDelta: -0.19,
+            contactDelta: 0.17000000000000015,
+            gapPowerDelta: -0.1,
+            homerunPowerDelta: 0.17000000000000015,
+            speedDelta: 0.26,
+            stealsDelta: -0.37,
+            defenseDelta: -0.19,
+            armDelta: 0.26,
+            vsSameHandDelta: -0.01,
+            contactProfile: { groundball: 445, flyBall: 387, lineDrive: 168 }
         })
           
     })
@@ -962,14 +963,13 @@ describe('RollService', async () => {
 
         let profile:PitchingProfile = await service.generatePitchingProfile()
 
-
         assert.deepStrictEqual(profile, {
-            controlDelta: 0.08,
+            controlDelta: 0.52,
             movementDelta: -0.16,
-            powerDelta: 0.12000000000000015,
-            vsSameHandDelta: -0.04,
-            contactProfile: { groundball: 352, flyBall: 358, lineDrive: 290 },
-            pitches: [ 'FF', 'SC', 'SL', 'CU' ]
+            powerDelta: -0.36,
+            vsSameHandDelta: -0,
+            contactProfile: { groundball: 297, flyBall: 514, lineDrive: 189 },
+            pitches: [ 'FF', 'FS', 'SV', 'SC', 'SL' ]
         })
 
     })

@@ -36,68 +36,43 @@ class RollService {
         
     }
 
-    // simMatchup(command:SimPitchCommand) {
-    
-    //     //Check if any runners moved during the at-bat
-    //     try {
-    
-    //         let continueAtBat = true
-
-    //         let pitchIndex=0
-    //         while (continueAtBat) {
-
-    //             let result = this.simPitch(command, pitchIndex)
-            
-    //             pitchIndex++
-    //             continueAtBat = result.continueAtBat
-    //         }
-            
-    //     } catch(ex) {
-    //         //Ignore inning ending events errors.
-    //         if (!(ex instanceof InningEndingEvent)) throw ex
-    //     }
-
-    //     return command.play
-        
-    // }
-
-    simPitch(command:SimPitchCommand, pitchIndex:number) : SimPitchResult {
+    simPitch(command: SimPitchCommand, pitchIndex: number): SimPitchResult {
 
         //Sort pitcher's pitches by rating
         // command.pitcher.pitchRatings.pitches.sort((a, b) => b.rating - a.rating)
 
-        let pitches = command.pitcher.pitchRatings.pitches
-        let weights = [50, 25, 15, 5, 5] //later this can be passed in via strategy
+        const pitches = command.pitcher.pitchRatings.pitches
+        const weights = [50, 25, 15, 5, 5] //later this can be passed in via strategy
 
         //Choose a pitch type
-        let pitchType: PitchType = this.weightedRandom(command.rng, pitches, weights.slice(0, pitches.length))
+        const pitchType: PitchType = this.weightedRandom(command.rng, pitches, weights.slice(0, pitches.length))
 
-
-        //Hitter will try to guess which pitch. 
-        let hitterPitchGuess:PitchType = command.pitcher.pitchRatings.pitches[this.getRoll(command.rng, 0, pitches.length - 1)]
-        let guessPitch:boolean = hitterPitchGuess == pitchType
+        //Hitter will try to guess which pitch.
+        const hitterPitchGuess: PitchType =
+            command.pitcher.pitchRatings.pitches[this.getRoll(command.rng, 0, pitches.length - 1)]
+        const guessPitch: boolean = hitterPitchGuess == pitchType
 
         //How fast is it going? We can translate this to MPH later. 0-99.
-        let powerQuality = this.getPowerQuality(command.rng, command.pitcherChange.powerChange)
-        
+        const powerQuality = this.getPowerQuality(command.rng, command.pitcherChange.powerChange)
+
         //Did the pitcher throw it where they wanted? 0-99
-        let locationQuality = this.getLocationQuality(command.rng, command.pitcherChange.controlChange)
+        const locationQuality = this.getLocationQuality(command.rng, command.pitcherChange.controlChange)
 
         //How much movement does the pitch have? 0-99
-        let movementQuality = this.getMovementQuality(command.rng, command.pitcherChange.movementChange)
+        const movementQuality = this.getMovementQuality(command.rng, command.pitcherChange.movementChange)
 
         //Average for overall pitch quality
-        let pitchQuality = this.getPitchQuality(powerQuality, locationQuality, movementQuality)
-        
+        const pitchQuality = this.getPitchQuality(powerQuality, locationQuality, movementQuality)
+
         //Is it in the strike zone?
-        let inZone = this.isInZone(command.rng, locationQuality, command.leagueAverages.inZoneRate)
+        const inZone = this.isInZone(command.rng, locationQuality, command.leagueAverages.inZoneRate)
 
-        let intentZone = this.getIntentZone(command.rng)
-        let actualZone = this.getActualZone(intentZone, locationQuality)
+        const intentZone = this.getIntentZone(command.rng)
+        const actualZone = this.getActualZone(intentZone, locationQuality)
 
-        let pitch: Pitch = {
-            intentZone: intentZone,
-            actualZone: actualZone,
+        const pitch: Pitch = {
+            intentZone,
+            actualZone,
             type: pitchType,
             quality: pitchQuality,
             locQ: locationQuality,
@@ -106,28 +81,27 @@ class RollService {
             swing: false,
             con: false,
             result: inZone ? PitchResult.STRIKE : PitchResult.BALL,
-            inZone: inZone,
+            inZone,
             guess: guessPitch,
             isWP: false,
-            isPB: false
+            isPB: false,
         }
 
-
-        if (locationQuality <= .025) {
+        // --- Determine outcome (but DO NOT mutate balls/strikes here) ---
+        if (locationQuality <= 0.025) {
 
             //Passed ball
             pitch.isPB = true
             pitch.inZone = false
             pitch.result = PitchResult.BALL
 
-        } else if (locationQuality <= .25) {
+        } else if (locationQuality <= 0.25) {
 
             //HBP
-            pitch.result = PitchResult.HBP
             pitch.inZone = false
-            pitch.result = PitchResult.BALL
+            pitch.result = PitchResult.HBP
 
-        } else if (locationQuality <= .50) {
+        } else if (locationQuality <= 0.50) {
 
             //Wild pitch
             pitch.isWP = true
@@ -137,58 +111,65 @@ class RollService {
         } else {
 
             //If the batter guesses the pitch reduce the effective quality when the batter swings.
-            let effectivePitchQuality = guessPitch ? pitchQuality * .85 : pitchQuality
+            const effectivePitchQuality = guessPitch ? pitchQuality * 0.85 : pitchQuality
 
             //Does the batter swing?
-            let swingResult = this.getSwingResult(command.rng, command.hitterChange, command.leagueAverages, inZone, effectivePitchQuality, guessPitch)
+            const swingResult = this.getSwingResult(
+                command.rng,
+                command.hitterChange,
+                command.leagueAverages,
+                inZone,
+                effectivePitchQuality,
+                guessPitch
+            )
 
-
-            //Create pitch. 
+            //Create pitch.
             pitch.swing = (swingResult != SwingResult.NO_SWING)
-            pitch.con= (swingResult == SwingResult.FAIR || swingResult == SwingResult.FOUL)
+            pitch.con = (swingResult == SwingResult.FAIR || swingResult == SwingResult.FOUL)
 
+            // Only set the pitch.result here. Count updates happen once below.
             switch (swingResult) {
-
                 case SwingResult.FAIR:
                     pitch.result = PitchResult.IN_PLAY
-
                     break
 
                 case SwingResult.FOUL:
-
                     pitch.result = PitchResult.FOUL
-                    command.play.pitchLog.count.fouls++
-
-                    if (command.play.pitchLog.count.strikes < 2) {
-                        command.play.pitchLog.count.strikes++
-                    }
-
                     break
 
                 case SwingResult.STRIKE:
-
                     pitch.result = PitchResult.STRIKE
-                    command.play.pitchLog.count.strikes++
-
                     break
 
                 case SwingResult.NO_SWING:
-
-                    if (inZone) {
-                        command.play.pitchLog.count.strikes++
-                    } else {
-                        command.play.pitchLog.count.balls++
-                    }
-
+                    pitch.result = inZone ? PitchResult.STRIKE : PitchResult.BALL
+                    break
             }
-
-
         }
 
-        
+        switch (pitch.result) {
+            case PitchResult.FOUL:
+                command.play.pitchLog.count.fouls++
+                if (command.play.pitchLog.count.strikes < 2) {
+                    command.play.pitchLog.count.strikes++
+                }
+                break
+
+            case PitchResult.STRIKE:
+                command.play.pitchLog.count.strikes++
+                break
+
+            case PitchResult.BALL:
+                command.play.pitchLog.count.balls++
+                break
+
+            case PitchResult.HBP:
+            case PitchResult.IN_PLAY:
+                // no balls/strikes added
+                break
+        }
 
         command.play.pitchLog.pitches.push(pitch)
-
         command.play.pitchLog.count.pitches = command.play.pitchLog.pitches.length
 
         let continueAtBat = true
@@ -198,7 +179,7 @@ class RollService {
             command.play.result = PlayResult.HIT_BY_PITCH
             continueAtBat = false
         }
-        
+
         //In play?
         if (pitch.result == PitchResult.IN_PLAY) continueAtBat = false
 
@@ -213,9 +194,9 @@ class RollService {
             continueAtBat = false
         }
 
-        let result:SimPitchResult = {
-            continueAtBat: continueAtBat,
-            pitch: pitch
+        const result: SimPitchResult = {
+            continueAtBat,
+            pitch,
         }
 
         this.generateRunnerEventsFromPitch(command, pitchIndex, result)
@@ -223,12 +204,10 @@ class RollService {
         command.game.count.balls = command.play.pitchLog.count.balls
         command.game.count.strikes = command.play.pitchLog.count.strikes
 
-        pitch.count = JSON.parse(JSON.stringify( command.game.count ))
+        pitch.count = JSON.parse(JSON.stringify(command.game.count))
 
         return result
-
     }
-
 
 
     validateRunnerResult(runnerResult:RunnerResult) {
@@ -242,10 +221,6 @@ class RollService {
         this.validateRunners(runnerResult.first, runnerResult.second, runnerResult.third)
     }
 
-    // generateRunnerEventsFromPitchLog(command:SimPitchCommand) {
-
-
-    // }
 
     generateRunnerEventsFromPitch(command:SimPitchCommand, pitchIndex:number, result:SimPitchResult) {
 
@@ -2054,12 +2029,14 @@ class RollService {
 
     }
 
-    getRoll(generator, min, max) {
-        return Math.floor(generator() * max) + min
+    getRoll(generator: () => number, min: number, max: number) {
+        if (max < min) throw new Error(`getRoll max < min (${max} < ${min})`)
+        return Math.floor(generator() * (max - min + 1)) + min
     }
 
-    getRollUnrounded(generator, min, max) {
-        return (generator() * max) + min
+    getRollUnrounded(generator: () => number, min: number, max: number) {
+        if (max < min) throw new Error(`getRollUnrounded max < min (${max} < ${min})`)
+        return (generator() * (max - min)) + min // continuous in [min, max)
     }
 
     private getFlyBallContactType(gameRNG: any): Contact {
