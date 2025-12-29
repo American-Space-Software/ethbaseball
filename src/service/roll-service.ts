@@ -841,9 +841,9 @@ class RollService {
 
     }
 
-    getRunnerEvents(gameRNG, runnerResult:RunnerResult, halfInningRunnerEvents:RunnerEvent[], runnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], leagueAverages: LeagueAverage, playResult: PlayResult, 
-                    contact: Contact, shallowDeep: ShallowDeep, hitter:GamePlayer, fielderPlayer: GamePlayer, 
-                    runner1B:GamePlayer, runner2B:GamePlayer, runner3B:GamePlayer, offense:TeamInfo, defense:TeamInfo, pitcher:GamePlayer, pitchIndex:number) : RunnerResult {
+    getRunnerEvents(gameRNG, runnerResult:RunnerResult, halfInningRunnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], leagueAverages: LeagueAverage, playResult: PlayResult, 
+                    contact: Contact, shallowDeep: ShallowDeep, hitter:GamePlayer, fielderPlayer: GamePlayer|undefined, 
+                    runner1B:GamePlayer|undefined, runner2B:GamePlayer|undefined, runner3B:GamePlayer|undefined, offense:TeamInfo, defense:TeamInfo, pitcher:GamePlayer, pitchIndex:number) : RunnerEvent[] {
         
         let events:RunnerEvent[] = this.initRunnerEvents(pitcher, hitter, runner1B, runner2B, runner3B, pitchIndex)
 
@@ -935,9 +935,49 @@ class RollService {
                         break
                     }
     
-                    //If it's a ground ball go for the force out. Advance any runners that must move.
+                    //If it's a ground ball go for the force out. 
                     if (contact == Contact.GROUNDBALL) {
-                            
+                
+                        // If 2 outs already, always take the out at 1B first.
+                        const outsBeforePlay = this.getTotalOuts(allEvents)
+                        if (outsBeforePlay >= 2) {
+
+                            // batter-runner force at 1B
+                            const chanceRunnerSafe = this.getChanceRunnerSafe(
+                                leagueAverages,
+                                fielderPlayer.hittingRatings.arm,
+                                hitter.hittingRatings.speed,
+                                1 //super low chance of being safe
+                            )
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG: gameRNG,
+                                runnerResult: runnerResult,
+                                allEvents: allEvents,
+                                runnerEvents: events,
+                                runnerEvent: hitterRA,
+                                hitterEvent: hitterRA,
+                                defensiveCredits: defensiveCredits,
+                                start: BaseResult.HOME,
+                                end: BaseResult.FIRST,
+                                eventType: OfficialRunnerResult.HOME_TO_FIRST,
+                                eventTypeOut: OfficialRunnerResult.FORCE_OUT,
+                                leagueAverage: leagueAverages,
+                                defense: defense,
+                                pitcher: pitcher,
+                                offense: offense,
+                                pitchIndex: pitchIndex,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe: chanceRunnerSafe,
+                                isForce: true,
+                                isFieldersChoice: false
+                            })
+
+                            break
+                        }
+
+
+
                         //Handle runner on third. 
                         if (runnerResult.third != undefined) {
     
@@ -1091,7 +1131,7 @@ class RollService {
                             }
 
                         }
-    
+
                         //Handle hitter
                         if (this.getThrowCount(events) > 0) {
                             //We've already made a throw
@@ -1151,8 +1191,6 @@ class RollService {
                                 isFieldersChoice: false
                             })
                         }
-    
-                
     
                         break
     
@@ -1389,11 +1427,11 @@ class RollService {
     
             }
 
-        } catch(ex) {}
+        } catch(ex) {
+            if (!(ex instanceof InningEndingEvent)) throw ex
+        }
 
-        runnerEvents.push(...this.filterNonEvents(events, hitter))
-
-        return runnerResult
+        return this.filterNonEvents(events, hitter)
 
 
     }
@@ -2024,6 +2062,9 @@ class RollService {
 
             case PlayResult.HR:
                 return OfficialPlayResult.HOME_RUN
+            
+            case PlayResult.ERROR:
+                return OfficialPlayResult.REACHED_ON_ERROR
 
         }
 

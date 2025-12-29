@@ -82,7 +82,10 @@ enum OfficialPlayResult {
     GROUNDOUT = 'Groundout',
 
     GROUNDED_INTO_DP = 'Grounded Into DP',
-    TRIPLE_PLAY = 'Triple Play'
+    TRIPLE_PLAY = 'Triple Play',
+
+    REACHED_ON_ERROR = "Reached on Error"
+
 
 }
 
@@ -783,6 +786,7 @@ interface SimPitchResult {
 
 enum PlayResult {
 
+    ERROR = "ERROR",
     STRIKEOUT = "STRIKEOUT",
     OUT = "OUT",
     HIT_BY_PITCH = "HIT_BY_PITCH",

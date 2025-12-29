@@ -259,7 +259,7 @@ class GameService {
         }
     }
 
-    async validateGameLineup(lineup:Lineup, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, gameDate:Date) {
+    validateGameLineup(lineup:Lineup, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, gameDate:Date) {
 
         //Make sure there are 9 spots in the order and 5 spots in the rotation
         if (lineup.order.length != 9) {
@@ -762,21 +762,27 @@ class GameService {
         }
 
 
-
-
-
-
         //Players could have moved. Grab the correct base runners.
         let runner1B = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
         let runner2B = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
         let runner3B = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
 
+        
+
         //Add in-play runner events
-        this.rollService.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.runner.events, command.play.credits, 
+        let inPlayRunnerEvents = this.rollService.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.credits, 
                              command.leagueAverages, command.play.result, command.play.contact, command.play.shallowDeep, command.hitter, fielderPlayer, runner1B, runner2B, runner3B, 
                              command.offense, command.defense, command.pitcher, command.play.pitchLog.count.pitches - 1)
+
+        command.play.runner.events.push(...inPlayRunnerEvents)
+
         
         this.rollService.validateRunnerResult(command.play.runner.result.end)
+
+        //If playResult was OUT and there was an error change playResult to ERROR.
+        if (command.play.result == PlayResult.OUT && inPlayRunnerEvents.filter( re => re.isError)?.length > 0) {
+            command.play.result = PlayResult.ERROR
+        }
 
         command.play.officialPlayResult = this.rollService.getOfficialPlayResult(command.play.result, command.play.contact, command.play.shallowDeep, command.play.fielder,command.play.runner.events)
 
@@ -815,7 +821,9 @@ class GameService {
             this.nextHitter(command.offense)
         }
 
-        if (game.count.outs >= 3 || (game.currentInning >=9 && !game.isTopInning && game.score.home > game.score.away) ) {
+        const isWalkoff = (game.currentInning >=STANDARD_INNINGS && !game.isTopInning && game.score.home > game.score.away)
+
+        if (game.count.outs >= 3 || isWalkoff ) {
 
             //Update linescore LOB
             let leftOnBase = [command.offense.runner1BId, command.offense.runner2BId, command.offense.runner3BId ].filter( r => r != undefined).length
@@ -1232,10 +1240,10 @@ class GameService {
 
     isGameOver(game: Game): boolean {
 
-        //3 outs in the bottom of an inning 9+ where we're not tied. Game over.
+        //in the bottom of an inning 9+ where we're not tied. Game over.
         if (game.currentInning >= STANDARD_INNINGS && game.isTopInning == false && game.score.home != game.score.away) return true 
 
-        //3 outs after the top of the 9+ inning where the home team is ahead. Game over.
+        //after the top of the 9+ inning where the home team is ahead. Game over.
         if (game.currentInning >= STANDARD_INNINGS && game.isTopInning == true && game.score.home > game.score.away) return true 
 
         return false
@@ -1467,7 +1475,7 @@ class GameService {
 
             if (halfInning.top) {
 
-                if (halfInning.num > 9) {
+                if (halfInning.num > STANDARD_INNINGS) {
                     away.splice(halfInning.num, 0, 0)
                     home.splice(halfInning.num, 0, 0)
                 }
@@ -1744,76 +1752,59 @@ class GameService {
 
     }
 
-    splitRewards(reward: number, pitcherId: string, defensiveCredits: DefensiveCredit[]): { playerId: string, reward: number }[] {
+    splitRewards(reward: number, pitcherId: string, defensiveCredits: DefensiveCredit[]): { playerId: string; reward: number }[] {
 
-        const rewardsDistribution: { playerId: string, reward: number }[] = []
+        const rewardsDistribution: { playerId: string; reward: number }[] = []
 
-        const addReward = (id:string, reward:number) => {
-
-            let existing = rewardsDistribution.find(rd => rd.playerId == id)
-
-            if (existing) {
-                existing.reward += reward
-            } else {
-                rewardsDistribution.push({
-                    playerId: id,
-                    reward: reward
-                })
-            }
-
+        const addReward = (id: string, amount: number) => {
+            if (!id || !Number.isFinite(amount) || amount === 0) return
+            const existing = rewardsDistribution.find(r => r.playerId === id)
+            if (existing) existing.reward += amount
+            else rewardsDistribution.push({ playerId: id, reward: amount })
         }
 
-        // Filter out players with ERROR credit
-        const validDefensiveCredits = defensiveCredits.filter(dc => dc.type != DefenseCreditType.ERROR)
+        // Eligible defenders for the "equal split" pool (exclude ERROR and CAUGHT_STEALING)
+        const equalSplitDefenders = defensiveCredits.filter(dc =>
+            dc.type !== DefenseCreditType.ERROR &&
+            dc.type !== DefenseCreditType.CAUGHT_STEALING
+        )
 
-        // Calculate the total 75% to be split among the pitcher and other players
-        let pitcherMinimumReward = reward * 0.5
-        let remainingReward = reward * 0.5
+        let pool = reward
 
-
-        //TODO: handle stole bases
-
-
-        // Check if there's a CAUGHT_STEALING player
-        const caughtStealingPlayer = validDefensiveCredits.find(dc => dc.type === DefenseCreditType.CAUGHT_STEALING)
-
-        if (caughtStealingPlayer) {
-
-            // Allocate 25% to the CAUGHT_STEALING player
-            addReward(caughtStealingPlayer._id, reward * 0.25)
-
-            // Deduct 25% from the remaining reward
-            remainingReward = reward * 0.5 // 50% remains after 25% goes to CAUGHT_STEALING player
+        // 1) Special awards come off the top (based on the original reward)
+        const caughtStealing = defensiveCredits.find(dc => dc.type === DefenseCreditType.CAUGHT_STEALING)
+        if (caughtStealing) {
+            const amt = reward * 0.25
+            addReward(caughtStealing._id, amt)
+            pool -= amt
         }
 
-
-        // Check if there's an ERROR player
-        const errorPlayer = defensiveCredits.find(dc => dc.type === DefenseCreditType.ERROR)
-        if (errorPlayer) {
-            // Allocate 50% to the ERROR player
-            addReward(errorPlayer._id, reward * 0.5)
-            // Deduct 50% from the remaining reward
-            remainingReward -= reward * 0.5
+        const error = defensiveCredits.find(dc => dc.type === DefenseCreditType.ERROR)
+        if (error) {
+            const amt = reward * 0.50
+            addReward(error._id, amt)
+            pool -= amt
         }
 
+        if (pool < 0) pool = 0
 
-        // Number of participants: valid defensive players (excluding CAUGHT_STEALING if present) + pitcher
-        const totalParticipants = validDefensiveCredits.filter(dc => dc.type !== DefenseCreditType.CAUGHT_STEALING).length + 1; // +1 for pitcher
+        // 2) Pitcher minimum (up to 50% of original reward, but not more than remaining pool)
+        const pitcherMinTarget = reward * 0.50
+        const pitcherMinAward = Math.min(pool, pitcherMinTarget)
+        addReward(pitcherId, pitcherMinAward)
+        pool -= pitcherMinAward
 
-        // Split the remaining 50% equally
-        const rewardPerPlayer = remainingReward / totalParticipants
+        // 3) Split whatever remains equally among pitcher + eligible defenders
+        const splitIds = [pitcherId, ...equalSplitDefenders.map(dc => dc._id)]
+        const perPlayer = splitIds.length > 0 ? pool / splitIds.length : 0
 
+        for (const id of splitIds) {
+            addReward(id, perPlayer)
+        }
 
-        // Add pitcher's reward (minimum + share of remaining reward)
-        addReward(pitcherId, pitcherMinimumReward + rewardPerPlayer)
-
-
-        // Add defensive players' rewards
-        defensiveCredits.filter(dc => dc.type != DefenseCreditType.ERROR).forEach(credit => {
-            addReward(credit._id, rewardPerPlayer)
-        })
-    
         return rewardsDistribution
+            .filter(r => r.reward > 0)
+            .sort((a, b) => b.reward - a.reward)
     }
 
     getWinExpectancyRewards(isTopInning:boolean, wpaTotal:number, matchup:UpcomingMatchup, defensiveCredits:DefensiveCredit[]) : WPAReward[] {
@@ -2036,6 +2027,8 @@ class GameService {
 
             //Preserve starting runners to save with play data
             let startingRunnerResult = JSON.parse(JSON.stringify(runnerResult))
+            let endingRunnerResult = JSON.parse(JSON.stringify(runnerResult))
+
 
             let startingCount = JSON.parse(JSON.stringify( {
                 balls: 0,
@@ -2070,7 +2063,7 @@ class GameService {
                     events: [],
                     result: {
                         start: startingRunnerResult,
-                        end: startingRunnerResult //change this one
+                        end: endingRunnerResult //change this one during the play
                     }
                 },
                 hitterId: hitter._id,
