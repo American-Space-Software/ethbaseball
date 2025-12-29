@@ -67,6 +67,12 @@ class TeamWebService {
 
     }
 
+    async getActiveLineup(teamId:string) {
+        //Download it.
+        let result = await axios.get(`/api/team/lineup/${teamId}`)
+        return result.data
+
+    }
 
 
     getTeamName(tls) {

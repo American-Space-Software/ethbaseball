@@ -115,16 +115,16 @@
                 </div>
 
                 <div class="block split-row-both">
-                <div>
-                    ${previousPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${previousPage}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
-                    ` : $h` `}
-                </div>
-                <div>
-                    ${nextPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${nextPage}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
-                    ` : $h` `}
-                </div>
+                    <div>
+                        ${previousPage ? $h`
+                            <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${previousPage}?startDate=${universeWebService.getStartDate()}" class="button button-outline color-gray">Previous</a>
+                        ` : $h` `}
+                    </div>
+                    <div>
+                        ${nextPage ? $h`
+                            <a data-reload-current="true" data-force="true" data-browser-history="true" href="/l/standings/${viewModel?.leagueVm?.league.rank}/${nextPage}?startDate=${universeWebService.getStartDate()}" class="button button-fill">Next</a>
+                        ` : $h` `}
+                    </div>
                 </div>
 
             </div>

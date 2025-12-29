@@ -156,7 +156,7 @@
   import logo from "../../html/images/logo.png"
 
 
-  export default (props, { $, $on, $f7, $update }) => {
+  export default (props, { $, $h, $on, $f7, $update }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
@@ -186,6 +186,87 @@
         }
     }
 
+    const createLineupPopup = (lineup, confirmLineup) => {
+          const rows = (lineup.lineup || []).map((p, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td class="image">
+            ${p?._id ? `<img src="/player/image/${p._id}" width="35" height="35" />` : ``}
+          </td>
+          <td class="name">
+            ${p?._id ? `
+              <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
+              <span class="position">${p.primaryPosition}</span>
+            ` : ``}
+          </td>
+        </tr>
+      `).join("")
+
+          const popup = $f7.popup.create({
+            content: `
+          <div class="popup confirm-lineup-popup">
+            <div class="page">
+              <div class="navbar">
+                <div class="navbar-bg"></div>
+                <div class="navbar-inner">
+                  <div class="title">Confirm Lineup</div>
+                  <div class="right">
+                    <a class="link popup-close">Close</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="page-content">
+                <div class="stat-table-wrapper">
+                  <table class="data-table players confirm-lineup">
+                    <thead>
+                      <tr>
+                        <th>Order</th>
+                        <th class="image"></th>
+                        <th class="name">Name</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </div>
+
+                <div class="block split-row-both">
+                  <div>
+                    <a class="button button-outline color-gray popup-close">Edit Lineup</a>
+                  </div>
+                  <div>
+                    <a class="button button-fill confirm-lineup-btn">Confirm</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+
+            on: {
+              opened(p) {
+                // p.el is the popup root element
+                const btn = p.el.querySelector(".confirm-lineup-btn")
+                if (!btn) return
+
+                // attach once
+                btn.addEventListener("click", (e) => {
+                  e.preventDefault()
+                  confirmLineup?.(lineup)
+                  p.close()
+                }, { once: true })
+              },
+
+              closed(p) {
+                p.destroy()
+              }
+            }
+          })
+
+          popup.open()
+        }
+
+
 
     const playBotClick = async (e) => {
 
@@ -195,18 +276,24 @@
 
       try {
         
-        $f7.preloader.show()
+        let lineup = await teamWebService.getActiveLineup(vm.team._id)
 
-        let gameInfo = await gameWebService.playBot()
+        createLineupPopup(lineup, async () => {
+          
+          let gameInfo = await gameWebService.playBot()
 
-        if (gameInfo.gameId) {
-          $f7.views.main.router.navigate(`/g/${gameInfo.gameId}`, { reloadCurrent: true })
-        }
+          if (gameInfo.gameId) {
+            $f7.views.main.router.navigate(`/g/${gameInfo.gameId}`, { reloadCurrent: true })
+          }
 
+        })
       
       } catch(ex) {
         $f7.dialog.alert(ex.message, "There was an error")
       }
+
+      $f7.preloader.hide()
+
       
     }
 

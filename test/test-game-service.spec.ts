@@ -264,121 +264,121 @@ describe('GameService', async () => {
     })
 
     it("Ground ball to infielder with runner on 3B and 2 outs must record the batter out at 1B (throw if needed), no run", async () => {
-    const laRatings = playerService.buildLeagueAverages({
-        hittingRatings: {
-        arm: 15,
-        contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
-        defense: 15,
-        speed: 15,
-        steals: 15,
-        vsL: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-        vsR: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-        },
-        pitchRatings: {
-        contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
-        pitches: [],
-        power: 15,
-        vsL: { control: 15, movement: 15 },
-        vsR: { control: 15, movement: 15 },
-        },
-    })
+        const laRatings = playerService.buildLeagueAverages({
+            hittingRatings: {
+                arm: 15,
+                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
+                defense: 15,
+                speed: 15,
+                steals: 15,
+                vsL: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
+                vsR: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
+            },
+            pitchRatings: {
+                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
+                pitches: [],
+                power: 15,
+                vsL: { control: 15, movement: 15 },
+                vsR: { control: 15, movement: 15 },
+            },
+        })
 
-    const awayTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
-    const homeTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const awayTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const homeTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
-    const pitcher = homeTeam.players.find(p => p._id === homeTeam.currentPitcherId)
-    assert.ok(pitcher)
+        const pitcher = homeTeam.players.find(p => p._id === homeTeam.currentPitcherId)
+        assert.ok(pitcher)
 
-    const infielder =
-        homeTeam.players.find(p => p.currentPosition === Position.FIRST_BASE) ??
-        homeTeam.players.find(p => p.currentPosition === Position.SECOND_BASE) ??
-        homeTeam.players.find(p => p.currentPosition === Position.THIRD_BASE) ??
-        homeTeam.players.find(p => p.currentPosition === Position.SHORTSTOP)
+        const infielder =
+            homeTeam.players.find(p => p.currentPosition === Position.FIRST_BASE) ??
+            homeTeam.players.find(p => p.currentPosition === Position.SECOND_BASE) ??
+            homeTeam.players.find(p => p.currentPosition === Position.THIRD_BASE) ??
+            homeTeam.players.find(p => p.currentPosition === Position.SHORTSTOP)
 
-    assert.ok(infielder, "Need an infielder on defense")
+        assert.ok(infielder, "Need an infielder on defense")
 
-    const hitter = awayTeam.players.find(p => awayTeam.lineupIds?.includes(p._id)) ?? awayTeam.players[0]
-    assert.ok(hitter)
+        const hitter = awayTeam.players.find(p => awayTeam.lineupIds?.includes(p._id)) ?? awayTeam.players[0]
+        assert.ok(hitter)
 
-    const runner3B = awayTeam.players.find(p => p._id !== hitter._id)
-    assert.ok(runner3B)
+        const runner3B = awayTeam.players.find(p => p._id !== hitter._id)
+        assert.ok(runner3B)
 
-    const runnerResult: any = {
-        first: undefined,
-        second: undefined,
-        third: runner3B._id,
-        out: [],
-        scored: [],
-    }
+        const runnerResult: any = {
+            first: undefined,
+            second: undefined,
+            third: runner3B._id,
+            out: [],
+            scored: [],
+        }
 
-    // already 2 outs
-    const halfInningRunnerEvents: any[] = [
-        { runner: { _id: "out1" }, movement: { isOut: true, start: BaseResult.HOME, end: BaseResult.FIRST } },
-        { runner: { _id: "out2" }, movement: { isOut: true, start: BaseResult.HOME, end: BaseResult.FIRST } },
-    ]
+        // already 2 outs
+        const halfInningRunnerEvents: any[] = [
+            { runner: { _id: "out1" }, movement: { isOut: true, start: BaseResult.HOME, end: BaseResult.FIRST } },
+            { runner: { _id: "out2" }, movement: { isOut: true, start: BaseResult.HOME, end: BaseResult.FIRST } },
+        ]
 
-    const defensiveCredits: any[] = []
+        const defensiveCredits: any[] = []
 
-    const originalChance = (rollService as any).getChanceRunnerSafe
-    const originalThrow = (rollService as any).getThrowResult
+        const originalChance = (rollService as any).getChanceRunnerSafe
+        const originalThrow = (rollService as any).getThrowResult
 
-    ;(rollService as any).getChanceRunnerSafe = () => 95
-    ;(rollService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
+            ; (rollService as any).getChanceRunnerSafe = () => 95
+            ; (rollService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
 
-    let inPlayRunnerEvents: any[] = []
-    try {
-        inPlayRunnerEvents = rollService.getRunnerEvents(
-        () => 0.5,
-        runnerResult,
-        halfInningRunnerEvents,
-        defensiveCredits,
-        laRatings,
-        PlayResult.OUT,
-        Contact.GROUNDBALL,
-        ShallowDeep.NORMAL,
-        hitter,
-        infielder,
-        undefined,
-        undefined,
-        runner3B,
-        awayTeam,
-        homeTeam,
-        pitcher,
-        2
-        ) as any[]
-    } finally {
-        ;(rollService as any).getChanceRunnerSafe = originalChance
-        ;(rollService as any).getThrowResult = originalThrow
-    }
+        let inPlayRunnerEvents: any[] = []
+        try {
+            inPlayRunnerEvents = rollService.getRunnerEvents(
+                () => 0.5,
+                runnerResult,
+                halfInningRunnerEvents,
+                defensiveCredits,
+                laRatings,
+                PlayResult.OUT,
+                Contact.GROUNDBALL,
+                ShallowDeep.NORMAL,
+                hitter,
+                infielder,
+                undefined,
+                undefined,
+                runner3B,
+                awayTeam,
+                homeTeam,
+                pitcher,
+                2
+            ) as any[]
+        } finally {
+            ; (rollService as any).getChanceRunnerSafe = originalChance
+                ; (rollService as any).getThrowResult = originalThrow
+        }
 
-    // Find the batter-runner event (HOME -> FIRST) and assert it ended as an out at 1B
-    const batterEvent = inPlayRunnerEvents.find(e => e?.runner?._id === hitter._id)
-    assert.ok(batterEvent, "Expected a runner event for the hitter")
+        // Find the batter-runner event (HOME -> FIRST) and assert it ended as an out at 1B
+        const batterEvent = inPlayRunnerEvents.find(e => e?.runner?._id === hitter._id)
+        assert.ok(batterEvent, "Expected a runner event for the hitter")
 
-    assert.equal(batterEvent.movement?.start, BaseResult.HOME)
-    assert.equal(batterEvent.movement?.end, BaseResult.FIRST)
-    assert.equal(batterEvent.movement?.isOut, true)
-    assert.equal(batterEvent.movement?.outBase, BaseResult.FIRST)
+        assert.equal(batterEvent.movement?.start, BaseResult.HOME)
+        assert.equal(batterEvent.movement?.end, BaseResult.FIRST)
+        assert.equal(batterEvent.movement?.isOut, true)
+        assert.equal(batterEvent.movement?.outBase, BaseResult.FIRST)
 
-    // If the fielder is not 1B, we should see a recorded throw to 1B.
-    // If the fielder IS 1B, it is an unassisted putout and your code will not record a throw object.
-    if (infielder.currentPosition !== Position.FIRST_BASE) {
-        assert.ok(batterEvent.throw, "Expected a throw to be recorded (fielder != 1B)")
-        assert.equal(batterEvent.throw.to.position, Position.FIRST_BASE)
-        assert.equal(batterEvent.throw.result, ThrowResult.OUT)
-    } else {
-        assert.equal(batterEvent.throw, undefined, "Unassisted putout at 1B should not record a throw object")
-    }
+        // If the fielder is not 1B, we should see a recorded throw to 1B.
+        // If the fielder IS 1B, it is an unassisted putout and your code will not record a throw object.
+        if (infielder.currentPosition !== Position.FIRST_BASE) {
+            assert.ok(batterEvent.throw, "Expected a throw to be recorded (fielder != 1B)")
+            assert.equal(batterEvent.throw.to.position, Position.FIRST_BASE)
+            assert.equal(batterEvent.throw.result, ThrowResult.OUT)
+        } else {
+            assert.equal(batterEvent.throw, undefined, "Unassisted putout at 1B should not record a throw object")
+        }
 
-    // Total outs should be 3
-    const outs =
-        halfInningRunnerEvents.filter(e => e?.movement?.isOut).length +
-        inPlayRunnerEvents.filter(e => e?.movement?.isOut).length
-    assert.equal(outs, 3)
+        // Total outs should be 3
+        const outs =
+            halfInningRunnerEvents.filter(e => e?.movement?.isOut).length +
+            inPlayRunnerEvents.filter(e => e?.movement?.isOut).length
+        assert.equal(outs, 3)
 
-    // Runner from 3B must NOT score
-    const scored = inPlayRunnerEvents.some(e => e?.movement?.end === BaseResult.HOME && e?.movement?.isOut === false)
-    assert.equal(scored, false)
+        // Runner from 3B must NOT score
+        const scored = inPlayRunnerEvents.some(e => e?.movement?.end === BaseResult.HOME && e?.movement?.isOut === false)
+        assert.equal(scored, false)
     })
 
 

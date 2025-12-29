@@ -1892,7 +1892,7 @@ h1 {
 }
 
 .card-unsaved, .card-atbat {
-  background : #dbdbdb;
+  background : lightyellow;
   border: 1px solid #cccccc;
 }
 
@@ -1905,7 +1905,7 @@ h1 {
 }
 
 .dark .card-unsaved .image {
-  background: rgb(48, 48, 0);
+  background: unset;
 }
 
 .inline {
@@ -2791,4 +2791,15 @@ td.action, th.action {
 .block-title .subtitle {
   font-size: .65em;
   font-weight: normal;
+}
+
+
+.players.confirm-lineup .image {
+  width: 35px;
+  background-color: unset;
+  max-width: 35px;
+}
+
+.players.confirm-lineup .name {
+  width: 100%;
 }

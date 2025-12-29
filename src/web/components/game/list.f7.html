@@ -174,73 +174,18 @@
     let hasMoreItems = true
 
     const gameDateChange = async (e) => {
-      $f7.views.main.router.navigate(`/games/?rank=${universeWebService.getRank()}&gameDate=${dayjs($(e.srcElement).val()).format('YYYY-MM-DD')}&startDate=${universeWebService.getStartDate()}`, { reloadCurrent: true })
+      let url = `/games/?rank=${universeWebService.getRank()}&gameDate=${dayjs($(e.srcElement).val()).format('YYYY-MM-DD')}&startDate=${universeWebService.getStartDate()}`
+      console.log(url)
+      $f7.views.main.router.navigate(url, { reloadCurrent: true })
     }
 
-    const checkForUpdate = async () => {
-
-      //Clear existing timeout if exists
-      if (timeoutId) clearTimeout(timeoutId)
-
-      //Get latest
-      let latest = await gameWebService.getLatest()
-
-      if (dayjs(latest).toDate() > lastGameUpdate) {
-        await loadGames()
-      } else {
-        timeoutId = setTimeout(checkForUpdate, timeoutTime)
-      }
-
-      await $update()
-
-    }
-
+  
     const link = (href) => {
       return "/" + href
     }
 
-    const percentageFormatter = (num) => {
-      return new Intl.NumberFormat('default', {
-        style: 'percent',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(num)
-    }
 
-
-    const loadGames = async () => {
-
-      $f7.preloader.show()
-
-        try  {
-            let gameResult = await gameWebService.getGames(gameDate, universeWebService.getRank())
-            Object.assign(games, gameResult)
-        } catch(ex) { 
-          $f7.dialog.alert(ex.message, "Error")
-          console.log(ex) 
-        }
-
-        lastGameUpdate = new Date(new Date().toUTCString())
-        timeoutId = setTimeout(checkForUpdate, timeoutTime)
-
-        await $update()
-
-        $f7.preloader.hide()
-
-
-    }
-
-    $on('pageInit', async (e) => {
-
-
-    })
-    
     $on('pageBeforeIn', async (e) => {
-
-
-
-        timeoutId = setTimeout(checkForUpdate, timeoutTime)
-
 
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: { tabLink: "/games", breadcrumbs:[

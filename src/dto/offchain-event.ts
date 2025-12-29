@@ -38,7 +38,7 @@ class OffchainEvent extends Model {
     @Column(DataType.STRING)
     declare event?:string 
 
-    @Column(DataType.STRING)
+    @Column(DataType.JSON)
     declare source?:OffChainEventSource
 
     @Index

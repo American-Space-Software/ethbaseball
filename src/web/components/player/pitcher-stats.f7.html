@@ -16,7 +16,6 @@
                     <th @click=${sortRows}  class="name">Name</th>
                     ${actions ? $h`<th class="action"></th>` : $h` `} 
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'displayRating' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="displayRating">OVR</th>                    
-                    <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'age' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="age">Age</th>
                     <th @click=${sortRows} data-sort="throws" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'throws' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Throws</th>
                     <th @click=${sortRows} data-sort="hits" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'bats' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" >Bats</th>
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.wins' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.wins">W</th>
@@ -67,8 +66,6 @@
                             ` : $h` `}
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
-
-                            <td class="numeric-cell">${p?.age}</td>
                             <td>${p?.throws}</td>
                             <td>${p?.hits}</td>
                             <td class="numeric-cell">${getStats(p)?.pitching?.wins}</td>

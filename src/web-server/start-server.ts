@@ -1346,6 +1346,90 @@ let startWebServer = async () => {
 
   })
 
+
+  app.get('/api/team/lineup/:teamId', async function (req, res) {
+
+    try {
+
+      let teamId = req.params.teamId
+      let team: Team = await teamService.get(teamId)
+
+      const getTeamBundle = async (theTeam) => {
+        
+        let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
+        let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
+
+        let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
+        let plsPlain = pls.map( pls => pls.get({ plain: true}))
+
+        let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate)
+
+        return {
+          tls: tls,
+          tlsPlain: tlsPlain,
+          plss: pls,
+          plssPlain: plsPlain,
+          startingPitcher: startingPitcher,
+          team: theTeam
+        }
+
+      }
+
+      let season:Season = await seasonService.getMostRecent()
+
+      let teamBundle = await getTeamBundle(team)
+
+      let isValid = true
+      try {
+        teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
+      } catch(ex) {
+        isValid = false
+      }
+
+
+      const lineup = teamBundle.tls.lineups[0].order
+        .map(p => {
+
+          let pls 
+
+          if (p.position == Position.PITCHER) {
+            pls = teamBundle.plss.find(x => x.playerId === teamBundle.startingPitcher._id)!
+          } else {
+            pls = teamBundle.plss.find(x => x.playerId === p._id)!
+          }
+          
+          const pl = pls.get({ plain: true })
+          return {
+            _id: pl.playerId,
+            displayRating: pl.player.displayRating,
+            fullName: `${pl.player.firstName} ${pl.player.lastName}`,
+            firstName: pl.player.firstName,
+            lastName: pl.player.lastName,
+            primaryPosition: pl.primaryPosition,
+            throws: pl.player.throws,
+            hits: pl.player.hits,
+            lastGamePlayed: pl.player.lastGamePlayed,
+            lastGamePitched: pl.player.lastGamePitched
+          }
+        })
+
+
+      res.json({
+        lineup: lineup,
+        startingPitcher: teamBundle.startingPitcher,
+        isValid: isValid
+      })
+
+      return 
+      
+
+    } catch (ex) {
+        console.log(ex)
+        res.sendStatus(404)
+    }
+
+  })
+
   
 
   app.post('/api/team/roster/:teamId', async function (req, res) {
@@ -1541,7 +1625,6 @@ let startWebServer = async () => {
 
 
 
-
   app.get('/api/league/list', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
 
     try {
@@ -1588,7 +1671,7 @@ let startWebServer = async () => {
 
       let perPage = 25
       let page = parseIntWithException(req.params.page)
-      let options = { limit: perPage, offset: page * perPage }
+      let options = { limit: perPage, offset: (page - 1) * perPage }
 
       let vm = await teamService.getStandingsViewModel(seasons,leagues, league, season, options)
       vm['page'] = page
@@ -1649,6 +1732,8 @@ let startWebServer = async () => {
 
   })
 
+
+
   app.post('/api/game/play/bot', async function (req, res) {
 
       try {
@@ -1680,9 +1765,7 @@ let startWebServer = async () => {
             let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
             let plsPlain = pls.map( pls => pls.get({ plain: true}))
 
-            let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate, true)
-
-
+            let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate)
 
             return {
               tls: tls,
@@ -1695,6 +1778,7 @@ let startWebServer = async () => {
 
           }
 
+          
 
           let season:Season = await seasonService.getMostRecent()
 
@@ -1702,6 +1786,11 @@ let startWebServer = async () => {
           let bot:Team = await teamService.getClosetRatedBot(team.longTermRating.rating)
 
           let teamBundle = await getTeamBundle(team)
+
+          if (teamBundle.startingPitcher.stamina < 1) {
+            throw new Error("No rested pitcher available.")
+          }
+
           let botBundle = await getTeamBundle(bot)
 
           //Validate rosters and lineups.

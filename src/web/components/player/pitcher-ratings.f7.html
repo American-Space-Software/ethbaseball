@@ -17,7 +17,6 @@
                     <th @click=${sortPitchers} data-sort="fullName" class="name">Name</th>
                     ${actions ? $h`<th class="action"></th>` : $h` `}
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
-                    <th @click=${sortPitchers} class="numeric-cell" data-sort="age">Age</th>
                     <th @click=${sortPitchers} data-sort="throws">Throws</th>
                     <th @click=${sortPitchers} data-sort="hits">Bats</th>
 
@@ -81,8 +80,6 @@
 
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
-
-                            <td class="numeric-cell">${p?.age}</td>
                             <td>${p?.throws}</td>
                             <td>${p?.hits}</td>
                             <td class="numeric-cell">${p?.pitchRatings?.power}</td>

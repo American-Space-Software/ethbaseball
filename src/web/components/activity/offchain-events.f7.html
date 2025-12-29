@@ -24,8 +24,8 @@
                                 <td>${getOffChainDescription(oce)}</td>
                                 <td>
 
-                                    ${oce.fromTokenId ? $h`
-                                        <a href="${universeWebService.startDateLink(`/t/${oce.fromTokenId}`)}">${getTeamName(oce.fromTokenId)}</a>
+                                    ${oce.fromTeamId ? $h`
+                                        <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">${getTeamName(oce.fromTokenId)}</a>
                                     ` : $h``}
 
                                     ${oce.fromAddress ? $h`
@@ -35,7 +35,7 @@
                                     <span class="event-arrow">➡️</span>
                                     
                                     ${oce.toTeamId ? $h`
-                                        <a href="${universeWebService.startDateLink(`/t/${oce.toTeamId}`)}">${getTeamName(oce.toTeamId)}</a>
+                                        <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">${getTeamName(oce.toTeamId)}</a>
                                     ` : $h` `} 
 
                                     ${oce.toAddress ? $h`

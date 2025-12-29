@@ -173,7 +173,7 @@ class LadderService {
 
                                         let rewardTotal = ethers.parseUnits(reward.amount.toString(), 'ether')
 
-                                        await this.offchainEventService.createTeamMintEvent(team._id, rewardTotal.toString(), { type: "reward", fromDate:universe.currentDate }, options )
+                                        await this.offchainEventService.createTeamMintEvent(team._id, rewardTotal.toString(), { type: "reward", fromDate: universe.currentDate }, options )
                                     }
 
                                     await this.teamService.put(team, options)
