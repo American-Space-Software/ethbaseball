@@ -305,8 +305,8 @@ class GameRepositoryNodeImpl implements GameRepository {
             INNER JOIN game_team gt on gt.gameId = g._id
             WHERE 
                 gt.teamId = :teamId AND
-                g.startDate >= :start && g.startDate <= :end
-            ORDER BY g.startDate ASC
+                g.gameDate >= :start && g.gameDate <= :end
+            ORDER BY g.gameDate, g.currentSimDate ASC
         `, Object.assign(queryOptions, options))
 
         return queryResults?.map(r => r._id)

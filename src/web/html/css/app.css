@@ -454,6 +454,27 @@ h1 {
   text-align: center;
 }
 
+.players {
+  border-collapse: separate;
+  background: var(--f7-block-strong-bg-color);
+}
+
+.card-unsaved .players {
+    background: lightyellow;
+}
+
+.dark .card-unsaved .players {
+  background: rgb(77, 77, 0);
+}
+
+.players thead,
+.players tbody,
+.players tr,
+.players th,
+.players td {
+  background: inherit;
+}
+
 .players a {
   font-weight: bold;
 }
@@ -461,10 +482,16 @@ h1 {
 .players .image {
   position: sticky;
   left: 0;
-  z-index: 200;
-  background-color: var(--f7-block-strong-bg-color);
+  z-index: 3;
+  background-color: inherit; 
   padding: 0px;
+  width: 25px;
   text-align: left;
+}
+
+.players .image img {
+  border-radius: 50%;
+  border: 1px solid #cccccc;
 }
 
 /* .dark .players .image {
@@ -481,8 +508,28 @@ h1 {
   text-overflow: ellipsis;
   line-height: 18px;
   padding-top: 4px;
+  padding-left: 5px;
+
+  /* position: sticky; */
+  z-index: 2;
+  background-color: inherit; 
 
 }
+
+
+.players th.image {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  /* background: var(--f7-block-strong-bg-color); */
+}
+
+.players th.name {
+  z-index: 3;
+  /* background: var(--f7-block-strong-bg-color); */
+}
+
+
 
 .players .name .position {
   font-weight: bold;
@@ -521,7 +568,7 @@ h1 {
   text-overflow: ellipsis;
   line-height: 18px;
   padding-top: 4px;
-  background-color: unset;
+  /* background-color: unset; */
 }
 
 /* .dark .stat-table .name, .dark .data-table .name {
@@ -1900,13 +1947,15 @@ h1 {
   background: rgb(77, 77, 0);
 }
 
-.card-unsaved .image {
+.card-unsaved .image, .card-unsaved .name {
   background : lightyellow;
 }
 
-.dark .card-unsaved .image {
+.dark .card-unsaved .image, .dark .card-unsaved .name {
   background: unset;
 }
+
+
 
 .inline {
   flex: 0 0 100px;

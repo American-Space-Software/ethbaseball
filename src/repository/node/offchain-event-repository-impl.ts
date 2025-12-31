@@ -4,6 +4,9 @@ import { OffchainEventRepository } from "../offchain-event-repository.js"
 import { OffchainEvent } from "../../dto/offchain-event.js"
 import { Owner } from "../../dto/owner.js"
 import { Op } from "sequelize"
+import { Season } from "../../dto/season.js"
+import { Team } from "../../dto/team.js"
+import { Sequelize } from "sequelize-typescript"
 
 
 @injectable()
@@ -32,6 +35,38 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
         }, options))
 
     }
+
+    async getRewardsByTeamAndSeason(contractType: string, team: Team, season: Season, options?: any): Promise<OffchainEvent[]> {
+        const seasonRange = {
+            [Op.gte]: season.startDate,
+            ...(season.endDate ? { [Op.lt]: season.endDate } : {}),
+        }
+
+        const modelAlias = (OffchainEvent as any).name
+
+        const whereClause = {
+            [Op.and]: [
+                { contractType },
+                { toTeamId: team._id },
+                { dateCreated: seasonRange },
+                Sequelize.literal(
+                    `JSON_UNQUOTE(JSON_EXTRACT(\`${modelAlias}\`.\`source\`, '$.type')) = 'reward'`
+                ),
+            ],
+        }
+
+        const query = Object.assign(
+            {
+                where: whereClause,
+                order: [["dateCreated", "DESC"]],
+            },
+            options
+        )
+
+        return OffchainEvent.findAll(query)
+    }
+
+
 
     async getByTeamId(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]>  {
 

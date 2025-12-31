@@ -14,11 +14,8 @@ contract Diamonds is ERC20, AccessControl,ERC20Burnable, ERC20Permit {
     uint constant public MINT_TYPE_DIAMONDS = 4; 
 
     Universe private _universe;
-    mapping(uint256 => uint256) public teamDiamondLockExpires;
 
-
-    event WithdrawFromTeam(address to, uint256 mintPassId, uint256 amount, uint256 tokenId );   
-    event DepositToTeam(address from, uint256 tokenId, uint256 amount);
+    event DepositToTeam(address from, uint256 amount);
     event MintReward(address to, uint256 mintPassId, uint256 amount);
 
     mapping(uint256 => bool) public mintPasses;
@@ -32,8 +29,6 @@ contract Diamonds is ERC20, AccessControl,ERC20Burnable, ERC20Permit {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);
 
-        //Also make universe contract a minter.
-        _grantRole(MINTER_ROLE, universeAddress);
     }
     
     function mint(address to, uint256 mintPassId, uint256 amount, uint256 expires, uint8 v, bytes32 r, bytes32 s) public {
@@ -57,38 +52,11 @@ contract Diamonds is ERC20, AccessControl,ERC20Burnable, ERC20Permit {
 
     }
 
-    function withdraw(address to, uint256 mintPassId, uint256 amount, uint256 tokenId, uint256 expires, uint8 v, bytes32 r, bytes32 s) public {
 
-        require(to == _msgSender(), "Wrong wallet.");
-        require(mintPasses[mintPassId] == false, "Mint pass already used.");
-
-        bytes32 payloadHash = keccak256(abi.encode(mintPassId, amount, tokenId, expires, to, MINT_TYPE_WITHDRAW));     
-        bytes32 messageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", payloadHash));
-        address recovered = ECDSA.recover(messageHash, v, r, s );
-
-        require(hasRole(MINTER_ROLE, recovered), "Must be signed by minter");
-        require(block.timestamp <= expires, "Expired.");
-
-        emit WithdrawFromTeam(to, mintPassId, amount, tokenId);
-
-        mintPasses[mintPassId] = true;
-
-
-        //Lock transfers of this token for about an hour.
-        teamDiamondLockExpires[tokenId] = block.timestamp + (60 * 60);
-
-        //Mint
-        _mint(to, amount);
-
-    }
-
-    function deposit(address from, uint256 amount, uint256 tokenId) public {
-        emit DepositToTeam(from, tokenId, amount);
+    function deposit(address from, uint256 amount) public {
+        emit DepositToTeam(from, amount);
         _burn(from, amount);
     }
 
-    function universeBurn(address from, uint256 amount) public onlyRole(MINTER_ROLE) {
-        _burn(from, amount);
-    }
 
 }

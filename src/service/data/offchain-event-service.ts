@@ -11,6 +11,7 @@ import { TeamLeagueSeasonService } from "./team-league-season-service.js";
 import { TeamService } from "./team-service.js";
 import { Team } from "../../dto/team.js";
 import { TeamRepository } from "../../repository/team-repository.js";
+import { SeasonService } from "./season-service.js";
 
 
 
@@ -25,6 +26,7 @@ class OffchainEventService {
 
     constructor(
         private teamLeagueSeasonService:TeamLeagueSeasonService,
+        private seasonService:SeasonService
     ) {}
 
     async createMintEvent(toAddress:string, amount:string, options?:any) {
@@ -136,9 +138,6 @@ class OffchainEventService {
 
     }
 
-
-
-
     async get(_id:string, options?:any) : Promise<OffchainEvent> {
         return this.offchainEventRepository.get(_id, options)
     }
@@ -208,10 +207,33 @@ class OffchainEventService {
 
     }
 
+    async getRewardsForTeamSeason(contractAddress:string,team:Team, season:Season, options?:any) {
+
+        let events:OffchainEvent[] = await this.offchainEventRepository.getRewardsByTeamAndSeason(contractAddress, team, season, options)
+
+        let diamondBalance = "0"
+
+        //Look through events
+        for (let event of events) {
+
+            if (event.amount) {
+                if (event.toTeamId == team._id) {
+                    diamondBalance = (  BigInt(diamondBalance || 0) + BigInt(event.amount) ).toString() 
+                } else if (event.fromTeamId == team._id) {
+                    diamondBalance = (  BigInt(diamondBalance || 0) - BigInt(event.amount) ).toString() 
+                }
+            }
+        }
+
+        return diamondBalance
+
+
+    }
+
+
     async list(contractType:string, options?:any) : Promise<OffchainEvent[]> {
         return this.offchainEventRepository.list(contractType, options)
     }
-
 
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {
 
@@ -237,7 +259,6 @@ class OffchainEventService {
             teams: tlssPlain.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city?.name } })
         }
     }
-
 
 }
 

@@ -162,6 +162,7 @@ async function getContainer(env, footerRoutes) {
             darkMode: "auto",
 
             view: {
+                iosSwipeBack: false,
                 browserHistory: true,
                 browserHistorySeparator: "",
                 browserHistoryOnLoad: false,

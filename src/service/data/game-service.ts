@@ -1025,10 +1025,10 @@ class GameService {
             let hittingRatings = p.hittingRatings
             let pitchRatings = p.pitchRatings
 
-            if (isStartingPitcher && startingPitcher.stamina != 1) {
-                this.playerService.modifyRatings(hittingRatings, startingPitcher.stamina)
-                this.playerService.modifyRatings(pitchRatings, startingPitcher.stamina)
-            }
+            // if (isStartingPitcher && startingPitcher.stamina != 1) {
+            //     this.playerService.modifyRatings(hittingRatings, startingPitcher.stamina)
+            //     this.playerService.modifyRatings(pitchRatings, startingPitcher.stamina)
+            // }
 
             gamePlayers.push({ 
                 _id: p._id,
@@ -1574,6 +1574,7 @@ class GameService {
                     before: game.away.overallRecord.before,
                     after: game.away.overallRecord.after
                 },
+                owner: game.away.owner,
                 color1: game.away.color1,
                 color2: game.away.color2
             },
@@ -1589,6 +1590,7 @@ class GameService {
                     before: game.home.overallRecord.before,
                     after: game.home.overallRecord.after
                 },
+                owner: game.home.owner,
                 color1: game.home.color1,
                 color2: game.home.color2
             },
@@ -2140,13 +2142,12 @@ interface TeamSummary {
     }
     color1:string
     color2:string
+    owner?:{ _id:string }
 }
 
 
 const STANDARD_INNINGS = 9
-const PITCH_EXP_PER_LEVEL = 70
-const HITTER_EXP_PER_LEVEL = 70
-const EXP_WIN_BONUS = 1.2
+
 
 interface SimGameCommand {
 

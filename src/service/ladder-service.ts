@@ -4,7 +4,7 @@ import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./data/pl
 
 import { GameService } from "./data/game-service.js"
 import { FinanceSeason, RotationPitcher, Team } from "../dto/team.js"
-import {  GamePlayer, LeagueAverageRatings, Matchup, MINIMUM_PLAYER_POOL, Rating, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY } from "./enums.js"
+import {  GamePlayer, LeagueAverageRatings, Matchup, MINIMUM_PLAYER_POOL, Rating, Schedule, ScheduleDetails, SERIES_LENGTH, SeriesSchedule, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -162,20 +162,11 @@ class LadderService {
                                 let rewardTeamIds = Array.from(new Set(plss.map( pls => pls.teamId )))
                                 let rewardTeams = teams.filter( t => rewardTeamIds.find( rt => rt == t._id) != undefined)
                                 let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, rewardTeams)
+
+                                await this.distributeRewards(rewardsPerTeam, rewardTeams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
                                 
-                                
-                                //Distribute rewards and save.
+                                //save.
                                 for (let team of teams) {
-
-                                    let reward = rewardsPerTeam.find( r => r._id == team._id)
-
-                                    if (reward) {
-
-                                        let rewardTotal = ethers.parseUnits(reward.amount.toString(), 'ether')
-
-                                        await this.offchainEventService.createTeamMintEvent(team._id, rewardTotal.toString(), { type: "reward", fromDate: universe.currentDate }, options )
-                                    }
-
                                     await this.teamService.put(team, options)
                                 }
 
@@ -217,6 +208,42 @@ class LadderService {
         })
 
         return gameIds
+
+    }
+
+
+    private async distributeRewards(rewardsPerTeam:RewardPerTeam[], rewardTeams:Team[], rewardTlss:TeamLeagueSeason[], season:Season, source:OffChainEventSource, options?:any) {
+        
+        //Distribute rewards and save.
+        for (let team of rewardTeams) {
+
+            let reward = rewardsPerTeam.find( r => r._id == team._id)
+
+            if (reward) {
+
+                let tls = rewardTlss.find( t => t.teamId == team._id)
+                let rewardTotal = ethers.parseUnits(reward.amount.toString(), 'ether')
+
+                await this.distributeReward(team, tls, season, rewardTotal, source, options )
+            
+            }
+
+        }
+
+    }
+
+    private async distributeReward(team:Team, tls:TeamLeagueSeason, season:Season, rewardAmount:bigint, source:OffChainEventSource, options?:any) {
+
+        await this.offchainEventService.createTeamMintEvent(team._id, rewardAmount.toString(), source, options )
+
+        //Calculate my season rewards
+        let seasonRewards = await this.offchainEventService.getRewardsForTeamSeason(ContractType.DIAMONDS, team, season, options)
+        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
+
+        tls.financeSeason.revenue.seasonToDate.total = BigInt(seasonRewards).toString()
+        tls.financeSeason.diamondBalance = BigInt(diamondBalance).toString()
+
+        tls.changed("financeSeason", true)
 
     }
 
@@ -472,10 +499,23 @@ class LadderService {
 
     async finishSeason(season:Season, leagues:League[], options?:any) {
 
-        //Create the next season. Start 30 days from now.
+        //Distribute rewards to anyone that played at least one game and finished above the threshhold
+        let teamIds = await this.teamService.getTeamIdsBySeason(season, options)
+        let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
+
+        let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
+
+        //Calculate season end rewards.
+        let rewardTeams = await this.teamService.getByIds(teamIds, options)
+        let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeams)
+
+        await this.distributeRewards(rewardsPerTeam, rewardTeams, tlss, season, { type: "reward", rewardType:"season", fromDate: season.endDate }, options)
+
+
+        //Create the next season. 
         let nextSeason:Season = new Season()
         nextSeason._id = uuidv4()
-        nextSeason.startDate = dayjs(season.endDate).add(30, 'days').toDate()
+        nextSeason.startDate = dayjs(season.endDate).add(1, 'days').toDate()
         nextSeason.isComplete = false
         nextSeason.isInitialized = false
 
@@ -484,64 +524,64 @@ class LadderService {
         //Handle relegation
         let updatedStructure:{ league:League, teamInfo:{ cityId:string, teamId:string}[]}[] = leagues.map( l => { return { league: l, teamInfo: [] } })
 
-        season.promotionRelegationLog = []
+        // season.promotionRelegationLog = []
 
-        for (let league of leagues) {
+        // for (let league of leagues) {
 
-            let leagueTLS:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
+        //     let leagueTLS:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
 
-            let teamInfo = leagueTLS.map( tls =>  { return { teamId: tls.teamId, cityId: tls.cityId } })
+        //     let teamInfo = leagueTLS.map( tls =>  { return { teamId: tls.teamId, cityId: tls.cityId } })
 
-            let thisLeague = updatedStructure.find( r => r.league.rank == league.rank)
-            let higherLeague = updatedStructure.find( r => r.league.rank == league.rank - 1)
-            let lowerLeague = updatedStructure.find( r => r.league.rank == league.rank + 1)
+        //     let thisLeague = updatedStructure.find( r => r.league.rank == league.rank)
+        //     let higherLeague = updatedStructure.find( r => r.league.rank == league.rank - 1)
+        //     let lowerLeague = updatedStructure.find( r => r.league.rank == league.rank + 1)
 
-            if (higherLeague) {
+        //     if (higherLeague) {
 
-                let i =0
-                let toPromote = []
+        //         let i =0
+        //         let toPromote = []
 
-                //If we're not doing the first league...the top 3 teams go up a level.
-                while (toPromote.length < 3) {
+        //         //If we're not doing the first league...the top 3 teams go up a level.
+        //         while (toPromote.length < 3) {
 
-                    let current = teamInfo[i]
+        //             let current = teamInfo[i]
 
-                    let currentCityCount = higherLeague.teamInfo.filter( ti2 => ti2.cityId == current.cityId).length + toPromote.filter(ti3 => ti3.cityId == current.cityId).length
+        //             let currentCityCount = higherLeague.teamInfo.filter( ti2 => ti2.cityId == current.cityId).length + toPromote.filter(ti3 => ti3.cityId == current.cityId).length
 
-                    if (currentCityCount < 2) {
-                        toPromote.push(current)
-                    }
+        //             if (currentCityCount < 2) {
+        //                 toPromote.push(current)
+        //             }
 
-                    i++
-                }
+        //             i++
+        //         }
 
-                for (let current of toPromote) {
-                    //Remove from teamInfo
-                    teamInfo = teamInfo.filter( ti => ti.teamId != current.teamId)
-                    higherLeague.teamInfo.push(current)
-                    season.promotionRelegationLog.push({ _id: current.teamId, rank: higherLeague.league.rank, previousRank: league.rank})
+        //         for (let current of toPromote) {
+        //             //Remove from teamInfo
+        //             teamInfo = teamInfo.filter( ti => ti.teamId != current.teamId)
+        //             higherLeague.teamInfo.push(current)
+        //             season.promotionRelegationLog.push({ _id: current.teamId, rank: higherLeague.league.rank, previousRank: league.rank})
 
-                }
+        //         }
 
-            }
+        //     }
 
-            if (lowerLeague) {
+        //     if (lowerLeague) {
 
-                //If we're not doing the lowest league...the bottom 3 teams go down a level.
-                //No city contraints on the way down.
+        //         //If we're not doing the lowest league...the bottom 3 teams go down a level.
+        //         //No city contraints on the way down.
 
-                while (lowerLeague.teamInfo.length < 3) {
-                    let ti = teamInfo.pop()
-                    lowerLeague.teamInfo.push(ti)
-                    season.promotionRelegationLog.push({ _id: ti.teamId, rank: lowerLeague.league.rank, previousRank: league.rank})
-                }
+        //         while (lowerLeague.teamInfo.length < 3) {
+        //             let ti = teamInfo.pop()
+        //             lowerLeague.teamInfo.push(ti)
+        //             season.promotionRelegationLog.push({ _id: ti.teamId, rank: lowerLeague.league.rank, previousRank: league.rank})
+        //         }
 
-            }
+        //     }
 
-            //The rest stay here
-            thisLeague.teamInfo.push(...teamInfo)
+        //     //The rest stay here
+        //     thisLeague.teamInfo.push(...teamInfo)
 
-        }
+        // }
         
         //Create next season's TLS
         for (let leagueInfo of updatedStructure) {

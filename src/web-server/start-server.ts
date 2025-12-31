@@ -1379,13 +1379,8 @@ let startWebServer = async () => {
 
       let teamBundle = await getTeamBundle(team)
 
-      let isValid = true
-      try {
-        teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
-      } catch(ex) {
-        isValid = false
-      }
-
+      
+      teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
 
       const lineup = teamBundle.tls.lineups[0].order
         .map(p => {
@@ -1416,16 +1411,15 @@ let startWebServer = async () => {
 
       res.json({
         lineup: lineup,
-        startingPitcher: teamBundle.startingPitcher,
-        isValid: isValid
+        startingPitcher: teamBundle.startingPitcher
       })
 
       return 
       
 
     } catch (ex) {
-        console.log(ex)
-        res.sendStatus(404)
+        res.status(500)
+        res.send(ex.message)
     }
 
   })
@@ -1566,64 +1560,6 @@ let startWebServer = async () => {
     }
 
   })
-
-  app.get('/api/diamond/mint', async function (req, res) {
-
-    try {
-
-      //@ts-ignore
-      let loggedInUser = req.session?.passport?.user
-
-      if (!loggedInUser) {
-        return res.sendStatus(401)
-      }
-
-      let user: User = await userService.get(loggedInUser)
-
-      if (!user.address) {
-        return res.sendStatus(401)
-      }
-
-
-      let owner:Owner = await ownerService.getOrCreate(user.address)
-
-      let balance = await offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner)
-
-      if (BigInt(balance) == BigInt(0)) {
-        return res.sendStatus(400)
-      }
-
-
-    
-      //Generate a mint pass
-      await sequelize.transaction(async (t1) => {
-        
-        let options = { transaction: t1 }
-
-        let owner:Owner = await ownerService.getOrCreate(user.address, options)
-
-        let mintPass:DiamondMintPass = await diamondMintPassService.generateMintPass(owner._id, BigInt(balance).toString(), options)
-
-        await offchainEventService.createBurnEvent(owner._id, balance, options)
-
-        owner.offChainDiamondBalance = "0"
-        owner.offChainDiamondBalanceDecimal = 0
-
-        await ownerService.put(owner, options)
-
-        return res.json(mintPass)
-
-      })
-
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(404)
-    }
-
-  })
-
-
 
   app.get('/api/league/list', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
 
@@ -1878,8 +1814,8 @@ let startWebServer = async () => {
 
 
       } catch (ex) {
-        console.log(ex)
-        res.sendStatus(404)
+        res.status(500)
+        res.send(ex.message)
       }
 
 

@@ -53,7 +53,7 @@
 
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
-                                    ${p.team?.abbrev ? $h`<a href="${universeWebService.startDateLink(`/t/${p.team?.tokenId}`)}" class="position">${p.team?.cityName} (${p.team?.abbrev})</a> - ` : $h`<span />`}<span class="position">${p.primaryPosition}</span> <span class="rest">${playerWebService.displayRestDays(p, universeWebService.getCurrentDate())}</span>
+                                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span> <span class="rest">${playerWebService.displayRestDays(p, universeWebService.getCurrentDate())}</span>
                                 ` : $h` `}
                             </td>
                             
@@ -127,6 +127,7 @@
   import { PlayerWebService } from "../../service/player-web-service.ts"
   import { PagingService } from "../../../service/paging-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
 
   export default (props, { $, $on, $f7, $update }) => {
 
@@ -134,6 +135,7 @@
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let pagingService = ContainerService.getInstance(PagingService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let currentPage = 0
 

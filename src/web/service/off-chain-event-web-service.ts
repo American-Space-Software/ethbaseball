@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { inject, injectable } from "inversify";
 
 
@@ -22,10 +23,17 @@ class OffChainEventWebService {
             if (oce.fromAddress == "0x0000000000000000000000000000000000000000") {
 
                 if (oce.toTeamId) {
-                    return "Daily Revenue"
-                } else {
-                    return "Reward"
+
+                    if (oce.source?.type == "reward" && oce.source?.rewardType == "daily") {
+                        return `Daily reward for ${dayjs(oce.source?.fromDate).format("MMM D, YYYY")}`
+                    } else if (oce.source?.type == "reward" && oce.source?.rewardType == "season") {
+                        return `Season rewards for ${dayjs(oce.source?.fromDate).format("MMM D, YYYY")}`
+
+                    }
                 }
+
+                return "Reward"
+
             }
         }
 

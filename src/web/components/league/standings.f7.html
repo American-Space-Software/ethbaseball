@@ -68,7 +68,7 @@
                                         <th data-sort="overallRecord.winPercent" class="numeric-cell" style="width: 30px;">Win%</th>
                                         <!-- <th data-sort="overallRecord.gamesBack" class="numeric-cell" style="width: 30px;">GB</th> -->
                                         <th data-sort="longTermRating.rating" class="numeric-cell" style="width: 30px;">Rating</th>
-                                        <th data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell" style="width: 30px;">Cash</th>
+                                        <th data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell" style="width: 30px;">Season Rewards</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -84,12 +84,10 @@
                                             </td>
 
                                             <td class="name lock-name">
-                                                ${t.city ? $h`
-                                                    <a href="${ universeWebService.startDateLink(`/t/index/${t._id}`)  }"><span class="small">${t.city.name}</span><br />${t.name}</a>
-                                                ` : $h`
-                                                    <a href="${ universeWebService.startDateLink(`/t/index/${t._id}`)  }">${t.name}</a>
-                                                `}
 
+                                                <a href="${ universeWebService.startDateLink(`/t/index/${t._id}`)  }">
+                                                    <span innerHTML="${teamWebService.getTeamNameStacked(t)}"></span>
+                                                </a>
                                                 
                                             </td>
                                             <td class="numeric-cell">${t.overallRecord.wins}</td>
@@ -99,7 +97,7 @@
                                             <td class="numeric-cell">${t.longTermRating.rating.toFixed(0)}</td>
 
                                             <td class="numeric-cell">
-                                                ${universeWebService.displayDiamondsNoSymbol(t.financeSeason.diamondBalance)}</td>
+                                                ${universeWebService.displayDiamonds(t.financeSeason?.revenue?.seasonToDate?.total)}</td>
                                             <td></td>
                                         </tr>
                                     `)}
@@ -167,6 +165,7 @@
     import { ContainerService } from "../../../service/container-service.ts"
     import { PlayerWebService } from "../../service/player-web-service.ts"
     import { UniverseWebService } from "../../service/universe-web-service.ts"
+    import { TeamWebService } from "../../service/team-web-service.ts"
 
     import { StatService } from "../../../service/stat-service.ts"
     import { Position } from "../../../service/enums.ts"
@@ -179,6 +178,7 @@
         let playerWebService = ContainerService.getInstance(PlayerWebService)
         let statService = ContainerService.getInstance(StatService)
         let universeWebService = ContainerService.getInstance(UniverseWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
 
         let viewModel = props.viewModel
         let leagueVm

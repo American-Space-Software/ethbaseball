@@ -15,7 +15,6 @@
             <th class="name">Name</th>
             ${actions ? $h`<th class="action"></th>` : $h` `}  
             <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'displayRating' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="displayRating">OVR</th>          
-            <th @click=${sortRows} data-sort="throws" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'throws' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Throws</th>
             <th @click=${sortRows} data-sort="hits" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hits' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Bats</th>
             <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.games' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.games">G</th>
             <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'hitting.pa' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="hitting.pa">PA</th>
@@ -63,7 +62,9 @@
                       ${p?.fullName ? $h`${p?.fullName}<br />` : $h` `}
                     `}
 
-                    ${p.team?.abbrev ? $h`<a href="${universeWebService.startDateLink(`/t/${p.team?.tokenId}`)}" class="position">${p.team?.cityName} (${p.team?.abbrev})</a> - ` : $h`<span />`}<span class="position">${p.primaryPosition}</span>
+                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
+                    
+                    
 
                   ` : $h` `}
                 </td>
@@ -77,7 +78,6 @@
                 ` : $h` `}
 
                 <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
-                <td>${p?.throws}</td>
                 <td>${p?.hits}</td>
                 <td class="numeric-cell">${getStats(p)?.hitting?.games}</td>
                 <td class="numeric-cell">${getStats(p)?.hitting?.pa}</td>
@@ -141,6 +141,7 @@
   import { StatService } from "../../../service/stat-service.ts"
   import { PlayerWebService } from "../../service/player-web-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
 
   import { PagingService } from "../../../service/paging-service.ts"
 
@@ -149,6 +150,8 @@
     let statService = ContainerService.getInstance(StatService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
+
     let pagingService = ContainerService.getInstance(PagingService)
 
     let currentPage = 0

@@ -8,25 +8,30 @@
         <div class="fixed-width-content center">
 
           <div class="block">
-              <div class="team-info">
 
-                  <div class="left">
-                      <img src="/image/thumbnail/100/${vm.team.logoId}" class="profilePic" height="100" width="100" />
-                  </div>
+              <a class="link" href="/t/index/${vm.team._id}">
 
-                  <div class="right">
+                <div class="team-info">
 
-                      <span class="name"><a class="link" href="/t/index/${vm.team._id}">${teamWebService.getTeamName(vm.team)}</a></span> 
+                    <div class="left">
+                        <img src="/image/thumbnail/100/${vm.team.logoId}" class="profilePic" height="100" width="100" />
+                    </div>
 
-                      <div class="team-record">
-                          <span class="label">Ranked: </span> ${ vm.team.overallRecord.rank } <br />
-                          <span class="label">Record: </span> ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(vm.team.overallRecord.winPercent)}<br />
-                          <span class="label">Cash: </span> ${universeWebService.displayDiamonds(vm.team.diamondBalance)}<br /><br />
-                      </div>
-                      
-                  </div>
+                    <div class="right">
 
-              </div>
+                        <span class="name">${teamWebService.getTeamName(vm.team)}</span> 
+
+                        <div class="team-record">
+                            <!-- <span class="label">Ranked: </span> ${ vm.team.overallRecord.rank } <br /> -->
+                            <span class="label">Record: </span> ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(vm.team.overallRecord.winPercent)}<br />
+                            <span class="label">Cash: </span> ${universeWebService.displayDiamonds(vm.team.diamondBalance)}<br /><br />
+                        </div>
+                        
+                    </div>
+
+                </div>
+
+              </a>
           </div>
 
           <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
@@ -34,8 +39,7 @@
                   <li><a class="link" href="/t/index/${vm.team._id}">👥 Manage Team</a></li>
 
                   ${!inProgressGame ? $h`
-                    <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
-                    <li><a class="link" href="/t/index/${vm.team._id}">🏆 Play</a></li>
+                    <li><a class="link popup-open" data-popup=".play-popup">🏆 Play</a></li>
                   ` : $h` `}
 
               </ul>
@@ -62,7 +66,7 @@
                     <li>
                       <div class="item-content">
                           <div class="item-media">
-                              <i class="f7-icons">plus_square_fill</i>
+                              🔷
                           </div>
                           <div class="item-inner">
 
@@ -109,6 +113,37 @@
         </div>
 
         
+        <div class="popup play-popup">
+          <div class="view">
+            <div class="page">
+              <div class="navbar">
+                <div class="navbar-bg"></div>
+                <div class="navbar-inner">
+                  <div class="title">
+                    Play a Game
+                  </div>
+                  <div class="right">
+                    <!-- Link to close popup -->
+                    <a class="link popup-close">Close</a>
+                  </div>
+                </div>
+              </div>
+              <div class="page-content">
+
+                <div class="list links-list list-outline list-strong">
+                  <ul>
+                    <li>
+                      <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
+                      <li><a class="link" href="/t/index/${vm.team._id}">🏆 Enter PvP Queue</a></li>                        
+                    </li>
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
         <${Footer} />
 
     </div>
@@ -277,7 +312,7 @@
       try {
         
         let lineup = await teamWebService.getActiveLineup(vm.team._id)
-
+        
         createLineupPopup(lineup, async () => {
           
           let gameInfo = await gameWebService.playBot()
@@ -288,8 +323,14 @@
 
         })
       
-      } catch(ex) {
-        $f7.dialog.alert(ex.message, "There was an error")
+      } catch(ex) { 
+
+        if (ex.response.data) {
+          $f7.dialog.alert(ex.response.data, "Lineup Error")
+        } else {
+          $f7.dialog.alert(ex.message, "There was an error")
+        }
+        
       }
 
       $f7.preloader.hide()

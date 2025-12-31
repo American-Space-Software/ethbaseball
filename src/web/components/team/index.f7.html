@@ -36,11 +36,11 @@
                                 ${teamComponentService.team.owner?.discordId ? $h`
                                     <span class="label">Discord:</span> <a class="external link" href="https://discord.com/users/${teamComponentService.team.owner?.discordId}">${teamComponentService.team.owner?.discordUsername}</a><br /><br />
                                 ` : $h` `}
-                                <span class="label">Ranked: </span> ${ teamComponentService.team.overallRecord.rank } <br />
-                                <span class="label">Overall: </span> ${ teamComponentService.team.longTermRating.rating.toFixed(0) } <br />
-                                <span class="label">Season: </span> ${ teamComponentService.team.seasonRating.rating.toFixed(0) } <br />
+                                <!-- <span class="label">Ranked: </span> ${ teamComponentService.team.overallRecord.rank } <br /> -->
+                                <span class="label">Rating: </span> ${ teamComponentService.team.longTermRating.rating.toFixed(0) } <br />
+                                <!-- <span class="label">Season: </span> ${ teamComponentService.team.seasonRating.rating.toFixed(0) } <br /> -->
                                 <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} <br />
-                                <span class="label">Cash: </span> <a data-popup=".front-office-popup" class="link popup-open" href="#">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</a><br /><br />
+                                <span class="label">Cash: </span> ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}<br /><br />
                             </div>
 
                         </div>
@@ -51,7 +51,7 @@
                 <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
                     <ul>
                         <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">📝 Activity</a></li>
-                        <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>   
+                        <!-- <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>    -->
 
                         ${games?.length > 0 ? $h`
                             <a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> 
@@ -327,42 +327,6 @@
                                     </ul>
                                 </div>
                         
-                                </div>            
-                            </div>
-
-                            <div class="card card-outline card-header-divider">
-                                <div class="card-header">Revenue</div>
-                                <div class="card-content card-content-padding data-table">
-
-                                        <div class="ticket-price">
-                                            <strong>Home Games Played:</strong> ${teamComponentService.team.financeSeason.homeGamesPlayed}<br />
-                                        </div>
-
-
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th class="label-cell"></th>
-                                                    <th class="numeric-cell">Revenue</th>
-                                                    <th class="numeric-cell">Proj. Revenue (Remaining)</th>
-                                                    <th class="numeric-cell">Proj. Revenue (Total)</th>
-                                                </tr>
-                                            </thead>
-                            
-                                            <tbody>
-                                                
-
-                                                <tr class="total">
-                                                    <td class="label-cell">Total</td>
-                                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
-                                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedRemaining.total)}</td>
-                                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.projectedTotal.total)}</td>
-                                                </tr>
-                            
-                            
-                                            </tbody>
-                                        </table>
-
                                 </div>            
                             </div>
 

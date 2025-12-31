@@ -1455,15 +1455,21 @@ class GameWebService {
 
     getEffectivePitchRatings(pitcher: GamePlayer, hitterHandedness: Handedness) {
 
+        let ratings
+
         if (hitterHandedness == Handedness.R) {
-            return Object.assign({ power: pitcher.pitchRatings.power}, pitcher.pitchRatings.vsR)
+            ratings =  Object.assign({ power: pitcher.pitchRatings.power}, pitcher.pitchRatings.vsR)
         } else {
-            return Object.assign({ power: pitcher.pitchRatings.power}, pitcher.pitchRatings.vsL)
+            ratings = Object.assign({ power: pitcher.pitchRatings.power}, pitcher.pitchRatings.vsL)
         }
+
+        return ratings
 
     }
 
     pitcherRatings(pitchRatings) {
+
+        console.log(pitchRatings)
 
         return `POW ${pitchRatings.power }, CON ${ pitchRatings.control }, MOV ${ pitchRatings.movement }`
     }

@@ -88,6 +88,24 @@ class TeamWebService {
         return `${tls.name}${isBot ? ' 🤖' : ''}`
     }
 
+    getTeamNameStacked(tls) {
+
+        let isBot = tls.owner?._id == undefined
+
+        let cityName = tls.city?.name ? tls.city.name : tls.cityName
+
+        if (cityName) {
+
+            return `
+                <span class="small">${cityName}</span><br />
+                ${tls.name}${isBot ? ' 🤖' : ''}
+            `
+        } 
+
+        return this.getTeamName(tls)
+
+    }
+
     getOverallRank(rank:number, leagueRank:number, teams:number) {
         return rank + ((leagueRank - 1) * teams)
     }

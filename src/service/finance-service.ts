@@ -4,7 +4,7 @@ import { FinanceSeason, Lineup, Revenue, RotationPitcher, Team } from "../dto/te
 
 import { Player } from "../dto/player.js";
 
-import { GameTeamFinance, LEASE_PER_CAPACITY, Position} from "./enums.js";
+import { GameTeamFinance, LEASE_PER_CAPACITY, Position, RewardPerTeam} from "./enums.js";
 
 import { LineupService } from "./lineup-service.js";
 import { ethers } from "ethers";
@@ -255,30 +255,32 @@ class FinanceService {
      * @param teams 
      * @returns 
      */
-    calculateRewardsPerTeam(
-        totalRewards: number,
-        teams: Team[]
-    ) : { _id: string, amount: number, longTermAmount: number, seasonAmount: number }[] {
+    calculateRewardsPerTeam( totalRewards: number, teams: Team[] ) : RewardPerTeam[] {
 
         const BASE_RATING = 1500
         const STEP = 300
+        const MIN_RATING = 1450
 
         if (teams.length === 0) return []
 
         const computeShares = (getRating: (t: Team) => number) => {
-            const weights = teams.map((t) => {
-                const exponent = (getRating(t) - BASE_RATING) / STEP
-                return Math.pow(2, exponent)
-            })
+            // Zero out teams below threshold
+            const eligible = teams.map(t => ({
+                team: t,
+                rating: getRating(t),
+                weight: getRating(t) >= MIN_RATING
+                    ? Math.pow(2, (getRating(t) - BASE_RATING) / STEP)
+                    : 0
+            }))
 
-            const totalWeight = weights.reduce((sum, w) => sum + w, 0)
+            const totalWeight = eligible.reduce((sum, e) => sum + e.weight, 0)
 
             if (totalWeight === 0) {
-                const equalShare = 1 / teams.length
-                return teams.map(() => equalShare)
+                // Everyone below threshold → everyone gets zero
+                return teams.map(() => 0)
             }
 
-            return weights.map(w => w / totalWeight)
+            return eligible.map(e => e.weight / totalWeight)
         }
 
         const longTermShares = computeShares(t => t.longTermRating.rating)
@@ -289,11 +291,10 @@ class FinanceService {
         return teams.map((t, i) => {
             const longTermAmount = longTermShares[i] * half
             const seasonAmount = seasonShares[i] * half
-            const amount = longTermAmount + seasonAmount
 
             return {
                 _id: t._id,
-                amount,
+                amount: longTermAmount + seasonAmount,
                 longTermAmount,
                 seasonAmount
             }

@@ -28,6 +28,7 @@ interface TeamRepository {
     getOverallRecordBySeason(team:Team, season:Season, options?:any)
     addToLeagueSeason(team:Team, league:League, season:Season, options?:any)
     getClosetRatedBot(rating:number, options?:any): Promise<Team>
+    getTeamIdsBySeason(season:Season, options?:any) : Promise<string[]>
 }
 
 export {

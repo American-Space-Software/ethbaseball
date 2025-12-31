@@ -69,49 +69,6 @@ contract Universe is ERC721, ERC721URIStorage, AccessControl {
 
     }
 
-    function mintForeclosure(address to, uint256 tokenId, uint256 cost, uint256 expires, uint8 v, bytes32 r, bytes32 s) public payable {
-
-        require(_ownerOf(tokenId) != address(0), "Token is not owned.");
-
-        bytes32 payloadHash = keccak256(abi.encode(tokenId, cost, expires, to, MintType.FORCLOSURE));        
-        bytes32 messageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", payloadHash));
-        address recovered = ECDSA.recover(messageHash, v, r, s );
-
-        require(hasRole(MINTER_ROLE, recovered), "Must be signed by minter");
-        require(msg.value == cost, "Send exact ETH");
-        require(block.timestamp <= expires, "Expired.");
-
-        //Mint
-        _burn(tokenId);
-
-        _safeMint(to, tokenId);
-
-    }
-
-    function mintWithDiamonds(address to, uint256 tokenId, uint256 amount, uint256 expires, uint8 v, bytes32 r, bytes32 s) public {
-
-        require(to == _msgSender(), "Wrong wallet.");
-        require(_ownerOf(tokenId) == address(0), "Token is already owned.");
-
-
-        bytes32 payloadHash = keccak256(abi.encode(tokenId, amount, expires, to, MintType.MINT_DIAMONDS));        
-        bytes32 messageHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", payloadHash));
-        address recovered = ECDSA.recover(messageHash, v, r, s );
-
-        require(hasRole(MINTER_ROLE, recovered), "Must be signed by minter");
-        require(_diamonds.balanceOf(_msgSender()) >= amount, "Insufficient diamonds");
-        require(block.timestamp <= expires, "Expired.");
-
-
-        //Transfer appropriate amount of diamonds from the "to" address to the Universe contract. 
-        //Error if permit fails or user does not have the balance.
-        _diamonds.universeBurn(_msgSender(), amount);
-
-        //Mint
-        _safeMint(to, tokenId);
-
-    }
-
     function tokenURI(uint256 tokenId) public view virtual override(ERC721, ERC721URIStorage) returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "ERC721Metadata: URI query for nonexistent token");
         return string(abi.encodePacked("ipfs://", _ipfsCid, "/metadata/", Strings.toString(tokenId), ".json"));
@@ -140,17 +97,6 @@ contract Universe is ERC721, ERC721URIStorage, AccessControl {
         require(success);
 
     }
-
-    function _update(address to, uint256 tokenId, address auth) internal virtual override returns (address) {
-
-        require(block.timestamp > _diamonds.teamDiamondLockExpires(tokenId), "Transfer locked from withdraw.");
-
-        address from = super._update(to, tokenId, auth);
-
-        return from;
-
-    }
-
 
 
 

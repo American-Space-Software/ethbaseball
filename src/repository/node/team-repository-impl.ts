@@ -10,6 +10,7 @@ import { Stadium } from "../../dto/stadium.js"
 import { Season } from "../../dto/season.js"
 import { League } from "../../dto/league.js"
 import { User } from "../../dto/user.js"
+import dayjs from "dayjs"
 
 
 @injectable()
@@ -565,6 +566,33 @@ class TeamRepositoryNodeImpl implements TeamRepository {
                 gamesBehind: qr.gamesBack
             }
         }
+
+
+    }
+
+    async getTeamIdsBySeason(season:Season, options?:any) : Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.RAW,
+            plain: false,
+            mapToModel: false,
+            replacements: {
+                startDate: dayjs(season.startDate).format("YYYY-MM-DD"),
+                endDate: dayjs(season.endDate).format("YYYY-MM-DD"),
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            SELECT DISTINCT t._id
+            FROM team t
+            INNER JOIN game_team gt ON gt.teamId = t._id
+            INNER JOIN game g ON g._id = gt.gameId
+            WHERE g.gameDate BETWEEN :startDate AND :endDate
+        `, Object.assign(queryOptions, options))
+
+        return queryResults.map( qr => qr._id)
 
 
     }

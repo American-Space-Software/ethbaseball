@@ -1455,17 +1455,6 @@ class PlayerService {
 
             let salaryDecimal = 0
             
-            // if (p.askingPrice) {
-            //     salaryDecimal = p.askingPrice
-            // } else if (p.contractYear) {
-            //     salaryDecimal = parseInt(ethers.formatUnits(p.contractYear.salary, 'ether'))
-            // }
-            
-            // let allYears = this.getAllContractYears(p.player)
-            // let futureContractYears = allYears.filter( y =>   dayjs(y.startDate).toDate() >= dayjs(season.startDate).toDate() || y.startDate == undefined   )
-            
-            //p.askingPrice ? p.askingPrice : parseInt(ethers.formatUnits(p.contractYear.salary, 'ether'))
-
             let vm:any = {
                 _id: p.player._id,
                 displayRating: p.player.displayRating,
@@ -1485,9 +1474,7 @@ class PlayerService {
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
                 careerStats: p.player.careerStats,
-                seasonStats: p.stats,
-
-                // futureContractYears: futureContractYears
+                seasonStats: p.stats
             }
 
             if (t) {
@@ -1495,8 +1482,10 @@ class PlayerService {
                     name: t.team.name,
                     cityName: t.city?.name,
                     _id: t.teamId,
-                    tokenId: t.team.tokenId,
-                    abbrev: t.team.abbrev
+                    abbrev: t.team.abbrev,
+                    owner: {
+                        _id: t.team.userId
+                    }
                 }
             }
 

@@ -21,8 +21,7 @@
                 <td class="name">
                   <a href="${universeWebService.startDateLink(`/t/${game.away.tokenId}`)}" class="team-link">
                     <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo"/>
-                    <span class="small">${game.away.cityName}</span><br />
-                    ${game.away.name}
+                    <span innerHTML="${teamWebService.getTeamNameStacked(game.away)}"></span>
                   </a>
 
                   
@@ -34,8 +33,7 @@
                   
                   <a href="${universeWebService.startDateLink(`/t/${game.home.tokenId}`)}" class="team-link">
                     <img src="/image/thumbnail/${game.home.logoId}" class="profilePic"  alt="${game.home.cityName} ${game.home.name} Logo"/>
-                    <span class="small">${game.home.cityName}</span><br />
-                    ${game.home.name}
+                    <span innerHTML="${teamWebService.getTeamNameStacked(game.home)}"></span>
                   </a>
                   
                 </td>
@@ -67,6 +65,7 @@
     import { LoginWebService } from "../../service/login-web-service"
     import { UniverseWebService } from "../../service/universe-web-service"
     import { GameWebService } from "../../service/game-web-service"
+    import { TeamWebService } from "../../service/team-web-service"
 
     import logo from "../../html/images/logo.png"
     import { ethers } from "ethers"
@@ -78,18 +77,11 @@
         let loginWebService = ContainerService.getInstance(LoginWebService)
         let universeWebService = ContainerService.getInstance(UniverseWebService)
         let gameWebService = ContainerService.getInstance(GameWebService)
-
-        const percentageFormatter = (num) => {
-            return new Intl.NumberFormat('default', {
-                style: 'percent',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(num)
-        }
+        let teamWebService = ContainerService.getInstance(TeamWebService)
 
         let game = props.game
 
-
+        console.log(game)
         return $render
     }
 </script>

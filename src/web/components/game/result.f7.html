@@ -11,8 +11,8 @@
               <td class="name">
                 
                 <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo" />
-                <span class="small">${game.away.cityName}</span><br />
-                ${game.away.name} <span class="small-gray">${game.away.overallRecord.after?.wins}-${game.away.overallRecord.after?.losses}</span>
+                <span innerHTML="${teamWebService.getTeamNameStacked(game.away)}"></span>
+                
                 
               </td>
               <td class="runs">${game.score.away}</td>
@@ -21,8 +21,7 @@
               <td class="name">
                 
                 <img src="/image/thumbnail/${game.home.logoId}" class="profilePic" alt="${game.home.cityName} ${game.home.name} Logo" />
-                <span class="small">${game.home.cityName}</span><br />
-                ${game.home.name} <span class="small-gray">${game.home.overallRecord.after?.wins}-${game.home.overallRecord.after?.losses}</span>
+                <span innerHTML="${teamWebService.getTeamNameStacked(game.home)}"></span>
                 
               </td>
               <td class="runs">${game.score.home}</td>
@@ -45,6 +44,7 @@
     import { LoginWebService } from "../../service/login-web-service"
     import { UniverseWebService } from "../../service/universe-web-service"
     import { GameWebService } from "../../service/game-web-service"
+    import { TeamWebService } from "../../service/team-web-service"
 
     import logo from "../../html/images/logo.png"
     import { ethers } from "ethers"
@@ -56,14 +56,7 @@
         let loginWebService = ContainerService.getInstance(LoginWebService)
         let universeWebService = ContainerService.getInstance(UniverseWebService)
         let gameWebService = ContainerService.getInstance(GameWebService)
-
-        const percentageFormatter = (num) => {
-            return new Intl.NumberFormat('default', {
-                style: 'percent',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(num)
-        }
+        let teamWebService = ContainerService.getInstance(TeamWebService)
 
         let game = props.game
 

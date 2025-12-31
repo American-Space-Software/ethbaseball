@@ -9,7 +9,6 @@
                 <th>W-L</th>
                 <th>Win</th>
                 <th>Loss</th>
-                <th>Profit</th>
             </thead>
             <tbody>
                 ${gameLogs?.length > 0 ? $h`
@@ -67,9 +66,6 @@
                                 ` : $h` `}
                             </td>
 
-                            <td>
-                                ${gl.team.finances?.totalProfit ? $h`${universeWebService.displayDiamonds(gl.team.finances?.totalProfit)}` : $h` `}
-                            </td>
 
                         </tr>
                     `)}

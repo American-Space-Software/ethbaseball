@@ -9,9 +9,18 @@
 
       <div class="left">
 
-        <a href="/" class="logo" aria-label="Home">
-          <img src="${logo}" alt="Logo" class="logo" />
-        </a>
+        ${showBack ? $h`
+
+          <a href="#" class="link back" data-force="true">
+              <i class="icon icon-back"></i>          
+          </a>
+
+        ` : $h`
+          <a href="/" class="logo" aria-label="Home">
+            <img src="${logo}" alt="Logo" class="logo" />
+          </a>
+        `}
+
 
       </div>
 
@@ -26,17 +35,18 @@
                 <div class="popover-inner">
                   <div class="list inset list-strong list-dividers-ios">
                     <ul>
+                      <li><a href="/" class="list-button popover-close" >Home</a></li>
                       <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a></li>
                       <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">Scores</a></li>
                       <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">Players</a></li>
                       <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li>
                       <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
                       <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
-                      <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li>
-
+                      <!-- <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li> -->
+<!-- 
                       ${env.OPENSEA_COLLECTION_URL ? $h`
                         <li><a class="list-button external popover-close" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a></li>
-                        ` : $h` `}
+                        ` : $h` `} -->
                       <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
 
 
@@ -56,11 +66,11 @@
           <a href="/u/owners" class="link ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a>
           <a href="/activity"  class="link  ${tabLink == '/activity' ? 'active' : ''}">Activity</a>
           <a href="/about"  class="link ${tabLink == '/about' ? 'active' : ''}">About</a>
-          <a class="link external " href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a>
+          <!-- <a class="link external " href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a> -->
 
-          ${env.OPENSEA_COLLECTION_URL ? $h`
+          <!-- ${env.OPENSEA_COLLECTION_URL ? $h`
             <a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a>
-            ` : $h` `}
+            ` : $h` `} -->
           <a class="link external " href="${discord}" target="_blank">💬 Discord</a>
 
         </div>
@@ -206,7 +216,7 @@
 
                 ${authInfo?.address ? $h`
 
-                  <div class="card card-outline card-header-divider">
+                  <!-- <div class="card card-outline card-header-divider">
                     <div class="card-header">Wallet</div>
                     <div class="card-content card-content-padding">
 
@@ -320,7 +330,7 @@
 
 
                     </div>
-                  </div>
+                  </div> -->
 
                   <div class="card card-outline card-header-divider">
                     <div class="card-header">Account</div>
@@ -427,7 +437,6 @@
     let env = ContainerService.getInstance("env")()
     let discord = ContainerService.getInstance("discord")
 
-    let showHome
     let showBack
     let tabLink 
     let authInfo
@@ -544,6 +553,9 @@
 
     }
 
+
+
+    
     const loadUser = async (force) => {
     
       authInfo = await loginWebService.getAuthInfo(force)
@@ -594,12 +606,15 @@
     })
 
     eventTarget.addEventListener('main-nav', async (e) => {
+
       subnavVisible = e.detail.visible == false ? false : true
       tabLink = e.detail.tabLink
       breadcrumbs = e.detail.breadcrumbs
 
-      showHome = $f7.views.main.router.currentRoute?.name == "/"
-      showBack = $f7.views.main.router.previousRoute?.name != undefined
+      showBack = $f7.views.main.router.history?.length > 1 
+
+      let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+      if (vw > 1024) showBack = false
 
 
       await $update()
@@ -607,12 +622,6 @@
     })
 
 
-    // const backClick = (e) => {
-    //   $f7.views.main.router.back("/", {
-    //     animate: false,
-    //     browserHistory: false
-    //   })
-    // }
 
     const login = (e) => {
 

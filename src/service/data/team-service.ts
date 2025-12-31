@@ -130,6 +130,10 @@ n
         return this.teamRepository.addToLeagueSeason(team, league, season, options)
     }
 
+    async getTeamIdsBySeason(season:Season, options?:any) : Promise<string[]> {
+        return this.teamRepository.getTeamIdsBySeason(season, options)
+    }
+
     async getSeasonHistory(team: Team, options?: any): Promise<SeasonHistory[]> {
 
         let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)
@@ -544,6 +548,24 @@ n
 
     }
 
+    validateLineupsAllowTiredStarters(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[], gameDate: Date) {
+
+        tls.hasValidLineup = false
+
+        for (let lineup of tls.lineups) {
+
+            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss, gameDate)
+
+            this.validateLineupAllowTiredStarters(team, lineup, plss, startingPitcher, gameDate)
+
+            if (lineup.valid == true) {
+                tls.hasValidLineup = true
+            }
+        }
+
+    }
+
+
     validateLineup(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[], startingPitcher: RotationPitcher, gameDate: Date) {
 
         lineup.valid = false
@@ -607,6 +629,71 @@ n
         }
 
     }
+
+    validateLineupAllowTiredStarters(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[], startingPitcher: RotationPitcher, gameDate: Date) {
+
+        lineup.valid = false
+
+        //Make sure there are 9 spots in the order and 5 spots in the rotation
+        if (lineup.order.length != 9) {
+            throw new Error("Lineup must have 9 players.")
+        }
+
+        if (lineup.rotation.length != 5) {
+            throw new Error("Rotation must have 5 players.")
+        }
+
+        //Make sure no one is playing a duplicate position
+        let filledSpots = lineup.order.filter(o => o.position != undefined)
+        let filledPositions = new Set(filledSpots.map(o => o.position))
+
+        if (filledPositions.size != filledSpots.length) {
+            throw new Error("Duplicate position players.")
+        }
+
+        for (let p of lineup.order) {
+
+            if (p?._id == undefined) continue
+
+            let pls = plss.find(p2 => p2.player._id == p._id)
+
+            //Pitcher spot will not have an id/pitcher
+            if ( (!pls || pls.teamId != team._id) && p.position != Position.PITCHER) {
+                throw new Error("Invalid player in lineup.")
+            }
+
+            if (p.position == Position.PITCHER) {
+                if (p._id) throw new Error("Pitcher set to specific ID. Invalid.")
+            }
+
+        }
+
+        for (let p of lineup.rotation) {
+
+            if (p?._id == undefined) continue
+
+            let pls = plss.find(p2 => p2.player._id == p._id)
+
+            if ((!pls || pls.teamId != team._id) || pls.player.primaryPosition != Position.PITCHER) {
+                throw new Error("Invalid player in rotation.")
+            }
+        }
+
+        // if (!startingPitcher) {
+        //     throw new Error(`No valid starting pitcher for ${dayjs(gameDate).format('YYYY-MM-DD')}`)
+        // }
+
+        //Lineup must have 8 hitters, one empty pitcher spot, and 5 pitchers in the rotation to be valid.
+        if (
+            lineup.order.filter(p => p._id != undefined).length == 8 &&
+            lineup.order.filter(p => p._id == undefined && p.position == Position.PITCHER).length == 1 &&
+            lineup.rotation.filter(p => p._id != undefined).length == 5
+        ) {
+            lineup.valid = true
+        }
+
+    }
+
 
     async getEligibleTeams(options?: any): Promise<Team[]> {
         return this.teamRepository.getEligibleTeams(options)
@@ -726,7 +813,7 @@ n
         currentTLS.lineups = lineups
         currentTLS.changed('lineups', true)
 
-        await this.validateLineups(team, currentTLS, currentPLSPlain, nextStartDate)
+        await this.validateLineupsAllowTiredStarters(team, currentTLS, currentPLSPlain, nextStartDate)
 
         await this.teamLeagueSeasonService.put(currentTLS, options)
     }

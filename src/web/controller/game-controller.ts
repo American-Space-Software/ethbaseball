@@ -52,9 +52,7 @@ class GameController {
             let games = await this.gameWebService.getGames(gameDate, this.universeWebService.getRank())
 
 
-
-
-
+            console.log(games)
 
 
             return {
