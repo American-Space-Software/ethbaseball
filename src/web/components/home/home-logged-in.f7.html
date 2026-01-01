@@ -133,7 +133,7 @@
                 <div class="list links-list list-outline list-strong">
                   <ul>
                     <li>
-                      <li><a class="link" @click="${playBotClick}">🤖 Play Bot</a></li>
+                      <li><a class="link popup-close" @click="${playBotClick}">🤖 Play Bot</a></li>
                       <li><a class="link" href="/t/index/${vm.team._id}">🏆 Enter PvP Queue</a></li>                        
                     </li>
                   </ul>
@@ -230,7 +230,7 @@
           </td>
           <td class="name">
             ${p?._id ? `
-              <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
+              <a href="${universeWebService.startDateLink(`/p/${p._id}`)}" class="popup-close">${p.fullName}</a><br />
               <span class="position">${p.primaryPosition}</span>
             ` : ``}
           </td>
@@ -265,9 +265,9 @@
                   </table>
                 </div>
 
-                <div class="block split-row-both">
+                <div class="block split-row-both" style="margin-top: 5px;">
                   <div>
-                    <a class="button button-outline color-gray popup-close">Edit Lineup</a>
+                    <a class="button button-outline color-gray popup-close" href="/t/index/${vm.team._id}">Edit Lineup</a>
                   </div>
                   <div>
                     <a class="button button-fill confirm-lineup-btn">Confirm</a>
@@ -340,6 +340,9 @@
 
     $on('pageBeforeIn', async (e) => {
 
+      //Start watching game
+      // gameWebService.watchGame(gameViewModel.game._id, onGameUpdate)
+
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {
             visible: false,
@@ -365,6 +368,9 @@
 
     })
 
+    $on('pageBeforeOut', async () => {
+      // gameWebService.unwatchGame(gameViewModel.game._id)
+    })
 
     return $render
   }

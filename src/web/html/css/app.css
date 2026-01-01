@@ -185,7 +185,7 @@ html {
   padding-bottom: 0px;
 }
 
-.at-bat-ended {
+.at-bat-ended, .at-bat-started {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
@@ -204,14 +204,20 @@ html {
   color: white;
 }
 
-.at-bat-ended .card {
+.at-bat-started {
+    height: min(300px, calc(100dvh - var(--bottom-bar-h) - 24px));
+    width: 300px;
+}
+
+
+.at-bat-ended .card, .at-bat-started .card {
   width: 100%;
   height: 100%;
   max-height: inherit;
   margin: 0;
 }
 
-.at-bat-ended .card::before {
+.at-bat-ended .card::before, .at-bat-started .card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -227,12 +233,12 @@ html {
   );
 }
 
-.at-bat-ended .card > * {
+.at-bat-ended .card > *, .at-bat-started .card > * {
   position: relative;
   z-index: 1;
 }
 
-.at-bat-ended .card-content {
+.at-bat-ended .card-content, .at-bat-started .card-content {
   height: 100%;
   display: grid;
   place-items: center;
@@ -2844,11 +2850,78 @@ td.action, th.action {
 
 
 .players.confirm-lineup .image {
-  width: 35px;
-  background-color: unset;
-  max-width: 35px;
+  width: 40px;
+  padding-top: 7px;
+  padding-right: 5px;
 }
 
 .players.confirm-lineup .name {
   width: 100%;
 }
+
+
+
+
+
+
+.popup-matchup {
+  height: 100%;
+  min-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  background: #00461581;
+  border: 2px solid black;
+}
+
+.popup-matchup .matchup-detail {
+  flex: 0 0 50%;
+  height: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  display: block;
+  text-align: left;
+}
+
+
+
+.popup-matchup img {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  border: 2px solid #cccccc;
+  margin: auto auto;
+}
+
+.dark .popup-matchup img {
+  background: black;
+}
+
+
+.popup-matchup .matchup-detail .label {
+  flex: 0 0 100%;
+  text-align: left;
+  font-size: 1.2em;
+  height: 20px;
+}
+
+.popup-matchup .matchup-detail a.player {
+  font-weight: bold;
+  line-height: 1.1em;
+  display: block;
+  white-space: normal;
+  word-break: break-word;
+}
+
+
+
+
+
+.popup-matchup .matchup-detail .player-ratings, .popup-matchup .matchup-detail .game-stats {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  width: 100%;
+}
+

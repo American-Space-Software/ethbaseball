@@ -282,6 +282,54 @@
                   </div>
                 </div>
               </div>
+
+              <!-- <div class="at-bat-started">
+                <div class="card">
+                  <div class="card-content">
+                    <div class="popup-matchup">
+                      <div class="matchup-detail away" style="background-color: ${vm.game.away.color1}; color: ${getFontColor(vm.game.away.color1)};">
+
+                        <div class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
+
+                        <a href="/p/${vm.awayPlayer._id}">
+                          <img src="/player/image/${vm.awayPlayer._id}" /> 
+                        </a>
+
+                        
+
+                        <a href="/p/${vm.awayPlayer._id}" class="player" style="color: ${getFontColor(vm.awayPlayer.color1)};">${vm.awayPlayer.fullName}</a>
+
+                        <div class="game-stats">
+                        ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
+                        </div>
+
+                        <div class="player-ratings">
+                          ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.awayPlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.awayPlayer, vm.matchupHandedness?.throws))}
+                        </div>
+
+                      </div>   
+                      <div class="matchup-detail" style="background-color: ${vm.game.home.color1}; color: ${getFontColor(vm.game.home.color1)};">
+                       
+                        <div class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
+
+                        <a href="/p/${vm.homePlayer._id}">
+                          <img src="/player/image/${vm.homePlayer._id}" /> 
+                        </a>                      
+                        <a href="/p/${vm.homePlayer._id}" class="player" style="color: ${getFontColor(vm.homePlayer.color1)};">${vm.homePlayer.fullName}</a>
+
+                        <div class="game-stats">
+                        ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
+                        </div>
+
+                        <div class="player-ratings">
+                          ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.homePlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.homePlayer, vm.matchupHandedness?.throws))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div> -->
+
             </div>
           </div>
 
@@ -332,57 +380,59 @@
 
         <div class="matchup">
           
-          <div class="matchup-detail away" style="background-color: ${vm.game.away.color1}; color: ${getFontColor(vm.game.away.color1)};">
+          ${showMatchup ? $h`
+            <div class="matchup-detail away" style="background-color: ${vm.game.away.color1}; color: ${getFontColor(vm.game.away.color1)};">
 
-            ${vm.awayPlayer ? $h`
+              ${vm.awayPlayer ? $h`
 
-                <img src="/player/image/${vm.awayPlayer._id}" /> 
+                  <img src="/player/image/${vm.awayPlayer._id}" /> 
+                  
+                  <div class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
+                  <a href="/p/${vm.awayPlayer._id}" class="player" style="color: ${getFontColor(vm.awayPlayer.color1)};">${vm.awayPlayer.fullName}</a>
+
+                  <br />
+
+                  ${showPlayerStats ? $h`
+                    <span class="game-stats">
+                    ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
+                    </span>
+                  ` : $h` 
+
+                    <span class="player-ratings">
+                      ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.awayPlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.awayPlayer, vm.matchupHandedness?.throws))}
+                    </span>
+                  
+                  `}
                 
-                <div class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
-                <a href="/p/${vm.awayPlayer._id}" class="player" style="color: ${getFontColor(vm.awayPlayer.color1)};">${vm.awayPlayer.fullName}</a>
+              ` : $h` `}
+            </div>   
+            <div class="matchup-detail" style="background-color: ${vm.game.home.color1}; color: ${getFontColor(vm.game.home.color1)};">
+
+              ${vm.homePlayer ? $h`
+              
+                <img src="/player/image/${vm.homePlayer._id}" /> 
+                  
+                <div class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
+                <a href="/p/${vm.homePlayer._id}" class="player" style="color: ${getFontColor(vm.homePlayer.color1)};">${vm.homePlayer.fullName}</a>
 
                 <br />
 
                 ${showPlayerStats ? $h`
                   <span class="game-stats">
-                  ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
+                  ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
                   </span>
                 ` : $h` 
 
                   <span class="player-ratings">
-                    ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.awayPlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.awayPlayer, vm.matchupHandedness?.throws))}
+                    ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.homePlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.homePlayer, vm.matchupHandedness?.throws))}
                   </span>
                 
                 `}
-              
+
+              ` : $h` `}
+            </div>
             ` : $h` `}
-          </div>   
-          <div class="matchup-detail" style="background-color: ${vm.game.home.color1}; color: ${getFontColor(vm.game.home.color1)};">
-            ${vm.homePlayer ? $h`
-            
 
-              <img src="/player/image/${vm.homePlayer._id}" /> 
-              
-              
-              <div class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
-              <a href="/p/${vm.homePlayer._id}" class="player" style="color: ${getFontColor(vm.homePlayer.color1)};">${vm.homePlayer.fullName}</a>
-
-              <br />
-
-              ${showPlayerStats ? $h`
-                <span class="game-stats">
-                ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
-                </span>
-              ` : $h` 
-
-                <span class="player-ratings">
-                  ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.homePlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.homePlayer, vm.matchupHandedness?.throws))}
-                </span>
-              
-              `}
-
-            ` : $h` `}
-          </div>
         </div>
 
         <div class="page-content messages-content">
@@ -445,6 +495,7 @@
     let socketWebService = ContainerService.getInstance(SocketWebService)
 
     let lastPlayDescription
+    let showMatchup = true
 
     let allPopups = ['.at-bat-started', '.at-bat-ongoing', '.at-bat-ended']
 
@@ -466,8 +517,6 @@
     const getFontColor = (bgColor) => {
       return gameWebService.useDarkFont(bgColor) ? "#000000" : "#ffffff"
     }
-
-    let atBatEndedPopup
 
     const getNewMessages = (existingMessages, allMessages) => {
       
@@ -569,6 +618,8 @@
 
       //Flip this 
       showPlayerStats = !showPlayerStats
+
+      // showMatchup = atBatState != AtBatState.STARTED
 
       $update()
     }

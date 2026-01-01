@@ -12,7 +12,7 @@
         ${showBack ? $h`
 
           <a href="#" class="link back" data-force="true">
-              <i class="icon icon-back"></i>          
+              <i class="icon icon-back color-white"></i>          
           </a>
 
         ` : $h`
@@ -39,7 +39,7 @@
                       <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a></li>
                       <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">Scores</a></li>
                       <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">Players</a></li>
-                      <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li>
+                      <!-- <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li> -->
                       <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
                       <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
                       <!-- <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li> -->
@@ -63,7 +63,7 @@
           <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
           <a href="${universeWebService.fullLink(`/games`)}" class="link ${tabLink == '/games' ? 'active' : ''}">Scores</a>
           <a href="${universeWebService.fullLink(`/players/`)}"  class="link  ${tabLink == '/players/' ? 'active' : ''}">Players</a>
-          <a href="/u/owners" class="link ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a>
+          <!-- <a href="/u/owners" class="link ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a> -->
           <a href="/activity"  class="link  ${tabLink == '/activity' ? 'active' : ''}">Activity</a>
           <a href="/about"  class="link ${tabLink == '/about' ? 'active' : ''}">About</a>
           <!-- <a class="link external " href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a> -->

@@ -1469,8 +1469,6 @@ class GameWebService {
 
     pitcherRatings(pitchRatings) {
 
-        console.log(pitchRatings)
-
         return `POW ${pitchRatings.power }, CON ${ pitchRatings.control }, MOV ${ pitchRatings.movement }`
     }
 
