@@ -36,9 +36,7 @@
                                 ${teamComponentService.team.owner?.discordId ? $h`
                                     <span class="label">Discord:</span> <a class="external link" href="https://discord.com/users/${teamComponentService.team.owner?.discordId}">${teamComponentService.team.owner?.discordUsername}</a><br /><br />
                                 ` : $h` `}
-                                <!-- <span class="label">Ranked: </span> ${ teamComponentService.team.overallRecord.rank } <br /> -->
                                 <span class="label">Rating: </span> ${ teamComponentService.team.longTermRating.rating.toFixed(0) } <br />
-                                <!-- <span class="label">Season: </span> ${ teamComponentService.team.seasonRating.rating.toFixed(0) } <br /> -->
                                 <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} <br />
                                 <span class="label">Cash: </span> ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}<br /><br />
                             </div>

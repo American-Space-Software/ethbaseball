@@ -55,6 +55,7 @@ describe('PlayerRepository', async () => {
         player.lastName = "Smith"
         player.zodiacSign = "ZOD"
         player.age = 18
+        player.stamina = 1
 
         player.primaryPosition = Position.CATCHER
         player.overallRating = 60

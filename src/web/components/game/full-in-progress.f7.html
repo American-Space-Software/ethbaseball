@@ -329,7 +329,7 @@
 
     const onGameUpdate = async (game) => {
 
-      Object.assign(gameViewModel, await gameWebService.getGameViewModel(game))
+      Object.assign(gameViewModel, gameWebService.getGameViewModel(game))
       Object.assign(linescoreViewModel, gameViewModel.linescoreViewModel)
 
       Object.assign(awayBoxscoreViewModel, gameViewModel.awayBoxscoreViewModel)
@@ -343,6 +343,7 @@
 
 
       if (game.isComplete) {
+        gameWebService.unwatchGame(gameViewModel.game._id)
         $f7.views.main.router.refreshPage()
       }
 

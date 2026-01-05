@@ -9,7 +9,6 @@ import { Stadium } from "../../dto/stadium.js";
 import { City } from "../../dto/city.js";
 import { Position, TeamSeasonId } from "../enums.js";
 import { v4 as uuidv4 } from 'uuid';
-import { Owner } from "../../dto/owner.js";
 import { User } from "../../dto/user.js";
 
 @injectable()

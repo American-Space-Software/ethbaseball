@@ -1668,8 +1668,6 @@ let startWebServer = async () => {
 
   })
 
-
-
   app.post('/api/game/play/bot', async function (req, res) {
 
       try {
@@ -1975,23 +1973,6 @@ let startWebServer = async () => {
 
   })
 
-  // app.post('/auth/ethereum', passport.authenticate('ethereum'), async (req, res) => {
-
-  //   try {
-
-  //     //@ts-ignore
-  //     let userId = req.session?.passport?.user
-  //     res.json({ _id: userId })
-
-  //   } catch (ex) {
-  //     res.status(500)
-  //     res.send(ex.message);
-  //   }
-
-
-
-  // })
-
   app.get('/auth/discord', passport.authenticate('discord'))
 
   app.get('/auth/discord/callback',
@@ -2041,8 +2022,6 @@ let startWebServer = async () => {
 
     console.time(`Game loop`)
 
-
-    let date = new Date(new Date().toUTCString())
 
     //Simulate games 
     let gameIds = await ladderService.runGameRunner(universe._id)

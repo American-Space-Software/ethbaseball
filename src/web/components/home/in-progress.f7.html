@@ -1,7 +1,7 @@
 <template>
 
   <li>
-      <a href="${universeWebService.startDateLink(`/g/${game._id}`)}" class="item-link">
+      <a href="${universeWebService.startDateLink(`/g/${vm.game._id}`)}" class="item-link">
 
         <div class="item-content">
           <div class="item-inner">
@@ -9,43 +9,40 @@
             <table class="game-result">
               <tr>
                 <td colspan="2" class="inning">
-                    ${game.play.play.inningTop ? $h`
-                      Top ${game.play.play.inningNum}
+                    ${vm.isTopInning ? $h`
+                      Top ${vm.currentInning}
                     ` : $h`
-                      Bottom ${game.play.play.inningNum}
+                      Bottom ${vm.currentInning}
                     `}
 
                 </td>
               </tr>
-              <tr class="${game.play.play.inningTop ? 'at-bat' : ' '}">
+              <tr class="${vm.isTopInning ? 'at-bat' : ' '}">
                 <td class="name">
-                  <a href="${universeWebService.startDateLink(`/t/${game.away.tokenId}`)}" class="team-link">
-                    <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo"/>
-                    <span class="small">${game.away.cityName}</span><br />
-                    ${game.away.name}
-                  </a>
-
-                  
+                    <img src="/image/thumbnail/${vm.game.away.logoId}" class="profilePic" alt="${teamWebService.getTeamName(vm.game.away)} Logo"/>
+                    <span innerHTML="${teamWebService.getTeamNameStacked(vm.game.away)}"></span>
                 </td>
-                <td class="runs">${game.score.away}</td>
+                <td class="runs">${vm.score.away}</td>
               </tr>
-              <tr class="${game.play.play.inningTop ? ' ' : 'at-bat'}">
+              <tr class="${vm.isTopInning ? ' ' : 'at-bat'}">
                 <td class="name">
-                  
-                  <a href="${universeWebService.startDateLink(`/t/${game.home.tokenId}`)}" class="team-link">
-                    <img src="/image/thumbnail/${game.home.logoId}" class="profilePic"  alt="${game.home.cityName} ${game.home.name} Logo"/>
-                    <span class="small">${game.home.cityName}</span><br />
-                    ${game.home.name}
-                  </a>
-                  
+                    <img src="/image/thumbnail/${vm.game.home.logoId}" class="profilePic"  alt="${teamWebService.getTeamName(vm.game.home)} Logo"/>
+                    <span innerHTML="${teamWebService.getTeamNameStacked(vm.game.home)}"></span>
                 </td>
-                <td class="runs">${game.score.home}</td>
+                <td class="runs">${vm.score.home}</td>
               </tr>
 
               <tr >
                 <td colspan="2" class="summary-matchup">
-                  <strong>P</strong> <a href="${universeWebService.startDateLink(`/p/${game.matchup.pitcher._id}`)}">${game.matchup.pitcher.fullName}</a> <span class="small-gray">${gameWebService.pitcherGameStatsShort(game.matchup.pitcher)}</span><br />
-                  <strong>B</strong> <a href="${universeWebService.startDateLink(`/p/${game.matchup.hitter._id}`)}">${game.matchup.hitter.fullName}</a>  <span class="small-gray">${gameWebService.hitterGameStatsShort(game.matchup.hitter)}</span>
+
+                  ${vm.pitcher ? $h`
+                    <strong>P</strong> <a href="${universeWebService.startDateLink(`/p/${vm.pitcher?._id}`)}">${vm.pitcher.fullName}</a> <span class="small-gray">${gameWebService.pitcherGameStatsShort(vm.pitcher)}</span><br />
+                  ` : $h``}
+
+                  ${vm.hitter ? $h`
+                    <strong>B</strong> <a href="${universeWebService.startDateLink(`/p/${vm.hitter?._id}`)}">${vm.hitter.fullName}</a>  <span class="small-gray">${gameWebService.hitterGameStatsShort(vm.hitter)}</span>
+                  ` : $h` ` }
+
                 </td>
               </tr>
 
@@ -64,6 +61,7 @@
     import { LoginWebService } from "../../service/login-web-service"
     import { UniverseWebService } from "../../service/universe-web-service"
     import { GameWebService } from "../../service/game-web-service"
+    import { TeamWebService } from "../../service/team-web-service"
 
     import logo from "../../html/images/logo.png"
     import { ethers } from "ethers"
@@ -75,16 +73,10 @@
         let loginWebService = ContainerService.getInstance(LoginWebService)
         let universeWebService = ContainerService.getInstance(UniverseWebService)
         let gameWebService = ContainerService.getInstance(GameWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
 
-        const percentageFormatter = (num) => {
-            return new Intl.NumberFormat('default', {
-                style: 'percent',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(num)
-        }
 
-        let game = props.game
+        let vm = props.vm
 
         return $render
     }

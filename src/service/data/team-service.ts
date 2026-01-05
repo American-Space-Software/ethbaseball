@@ -243,7 +243,8 @@ n
 
                     careerStats: p.player.careerStats,
                     seasonStats: p.stats,
-                    isNextStarter: isNextStarter
+                    isNextStarter: isNextStarter,
+                    stamina: p.player.stamina
 
                 }
             }),
@@ -348,7 +349,8 @@ n
                 isWinner: g.winningTeamId == teamInfo._id,
                 isHome: g.home._id == teamInfo._id,
                 cityName: teamInfo.cityName,
-                finances: teamFinances
+                finances: teamFinances,
+                owner: teamInfo.owner
             },
             opp: {
                 _id: oppTeamInfo._id,
@@ -361,7 +363,8 @@ n
                 isWinner: g.winningTeamId == oppTeamInfo._id,
                 isHome: g.home._id == oppTeamInfo._id,
                 cityName: oppTeamInfo.cityName,
-                finances: oppFinances
+                finances: oppFinances,
+                owner: oppTeamInfo.owner
             }
         }
     }
@@ -699,39 +702,6 @@ n
         return this.teamRepository.getEligibleTeams(options)
     }
 
-    // getStartingPitcher(players:Player[], startDate: Date): RotationPitcher {
-
-    //     //Loop through rotation and grab first listed pitcher that's eligible to play
-    //     let compareDate = dayjs(startDate).subtract(4, 'days').toDate()
-    //     compareDate.setHours(0, 0, 0)
-
-    //     let startingPitcher: RotationPitcher
-
-    //     for (let player of players) {
-
-    //         if (player.lastGamePitched == undefined || player.lastGamePitched <= compareDate) {
-    //             startingPitcher = {
-    //                 _id: player._id,
-    //                 stamina: 1
-    //             }
-    //             break
-    //         }
-    //     }
-
-    //     if (!startingPitcher) {
-
-    //         let player = players[0]
-
-    //         startingPitcher = {
-    //             _id: player._id,
-    //             stamina: .5
-    //         }
-
-    //     } 
-
-    //     return startingPitcher
-    // }
-
     getStartingPitcherFromPLS(rotation: RotationPitcher[], plss: PlayerLeagueSeason[], startDate: Date): RotationPitcher {
 
         //Loop through rotation and grab first listed pitcher that's eligible to play
@@ -756,20 +726,35 @@ n
             }
             
 
-            let isEligible = player.lastGamePitched == undefined || player.lastGamePitched <= compareDate 
+            let isEligible = player.stamina == 1 
 
             //They are eligible 
             if (isEligible ) {
                 startingPitcher = JSON.parse(JSON.stringify(pitcher))
-                // startingPitcher.stamina = 1
+                startingPitcher.stamina = player.stamina
                 break
             }
         }
 
-        // if (!startingPitcher) {
-        //     startingPitcher = JSON.parse(JSON.stringify(rotation[0]))
-        //     startingPitcher.stamina = .5
-        // } 
+        if (!startingPitcher) {
+
+            let pitcher = rotation[0]
+            
+            let pls = plss.find(p => p.playerId == pitcher._id)
+
+            let player
+
+            if (pls.player) {
+                player = pls.player
+            } else {
+                let plsPlain = pls.get({ plain: true })
+                player = plsPlain.player
+            }
+
+            startingPitcher = JSON.parse(JSON.stringify(pitcher))
+            startingPitcher.stamina = player.stamina
+
+        } 
 
         return startingPitcher
     }

@@ -569,7 +569,10 @@ class RollService {
                 }
 
                 break
-            
+        
+            case PlayResult.ERROR:
+                break
+                
             default: 
                 throw Error(`Error logging unknown play result ${playResult}`)
 

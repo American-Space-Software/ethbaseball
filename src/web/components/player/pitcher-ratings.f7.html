@@ -16,7 +16,10 @@
                     <th class="image"></th>
                     <th @click=${sortPitchers} data-sort="fullName" class="name">Name</th>
                     ${actions ? $h`<th class="action"></th>` : $h` `}
+                    <th class="stamina" data-sort="stamina">🪫</th>                    
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
+
+
                     <th @click=${sortPitchers} data-sort="throws">Throws</th>
                     <th @click=${sortPitchers} data-sort="hits">Bats</th>
 
@@ -52,20 +55,18 @@
                 ${displayPitchers?.length > 0 ? $h`
                 
                     ${displayPitchers?.map( (p,index) => $h`
-                        <tr>
-
-
+                        <tr class="${p.isNextStarter ? $h`next-starter` : $h` `}">
 
                             <td class="image">
                             ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" />` : $h`<span />`}
                             </td>
 
                             
-                            <td class="name ${p.isNextStarter ? $h`next-starter` : $h` `}">
+                            <td class="name">
 
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
-                                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span> <span class="rest">${playerWebService.displayRestDays(p, universeWebService.getCurrentDate())}</span>
+                                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a>` : $h` `}
                                 ` : $h` `}
                             </td>
 
@@ -78,6 +79,12 @@
                                 </td>
                             ` : $h` `}
 
+
+                            <td class="numeric-cell">
+                              <div class="stamina-bar">
+                                <div class="${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'} color" style="height:${(p.stamina * 100).toFixed(0)}%;">${(p.stamina * 100).toFixed(0)}</div>
+                              </div>
+                            </td>
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
                             <td>${p?.throws}</td>

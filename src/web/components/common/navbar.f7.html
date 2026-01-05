@@ -26,38 +26,6 @@
 
       <div class="title" style="display: flex;">
 
-        <div class="small-only-flex">
-
-            <a href="#" class="first popover-open link ${tabLink == '/activity' || tabLink == '/about' ? 'active' : ''}" data-popover=".popover-menu">Menu</a>
-            
-            <div class="popover popover-menu">
-                <div class="popover-angle"></div>
-                <div class="popover-inner">
-                  <div class="list inset list-strong list-dividers-ios">
-                    <ul>
-                      <li><a href="/" class="list-button popover-close" >Home</a></li>
-                      <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a></li>
-                      <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">Scores</a></li>
-                      <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">Players</a></li>
-                      <!-- <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li> -->
-                      <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
-                      <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
-                      <!-- <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li> -->
-<!-- 
-                      ${env.OPENSEA_COLLECTION_URL ? $h`
-                        <li><a class="list-button external popover-close" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a></li>
-                        ` : $h` `} -->
-                      <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
-
-
-                    </ul>
-                  </div>
-                </div>
-            </div>
-
-
-        </div>
-
         <div class="large-only-flex">
 
           <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
@@ -80,7 +48,61 @@
       <div class="right">
 
         ${authInfo ? $h`
-          <a data-popup=".logged-in-popup" href="#" class="popup-open link">Profile</a>
+
+
+          <div class="large-only-flex">
+            <a data-popup=".logged-in-popup" href="#" class="popup-open link">
+              <i class="f7-icons">person</i>
+            </a>
+          </div>
+
+
+          <div class="small-only-flex">
+
+              <a href="#" class="first popover-open link" data-popover=".popover-menu">
+                <i class="f7-icons">menu</i>
+              </a>
+              
+          </div>
+
+
+
+          <div class="popover popover-menu">
+              <div class="popover-angle"></div>
+              <div class="popover-inner">
+                <div class="list inset list-strong list-dividers-ios">
+                  <ul>
+
+                    <li>
+                      <a data-popup=".logged-in-popup" href="#" class="popup-open list-button popover-close">
+                        Profile
+                      </a>
+                    </li>
+
+                    <li><a href="/" class="list-button popover-close" >Home</a></li>
+
+
+                    <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a></li>
+                    <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">Scores</a></li>
+                    <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">Players</a></li>
+                    <!-- <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li> -->
+                    <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
+                    <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
+                    <!-- <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li> -->
+<!-- 
+                    ${env.OPENSEA_COLLECTION_URL ? $h`
+                      <li><a class="list-button external popover-close" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a></li>
+                      ` : $h` `} -->
+                    <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
+
+
+                  </ul>
+                </div>
+              </div>
+          </div>
+
+
+
         ` : $h`
           <a data-popup=".login-popup" href="#" class="popup-open link">Login</a>
         `}

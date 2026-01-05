@@ -11,6 +11,7 @@ import { routeMap } from '../../util/route-map.js';
 import { UniverseWebService } from '../service/universe-web-service.js';
 import { WalletService } from '../../service/wallet-service.js';
 import { LoginWebService } from '../service/login-web-service.js';
+import { GameWebService } from '../service/game-web-service.js';
 
 
 
@@ -21,6 +22,7 @@ class HomeController {
         @inject("discord") private discord:string,
         private universeWebService:UniverseWebService,
         private loginWebService:LoginWebService,
+        private gameWebService:GameWebService,
         @inject("WalletService") private walletService:WalletService
     ) {}
 
@@ -49,17 +51,15 @@ class HomeController {
                 contractBalance = await this.universeWebService.getContractBalance()
             }
 
-            let completedGames = vm.games?.filter( g => g.isFinished)
-            let inProgressGame = vm.games?.find( g => !g.isFinished)
+            let inProgressGame = vm.inProgressGame ? this.gameWebService.getGameViewModel(vm.inProgressGame) : {}
 
 
             return {
                 contractBalance: contractBalance,
                 authInfo: authInfo,
                 vm: vm,
-                discord: this.discord,
                 inProgressGame: inProgressGame,
-                completedGames: completedGames
+                discord: this.discord
             }
 
         }, component)

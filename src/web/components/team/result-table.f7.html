@@ -29,13 +29,13 @@
 
                                 <div class="large-only-flex">
 
-                                    <a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">
-                                        ${gl.isHome == true ? 'vs ' : '@ '}${gl.opp.cityName}</a>
+                                    <a href="${universeWebService.startDateLink(`/t/index/${gl.opp._id}`)}" >
+                                        ${gl.isHome == true ? 'vs ' : '@ '}${ teamWebService.getTeamName(gl.opp)}</a>
                                 </div>
                                 
                                 <div class="small-only-flex">
-                                    <a href="${universeWebService.startDateLink(`/t/${gl.opp.tokenId}`)}" data-reload-current="true" data-force="true" data-browser-history="true">
-                                        ${gl.isHome == true ? 'vs ' : '@ '}${gl.opp.abbrev}</a> 
+                                    <a href="${universeWebService.startDateLink(`/t/index/${gl.opp._id}`)}">
+                                        ${gl.isHome == true ? 'vs ' : '@ '}${teamWebService.getTeamName(gl.opp)}</a> 
                                 </div>
 
                             </td>
@@ -93,6 +93,7 @@
   import { ContainerService } from "../../../service/container-service.ts"
 
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { TeamWebService } from "../../service/team-web-service.ts"
 
 
 
@@ -102,6 +103,7 @@
   export default (props, { $on, $, $f7, $update }) => {
 
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let gameLogs = props.logs
 

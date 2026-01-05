@@ -171,8 +171,8 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
     async updateGameFields(players: Player[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched",  "age", "personalityType"],
-            updateOnDuplicate: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "age"],
+            fields: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched",  "age", "personalityType", "stamina"],
+            updateOnDuplicate: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "age", "stamina"],
         }, options)
 
         let updatePlayers = players.map(p => {
@@ -193,6 +193,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
                 throws: p.throws,
                 hits: p.hits,
                 isRetired: p.isRetired,
+                stamina: p.stamina,
                 lastGamePitched: p.lastGamePitched,
                 lastGamePlayed: p.lastGamePlayed,
                 age: p.age
@@ -202,44 +203,6 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
         await Player.bulkCreate(updatePlayers, queryOptions)
     }
-
-    // async setLastGameUpdate(playerIds: string[], options?: any) {
-
-    //     let s = await this.sequelize()
-
-    //     await Player.update(
-    //         {
-    //             lastGameUpdate: s.fn('NOW')
-    //         },
-    //         Object.assign({ 
-    //             where: {
-    //                 _id: {
-    //                   [Op.in]: playerIds
-    //                 }
-    //               }
-    //         }, options)
-    //     )
-
-    // }
-
-    // async setLastGamePlayed(playerIds: string[], gameDate:Date, options?: any) {
-
-    //     let s = await this.sequelize()
-
-    //     await Player.update(
-    //         {
-    //             lastGamePlayed: gameDate
-    //         },
-    //         Object.assign({ 
-    //             where: {
-    //                 _id: {
-    //                   [Op.in]: playerIds
-    //                 }
-    //               }
-    //         }, options)
-    //     )
-
-    // }
 
     async getByOwner(owner: Owner, options?: any): Promise<Player[]> {
 

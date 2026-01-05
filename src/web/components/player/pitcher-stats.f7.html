@@ -15,6 +15,7 @@
                     <th class="image"></th>
                     <th @click=${sortRows}  class="name">Name</th>
                     ${actions ? $h`<th class="action"></th>` : $h` `} 
+                    <th class="stamina " data-sort="stamina">🪫</th>                    
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'displayRating' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="displayRating">OVR</th>                    
                     <th @click=${sortRows} data-sort="throws" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'throws' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}">Throws</th>
                     <th @click=${sortRows} data-sort="hits" class="${sortable ? 'sortable-cell' : ''} ${sortColumn == 'bats' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" >Bats</th>
@@ -35,25 +36,24 @@
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.hbp' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.hbp">HBP</th>
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.battersFaced' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.battersFaced">BF</th>
                     <th @click=${sortRows} class="numeric-cell ${sortable ? 'sortable-cell' : ''} ${sortColumn == 'pitching.wpa' ? 'sortable-cell-active' : ''} ${sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'}" data-sort="pitching.wpa">WPA</th>
-
                 </tr>
             </thead>
             <tbody>
                 ${displayPitchers?.length > 0 ? $h`
                 
                     ${displayPitchers?.map( (p, index) => $h`
-                        <tr>
+                        <tr class="${p.isNextStarter ? $h`next-starter` : $h` `}">
 
                             <td class="image">
                               ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" />` : $h`<span />`}
                             </td>
 
 
-                            <td class="name ${p.isNextStarter ? $h`next-starter` : $h` `}">
+                            <td class="name">
 
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
-                                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span> <span class="rest">${playerWebService.displayRestDays(p, universeWebService.getCurrentDate())}</span>
+                                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a>` : $h` `}
                                 ` : $h` `}
                             </td>
                             
@@ -64,6 +64,12 @@
                                     ` : $h``}
                                 </td>
                             ` : $h` `}
+
+                            <td class="numeric-cell">
+                              <div class="stamina-bar">
+                                <div class="${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'} color" style="height:${(p.stamina * 100).toFixed(0)}%;">${(p.stamina * 100).toFixed(0)}</div>
+                              </div>
+                            </td>
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
                             <td>${p?.throws}</td>
@@ -162,13 +168,12 @@
     let displayPitchers = props.pitchers
     let sortRows = props.sortrows
 
-
-
     const getStats = (p) => {
       if (!p) return
       return p[statprop]
     }
     
+    console.log(displayPitchers)
 
     return $render
   }

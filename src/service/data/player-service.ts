@@ -12,14 +12,12 @@ import { Image } from "../../dto/image.js"
 import { ContactTypeRollInput, PowerRollInput } from "../../dto/roll-input.js"
 
 import glicko2 from "glicko2"
-// import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
 
 import { Animation } from "../../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
 import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "../enums.js"
-import dayjs from "dayjs"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -57,12 +55,8 @@ const PLAYER_RETIREMENT_AGE = 41
 @injectable()
 class PlayerService {
 
-    @inject("sequelize")
-    private sequelize:Function
-
     @inject("PlayerRepository")
     private playerRepository: PlayerRepository
-
 
     constructor(
         private rollService: RollService,
@@ -175,6 +169,7 @@ class PlayerService {
 
         player.overallRating = 40
         player.age = 19
+        player.stamina = 1
 
         player.isRetired = false
 
@@ -1474,7 +1469,8 @@ class PlayerService {
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
                 careerStats: p.player.careerStats,
-                seasonStats: p.stats
+                seasonStats: p.stats,
+                stamina: p.player.stamina
             }
 
             if (t) {

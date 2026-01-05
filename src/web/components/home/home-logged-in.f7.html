@@ -22,7 +22,7 @@
                         <span class="name">${teamWebService.getTeamName(vm.team)}</span> 
 
                         <div class="team-record">
-                            <!-- <span class="label">Ranked: </span> ${ vm.team.overallRecord.rank } <br /> -->
+                            <span class="label">Rating: </span> ${ vm.team.longTermRating.rating.toFixed(0) } <br />
                             <span class="label">Record: </span> ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(vm.team.overallRecord.winPercent)}<br />
                             <span class="label">Cash: </span> ${universeWebService.displayDiamonds(vm.team.diamondBalance)}<br /><br />
                         </div>
@@ -38,19 +38,20 @@
               <ul>
                   <li><a class="link" href="/t/index/${vm.team._id}">👥 Manage Team</a></li>
 
-                  ${!inProgressGame ? $h`
-                    <li><a class="link popup-open" data-popup=".play-popup">🏆 Play</a></li>
+                  ${inProgressGame?.game?._id == undefined ? $h`
+                      <li><a class="link popup-close" @click="${playBotClick}">🤖 Play Bot</a></li>
+                      <!-- <li><a class="link" href="/t/index/${vm.team._id}">🏆 Enter PvP Queue</a></li>  -->
                   ` : $h` `}
 
               </ul>
           </div>
 
 
-          ${inProgressGame ? $h`
+          ${inProgressGame?.game?._id ? $h`
               <div class="block-title block-title-small">In Progress</div>
               <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
-                    <${InProgress} game=${inProgressGame} />
+                    <${InProgress} vm=${inProgressGame} />
                   </ul>
               </div>
           ` : $h` `}
@@ -94,13 +95,13 @@
 
 
 
-          ${completedGames?.length > 0 ? $h`
+          ${vm?.completedGames?.length > 0 ? $h`
 
               <div class="block-title block-title-small">Recent Games</div>
               <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
       
-                      ${completedGames.map( game => $h`
+                      ${vm?.completedGames?.map( game => $h`
                           <${Result} game=${game} />                      
                       `)}
       
@@ -112,37 +113,7 @@
               
         </div>
 
-        
-        <div class="popup play-popup">
-          <div class="view">
-            <div class="page">
-              <div class="navbar">
-                <div class="navbar-bg"></div>
-                <div class="navbar-inner">
-                  <div class="title">
-                    Play a Game
-                  </div>
-                  <div class="right">
-                    <!-- Link to close popup -->
-                    <a class="link popup-close">Close</a>
-                  </div>
-                </div>
-              </div>
-              <div class="page-content">
-
-                <div class="list links-list list-outline list-strong">
-                  <ul>
-                    <li>
-                      <li><a class="link popup-close" @click="${playBotClick}">🤖 Play Bot</a></li>
-                      <li><a class="link" href="/t/index/${vm.team._id}">🏆 Enter PvP Queue</a></li>                        
-                    </li>
-                  </ul>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
+ 
 
         <${Footer} />
 
@@ -207,7 +178,6 @@
     let contractBalance = props.contractBalance
     let discord = props.discord 
     
-    let completedGames = props.completedGames
     let inProgressGame = props.inProgressGame
 
     const getOffChainDescription = (oce) => {
@@ -338,10 +308,26 @@
       
     }
 
+
+    const onGameUpdate = async (game) => {
+
+      Object.assign(inProgressGame, gameWebService.getGameViewModel(game))
+
+      if (game.isComplete) {
+        gameWebService.unwatchGame(inProgressGame.game._id)
+        $f7.views.main.router.refreshPage()
+      }
+
+      await $update()
+
+    }
+
     $on('pageBeforeIn', async (e) => {
 
-      //Start watching game
-      // gameWebService.watchGame(gameViewModel.game._id, onGameUpdate)
+      //Start watching game if in progress
+      if (inProgressGame?.game?._id) {
+        gameWebService.watchGame(inProgressGame.game._id, onGameUpdate)
+      }
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {
@@ -361,15 +347,12 @@
 
       await $update()
 
-
-      // $('.hide-on-pageinit').hide()
-      // $('.hidden-on-load').show()
-
-
     })
 
     $on('pageBeforeOut', async () => {
-      // gameWebService.unwatchGame(gameViewModel.game._id)
+      if (inProgressGame?.game?._id) {
+        gameWebService.unwatchGame(inProgressGame.game._id, onGameUpdate)
+      }
     })
 
     return $render

@@ -12,7 +12,8 @@
                 
                 <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo" />
                 <span innerHTML="${teamWebService.getTeamNameStacked(game.away)}"></span>
-                
+                <span class="small-gray">${game.away.overallRecord.after?.wins}-${game.away.overallRecord.after?.losses}</span>
+
                 
               </td>
               <td class="runs">${game.score.away}</td>
@@ -22,6 +23,7 @@
                 
                 <img src="/image/thumbnail/${game.home.logoId}" class="profilePic" alt="${game.home.cityName} ${game.home.name} Logo" />
                 <span innerHTML="${teamWebService.getTeamNameStacked(game.home)}"></span>
+                <span class="small-gray">${game.home.overallRecord.after?.wins}-${game.home.overallRecord.after?.losses}</span>
                 
               </td>
               <td class="runs">${game.score.home}</td>

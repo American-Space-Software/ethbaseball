@@ -437,14 +437,12 @@ CREATE TABLE `player` (
   `careerStats` json DEFAULT NULL,
   `coverImageCid` varchar(255) DEFAULT NULL,
   `age` int NOT NULL,
+  `stamina` decimal(10,2) NOT NULL,
   `overallRating` decimal(10,2) NOT NULL,
   `displayRating` decimal(10,2) NOT NULL,
-
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
-
   `percentileRatings` JSON NULL DEFAULT NULL,
-
   `lastGamePitched` datetime DEFAULT NULL,
   `lastGamePlayed` datetime DEFAULT NULL,
   `lastTeamChange` datetime DEFAULT NULL,

@@ -84,17 +84,13 @@ class Player extends Model {
     @Column(DataType.JSON)
     declare careerStats: PlayerStatLines
 
-    // @AllowNull(true)
-    // @Column(DataType.JSON)
-    // declare contract: PlayerContract
-
-    // @AllowNull(true)
-    // @Column(DataType.JSON)
-    // declare completeContracts: PlayerContract[]
-
     @AllowNull(true)
     @Column(DataType.STRING)    
     declare coverImageCid?:string
+
+    @AllowNull(false)
+    @Column(DataType.DECIMAL(10,2))
+    declare stamina:number
 
     @AllowNull(false)
     @Column(DataType.DECIMAL(10,2))
@@ -114,10 +110,6 @@ class Player extends Model {
     @Column(DataType.JSON)
     declare hittingRatings:HittingRatings
 
-    // @AllowNull(true)
-    // @Column(DataType.JSON)
-    // declare percentileRatings:PlayerPercentileRatings
-
 
     @AllowNull(false)
     @Column(DataType.INTEGER)
@@ -134,9 +126,6 @@ class Player extends Model {
     @AllowNull(true)	
     @Column(DataType.DATE)
     declare lastTeamChange?:Date 
-
-    // @Column(DataType.DATE)
-    // declare lastGameUpdate?:Date 
 
     @Column(DataType.DATE)
     declare lastUpdated?:Date 

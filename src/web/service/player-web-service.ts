@@ -233,31 +233,6 @@ class PlayerWebService {
     }
 
 
-    // getActiveContractYear(contract:PlayerContract) : ContractYear {
-        
-    //     if (!contract?.startDate) return
-
-    //     let today = new Date(new Date().toUTCString())
-
-    //     return contract.years.find( y => dayjs(y.startDate).toDate() <= today && dayjs(y.endDate).toDate() >= today)
-
-    // }
-
-    displayRestDays(player, universeDate) {
-
-        let compareDate = dayjs(universeDate).subtract(4, 'days').toDate()
-        compareDate.setHours(0, 0, 0)
-
-        let lastGamePitched = dayjs(player.lastGamePitched).toDate()
-
-        if (player.lastGamePitched == undefined || lastGamePitched <= compareDate) {
-            return `Available` 
-        }
-
-        return dayjs(compareDate).to(player.lastGamePitched)
-
-    }
-
     getFutureContractValue(futureContract, index:number) {
 
         if (!futureContract) return ""
@@ -274,9 +249,6 @@ class PlayerWebService {
             }
 
         }
-
-// p?.futureContract && p.futureContract[0] ? universeWebService.displayDiamonds(p.futureContract[0].salary) : ''
-
 
     }
 

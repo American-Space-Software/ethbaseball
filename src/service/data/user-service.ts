@@ -80,8 +80,7 @@ class UserService {
 
     async getViewModel(user:User, season:Season) {
 
-        let vm:any = {
-        }
+        let vm:any = {}
 
         let teams:Team[] = await this.teamService.getByUser(user)
         let team = teams[0]
@@ -96,11 +95,21 @@ class UserService {
 
             //Get games for teams
             let games:Game[] = await this.gameService.getByTeam(team, { limit: 10 } )
-            vm.games = games.map( g => this.gameService.getGameSummaryViewModel(g))
+
+            vm.completedGames = games?.filter( g => g.isFinished)?.map( g => this.gameService.getGameSummaryViewModel(g))
+            vm.inProgressGame = games?.find( g => !g.isFinished)
 
             let events = await this.offchainEventService.getByTeamId(ContractType.DIAMONDS, team._id, { limit: 5, offset: 0})
             vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
 
+        }
+
+        if (season) {
+            vm.season = {
+                _id: season._id,
+                startDate: season.startDate,
+                endDate: season.endDate
+            }
         }
 
 

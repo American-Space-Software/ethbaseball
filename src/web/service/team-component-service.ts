@@ -55,10 +55,10 @@ class TeamComponentService {
                 h.push(this.getPlayer(player._id))
             } else {
                 if (player.position == Position.PITCHER) {
-                    h.push({
-                        fullName: "Pitcher Slot",
-                        primaryPosition: Position.PITCHER
-                    })
+                    // h.push({
+                    //     fullName: "Pitcher Slot",
+                    //     primaryPosition: Position.PITCHER
+                    // })
                 } else {
                     h.push({ })
                 }

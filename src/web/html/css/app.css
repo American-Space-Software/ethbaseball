@@ -551,6 +551,12 @@ h1 {
   color: darkslategray;
 }
 
+.players .stamina {
+  width: 45px;
+  max-width: 45px;
+  text-overflow: unset;
+}
+
 .dark .players .name .position, .dark .players .name .teamAbbrev, .dark .players .name .small, .dark .players .name .rest {
   color: white;
 }
@@ -643,9 +649,7 @@ h1 {
   float: right;
 }
 
-.stat-table td.next-starter {
-  font-weight: bold;
-}
+
 
 .draft-button {
   width: 300px;
@@ -1634,6 +1638,10 @@ h1 {
   width: 30px;
 }
 
+.game-score .at-bat {
+  font-weight: bold;
+}
+
 .game-banner {
   flex: 1;
   width: 100%;
@@ -2539,14 +2547,10 @@ td.action, th.action {
 .swiper .game-result {
   padding: 2px;
 }
-
 .game-result {
-  width: 100%; 
+  width: 100%;
   min-width: 100%;
   line-height: .9em;
-}
-
-.game-result .name {
 }
 
 .game-result .runs {
@@ -2563,17 +2567,40 @@ td.action, th.action {
   font-weight: bold;
 }
 
+.game-result .name {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  align-items: center;
+}
+
 .game-result .profilePic {
+  grid-column: 1;
+  grid-row: 1 / span 2;
   height: 45px;
   width: 45px;
-  margin-right: 5px;
-  float: left;
+  flex-shrink: 0;
+}
+
+.game-result .name > span:not(.small-gray) {
+  grid-column: 2;
+  grid-row: 1;
+  line-height: 1.0;
+}
+
+.game-result .name > span.small-gray {
+  grid-column: 2;
+  grid-row: 2;
+  line-height: 1.0;
 }
 
 .game-result .inning {
   font-weight: bold;
   padding-bottom: 7px;
 }
+
+
 
 .game-inning {
   font-weight: bold;
@@ -2925,3 +2952,53 @@ td.action, th.action {
   width: 100%;
 }
 
+
+
+.stamina-bar {
+  width: 25px;
+  height: 34px;
+  position: relative;
+  background: #222;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px auto 8px auto;
+}
+
+.stamina-bar > div {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+.stamina-bar .color {
+  font-size: .85em;
+  text-align: center;
+  align-content: center;
+}
+
+.stamina-bar .red {
+  background: #c0392b;
+  color: white;
+}
+
+.stamina-bar .green {
+  background: green;
+  color: white;
+}
+
+.stamina-bar .yellow {
+  background: yellow;
+  color: black;
+}
+
+
+.players tr.next-starter {
+  font-weight: bold;
+  background-color: yellow;
+}
+
+.dark .players tr.next-starter {
+  font-weight: bold;
+  background-color: rgb(90, 90, 0);
+}
