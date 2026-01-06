@@ -12,9 +12,10 @@
                 
                 <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${game.away.cityName} ${game.away.name} Logo" />
                 <span innerHTML="${teamWebService.getTeamNameStacked(game.away)}"></span>
-                <span class="small-gray">${game.away.overallRecord.after?.wins}-${game.away.overallRecord.after?.losses}</span>
+                <span class="small-gray">
+                  ${game.away.overallRecord.after?.wins}-${game.away.overallRecord.after?.losses} ${game.away?.longTermRating?.after ? `(${game.away.longTermRating.after.toFixed(0)})` : `` }
+                </span>
 
-                
               </td>
               <td class="runs">${game.score.away}</td>
             </tr>
@@ -23,7 +24,9 @@
                 
                 <img src="/image/thumbnail/${game.home.logoId}" class="profilePic" alt="${game.home.cityName} ${game.home.name} Logo" />
                 <span innerHTML="${teamWebService.getTeamNameStacked(game.home)}"></span>
-                <span class="small-gray">${game.home.overallRecord.after?.wins}-${game.home.overallRecord.after?.losses}</span>
+                <span class="small-gray">
+                  ${game.home.overallRecord.after?.wins}-${game.home.overallRecord.after?.losses} ${game.home?.longTermRating?.after ? `(${game.home.longTermRating.after.toFixed(0)})` : `` }
+                </span>
                 
               </td>
               <td class="runs">${game.score.home}</td>
@@ -62,7 +65,7 @@
 
         let game = props.game
 
-
+        console.log(game)
         return $render
     }
 </script>

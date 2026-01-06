@@ -933,7 +933,6 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
                 gameDate: dayjs(date).format("YYYY-MM-DD"),
                 playerId: player._id
             }
-
         }
 
         const [queryResults, metadata] = await s.query(`
@@ -943,10 +942,9 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
                 ${SUM_QUERY_FIELDS}
             FROM game_pitch_result gpr
                 INNER JOIN game g on gpr.gameId = g._id
-            WHERE g.gameDate = :gameDate AND gpr.playerId
+            WHERE g.seasonId is not NULL AND g.gameDate = :gameDate AND gpr.playerId 
             ORDER BY g.lastUpdated desc
             
-
         `, Object.assign(queryOptions, options))
 
         if (queryResults?.length > 0) {

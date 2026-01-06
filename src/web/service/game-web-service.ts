@@ -1469,11 +1469,11 @@ class GameWebService {
 
     pitcherRatings(pitchRatings) {
 
-        return `POW ${pitchRatings.power }, CON ${ pitchRatings.control }, MOV ${ pitchRatings.movement }`
+        return `POW ${pitchRatings.power.toFixed(0) }, CON ${ pitchRatings.control.toFixed(0) }, MOV ${ pitchRatings.movement.toFixed(0) }`
     }
 
     hitterRatings(hitterRatings) {
-        return `CON ${hitterRatings.contact}, GAP ${hitterRatings.gapPower}, HR ${hitterRatings.homerunPower}, EYE ${hitterRatings.plateDiscipline}`
+        return `CON ${hitterRatings.contact.toFixed(0)}, GAP ${hitterRatings.gapPower.toFixed(0)}, HR ${hitterRatings.homerunPower.toFixed(0)}, EYE ${hitterRatings.plateDiscipline.toFixed(0)}`
     }
 
     pitcherGameStats(pitcher) {

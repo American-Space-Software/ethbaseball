@@ -103,7 +103,7 @@ class LadderService {
                         if (inProgressGameIds?.length == 0) {
 
                             //Tasks to finish day.
-                            
+                            let teamIds:string[] = await this.teamService.getTeamIdsByGameDate(universe.currentDate, options)
                             let playerIds:string[] = await this.playerService.getPlayerIdsByGameDate(universe.currentDate, options)
 
                             if (playerIds?.length > 0) {
@@ -148,22 +148,17 @@ class LadderService {
 
                                 }
 
-                                //Update team ratings.
-                                let teams:Team[] = await this.teamService.list(1000000000, 0, options)
+                                //Distribute team rewards
+                                let teams:Team[] = await this.teamService.getByIds(teamIds, options)
 
-                                let teamIds = teams.map( t => t._id)
                                 let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
 
                                 let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
 
-                                await this.updateTeamRankings(teams, season, tlss, universe.currentDate, options)
-
                                 //Calculate daily rewards. Only to teams that played.
-                                let rewardTeamIds = Array.from(new Set(plss.map( pls => pls.teamId )))
-                                let rewardTeams = teams.filter( t => rewardTeamIds.find( rt => rt == t._id) != undefined)
-                                let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, rewardTeams)
+                                let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, teams)
 
-                                await this.distributeRewards(rewardsPerTeam, rewardTeams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
+                                await this.distributeRewards(rewardsPerTeam, teams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
                                 
                                 //save.
                                 for (let team of teams) {
@@ -322,6 +317,9 @@ class LadderService {
         let away:Team = await this.teamService.get(game.away._id, options)
         let home:Team = await this.teamService.get(game.home._id, options)
 
+        let awayTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(away, season, options)
+        let homeTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
+
         let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
         let plssIds = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
 
@@ -331,8 +329,8 @@ class LadderService {
 
         await this.gameService.put(game, options)
 
-        let homeRecord = await this.teamService.updateSeasonRecord(home, season, options)
-        let awayRecord = await this.teamService.updateSeasonRecord(away, season, options)
+        let homeRecord = await this.teamService.updateSeasonRecord(home, season, homeTLS, options)
+        let awayRecord = await this.teamService.updateSeasonRecord(away, season, awayTLS, options)
 
         game.home.overallRecord.after = JSON.parse(JSON.stringify(homeRecord))
         game.away.overallRecord.after = JSON.parse(JSON.stringify(awayRecord))
@@ -354,6 +352,25 @@ class LadderService {
 
         await this.playerLeagueSeasonService.updateGameFields(plss, options)
         await this.playerService.updateGameFields(players, options)
+
+        let teams = [away, home]
+        let tlss = [awayTLS, homeTLS]
+
+        this.updateTeamRankings(teams, tlss, game)
+
+        for (let team of teams) {
+            await this.teamService.put(team, options)
+        }
+
+        for (let tls of tlss) {
+            await this.teamLeagueSeasonService.put(tls, options)
+        }
+
+        game.home.seasonRating.after = home.seasonRating.rating
+        game.away.seasonRating.after = away.seasonRating.rating
+
+        game.home.longTermRating.after = home.longTermRating.rating
+        game.away.longTermRating.after = away.longTermRating.rating
 
     }
 
@@ -915,10 +932,10 @@ class LadderService {
 
     }
 
-    async updateTeamRankings(teams:Team[], season:Season, tlss:TeamLeagueSeason[], date:Date, options?:any)  {
-
-        let results = await this.gameService.getResultsByDate(date, options)
+    async updateTeamRankings(teams:Team[], tlss:TeamLeagueSeason[], result:Game)  {
         
+        let results = [{ winningTeamId: result.winningTeamId, losingTeamId: result.losingTeamId }]
+
         let seasonRatings = teams.map( t =>  { return { rating: t.seasonRating, _id: t._id} })
         let longTermRatings = teams.map( t =>  { return { rating: t.longTermRating, _id: t._id} })
 

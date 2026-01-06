@@ -1987,14 +1987,6 @@ h1 {
   font-size: 14px;
 }
 
-.item-after.small-gray {
-  font-size: 11px;
-  color: darkslategray;
-}
-
-.dark .item-after.small-gray {
-  color: white;
-}
 
 .small-gray {
   font-size: 11px;
@@ -2593,6 +2585,7 @@ td.action, th.action {
   grid-column: 2;
   grid-row: 2;
   line-height: 1.0;
+  padding-top: 3px;
 }
 
 .game-result .inning {
@@ -2953,44 +2946,89 @@ td.action, th.action {
 }
 
 
-
 .stamina-bar {
+  border: 1px solid #000;
   width: 25px;
-  height: 34px;
+  height: 32px;
   position: relative;
   background: #222;
   border-radius: 3px;
   overflow: hidden;
-  margin: 8px auto 8px auto;
+  margin: 8px auto;
 }
 
-.stamina-bar > div {
+.dark .stamina-bar { border-color: #fff; }
+
+/* the "empty" area (always full size, label centered here for <40) */
+.stamina-bar .gap {
   position: absolute;
-  bottom: 0;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* the fill (label centered INSIDE fill for >=40) */
+.stamina-bar .fill {
+  position: absolute;
   left: 0;
+  bottom: 0;
   width: 100%;
+  display: flex;
+  align-items: center;     /* vertical center inside fill */
+  justify-content: center; /* horizontal center inside fill */
+  pointer-events: none;
+  box-sizing: border-box;
+  padding-top: 2px;        /* nudges text slightly down (helps 40–60 look centered) */
+  overflow: hidden;        /* never let label bleed outside the fill */
 }
 
-.stamina-bar .color {
+.stamina-bar .label {
   font-size: .85em;
-  text-align: center;
-  align-content: center;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.stamina-bar .red {
-  background: #c0392b;
-  color: white;
-}
+/* colors */
+.stamina-bar.red .fill { background: #c0392b; }
+.stamina-bar.green .fill { background: green; }
+.stamina-bar.yellow .fill { background: yellow; }
 
-.stamina-bar .green {
-  background: green;
-  color: white;
-}
+/* label colors */
+.stamina-bar .gap .label { color: #fff; }
+.stamina-bar .fill .label { color: #fff; }
+.stamina-bar.yellow .fill .label { color: #000; } /* yellow = black text */
 
-.stamina-bar .yellow {
-  background: yellow;
-  color: black;
-}
+/* default: show GAP label, hide FILL label */
+.stamina-bar .gap .label { display: block; }
+.stamina-bar .fill .label { display: none; }
+
+/* >= 40: hide GAP label, show FILL label */
+.stamina-bar[data-pct^="4"] .gap .label,
+.stamina-bar[data-pct^="5"] .gap .label,
+.stamina-bar[data-pct^="6"] .gap .label,
+.stamina-bar[data-pct^="7"] .gap .label,
+.stamina-bar[data-pct^="8"] .gap .label,
+.stamina-bar[data-pct^="9"] .gap .label,
+.stamina-bar[data-pct="100"] .gap .label { display: none; }
+
+.stamina-bar[data-pct^="4"] .fill .label,
+.stamina-bar[data-pct^="5"] .fill .label,
+.stamina-bar[data-pct^="6"] .fill .label,
+.stamina-bar[data-pct^="7"] .fill .label,
+.stamina-bar[data-pct^="8"] .fill .label,
+.stamina-bar[data-pct^="9"] .fill .label,
+.stamina-bar[data-pct="100"] .fill .label { display: block; }
+
+/* make sure 100 still looks centered */
+.stamina-bar[data-pct="100"] .fill { padding-top: 3px; }
+
+
+
+
+
+
 
 
 .players tr.next-starter {

@@ -81,9 +81,7 @@
 
 
                             <td class="numeric-cell">
-                              <div class="stamina-bar">
-                                <div class="${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'} color" style="height:${(p.stamina * 100).toFixed(0)}%;">${(p.stamina * 100).toFixed(0)}</div>
-                              </div>
+                              <${StaminaBar} stamina=${p.stamina} />
                             </td>
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
@@ -158,6 +156,8 @@
   import { PagingService } from "../../../service/paging-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
+  import StaminaBar from "../common/stamina-bar.f7.html"
+
 
   export default (props, { $, $on, $f7, $update }) => {
 

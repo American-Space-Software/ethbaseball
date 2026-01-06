@@ -1362,7 +1362,7 @@ let startWebServer = async () => {
         let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
         let plsPlain = pls.map( pls => pls.get({ plain: true}))
 
-        let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate)
+        let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
 
         return {
           tls: tls,
@@ -1404,7 +1404,8 @@ let startWebServer = async () => {
             throws: pl.player.throws,
             hits: pl.player.hits,
             lastGamePlayed: pl.player.lastGamePlayed,
-            lastGamePitched: pl.player.lastGamePitched
+            lastGamePitched: pl.player.lastGamePitched,
+            stamina: pl.player.stamina
           }
         })
 
@@ -1699,7 +1700,7 @@ let startWebServer = async () => {
             let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
             let plsPlain = pls.map( pls => pls.get({ plain: true}))
 
-            let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain, universe.currentDate)
+            let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
 
             return {
               tls: tls,
@@ -1721,9 +1722,9 @@ let startWebServer = async () => {
 
           let teamBundle = await getTeamBundle(team)
 
-          if (teamBundle.startingPitcher.stamina < 1) {
-            throw new Error("No rested pitcher available.")
-          }
+          // if (teamBundle.startingPitcher.stamina < 1) {
+          //   throw new Error("No rested pitcher available.")
+          // }
 
           let botBundle = await getTeamBundle(bot)
 

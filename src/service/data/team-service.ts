@@ -134,6 +134,10 @@ n
         return this.teamRepository.getTeamIdsBySeason(season, options)
     }
 
+    async getTeamIdsByGameDate(date:Date, options?:any) : Promise<string[]> {
+        return this.teamRepository.getTeamIdsByGameDate(date, options)
+    }
+
     async getSeasonHistory(team: Team, options?: any): Promise<SeasonHistory[]> {
 
         let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)
@@ -162,8 +166,7 @@ n
 
         let t = tls.get({ plain: true })
 
-        let nextStartDate = this.getNextStartDate(team)
-        let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, nextStartDate)
+        let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
 
         let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id, options)
         let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
@@ -342,7 +345,8 @@ n
                 _id: teamInfo._id,
                 abbrev: teamInfo.abbrev,
                 name: teamInfo.name,
-                ratingBefore: teamInfo.seasonRating.before,
+                seasonRating: teamInfo.seasonRating,
+                longTermRating: teamInfo.longTermRating,
                 wins: g.isComplete ? teamInfo.overallRecord.after?.wins : teamInfo.overallRecord.before?.wins,
                 losses: g.isComplete ? teamInfo.overallRecord.after?.losses : teamInfo.overallRecord.before?.losses,
                 runs: g.home._id == team._id ? g.score.home : g.score.away,
@@ -356,7 +360,8 @@ n
                 _id: oppTeamInfo._id,
                 abbrev: oppTeamInfo.abbrev,
                 name: oppTeamInfo.name,
-                ratingBefore: oppTeamInfo.seasonRating.before,
+                seasonRating: teamInfo.seasonRating,
+                longTermRating: teamInfo.longTermRating,
                 wins: g.isComplete ? oppTeamInfo.overallRecord.after?.wins : oppTeamInfo.overallRecord.before?.wins,
                 losses: g.isComplete ? oppTeamInfo.overallRecord.after?.losses : oppTeamInfo.overallRecord.before?.losses,
                 runs: g.home._id == team._id ? g.score.away : g.score.home,
@@ -540,7 +545,7 @@ n
 
         for (let lineup of tls.lineups) {
 
-            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss, gameDate)
+            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
 
             this.validateLineup(team, lineup, plss, startingPitcher, gameDate)
 
@@ -557,7 +562,7 @@ n
 
         for (let lineup of tls.lineups) {
 
-            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss, gameDate)
+            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
 
             this.validateLineupAllowTiredStarters(team, lineup, plss, startingPitcher, gameDate)
 
@@ -702,62 +707,46 @@ n
         return this.teamRepository.getEligibleTeams(options)
     }
 
-    getStartingPitcherFromPLS(rotation: RotationPitcher[], plss: PlayerLeagueSeason[], startDate: Date): RotationPitcher {
+    getStartingPitcherFromPLS( rotation: RotationPitcher[], plss: PlayerLeagueSeason[] ): RotationPitcher {
 
-        //Loop through rotation and grab first listed pitcher that's eligible to play
-        let compareDate = dayjs(startDate).subtract(4, 'days').toDate()
-        compareDate.setHours(0, 0, 0)
+        const getPlayer = (pls?: PlayerLeagueSeason) => {
+            if (!pls) return undefined
+            return (pls as any).player ?? pls.get({ plain: true }).player
+        }
 
-        let startingPitcher: RotationPitcher
+        const select = (pitcher: RotationPitcher, stamina: number) => {
+            selected = JSON.parse(JSON.stringify(pitcher))
+            selected.stamina = stamina
+        }
 
-        for (let pitcher of rotation) {
+        let selected: RotationPitcher | undefined
+        let bestStamina = -Infinity
 
-            let pls = plss.find(p => p.playerId == pitcher._id)
+        for (const pitcher of rotation) {
+            const pls = plss.find(p => p.playerId === pitcher._id)
+            const player = getPlayer(pls)
+            if (!player) continue
 
-            if (!pls) continue
+            const stamina = Number(player.stamina ?? 0)
 
-            let player
-
-            if (pls.player) {
-                player = pls.player
-            } else {
-                let plsPlain = pls.get({ plain: true })
-                player = plsPlain.player
-            }
-            
-
-            let isEligible = player.stamina == 1 
-
-            //They are eligible 
-            if (isEligible ) {
-                startingPitcher = JSON.parse(JSON.stringify(pitcher))
-                startingPitcher.stamina = player.stamina
+            if (stamina === 1) {
+                select(pitcher, stamina)
                 break
+            }
+
+            if (stamina > bestStamina) {
+                bestStamina = stamina
+                select(pitcher, stamina)
             }
         }
 
-        if (!startingPitcher) {
+        if (!selected) {
+            throw new Error("No starting pitcher could be resolved from rotation/PLS.")
+        }
 
-            let pitcher = rotation[0]
-            
-            let pls = plss.find(p => p.playerId == pitcher._id)
-
-            let player
-
-            if (pls.player) {
-                player = pls.player
-            } else {
-                let plsPlain = pls.get({ plain: true })
-                player = plsPlain.player
-            }
-
-            startingPitcher = JSON.parse(JSON.stringify(pitcher))
-            startingPitcher.stamina = player.stamina
-
-        } 
-
-        return startingPitcher
+        return selected
     }
+
 
     getNextStartDate(team: Team): Date {
 
@@ -982,7 +971,7 @@ n
         })
 
 
-        let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss, date)
+        let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
         this.validateLineup(team, tls.lineups[0], plss, startingPitcher, date)
 
         if (originalLineup != tls.lineups[0]) {
@@ -1086,16 +1075,12 @@ n
 
     }
 
-    async updateSeasonRecord(team:Team, season:Season, options?:any) : Promise<OverallRecord> {
+    async updateSeasonRecord(team:Team, season:Season, tls:TeamLeagueSeason, options?:any) : Promise<OverallRecord> {
 
         let result = await this.getOverallRecordBySeason(team, season, options)
 
-        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
-
         tls.overallRecord = JSON.parse(JSON.stringify(result.overallRecord))
         tls.changed("overallRecord", true)
-
-        await this.teamLeagueSeasonService.put(tls, options)
 
         return tls.overallRecord
 
@@ -1182,7 +1167,14 @@ interface TeamGame {
         _id: string
         name: string
         abbrev: string
-        ratingBefore: number
+        seasonRating:{
+            before?:number
+            after?:number
+        }
+        longTermRating:{
+            before?:number
+            after?:number
+        }
         wins: number
         losses: number
         runs: number
@@ -1194,7 +1186,14 @@ interface TeamGame {
         _id: string
         name: string
         abbrev: string
-        ratingBefore: number
+        seasonRating:{
+            before?:number
+            after?:number
+        }
+        longTermRating:{
+            before?:number
+            after?:number
+        }
         wins: number
         losses: number
         runs: number

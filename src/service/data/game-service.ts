@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify"
 import { Game, GameTeam, GamePlayer as GP } from "../../dto/game.js"
 import {  Player } from "../../dto/player.js"
-import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand, InningEndingEvent, SimPitchResult, PitchResult, Contact, ShallowDeep } from "../enums.js"
+import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand, InningEndingEvent, SimPitchResult, PitchResult, Contact, ShallowDeep, Rating } from "../enums.js"
 
 import { RollService,  } from "../roll-service.js"
 import { GameRepository } from "../../repository/game-repository.js"
@@ -21,6 +21,7 @@ import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { RollChart } from "../../dto/roll-chart.js"
+import { NumberDataType } from "sequelize"
 
 
 
@@ -472,7 +473,9 @@ class GameService {
             let player = players.find(p => p._id == gamePlayer._id)
             let pls = plss.find( p => p.playerId == player._id)
 
-            this.finalizePlayer(player, pls, gamePlayer, hittingRewards, pitchingRewards)
+            this.finalizePlayer(player, pls, gamePlayer, hittingRewards, pitchingRewards, game.seasonId != undefined)
+
+
 
         }
 
@@ -489,7 +492,7 @@ class GameService {
 
     }
 
-    private finalizePlayer(player:Player, pls:PlayerLeagueSeason, gamePlayer:GamePlayer, hittingRewards:WPAReward, pitchingRewards:WPAReward) {
+    private finalizePlayer(player:Player, pls:PlayerLeagueSeason, gamePlayer:GamePlayer, hittingRewards:WPAReward, pitchingRewards:WPAReward, isSeasonGame:boolean) {
 
         if (!player) {
             throw new Error("Can not finalize invalid (null) player.")
@@ -498,28 +501,47 @@ class GameService {
         gamePlayer.hitResult.wpa = hittingRewards?.reward || 0
         gamePlayer.pitchResult.wpa = pitchingRewards?.reward || 0
 
-        player.careerStats = {
-            //@ts-ignore
-            hitting: this.statService.mergeHitResultsToStatLine(player.careerStats.hitting, gamePlayer.hitResult),
-            //@ts-ignore
-            pitching: this.statService.mergePitchResultsToStatLine(player.careerStats.pitching, gamePlayer.pitchResult)
+        //Adjust stamina
+        if (player.primaryPosition == Position.PITCHER) {
+
+            //Pitchers that pitches are at .2 and others are +.2
+            if (gamePlayer.pitchResult.pitches > 0) {
+                player.stamina = .2
+            } else {
+                player.stamina = Math.min(1, player.stamina + 0.2)
+            }
+
+            player.changed('stamina', true)
+
         }
 
-        player.changed("careerStats", true)
+    
+        if (isSeasonGame) {
 
-        pls.stats = {
-            //@ts-ignore
-            hitting: this.statService.mergeHitResultsToStatLine(pls.stats?.hitting, gamePlayer.hitResult),
-            //@ts-ignore
-            pitching: this.statService.mergePitchResultsToStatLine(pls.stats?.pitching, gamePlayer.pitchResult)
+            player.careerStats = {
+                //@ts-ignore
+                hitting: this.statService.mergeHitResultsToStatLine(player.careerStats.hitting, gamePlayer.hitResult),
+                //@ts-ignore
+                pitching: this.statService.mergePitchResultsToStatLine(player.careerStats.pitching, gamePlayer.pitchResult)
+            }
+
+            player.changed("careerStats", true)
+
+            pls.stats = {
+                //@ts-ignore
+                hitting: this.statService.mergeHitResultsToStatLine(pls.stats?.hitting, gamePlayer.hitResult),
+                //@ts-ignore
+                pitching: this.statService.mergePitchResultsToStatLine(pls.stats?.pitching, gamePlayer.pitchResult)
+            }
+
+            pls.changed("stats", true)
+
         }
+
 
         pls.primaryPosition = player.primaryPosition
 
         pls.changed("overallRating", true)
-        pls.changed("stats", true)
-
-
 
     }
 
@@ -591,17 +613,6 @@ class GameService {
         }
 
     }
-
-    // simPlateAppearance(game:Game, rng:any) {
-
-    //     let command:SimPitchCommand = this.createSimPitchCommand(game, rng)
-
-    //     //Do matchup
-    //     this.rollService.simMatchup(command)
-
-    //     this.finishPlay(game, command)
-
-    // }
 
     simPitch(game:Game, rng:any) {
 
@@ -1025,10 +1036,13 @@ class GameService {
             let hittingRatings = p.hittingRatings
             let pitchRatings = p.pitchRatings
 
-            // if (isStartingPitcher && startingPitcher.stamina != 1) {
-            //     this.playerService.modifyRatings(hittingRatings, startingPitcher.stamina)
-            //     this.playerService.modifyRatings(pitchRatings, startingPitcher.stamina)
-            // }
+            if (isStartingPitcher && startingPitcher.stamina != 1) {
+
+                let modifier = Math.max(.25, startingPitcher.stamina) // minimium of .25 effective
+
+                this.playerService.modifyRatings(hittingRatings, modifier)
+                this.playerService.modifyRatings(pitchRatings, modifier)
+            }
 
             gamePlayers.push({ 
                 _id: p._id,
@@ -1569,7 +1583,8 @@ class GameService {
                 name: game.away.name,
                 cityName: game.away.cityName,
                 abbrev: game.away.abbrev,
-                rating: game.away.seasonRating.before,
+                seasonRating: game.away.seasonRating,
+                longTermRating: game.away.longTermRating,
                 overallRecord: {
                     before: game.away.overallRecord.before,
                     after: game.away.overallRecord.after
@@ -1585,7 +1600,8 @@ class GameService {
                 name: game.home.name,
                 cityName: game.home.cityName,
                 abbrev: game.home.abbrev,
-                rating: game.home.seasonRating.before,
+                seasonRating: game.home.seasonRating,
+                longTermRating: game.home.longTermRating,
                 overallRecord: {
                     before: game.home.overallRecord.before,
                     after: game.home.overallRecord.after
@@ -2117,6 +2133,7 @@ interface GameSummaryViewModel {
     play:LastPlay
     linescoreViewModel
     score:Score
+
 }
 
 interface GamesViewModel {
@@ -2135,7 +2152,14 @@ interface TeamSummary {
         _id:string
         name:string
     }
-    rating:number
+    seasonRating:{
+        before?:number
+        after?:number
+    }
+    longTermRating: {
+        before?:number
+        after?:number
+    }
     overallRecord:{
         before:OverallRecord
         after:OverallRecord

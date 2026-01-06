@@ -1,0 +1,34 @@
+<template>
+
+  <div class="stamina-bar ${stamina === 1 ? 'green' : stamina >= 0.5 ? 'yellow' : 'red'}"
+      data-pct="${(stamina * 100).toFixed(0)}">
+    <div class="gap">
+      <span class="label">${(stamina * 100).toFixed(0)}</span>
+    </div>
+    <div class="fill" style="height:${(stamina * 100).toFixed(0)}%;">
+      <span class="label">${(stamina * 100).toFixed(0)}</span>
+    </div>
+  </div>
+
+
+
+</template>
+
+
+
+<script>
+
+  import { ContainerService } from "../../../service/container-service"
+  import { WalletService } from "../../../service/wallet-service"
+  import { LoginWebService } from "../../service/login-web-service"
+  import { UniverseWebService } from "../../service/universe-web-service"
+
+  import { ethers } from "ethers"
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let stamina = props.stamina
+
+    return $render
+  }
+</script>

@@ -134,8 +134,8 @@
   import Navbar from "../common/navbar.f7.html"
   import Breadcrumbs from "../common/breadcrumbs.f7.html"
   import Footer from "../common/footer.f7.html"
-
   import Toolbar from "../common/toolbar.f7.html"
+
 
   import GameTransactions from "../activity/game-transaction-events.f7.html"
   import OnChainEvents from "../activity/onchain-events.f7.html"
@@ -192,17 +192,36 @@
     }
 
     const createLineupPopup = (lineup, confirmLineup) => {
+
           const rows = (lineup.lineup || []).map((p, index) => `
         <tr>
           <td>${index + 1}</td>
           <td class="image">
-            ${p?._id ? `<img src="/player/image/${p._id}" width="35" height="35" />` : ``}
+            <img src="/player/image/${p._id}" width="35" height="35" />
           </td>
           <td class="name">
-            ${p?._id ? `
               <a href="${universeWebService.startDateLink(`/p/${p._id}`)}" class="popup-close">${p.fullName}</a><br />
               <span class="position">${p.primaryPosition}</span>
-            ` : ``}
+
+              ${p.stamina < 1 && p.primaryPosition == Position.PITCHER ? `
+              Pitcher is tired.
+              ` : ` `}
+
+          </td>
+          <td class="numeric-cell">
+
+            ${p.primaryPosition == Position.PITCHER ? `
+              <div class="stamina-bar ${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'}"
+                  data-pct="${(p.stamina * 100).toFixed(0)}">
+                <div class="gap">
+                  <span class="label">${(p.stamina * 100).toFixed(0)}</span>
+                </div>
+                <div class="fill" style="height:${(p.stamina * 100).toFixed(0)}%;">
+                  <span class="label">${(p.stamina * 100).toFixed(0)}</span>
+                </div>
+              </div>
+            ` : ` `}
+
           </td>
         </tr>
       `).join("")

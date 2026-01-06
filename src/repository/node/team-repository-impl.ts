@@ -597,6 +597,35 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
+
+    async getTeamIdsByGameDate(date:Date, options?:any) : Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.RAW,
+            plain: false,
+            mapToModel: false,
+            replacements: {
+                gameDate: dayjs(date).format("YYYY-MM-DD")
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            SELECT  
+                DISTINCT t._id
+            FROM team as t
+            INNER JOIN game_team gt on gt.teamId = t._id
+            INNER JOIN game g on g._id = gt.gameId
+            WHERE g.gameDate = :gameDate
+        `, Object.assign(queryOptions, options))
+
+        return queryResults.map( qr => qr._id)
+
+
+    }
+
+
 }
 
 interface TeamRating {
