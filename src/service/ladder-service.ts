@@ -34,6 +34,7 @@ import { GamePitchResult } from "../dto/game-pitch-result.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
 import { ethers } from "ethers"
+import { TeamQueueService } from "./data/team-queue-service.js"
 
 
 @injectable()
@@ -65,6 +66,7 @@ class LadderService {
         private financeService:FinanceService,
         private statService:StatService,
         private offchainEventService:OffchainEventService,
+        private teamQueueService:TeamQueueService
     ) {}
 
 
@@ -80,122 +82,66 @@ class LadderService {
 
             let universe:Universe = await this.universeRepository.get(universeId, options)
 
+            if (!this.isDateBeforeOrEqualToToday(universe.currentDate)) return
+
             let logDate = dayjs(universe.currentDate).format("YYYY/MM/DD")
 
             console.time(`Running game runner (${logDate})...`)
 
-            if (this.isDateBeforeOrEqualToToday(universe.currentDate)) {
+            let leagues:League[] = await this.leagueService.listByRankAsc(options)
+            let season:Season = await this.seasonService.getByDate(universe.currentDate, options)
 
-                let leagues:League[] = await this.leagueService.listByRankAsc(options)
+            if (season) {
 
-                let season:Season = await this.seasonService.getByDate(universe.currentDate, options)
+                //Check if we should start the games for the day.
+                const shouldStartDay = await this.shouldStartDay(universe, options)
 
-                if (season) {
+                if (shouldStartDay) {
 
-                    //Play games
-                    gameIds.push(...await this.processGames(leagues, universe.currentDate, options))
-                    
-                    //Check if we've moved past universe.currentDate AND that all games from that day have ended.
-                    if (this.isDateBeforeToday(universe.currentDate)) {
+                    for(let league of leagues) {
 
-                        let inProgressGameIds = await this.gameService.getUnfinishedByDateIds(universe.currentDate, options) 
+                        const queued = await this.teamQueueService.listByLeague(league, 1000000, 0, options)
 
-                        if (inProgressGameIds?.length == 0) {
+                        if (queued.length > 0) {
 
-                            //Tasks to finish day.
-                            let teamIds:string[] = await this.teamService.getTeamIdsByGameDate(universe.currentDate, options)
-                            let playerIds:string[] = await this.playerService.getPlayerIdsByGameDate(universe.currentDate, options)
+                            const queuedTeams: Team[] = await this.teamService.getByIds(queued.map(q => q.teamId), options)
 
-                            if (playerIds?.length > 0) {
+                            let teamBundles:TeamBundle[] = []
 
-                                //Update player ratings.
-                                let players:Player[] = await this.playerService.getByIds(playerIds, options)
-                                let plss = await this.playerLeagueSeasonService.getByPlayersSeason(players, season, options)
-
-                                for (let player of players) {
-
-                                    let pls = plss.find( p => p.playerId == player._id)
-
-                                    //Update overall rating
-                                    //Get player's full results for the day. If WPA is positive they go up. Otherwise, down. Recalculate ratings after.
-                                    if (player.primaryPosition == Position.PITCHER) {
-                                        let gprSums = await this.gamePitchResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
-                                        player.overallRating = this.playerService.updateOverallRating(player.overallRating, gprSums.wpa > 0, player.age, true)
-                                    } else {
-
-                                        let ghrSums = await this.gameHitResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
-                                        player.overallRating = this.playerService.updateOverallRating(player.overallRating, ghrSums.wpa > 0, player.age, false)
-                                    }
-
-                                    await this.playerService.updateHittingPitchingRatings(player)
-
-                                    player.changed("overallRating", true)
-                                    player.changed("displayRating", true)
-                                    player.changed("hittingRatings", true)
-                                    player.changed("pitchRatings", true)
-
-                                    pls.overallRating = player.overallRating
-                                    pls.hittingRatings = player.hittingRatings
-                                    pls.pitchRatings = player.pitchRatings
-                                    
-                                    pls.changed("overallRating", true)
-                                    pls.changed("displayRating", true)
-                                    pls.changed("hittingRatings", true)
-                                    pls.changed("pitchRatings", true)
-
-                                    await this.playerService.put(player, options)
-                                    await this.playerLeagueSeasonService.put(pls, options)
-
-                                }
-
-                                //Distribute team rewards
-                                let teams:Team[] = await this.teamService.getByIds(teamIds, options)
-
-                                let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
-
-                                let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
-
-                                //Calculate daily rewards. Only to teams that played.
-                                let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, teams)
-
-                                await this.distributeRewards(rewardsPerTeam, teams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
-                                
-                                //save.
-                                for (let team of teams) {
-                                    await this.teamService.put(team, options)
-                                }
-
-                                //Save
-                                for (let tls of tlss) {
-                                    await this.teamLeagueSeasonService.put(tls, options)
-                                }
-
-                                //Update league average player ratings.
-                                await this.leagueService.updateLeagueAveragePlayerRatings(leagues, season, options)
-
-                                if (dayjs(universe.currentDate).format("YYYY/MM/DD") == dayjs(season.endDate).format("YYYY/MM/DD") && !season.isComplete) {
-                                    console.time(`Finishing season...`)
-                                    await this.finishSeason(season, leagues, options)
-                                    console.timeEnd(`Finishing season...`)
-                                }
-            
-            
+                            for (let team of queuedTeams) {
+                                teamBundles.push(await this.getTeamBundle(team, season, options))
                             }
 
-                            universe.currentDate.setDate(universe.currentDate.getDate() + 1)
-                            universe.changed('currentDate', true)
-                            await this.universeRepository.put(universe, options)
-
+                            if (queuedTeams.length > 0) {
+                                await this.createDayGames(universe.currentDate, league, season, teamBundles, options)
+                            }
 
                         }
 
+
                     }
 
+                    await this.teamQueueService.clear(options)
 
-                } 
+                }
 
+
+                //Play games
+                gameIds.push(...await this.processGames(leagues, universe.currentDate, options))
                 
-            }
+                //Check if we've moved past universe.currentDate AND that all games from that day have ended.
+                if (this.isDateBeforeToday(universe.currentDate)) {
+
+                    let inProgressGameIds = await this.gameService.getUnfinishedByDateIds(universe.currentDate, options) 
+
+                    if (inProgressGameIds?.length == 0) {
+                        await this.finishDay(universe, leagues, season, options)
+                    }
+
+                }
+
+
+            } 
 
             console.timeEnd(`Running game runner (${logDate})...`)
 
@@ -203,6 +149,275 @@ class LadderService {
         })
 
         return gameIds
+
+    }
+
+    private async shouldStartDay(universe: Universe, options?: any): Promise<boolean> {
+
+        const nowUtc = dayjs.utc()
+
+        const startDay = dayjs(universe.currentDate).utc().format("YYYY-MM-DD")
+        const startTimeUtc = dayjs.tz(`${startDay} 13:00`, "America/New_York").utc()
+
+        const shouldStartDayByTime = nowUtc.isSame(startTimeUtc) || nowUtc.isAfter(startTimeUtc)
+
+        if (!shouldStartDayByTime) return false
+
+        const existingGameIds = await this.gameService.getIdsByDate(universe.currentDate, {
+            ...options,
+            limit: 1
+        })
+
+        return !existingGameIds?.length
+    }
+
+    private async getTeamBundle( theTeam: Team, season: Season, options?: any) : Promise<TeamBundle> {
+
+        const tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(theTeam, season, options)
+
+        const tlsPlain: TeamLeagueSeason = tls.get({ plain: true })
+
+        const plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(theTeam, options)
+
+        const plssPlain = plss.map(pls => pls.get({ plain: true }))
+
+        const startingPitcher: RotationPitcher = this.teamService.getStartingPitcherFromPLS( tls.lineups[0].rotation, plssPlain )
+
+        return {
+            team: theTeam,
+            tls,
+            tlsPlain,
+            plss,
+            plssPlain,
+            startingPitcher
+        }
+    }
+
+    private async createDayGames( currentDate: Date, league: League,  season: Season, teamBundles: TeamBundle[], options?: any ) {
+
+        const getRating = (t: Team): number =>
+            (t.longTermRating.rating + t.seasonRating.rating) / 2
+
+        const isBundleEligible = (bundle: TeamBundle): boolean => {
+            try {
+                this.teamService.validateLineup(
+                    bundle.team,
+                    bundle.tls.lineups[0],
+                    bundle.plssPlain,
+                    bundle.startingPitcher,
+                    currentDate
+                )
+                return true
+            } catch {
+                return false
+            }
+        }
+
+        const buildClosestPairs = async ( bundles: TeamBundle[] ): Promise<{ home: TeamBundle; away: TeamBundle }[]> => {
+
+            const eligible: TeamBundle[] = bundles.filter(isBundleEligible)
+
+            const remaining: TeamBundle[] = eligible
+                .slice()
+                .sort((a, b) => getRating(b.team) - getRating(a.team))
+
+            const pairs: { home: TeamBundle; away: TeamBundle }[] = []
+
+            while (remaining.length >= 2) {
+
+                const home: TeamBundle = remaining.shift() as TeamBundle
+                const homeRating = getRating(home.team)
+
+                let bestIdx = 0
+                let bestDiff = Math.abs(
+                    homeRating - getRating(remaining[0].team)
+                )
+
+                for (let i = 1; i < remaining.length; i++) {
+                    const diff = Math.abs(
+                        homeRating - getRating(remaining[i].team)
+                    )
+                    if (diff < bestDiff) {
+                        bestDiff = diff
+                        bestIdx = i
+                    }
+                }
+
+                const away: TeamBundle = remaining.splice(bestIdx, 1)[0]
+
+                pairs.push({ home: home, away: away })
+            }
+
+            if (remaining.length === 1) {
+
+                const bye: TeamBundle = remaining[0]
+
+                const bot: Team = await this.teamService.getClosetRatedBot(  bye.team.longTermRating.rating, options )
+
+                const botBundle = await this.getTeamBundle(bot, season, options)
+
+                if (isBundleEligible(botBundle)) {
+                    pairs.push({ home: bye, away: botBundle })
+                }
+            }
+
+            return pairs
+        }
+
+        const pairs = await buildClosestPairs(teamBundles)
+
+        for (const { home, away } of pairs) {
+            await this.createGame(home, away, league, season, currentDate, options)
+        }
+
+    }
+
+
+    private async createGame( homeBundle: TeamBundle, awayBundle:TeamBundle, league: League, season: Season, date: Date,  options?: any ) {
+
+        const game: Game = await this.gameService.scheduleGame({
+            league,
+            season,
+            awayTLS: awayBundle.tlsPlain,
+            homeTLS: homeBundle.tlsPlain,
+            startDate: new Date(new Date().toUTCString()),
+        }, options)
+
+        const playerIds = []
+            .concat(awayBundle.plss.map(pls => pls.playerId))
+            .concat(homeBundle.plss.map(pls => pls.playerId))
+
+        const players: Player[] = await this.playerService.getByIds(playerIds, options)
+
+        await this.gameService.createGamePlayers(game, playerIds, options)
+
+        this.gameService.startGame({
+
+            game,
+
+            homeTLS: homeBundle.tls,
+            awayTLS: awayBundle.tls,
+
+            awayPlayers: awayBundle.plss,
+            homePlayers: homeBundle.plss,
+
+            away: awayBundle.team,
+            home: homeBundle.team,
+
+            awayStartingPitcher: awayBundle.startingPitcher,
+            homeStartingPitcher: homeBundle.startingPitcher,
+
+            date,
+            leagueAverageRatings: league.averageRating
+        })
+
+        await this.gameService.put(game, options)
+
+        homeBundle.team.lastGamePlayed = date
+        awayBundle.team.lastGamePlayed = date
+
+        await this.teamService.put(homeBundle.team, options)
+        await this.teamService.put(awayBundle.team, options)
+
+        for (const player of players) {
+            player.lastGamePlayed = game.startDate
+        }
+
+        const homePitcher = players.find(p => p._id === homeBundle.startingPitcher._id) as Player
+        homePitcher.lastGamePitched = date
+
+        const awayPitcher = players.find(p => p._id === awayBundle.startingPitcher._id) as Player
+        awayPitcher.lastGamePitched = date
+
+        await this.playerService.updateGameFields(players, options)
+    }
+
+    private async finishDay(universe:Universe, leagues:League[], season:Season, options?:any) {
+
+        //Tasks to finish day.
+        let teamIds:string[] = await this.teamService.getTeamIdsByGameDate(universe.currentDate, options)
+        let playerIds:string[] = await this.playerService.getPlayerIdsByGameDate(universe.currentDate, options)
+
+        if (playerIds?.length > 0) {
+
+            //Update player ratings.
+            let players:Player[] = await this.playerService.getByIds(playerIds, options)
+            let plss = await this.playerLeagueSeasonService.getByPlayersSeason(players, season, options)
+
+            for (let player of players) {
+
+                let pls = plss.find( p => p.playerId == player._id)
+
+                //Update overall rating
+                //Get player's full results for the day. If WPA is positive they go up. Otherwise, down. Recalculate ratings after.
+                if (player.primaryPosition == Position.PITCHER) {
+                    let gprSums = await this.gamePitchResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
+                    player.overallRating = this.playerService.updateOverallRating(player.overallRating, gprSums.wpa > 0, player.age, true)
+                } else {
+
+                    let ghrSums = await this.gameHitResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
+                    player.overallRating = this.playerService.updateOverallRating(player.overallRating, ghrSums.wpa > 0, player.age, false)
+                }
+
+                await this.playerService.updateHittingPitchingRatings(player)
+
+                player.changed("overallRating", true)
+                player.changed("displayRating", true)
+                player.changed("hittingRatings", true)
+                player.changed("pitchRatings", true)
+
+                pls.overallRating = player.overallRating
+                pls.hittingRatings = player.hittingRatings
+                pls.pitchRatings = player.pitchRatings
+                
+                pls.changed("overallRating", true)
+                pls.changed("displayRating", true)
+                pls.changed("hittingRatings", true)
+                pls.changed("pitchRatings", true)
+
+                await this.playerService.put(player, options)
+                await this.playerLeagueSeasonService.put(pls, options)
+
+            }
+
+            //Distribute team rewards
+            let teams:Team[] = await this.teamService.getByIds(teamIds, options)
+
+            let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
+
+            let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
+
+            //Calculate daily rewards. Only to teams that played.
+            let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, teams)
+
+            await this.distributeRewards(rewardsPerTeam, teams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
+            
+            //save.
+            for (let team of teams) {
+                await this.teamService.put(team, options)
+            }
+
+            //Save
+            for (let tls of tlss) {
+                await this.teamLeagueSeasonService.put(tls, options)
+            }
+
+            //Update league average player ratings.
+            await this.leagueService.updateLeagueAveragePlayerRatings(leagues, season, options)
+
+            if (dayjs(universe.currentDate).format("YYYY/MM/DD") == dayjs(season.endDate).format("YYYY/MM/DD") && !season.isComplete) {
+                console.time(`Finishing season...`)
+                await this.finishSeason(season, leagues, options)
+                console.timeEnd(`Finishing season...`)
+            }
+
+
+        }
+
+        universe.currentDate.setDate(universe.currentDate.getDate() + 1)
+        universe.changed('currentDate', true)
+        await this.universeRepository.put(universe, options)
+
 
     }
 
@@ -979,10 +1194,29 @@ class LadderService {
 
     }
 
+    // returns "YYYY-MM-DD" for the date users are queueing for right now
+    getQueueForDate(currentDate:Date) {
+
+        const nowUtc = dayjs.utc()
+        const universeDay = dayjs(currentDate).utc().format("YYYY-MM-DD")
+        const cutoffUtc = dayjs.tz(`${universeDay} 13:00`, "America/New_York").utc()
+        return nowUtc.isBefore(cutoffUtc)
+            ? universeDay
+            : dayjs(universeDay).add(1, "day").format("YYYY-MM-DD")
+
+    }
+
 
 }
 
-
+interface TeamBundle {
+    team: Team
+    tls: TeamLeagueSeason
+    tlsPlain: TeamLeagueSeason
+    plss: PlayerLeagueSeason[]
+    plssPlain: PlayerLeagueSeason[]
+    startingPitcher: RotationPitcher
+}
 
 export {
     LadderService

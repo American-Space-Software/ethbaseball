@@ -138,6 +138,10 @@ n
         return this.teamRepository.getTeamIdsByGameDate(date, options)
     }
 
+    async getRatingsForIds(teamIds:string[], options?:any) {
+        return this.teamRepository.getRatingsForIds(teamIds, options)
+    }
+
     async getSeasonHistory(team: Team, options?: any): Promise<SeasonHistory[]> {
 
         let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)

@@ -11,7 +11,10 @@ import { GameService } from "./game-service.js";
 import { Game } from "../../dto/game.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { OffchainEventService } from "../data/offchain-event-service.js";
-import { ContractType } from "../enums.js";
+import { ContractType, SeasonInfo } from "../enums.js";
+import dayjs from "dayjs";
+import { SeasonService } from "./season-service.js";
+import { LadderService } from "../ladder-service.js";
 
 
 
@@ -22,6 +25,8 @@ class UserService {
     private userRepository:UserRepository
     
     constructor(
+        private ladderService:LadderService,
+        private seasonService:SeasonService,
         private ownerService:OwnerService,
         private teamService:TeamService,
         private gameService:GameService,
@@ -78,38 +83,51 @@ class UserService {
         return authInfo
     }
 
-    async getViewModel(user:User, season:Season) {
+    async getViewModel(currentDate:Date, user:User, season:Season) {
 
         let vm:any = {}
 
         let teams:Team[] = await this.teamService.getByUser(user)
         let team = teams[0]
 
-        if (team) {
+        let tls = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
 
-            let tls = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
+        let tlsPlain = tls.get({ plain: true })
+        vm.team = this.teamService.getTeamStandingsViewModel(tlsPlain, 1)
+        vm.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
 
-            let tlsPlain = tls.get({ plain: true })
-            vm.team = this.teamService.getTeamStandingsViewModel(tlsPlain, 1)
-            vm.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+        //Get games for teams
+        let games:Game[] = await this.gameService.getRecentByTeam(team, { limit: 10 } )
 
-            //Get games for teams
-            let games:Game[] = await this.gameService.getByTeam(team, { limit: 10 } )
+        vm.completedGames = games?.filter( g => g.isFinished)?.map( g => this.gameService.getGameSummaryViewModel(g))
+        vm.inProgressGame = games?.find( g => !g.isFinished)
 
-            vm.completedGames = games?.filter( g => g.isFinished)?.map( g => this.gameService.getGameSummaryViewModel(g))
-            vm.inProgressGame = games?.find( g => !g.isFinished)
-
-            let events = await this.offchainEventService.getByTeamId(ContractType.DIAMONDS, team._id, { limit: 5, offset: 0})
-            vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
-
-        }
-
+        let events = await this.offchainEventService.getByTeamId(ContractType.DIAMONDS, team._id, { limit: 5, offset: 0})
+        vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
+        
         if (season) {
+
+            let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
+
+            let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses
+
+
             vm.season = {
                 _id: season._id,
                 startDate: season.startDate,
-                endDate: season.endDate
+                endDate: season.endDate,
+                dayNumber: seasonInfo.dayNumber,
+                daysRemaining: seasonInfo.daysRemaining,
+                totalDays: seasonInfo.totalDays,
+                universeDate: dayjs(currentDate).format("YYYY-MM-DD"),
+                nextQueueDate: this.ladderService.getQueueForDate(currentDate),
+                team: {
+                    gamesPlayed: gamesPlayed,
+                    teamCurrentDate: dayjs(games?.length ? games[0].gameDate : currentDate).format("YYYY-MM-DD"),
+                }
             }
+            
+
         }
 
 
@@ -117,26 +135,6 @@ class UserService {
     
     }
 
-    // async getOwnerViewModel(owner:Owner, season:Season) : Promise<any> {
-
-    //     let tlss = await this.teamLeagueSeasonService.listByOwnerAndSeason(owner, season)
-
-    //     let teamVms = []
-
-    //     let index = 0
-
-    //     for (let tls of tlss) {
-    //         let tlsPlain = tls.get({ plain: true })
-    //         teamVms.push(this.teamService.getTeamStandingsViewModel(tlsPlain, index + 1))
-
-    //         index++
-    //     }
-
-    //     return {
-    //         teams: teamVms
-    //     }
-    
-    // }
 
 
 }

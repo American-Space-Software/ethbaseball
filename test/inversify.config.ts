@@ -42,6 +42,7 @@ import { SeedRepositoryNodeImpl } from "../src/repository/node/seed-repository-i
 
 import { TeamLeagueSeason } from "../src/dto/team-league-season.js";
 import { TeamMintPass } from "../src/dto/team-mint-pass.js";
+import { TeamQueue } from "../src/dto/team-queue.js";
 
 import { Player } from "../src/dto/player.js";
 import { DiamondMintPass, Team } from "../src/dto/team.js";
@@ -149,6 +150,9 @@ import { GamePlayerRepositoryNodeImpl } from "../src/repository/node/game-player
 import { StadiumRepository } from "../src/repository/stadium-repository.js";
 import { StadiumRepositoryNodeImpl } from "../src/repository/node/stadium-repository-impl.js"
 
+import { TeamQueueRepository } from "../src/repository/team-queue-repository.js";
+import { TeamQueueRepositoryNodeImpl } from "../src/repository/node/team-queue-repository-impl.js"
+
 import { CityRepository } from "../src/repository/city-repository.js";
 import { CityRepositoryNodeImpl } from "../src/repository/node/city-repository-impl.js"
 
@@ -209,6 +213,7 @@ import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import { FinanceService } from "../src/service/finance-service.js"
 import { SeasonService } from "../src/service/data/season-service.js"
+import { TeamQueueService } from "../src/service/data/team-queue-service.js"
 
 import { TeamLeagueSeasonService } from "../src/service/data/team-league-season-service.js"
 import { PlayerLeagueSeasonService } from "../src/service/data/player-league-season-service.js"
@@ -222,6 +227,14 @@ import { AbiPayloadService } from "../src/service/abi-payload-service.js"
 
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
+
+
+import utc from "dayjs/plugin/utc.js"
+import timezone from "dayjs/plugin/timezone.js"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 
 let rng
 let container: Container
@@ -288,7 +301,7 @@ function getContainer(command?: GetContainerCommand) {
           connectTimeout: process.env.MYSQL_TIMEOUT,
           multipleStatements: true        
          },
-         models: [ TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
+         models: [ TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
           DiamondMintPass, Universe, Animation, Image, ConnectLink,
           Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
           ]
@@ -404,6 +417,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind<ImageRepository>("ImageRepository").to(ImageRepositoryNodeImpl).inSingletonScope()
   container.bind<StadiumRepository>("StadiumRepository").to(StadiumRepositoryNodeImpl).inSingletonScope()
   container.bind<PostRepository>("PostRepository").to(PostRepositoryNodeImpl).inSingletonScope()
+  container.bind<TeamQueueRepository>("TeamQueueRepository").to(TeamQueueRepositoryNodeImpl).inSingletonScope()
 
 
   container.bind<UniverseRepository>("UniverseRepository").to(UniverseRepositoryNodeImpl).inSingletonScope()
@@ -476,6 +490,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(DiamondMintPassService).toSelf().inSingletonScope()
   container.bind(PostService).toSelf().inSingletonScope()
   container.bind(AirdropService).toSelf().inSingletonScope()
+  container.bind(TeamQueueService).toSelf().inSingletonScope()
 
   //Override the RNG
   let seedService: SeedService = container.get(SeedService)

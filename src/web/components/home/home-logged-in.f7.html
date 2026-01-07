@@ -7,48 +7,195 @@
 
         <div class="fixed-width-content center">
 
-          <div class="block">
+          <div class="block-title block-title-medium">Your Team</div>
+          <div class="list media-list list-outline-ios list-strong">
+            <ul>
 
-              <a class="link" href="/t/index/${vm.team._id}">
+              <li>
+                <a class="item-link item-content" href="/t/index/${vm.team._id}">
+                  <div class="item-media">
+                    <img src="/image/thumbnail/100/${vm.team.logoId}" width="56" height="56" style="border-radius: 12px;" />
+                  </div>
 
-                <div class="team-info">
-
-                    <div class="left">
-                        <img src="/image/thumbnail/100/${vm.team.logoId}" class="profilePic" height="100" width="100" />
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">${teamWebService.getTeamName(vm.team)}</div>
+                      <div class="item-after">⭐ ${vm.team.longTermRating.rating.toFixed(0)}</div>
                     </div>
 
-                    <div class="right">
-
-                        <span class="name">${teamWebService.getTeamName(vm.team)}</span> 
-
-                        <div class="team-record">
-                            <span class="label">Rating: </span> ${ vm.team.longTermRating.rating.toFixed(0) } <br />
-                            <span class="label">Record: </span> ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(vm.team.overallRecord.winPercent)}<br />
-                            <span class="label">Cash: </span> ${universeWebService.displayDiamonds(vm.team.diamondBalance)}<br /><br />
-                        </div>
-                        
+                    <div class="item-subtitle">
+                      ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses}
+                      <span class="separator">|</span>
+                      ${statService.formatRatio(vm.team.overallRecord.winPercent)}
                     </div>
 
+                    <div class="item-text">
+                      Cash: ${universeWebService.displayDiamonds(vm.team.diamondBalance)}
+                    </div>
+                  </div>
+                </a>
+              </li>
+
+            </ul>
+          </div>
+
+          <div class="block-title block-title-medium">Current Season</div>
+          <div class="block block-outline block-strong season-info-card">
+
+            <div class="season-info-range">
+              ${dayjs(vm.season.startDate).format('MMM D, YYYY')} → ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
+            </div>
+
+            <div class="row season-info-stats">
+              <div class="col">
+                <div class="season-info-day">
+                  Day ${vm.season.dayNumber} of ${vm.season.totalDays}
                 </div>
 
-              </a>
+                ${isSeasonComplete(vm.season) ? $h`
+                  <div class="season-info-complete">Season complete</div>
+                ` : $h`
+                  <div class="season-info-remaining">
+                    ${vm.season.daysRemaining} days remaining
+                  </div>
+                `}
+
+                <div class="season-info-games">
+                  Games played: ${vm.season.team.gamesPlayed}
+                </div>
+              </div>
+
+              <div class="col text-align-right">
+                ${shouldShowJoinQueue(vm.season) ? $h`
+                  <div class="season-info-current-label">Queue for</div>
+                  <div class="season-info-queue-date">
+                    ${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}
+                  </div>
+                ` : $h``}
+              </div>
+            </div>
+
+            <div class="season-info-timeline">
+              <div class="progressbar" data-progress="${getSeasonPercent(vm.season)}">
+                <span></span>
+              </div>
+
+              ${shouldShowCatchUp(vm.season) ? $h`
+                <div class="season-info-markers">
+                  <div
+                    class="season-info-marker season-info-marker--you
+                      ${isYouAtStart(vm.season) ? 'season-info-marker--start' : ''}
+                      ${isYouAtEnd(vm.season) ? 'season-info-marker--end' : ''}"
+                    style="left: ${getYouLeftPercent(vm.season)}%;"
+                  >
+                    <span class="season-info-marker-line"></span>
+                    <span class="season-info-marker-text">You</span>
+                  </div>
+                </div>
+              ` : $h``}
+            </div>
+
+            <div class="block-footer season-info-status">
+              ${isSeasonComplete(vm.season) ? $h`
+                <span class="season-info-status-strong">Status:</span>
+                <span>Season complete</span>
+              ` : isBehind(vm.season) ? $h`
+                <span class="season-info-status-strong">Status:</span>
+                <span>
+                  Behind by ${getDaysBehind(vm.season)} day${getDaysBehind(vm.season) === 1 ? '' : 's'}
+                </span>
+              ` : isAhead(vm.season) ? $h`
+                <span class="season-info-status-strong">Status:</span>
+                <span class="season-info-status-ahead">
+                  Ahead by ${getDaysAhead(vm.season)} day${getDaysAhead(vm.season) === 1 ? '' : 's'} (too far ahead)
+                </span>
+              ` : $h`
+                <span class="season-info-status-strong">Status:</span>
+                <span>Up to date</span>
+              `}
+            </div>
+
+            ${!isSeasonComplete(vm.season) && shouldShowCatchUp(vm.season) && isQueueClosedForUniverseDay(vm.season) ? $h`
+              <div class="season-info-callout">
+                <div class="season-info-callout-title">Queue is closed for today</div>
+                <div class="season-info-callout-body">
+                  Catch up first. Once you’re up to date, you can join the queue for tomorrow.
+                </div>
+              </div>
+            ` : $h``}
+
+            ${!isSeasonComplete(vm.season) && shouldShowJoinQueue(vm.season) && isQueueClosedForUniverseDay(vm.season) ? $h`
+              <div class="season-info-callout">
+                <div class="season-info-callout-title">Today’s queue is closed</div>
+
+                ${isGamesUnderway(vm.season) ? $h`
+                  <div class="season-info-callout-body">
+                    Games for <b>${dayjs(vm.season.universeDate).format('MMM D')}</b> are underway.
+                    You can join the queue for tomorrow.
+                  </div>
+                ` : isGamesWrappingUp(vm.season) ? $h`
+                  <div class="season-info-callout-body">
+                    Games for <b>${dayjs(vm.season.universeDate).format('MMM D')}</b> are wrapping up.
+                    You can join the queue for tomorrow.
+                  </div>
+                ` : $h`
+                  <div class="season-info-callout-body">
+                    You can join the queue for tomorrow.
+                  </div>
+                `}
+              </div>
+            ` : $h``}
+
           </div>
 
-          <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
-              <ul>
-                  <li><a class="link" href="/t/index/${vm.team._id}">👥 Manage Team</a></li>
+          <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+            <ul>
 
-                  ${inProgressGame?.game?._id == undefined ? $h`
-                      <li><a class="link popup-close" @click="${playBotClick}">🤖 Play Bot</a></li>
-                      <!-- <li><a class="link" href="/t/index/${vm.team._id}">🏆 Enter PvP Queue</a></li>  -->
-                  ` : $h` `}
+              <li>
+                <a class="item-link item-content" href="/t/index/${vm.team._id}">
+                  <div class="item-inner">
+                    <div class="item-title">👥 Manage Team</div>
+                  </div>
+                </a>
+              </li>
 
-              </ul>
+              ${!isSeasonComplete(vm.season) && shouldShowCatchUp(vm.season) ? $h`
+                <li>
+                  <a class="item-link item-content" href="/s/catchup/${vm.season._id}">
+                    <div class="item-inner">
+                      <div class="item-title">⏩ Catch Up</div>
+                    </div>
+                  </a>
+                </li>
+              ` : !isSeasonComplete(vm.season) && shouldShowJoinQueue(vm.season) ? $h`
+                <li>
+                  <a class="item-link item-content" href="/q/join/${vm.season._id}">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        ${isNextQueueToday(vm.season) ? '🏟️ Join Queue for Today'
+                          : isNextQueueTomorrow(vm.season) ? '🏟️ Join Queue for Tomorrow'
+                          : `🏟️ Join Queue for ${dayjs(vm.season.nextQueueDate).format('MMM D')}`}
+                      </div>
+                    </div>
+                  </a>
+                </li>
+
+                <li class="item-content">
+                  <div class="item-inner">
+                    <div class="item-subtitle">
+                      ${getQueueSubtitle(vm.season)}
+                    </div>
+                  </div>
+                </li>
+              ` : $h``}
+
+            </ul>
           </div>
+
 
 
           ${inProgressGame?.game?._id ? $h`
-              <div class="block-title block-title-small">In Progress</div>
+              <div class="block-title block-title-medium">In Progress</div>
               <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
                     <${InProgress} vm=${inProgressGame} />
@@ -57,7 +204,7 @@
           ` : $h` `}
 
 
-          <div class="block-title block-title-small">Daily Rewards & Transactions</div>
+          <div class="block-title block-title-medium">Daily Rewards & Transactions</div>
           ${vm.offChainEvents?.events?.length > 0 ? $h`
 
             <div class="list list-outline-ios list-strong-ios list-dividers-ios">
@@ -97,7 +244,7 @@
 
           ${vm?.completedGames?.length > 0 ? $h`
 
-              <div class="block-title block-title-small">Recent Games</div>
+              <div class="block-title block-title-medium">Recent Games</div>
               <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
       
@@ -179,6 +326,104 @@
     let discord = props.discord 
     
     let inProgressGame = props.inProgressGame
+
+    console.log(vm)
+
+
+
+    const clamp = (n, min, max) => Math.min(Math.max(n, min), max)
+
+    const asDay = (d) => dayjs(d).format('YYYY-MM-DD')
+    const sameDay = (a, b) => asDay(a) === asDay(b)
+
+    const getSeasonPercent = (season) =>
+      clamp(Math.round((season.dayNumber / season.totalDays) * 100), 0, 100)
+
+    // IMPORTANT: when you're "up to date", you must have finished the league's current day.
+    // That means gamesPlayed should be >= season.dayNumber (not +1).
+    const getTeamDayNumber = (season) =>
+      clamp(season.team.gamesPlayed + 1, 1, season.totalDays)
+
+    const getDaysBehind = (season) =>
+      Math.max(season.dayNumber - getTeamDayNumber(season), 0)
+
+    const getDaysAhead = (season) =>
+      Math.max(getTeamDayNumber(season) - season.dayNumber, 0)
+
+    const isSeasonComplete = (season) => season.dayNumber >= season.totalDays
+
+    const isBehind = (season) => getDaysBehind(season) > 0
+    const isAhead  = (season) => getDaysAhead(season) > 0
+
+    const isYouAtStart = (season) => getTeamDayNumber(season) <= 1
+    const isYouAtEnd   = (season) => getTeamDayNumber(season) >= season.totalDays
+
+    const getYouLeftPercent = (season) =>
+      clamp(((getTeamDayNumber(season) - 1) / (season.totalDays - 1)) * 100, 0, 100)
+
+    // queue/day model helpers
+    const isQueueClosedForUniverseDay = (season) =>
+      !sameDay(season.nextQueueDate, season.universeDate)
+
+    const isNextQueueToday = (season) =>
+      sameDay(season.nextQueueDate, season.universeDate)
+
+    const isNextQueueTomorrow = (season) =>
+      sameDay(season.nextQueueDate, dayjs(season.universeDate).add(1, 'day'))
+
+
+    const needsCatchUpToQueue = (season) =>
+      season.team.gamesPlayed < (season.dayNumber - 1)
+
+    const shouldShowCatchUp = (season) =>
+      !isSeasonComplete(season) &&
+      !isAhead(season) &&
+      (isBehind(season) || needsCatchUpToQueue(season))
+
+    const shouldShowJoinQueue = (season) =>
+      !isSeasonComplete(season) &&
+      !isAhead(season) &&
+      !shouldShowCatchUp(season)
+
+    // callout timing (purely client-side messaging)
+    const getQueueDeadlineEt = (season) =>
+      dayjs.tz(`${season.universeDate} 13:00`, 'America/New_York')
+
+    const getTimeLeftToQueue = (season) =>
+      dayjs().to(getQueueDeadlineEt(season))
+
+    const isGamesUnderway = (season) => {
+      // after 1PM ET, before midnight UTC
+      const nowUtc = dayjs.utc()
+      const startDay = dayjs(season.universeDate).format('YYYY-MM-DD')
+      const startTimeUtc = dayjs.tz(`${startDay} 13:00`, 'America/New_York').utc()
+      const endTimeUtc = dayjs.utc(`${startDay} 00:00`).add(1, 'day') // midnight UTC of next day
+      return nowUtc.isAfter(startTimeUtc) && nowUtc.isBefore(endTimeUtc)
+    }
+
+    const isGamesWrappingUp = (season) => {
+      // last ~2 hours of the UTC day
+      const nowUtc = dayjs.utc()
+      const startDay = dayjs(season.universeDate).format('YYYY-MM-DD')
+      const endTimeUtc = dayjs.utc(`${startDay} 00:00`).add(1, 'day')
+      const wrapUtc = endTimeUtc.subtract(2, 'hour')
+      return nowUtc.isAfter(wrapUtc) && nowUtc.isBefore(endTimeUtc)
+    }
+
+    // subtitle under the join link
+    const getQueueSubtitle = (season) => {
+      if (isQueueClosedForUniverseDay(season)) {
+        return `✅ Today’s queue is closed`
+      }
+      return `⏰ Queue closes at 1:00 PM ET (${getTimeLeftToQueue(season)})`
+    }
+
+
+
+
+
+
+
 
     const getOffChainDescription = (oce) => {
         return offChainEventWebService.getOffChainDescription(oce)
@@ -290,8 +535,6 @@
           popup.open()
         }
 
-
-
     const playBotClick = async (e) => {
 
       e.preventDefault()
@@ -326,7 +569,6 @@
 
       
     }
-
 
     const onGameUpdate = async (game) => {
 

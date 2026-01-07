@@ -89,6 +89,13 @@ dayjs.extend(relativeTime)
 import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 
+import utc from "dayjs/plugin/utc.js"
+import timezone from "dayjs/plugin/timezone.js"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+
 import { League } from "../dto/league.js"
 import { TeamMintPass } from "../dto/team-mint-pass.js"
 
@@ -148,6 +155,9 @@ import { AirdropService } from "../service/airdrop-service.js";
 import { TeamMintPassRepositoryNodeImpl } from "../repository/node/team-mint-pass-repository-impl.js";
 import { TeamMintPassService } from "../service/data/team-mint-pass-service.js";
 import { SocketService } from "../service/socket-service.js";
+import { TeamQueue } from "../dto/team-queue.js";
+import { TeamQueueRepositoryNodeImpl } from "../repository/node/team-queue-repository-impl.js";
+import { TeamQueueService } from "../service/data/team-queue-service.js";
 
 
 let _diamondsAddress:string
@@ -261,7 +271,7 @@ async function getContainer(command?:GetContainerCommand) {
                 connectTimeout: process.env.MYSQL_TIMEOUT,
                 multipleStatements: true        
                },
-               models: [TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
+               models: [TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
                  Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ]
@@ -374,6 +384,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(PostService).toSelf().inSingletonScope()
     container.bind(AirdropService).toSelf().inSingletonScope()
     container.bind(TeamMintPassService).toSelf().inSingletonScope()
+    container.bind(TeamQueueService).toSelf().inSingletonScope()
 
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()
     container.bind("OwnerRepository").to(OwnerRepositoryNodeImpl).inSingletonScope()
@@ -408,6 +419,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind("GameHitResultRepository").to(GameHitResultRepositoryNodeImpl).inSingletonScope()
     container.bind("GamePitchResultRepository").to(GamePitchResultRepositoryNodeImpl).inSingletonScope()
     container.bind("PostRepository").to(PostRepositoryNodeImpl).inSingletonScope()
+    container.bind("TeamQueueRepository").to(TeamQueueRepositoryNodeImpl).inSingletonScope()
 
 
     container.bind("provider").toConstantValue({})

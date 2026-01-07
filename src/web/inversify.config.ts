@@ -8,6 +8,12 @@ import relativeTime from 'dayjs/plugin/relativeTime.js'
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
 
+import utc from "dayjs/plugin/utc.js"
+import timezone from "dayjs/plugin/timezone.js"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 
 import AppComponent from './components/app.f7.html'
 
@@ -60,13 +66,14 @@ import Panel from 'framework7/components/panel'
 import DataTable from 'framework7/components/data-table'
 
 import Messages from 'framework7/components/messages'
+import ProgressBar from 'framework7/components/progressbar'
 
 
 import { OwnerWebService } from "./service/owner-web-service.js";
 import { PlayerWebService } from "./service/player-web-service.js";
 import { TransactionWebService } from "./service/transaction-web-service.js";
 
-Framework7.use([ Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
+Framework7.use([ ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
 
 
 import TransactionRow from './components/common/transaction-row.f7.html'
@@ -148,11 +155,9 @@ async function getContainer(env, footerRoutes) {
     function framework7() {
         
         return new Framework7({
-            // init: false,
             el: '#app', // App root element
-            // id: 'ebl', // App bundle ID
             name: 'Ethereum Baseball League', // App name
-            theme: 'ios', // Automatic theme detection
+            theme: 'ios', 
             //@ts-ignore
             component: AppComponent,
             iosTranslucentBars: false,

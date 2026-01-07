@@ -57,9 +57,6 @@ import http from 'http'
 import { SocketService } from '../service/socket-service.js'
 import { LadderService } from '../service/ladder-service.js'
 
-const SECONDS_BETWEEN_GAME_UPDATES = 30
-
-
 
 const TWITTER = "@ethbaseball"
 
@@ -948,7 +945,7 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(userId)
-      let userVm = await userService.getViewModel(user, season)
+      let userVm = await userService.getViewModel(universe.currentDate, user, season)
 
       return res.json(Object.assign(vm, userVm))
 
@@ -1669,194 +1666,194 @@ let startWebServer = async () => {
 
   })
 
-  app.post('/api/game/play/bot', async function (req, res) {
+  // app.post('/api/game/play/bot', async function (req, res) {
 
-      try {
+  //     try {
 
-          //@ts-ignore
-          let userId = req.session?.passport?.user
+  //         //@ts-ignore
+  //         let userId = req.session?.passport?.user
 
-          if (!userId) {
-            res.status(401)
-            return res.send("Not authorized.")
-          }
+  //         if (!userId) {
+  //           res.status(401)
+  //           return res.send("Not authorized.")
+  //         }
 
-          let user:User = await userService.get(userId)
-          let teams:Team[] = await teamService.getByUser(user)
-          let team = teams[0]
+  //         let user:User = await userService.get(userId)
+  //         let teams:Team[] = await teamService.getByUser(user)
+  //         let team = teams[0]
 
-          let inProgressGames:Game[] = await gameService.getInProgressByTeam(team)
+  //         let inProgressGames:Game[] = await gameService.getInProgressByTeam(team)
 
-          if (inProgressGames.length > 0) {
-            res.status(500)
-            return res.send("Game in progress")
-          }
+  //         if (inProgressGames.length > 0) {
+  //           res.status(500)
+  //           return res.send("Game in progress")
+  //         }
 
-          const getTeamBundle = async (theTeam) => {
+  //         const getTeamBundle = async (theTeam) => {
             
-            let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
-            let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
+  //           let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
+  //           let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
 
-            let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
-            let plsPlain = pls.map( pls => pls.get({ plain: true}))
+  //           let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
+  //           let plsPlain = pls.map( pls => pls.get({ plain: true}))
 
-            let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
+  //           let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
 
-            return {
-              tls: tls,
-              tlsPlain: tlsPlain,
-              plss: pls,
-              plssPlain: plsPlain,
-              startingPitcher: startingPitcher,
-              team: theTeam
-            }
+  //           return {
+  //             tls: tls,
+  //             tlsPlain: tlsPlain,
+  //             plss: pls,
+  //             plssPlain: plsPlain,
+  //             startingPitcher: startingPitcher,
+  //             team: theTeam
+  //           }
 
-          }
-
-          
-
-          let season:Season = await seasonService.getMostRecent()
-
-          //Find bot match.
-          let bot:Team = await teamService.getClosetRatedBot(team.longTermRating.rating)
-
-          let teamBundle = await getTeamBundle(team)
-
-          // if (teamBundle.startingPitcher.stamina < 1) {
-          //   throw new Error("No rested pitcher available.")
-          // }
-
-          let botBundle = await getTeamBundle(bot)
-
-          //Validate rosters and lineups.
-          teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
-          teamService.validateLineup(bot, botBundle.tls.lineups[0], botBundle.plssPlain, botBundle.startingPitcher, universe.currentDate)
+  //         }
 
           
-          let isHome = Math.random() >= .5
 
-          let awayBundle = isHome ? botBundle : teamBundle
-          let homeBundle = isHome ? teamBundle : botBundle
+  //         let season:Season = await seasonService.getMostRecent()
 
-          let game
+  //         //Find bot match.
+  //         let bot:Team = await teamService.getClosetRatedBot(team.longTermRating.rating)
 
-          await sequelize.transaction(async (t1) => {
+  //         let teamBundle = await getTeamBundle(team)
+
+  //         // if (teamBundle.startingPitcher.stamina < 1) {
+  //         //   throw new Error("No rested pitcher available.")
+  //         // }
+
+  //         let botBundle = await getTeamBundle(bot)
+
+  //         //Validate rosters and lineups.
+  //         teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
+  //         teamService.validateLineup(bot, botBundle.tls.lineups[0], botBundle.plssPlain, botBundle.startingPitcher, universe.currentDate)
+
+          
+  //         let isHome = Math.random() >= .5
+
+  //         let awayBundle = isHome ? botBundle : teamBundle
+  //         let homeBundle = isHome ? teamBundle : botBundle
+
+  //         let game
+
+  //         await sequelize.transaction(async (t1) => {
         
-            let options = { transaction: t1 }
+  //           let options = { transaction: t1 }
 
-            game = await gameService.scheduleGame({
-              league: teamBundle.tlsPlain.league,
-              season: season,
-              awayTLS: awayBundle.tlsPlain,
-              homeTLS: homeBundle.tlsPlain,
-              startDate: new Date(new Date().toUTCString()),
-            }, options)
+  //           game = await gameService.scheduleGame({
+  //             league: teamBundle.tlsPlain.league,
+  //             season: season,
+  //             awayTLS: awayBundle.tlsPlain,
+  //             homeTLS: homeBundle.tlsPlain,
+  //             startDate: new Date(new Date().toUTCString()),
+  //           }, options)
 
-            //Create game-player association
-            let playerIds = [].concat(awayBundle.plss.map( pls => pls.playerId)).concat(homeBundle.plss.map( pls => pls.playerId))
-            let players:Player[] = await playerService.getByIds(playerIds, options)
+  //           //Create game-player association
+  //           let playerIds = [].concat(awayBundle.plss.map( pls => pls.playerId)).concat(homeBundle.plss.map( pls => pls.playerId))
+  //           let players:Player[] = await playerService.getByIds(playerIds, options)
 
-            await gameService.createGamePlayers(game, playerIds, options)
+  //           await gameService.createGamePlayers(game, playerIds, options)
 
-            gameService.startGame({
+  //           gameService.startGame({
               
-              game: game,
+  //             game: game,
 
-              homeTLS: homeBundle.tls, 
-              awayTLS: awayBundle.tls,
+  //             homeTLS: homeBundle.tls, 
+  //             awayTLS: awayBundle.tls,
 
-              awayPlayers: awayBundle.plss,
-              homePlayers: homeBundle.plss,
+  //             awayPlayers: awayBundle.plss,
+  //             homePlayers: homeBundle.plss,
 
-              away: awayBundle.team,
-              home: homeBundle.team,
+  //             away: awayBundle.team,
+  //             home: homeBundle.team,
 
-              awayStartingPitcher: awayBundle.startingPitcher,
-              homeStartingPitcher: homeBundle.startingPitcher,
+  //             awayStartingPitcher: awayBundle.startingPitcher,
+  //             homeStartingPitcher: homeBundle.startingPitcher,
 
-              date: universe.currentDate,
-              leagueAverageRatings: teamBundle.tlsPlain.league.averageRating
+  //             date: universe.currentDate,
+  //             leagueAverageRatings: teamBundle.tlsPlain.league.averageRating
               
-            })
+  //           })
 
-            await gameService.put(game, options)
+  //           await gameService.put(game, options)
 
-            let home:Team = await teamService.get(homeBundle.team._id)
-            let away:Team = await teamService.get(awayBundle.team._id)
+  //           let home:Team = await teamService.get(homeBundle.team._id)
+  //           let away:Team = await teamService.get(awayBundle.team._id)
 
-            home.lastGamePlayed = universe.currentDate
-            away.lastGamePlayed = universe.currentDate
+  //           home.lastGamePlayed = universe.currentDate
+  //           away.lastGamePlayed = universe.currentDate
 
-            await teamService.put(home, options)
-            await teamService.put(away, options)
+  //           await teamService.put(home, options)
+  //           await teamService.put(away, options)
 
-            //Update players last game date
-            for (let player of players) {
-                player.lastGamePlayed = game.startDate
-            }
+  //           //Update players last game date
+  //           for (let player of players) {
+  //               player.lastGamePlayed = game.startDate
+  //           }
 
-            //Updated pitch dates for starting pitchers
-            let homePitcher = players.find( p => p._id == homeBundle.startingPitcher._id)
-            homePitcher.lastGamePitched = universe.currentDate
-
-
-            let awayPitcher = players.find( p => p._id == awayBundle.startingPitcher._id)
-            awayPitcher.lastGamePitched = universe.currentDate
-
-            await playerService.updateGameFields(players, options)
-
-          })
-
-          return res.json({
-            gameId: game._id
-          })
+  //           //Updated pitch dates for starting pitchers
+  //           let homePitcher = players.find( p => p._id == homeBundle.startingPitcher._id)
+  //           homePitcher.lastGamePitched = universe.currentDate
 
 
-      } catch (ex) {
-        res.status(500)
-        res.send(ex.message)
-      }
+  //           let awayPitcher = players.find( p => p._id == awayBundle.startingPitcher._id)
+  //           awayPitcher.lastGamePitched = universe.currentDate
+
+  //           await playerService.updateGameFields(players, options)
+
+  //         })
+
+  //         return res.json({
+  //           gameId: game._id
+  //         })
+
+
+  //     } catch (ex) {
+  //       res.status(500)
+  //       res.send(ex.message)
+  //     }
 
 
 
-  })
+  // })
 
-  app.post('/api/game/play/pvp', async function (req, res) {
+  // app.post('/api/game/play/pvp', async function (req, res) {
 
-      try {
+  //     try {
 
-        //@ts-ignore
-        let userId = req.session?.passport?.user
+  //       //@ts-ignore
+  //       let userId = req.session?.passport?.user
 
-        if (!userId) {
-          res.status(401)
-          return res.send("Not authorized.")
-        }
+  //       if (!userId) {
+  //         res.status(401)
+  //         return res.send("Not authorized.")
+  //       }
 
-        let user:User = await userService.get(userId)
-        let teams:Team[] = await teamService.getByUser(user)
-        let team = teams[0]
+  //       let user:User = await userService.get(userId)
+  //       let teams:Team[] = await teamService.getByUser(user)
+  //       let team = teams[0]
 
-        let inProgressGames:Game[] = await gameService.getInProgressByTeam(team)
+  //       let inProgressGames:Game[] = await gameService.getInProgressByTeam(team)
 
-        if (inProgressGames.length > 0) {
-          res.status(500)
-          return res.send("Game in progress")
-        }
+  //       if (inProgressGames.length > 0) {
+  //         res.status(500)
+  //         return res.send("Game in progress")
+  //       }
 
-        //Check if they are already in the queue.
+  //       //Check if they are already in the queue.
 
-        // return res.json(vm)
+  //       // return res.json(vm)
 
-      } catch (ex) {
-        console.log(ex)
-        res.sendStatus(404)
-      }
+  //     } catch (ex) {
+  //       console.log(ex)
+  //       res.sendStatus(404)
+  //     }
     
 
 
 
-  })
+  // })
 
   app.get('/api/cities', cacheService.cacheResponse(), async function(req, res) {
     return res.json(await cityService.list(1000, 0))

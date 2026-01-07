@@ -21,6 +21,7 @@ interface TeamRepository {
     listBySeason(season:Season, options?:any): Promise<Team[]>
     getEligibleTeams(options?:any) : Promise<Team[]>
     getRatings(options?:any)
+    getRatingsForIds(teamIds:string[], options?:any)
     getMaxRanking(options?:any) : Promise<number>
     getIds(options?:any): Promise<string[]>
     getUpdatedSince(lastUpdated:Date, options?: any) : Promise<Team[]>

@@ -361,6 +361,39 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
+    async getRatingsForIds(teamIds:string[], options?:any)  {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                teamIds: teamIds
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            SELECT 
+                t._id,
+                t.longTermRating,
+                t.seasonRating
+            FROM team t
+            WHERE t._id IN (:teamIds)
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => {
+            return {
+                _id: r._id,
+                longTermRating: r.longTermRating,
+                seasonRating: r.seasonRating
+            }
+        })
+
+    }
+
+
     async addToLeagueSeason(team:Team, league:League, season:Season, options?:any){
 
         let s = await this.sequelize()

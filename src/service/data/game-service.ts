@@ -148,9 +148,9 @@ class GameService {
         return games
     }
 
-    async getByTeam(team:Team, options?:any) {
+    async getRecentByTeam(team:Team, options?:any) {
 
-        let ids = await this.gameRepository.getIdsByTeam(team, options.limit, options.offset, options)
+        let ids = await this.gameRepository.getRecentIdsByTeam(team, options.limit, options.offset, options)
         if (ids.length == 0) return []
 
         let games:Game[] = await this.gameRepository.getByIds(ids, options)

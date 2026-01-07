@@ -1,10 +1,9 @@
 import { inject, injectable } from "inversify";
-
-
-import { CityRepository } from "../../repository/city-repository.js";
-import { City } from "../../dto/city.js";
+;
 import { SeasonRepository } from "../../repository/season-repository.js";
 import { Season } from "../../dto/season.js";
+import dayjs from "dayjs";
+import { SeasonInfo } from "../enums.js";
 
 
 @injectable()
@@ -42,11 +41,47 @@ class SeasonService {
         return this.seasonRepository.put(season, options)
 
     }
+
     async list(limit:number, offset:number, options?:any) : Promise<Season[]> {
         return this.seasonRepository.list(limit, offset, options)
-
     }
+
+    getSeasonInfo(season:Season, currentDate:Date) : SeasonInfo {
+
+        const nowUtc = dayjs.utc()
+
+        const start = dayjs(season.startDate).utc().startOf('day')
+        const end = dayjs(season.endDate).utc().startOf('day')
+
+        // inclusive season length (calendar days)
+        const totalDays = end.diff(start, 'day') + 1
+
+        // "league day" flips at 1:00 PM ET 
+        const startDay = dayjs(currentDate).utc().format("YYYY-MM-DD")
+        const startTimeUtc = dayjs.tz(`${startDay} 13:00`, "America/New_York").utc()
+
+        // if we're past today's start time, treat it as the next league day
+        const leagueDayUtc = (nowUtc.isSame(startTimeUtc) || nowUtc.isAfter(startTimeUtc))
+            ? dayjs(currentDate).utc().add(1, 'day').startOf('day')
+            : dayjs(currentDate).utc().startOf('day')
+
+        // 1-indexed day number, clamped
+        const rawDayNumber = leagueDayUtc.diff(start, 'day') + 1
+        const dayNumber = Math.min(Math.max(rawDayNumber, 1), totalDays)
+
+        // days remaining AFTER today
+        const daysRemaining = Math.max(totalDays - dayNumber, 0)
+
+        return {
+            dayNumber: dayNumber,
+            daysRemaining: daysRemaining,
+            totalDays: totalDays
+        }
+    }
+
+
 }
+
 
 
 export {

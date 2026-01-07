@@ -95,6 +95,14 @@ import relativeTime from 'dayjs/plugin/relativeTime.js'
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
 
+import utc from "dayjs/plugin/utc.js"
+import timezone from "dayjs/plugin/timezone.js"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+
+
 import { Fees } from "../dto/fees.js"
 import { NodeWalletServiceImpl } from "../service/node-wallet-service.js"
 import { UniverseContractService } from "../service/universe-contract-service.js";
@@ -153,6 +161,9 @@ import { AbiPayloadService } from "../service/abi-payload-service.js"
 import { MintPassIndexerService } from "../service/mint-pass-indexer-service.js"
 import { TeamMintPassRepositoryNodeImpl } from "../repository/node/team-mint-pass-repository-impl.js"
 import { TeamMintPassService } from "../service/data/team-mint-pass-service.js"
+import { TeamQueue } from "../dto/team-queue.js"
+import { TeamQueueRepositoryNodeImpl } from "../repository/node/team-queue-repository-impl.js"
+import { TeamQueueService } from "../service/data/team-queue-service.js"
 
 
 const client = new Client({ intents: [
@@ -275,7 +286,7 @@ async function getContainer() {
                 connectTimeout: process.env.MYSQL_TIMEOUT,
                 multipleStatements: true        
                },
-               models: [TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
+               models: [TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
                  DiamondMintPass, Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ],
@@ -414,6 +425,7 @@ async function getContainer() {
     container.bind(PostService).toSelf().inSingletonScope()
     container.bind(AirdropService).toSelf().inSingletonScope()
     container.bind(TeamMintPassService).toSelf().inSingletonScope()
+    container.bind(TeamQueueService).toSelf().inSingletonScope()
 
     container.bind("TeamRepository").to(TeamRepositoryNodeImpl).inSingletonScope()
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()
@@ -451,6 +463,7 @@ async function getContainer() {
     container.bind("GameHitResultRepository").to(GameHitResultRepositoryNodeImpl).inSingletonScope()
     container.bind("GamePitchResultRepository").to(GamePitchResultRepositoryNodeImpl).inSingletonScope()
     container.bind("PostRepository").to(PostRepositoryNodeImpl).inSingletonScope()
+    container.bind("TeamQueueRepository").to(TeamQueueRepositoryNodeImpl).inSingletonScope()
 
 
 

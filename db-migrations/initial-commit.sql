@@ -1113,5 +1113,37 @@ CREATE TABLE `game_pitch_result` (
 
 
 
+--
+-- Table structure for table `team_queue`
+--
+
+DROP TABLE IF EXISTS `team_queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `team_queue` (
+  `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `teamId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `leagueId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+
+  `lastUpdated` datetime DEFAULT NULL,
+  `dateCreated` datetime DEFAULT NULL,
+
+  PRIMARY KEY (`_id`),
+  UNIQUE KEY `uniq_team_queue_team` (`teamId`),
+
+  CONSTRAINT `team_queue_ibfk_1`
+    FOREIGN KEY (`teamId`)
+    REFERENCES `team` (`_id`)
+    ON DELETE CASCADE,
+
+  CONSTRAINT `team_queue_ibfk_2`
+    FOREIGN KEY (`leagueId`)
+    REFERENCES `league` (`_id`)
+    ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 
 -- Dump completed on 2024-10-01 18:44:33

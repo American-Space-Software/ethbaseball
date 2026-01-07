@@ -359,7 +359,7 @@ class GameRepositoryNodeImpl implements GameRepository {
         const [queryResults, metadata] = await s.query(`
             select g._id
             FROM game g
-            WHERE DATE(g.startDate) = :theDate
+            WHERE DATE(g.gameDate) = :theDate
             order by g.startDate ASC
 
         `, Object.assign(queryOptions, options))

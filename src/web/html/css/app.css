@@ -3040,3 +3040,189 @@ td.action, th.action {
   font-weight: bold;
   background-color: rgb(90, 90, 0);
 }
+
+
+
+
+
+
+
+
+
+
+/* ===== Season Info Card ===== */
+
+.season-info-range {
+  font-size: 12px;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+/* Stats row */
+.season-info-stats {
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.season-info-day {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.season-info-remaining {
+  font-size: 13px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.season-info-complete {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.season-info-games {
+  font-size: 13px;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+
+/* Right column (queue date) */
+.season-info-current-label {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.season-info-queue-date {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===== Timeline ===== */
+
+.season-info-timeline {
+  margin-top: 10px;
+}
+
+/* marker lane under progressbar */
+.season-info-markers {
+  position: relative;
+  height: 34px;
+  margin-top: 6px;
+}
+
+.season-info-marker {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* avoid clipping at 0% and 100% */
+.season-info-marker--start {
+  transform: translateX(0);
+}
+
+.season-info-marker--end {
+  transform: translateX(-100%);
+}
+
+.season-info-marker-line {
+  display: block;
+  width: 2px;
+  height: 12px;
+  margin: 0 auto;
+  background: var(--f7-text-color);
+  opacity: 0.7;
+}
+
+.season-info-marker-text {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.season-info-marker-subtext {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* ===== Status ===== */
+
+.season-info-status {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.season-info-status-strong {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.season-info-status-ahead {
+  font-weight: 600;
+}
+
+/* ===== Callout ===== */
+
+.season-info-callout {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--f7-list-bg-color, rgba(0,0,0,.04));
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+.dark .season-info-callout {
+  border-color: rgba(255,255,255,.10);
+}
+
+.season-info-callout-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.season-info-callout-body {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.25;
+}
+
+/* ===== Actions ===== */
+
+/* Use a flex wrapper so buttons stay side-by-side when two exist */
+.season-info-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.season-info-actions--two a {
+  flex: 1 1 50%;
+}
+
+/* single button stretches */
+.season-info-actions a {
+  flex: 1 1 100%;
+}
+
+@media (max-width: 480px) {
+  .season-info-day {
+    font-size: 15px;
+  }
+
+  .season-info-queue-date {
+    font-size: 13px;
+  }
+}
