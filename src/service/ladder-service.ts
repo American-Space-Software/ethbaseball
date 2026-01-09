@@ -79,6 +79,7 @@ class LadderService {
         await s.transaction(async (t1) => {
 
             let options = { transaction: t1 }
+            let rng = await this.seedService.getRNG(options)
 
             let universe:Universe = await this.universeRepository.get(universeId, options)
 
@@ -112,12 +113,14 @@ class LadderService {
                                 teamBundles.push(await this.getTeamBundle(team, season, options))
                             }
 
+                            // Catch-up phase (before scheduling today's games)
+                            await this.playMakeupGames(teamBundles, league, season, universe.currentDate, rng, options)
+
                             if (queuedTeams.length > 0) {
                                 await this.createDayGames(universe.currentDate, league, season, teamBundles, options)
                             }
 
                         }
-
 
                     }
 
@@ -127,7 +130,7 @@ class LadderService {
 
 
                 //Play games
-                gameIds.push(...await this.processGames(leagues, universe.currentDate, options))
+                gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
                 
                 //Check if we've moved past universe.currentDate AND that all games from that day have ended.
                 if (this.isDateBeforeToday(universe.currentDate)) {
@@ -149,6 +152,71 @@ class LadderService {
         })
 
         return gameIds
+
+    }
+
+    private async playMakeupGames(teamBundles:TeamBundle[], league:League, season:Season, universeDate:Date, rng, options?:any) : Promise<void> {
+
+        const getSeasonDayNumber = (d: Date): number => {
+            const start = dayjs(season.startDate).startOf('day')
+            const cur = dayjs(d).startOf('day')
+            return cur.diff(start, 'day') + 1
+        }
+
+        const getGamesPlayed = (b: TeamBundle): number =>
+            (b.tls.overallRecord.wins + b.tls.overallRecord.losses)
+
+        // Must be caught up through yesterday before scheduling today's games
+        const yesterday = dayjs(universeDate).subtract(1, 'day').startOf('day')
+
+        const universeDayNumber = getSeasonDayNumber(universeDate)
+        const requiredGamesByYesterday = Math.max(0, universeDayNumber - 1)
+
+        const getMakeupGamesNeeded = (b: TeamBundle): number =>
+            Math.max(0, requiredGamesByYesterday - getGamesPlayed(b))
+
+        let maxMakeupNeeded = 0
+        for (const b of teamBundles) {
+            maxMakeupNeeded = Math.max(maxMakeupNeeded, getMakeupGamesNeeded(b))
+        }
+
+        if (maxMakeupNeeded <= 0) return
+
+        // Oldest makeup day we need to simulate (inclusive)
+        const firstMakeupDate = yesterday.clone().subtract(maxMakeupNeeded - 1, 'day').startOf('day')
+
+        // Loop historic days oldest -> yesterday
+        for (let d = firstMakeupDate.clone(); d.isSame(yesterday) || d.isBefore(yesterday); d = d.add(1, 'day')) {
+
+            const makeupDate = d.toDate()
+            const dayNumber = getSeasonDayNumber(makeupDate)
+
+            // A team needs to play on this historic day if gamesPlayed < dayNumber
+            const needingToday: TeamBundle[] = []
+
+            for (const b of teamBundles) {
+                if (getGamesPlayed(b) < dayNumber) needingToday.push(b)
+            }
+
+            if (needingToday.length === 0) continue
+
+            // Create + play this day's makeup games 
+            let games:Game[] = await this.createDayGames(makeupDate, league, season, needingToday, options)
+
+            for (let game of games) {
+               await this.processGame(game, rng, true, options)
+            }
+            
+
+
+            // Refresh any bundles that played, in-place in the original array
+            for (let i = 0; i < teamBundles.length; i++) {
+                const played = needingToday.find(x => x.team._id === teamBundles[i].team._id)
+                if (!played) continue
+                teamBundles[i] = await this.getTeamBundle(teamBundles[i].team, season, options)
+            }
+
+        }
 
     }
 
@@ -194,6 +262,8 @@ class LadderService {
     }
 
     private async createDayGames( currentDate: Date, league: League,  season: Season, teamBundles: TeamBundle[], options?: any ) {
+
+        const games:Game[] = []
 
         const getRating = (t: Team): number =>
             (t.longTermRating.rating + t.seasonRating.rating) / 2
@@ -267,11 +337,12 @@ class LadderService {
         const pairs = await buildClosestPairs(teamBundles)
 
         for (const { home, away } of pairs) {
-            await this.createGame(home, away, league, season, currentDate, options)
+            games.push(await this.createGame(home, away, league, season, currentDate, options))
         }
 
-    }
+        return games
 
+    }
 
     private async createGame( homeBundle: TeamBundle, awayBundle:TeamBundle, league: League, season: Season, date: Date,  options?: any ) {
 
@@ -280,7 +351,7 @@ class LadderService {
             season,
             awayTLS: awayBundle.tlsPlain,
             homeTLS: homeBundle.tlsPlain,
-            startDate: new Date(new Date().toUTCString()),
+            startDate: date,
         }, options)
 
         const playerIds = []
@@ -330,6 +401,8 @@ class LadderService {
         awayPitcher.lastGamePitched = date
 
         await this.playerService.updateGameFields(players, options)
+
+        return game
     }
 
     private async finishDay(universe:Universe, leagues:League[], season:Season, options?:any) {
@@ -421,7 +494,6 @@ class LadderService {
 
     }
 
-
     private async distributeRewards(rewardsPerTeam:RewardPerTeam[], rewardTeams:Team[], rewardTlss:TeamLeagueSeason[], season:Season, source:OffChainEventSource, options?:any) {
         
         //Distribute rewards and save.
@@ -457,7 +529,6 @@ class LadderService {
 
     }
 
-
     private isDateBeforeOrEqualToToday(date:Date) : boolean {
 
         var compareDate = new Date(date.getTime())
@@ -482,12 +553,9 @@ class LadderService {
 
     }
 
-
-    async processGames(leagues:League[], date:Date, options?:any) : Promise<string[]> {
+    async processGames(leagues:League[], date:Date, completeGames:boolean, rng, options?:any) : Promise<string[]> {
 
         let allGameIds:string[] = []
-
-        let rng = await this.seedService.getRNG(options)
 
         for (let league of leagues) {
             
@@ -501,7 +569,7 @@ class LadderService {
             let inProgressGames:Game[] = await this.gameService.getByIds(gameIds, options)
 
             for (let game of inProgressGames) {
-                await this.processGame(game, rng, options)
+                await this.processGame(game, rng, completeGames, options)
             }
 
             console.timeEnd(`Processing ${dayjs(date).format("YYYY/MM/DD")} and league #${league.rank} (${gameIds.length} games)`)
@@ -512,9 +580,9 @@ class LadderService {
 
     }
 
-    async processGame(game:Game, rng, options?:any) {
+    async processGame(game:Game, rng, completeGame:boolean, options?:any) {
 
-        this.gameService.incrementGame(game, false, rng)
+        this.gameService.incrementGame(game, completeGame, rng)
 
         if (game.isComplete == true && game.isFinished == false) {
             await this.finishGame(game, options)
@@ -523,7 +591,6 @@ class LadderService {
         await this.gameService.put(game, options)
         
     }
-
 
     async finishGame(game:Game, options?:any) {
 
@@ -588,8 +655,6 @@ class LadderService {
         game.away.longTermRating.after = away.longTermRating.rating
 
     }
-
-
 
     getScheduleLength(teamCount:number, seriesLength:number) {
         return ((teamCount - 1) * 2 * seriesLength) 
@@ -711,7 +776,6 @@ class LadderService {
 
     }
     
-
     // async scheduleGenerator(tlss:TeamLeagueSeason[], league:League, season:Season, options?:any) {
 
     //     let teams = tlss.map( tls => tls.get({ plain: true }).team)
@@ -1000,9 +1064,6 @@ class LadderService {
 
     }
 
-
-
-
     async generatePlayerPool(season:Season,  options?:any) {
 
         let created = 0
@@ -1195,7 +1256,7 @@ class LadderService {
     }
 
     // returns "YYYY-MM-DD" for the date users are queueing for right now
-    getQueueForDate(currentDate:Date) {
+    getQueueForDate(currentDate:Date) : string {
 
         const nowUtc = dayjs.utc()
         const universeDay = dayjs(currentDate).utc().format("YYYY-MM-DD")

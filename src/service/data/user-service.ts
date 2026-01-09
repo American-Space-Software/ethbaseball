@@ -15,6 +15,7 @@ import { ContractType, SeasonInfo } from "../enums.js";
 import dayjs from "dayjs";
 import { SeasonService } from "./season-service.js";
 import { LadderService } from "../ladder-service.js";
+import { TeamQueueService } from "./team-queue-service.js";
 
 
 
@@ -33,6 +34,7 @@ class UserService {
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private diamondMintPassService:DiamondMintPassService,
         private offchainEventService:OffchainEventService,
+        private teamQueueService:TeamQueueService,
         @inject("getDiamondsAddress") private getDiamondsAddress:Function
     ) {}
 
@@ -105,12 +107,13 @@ class UserService {
         let events = await this.offchainEventService.getByTeamId(ContractType.DIAMONDS, team._id, { limit: 5, offset: 0})
         vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
         
+        vm.team.yesterdaysRewards = vm.offChainEvents.events.find( e => e.source?.type == "reward" && e.source?.rewardType == "daily" && dayjs(e.source?.fromDate).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, 'day').format("YYYY-MM-DD"))?.amount || "0"
+
         if (season) {
 
             let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
 
             let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses
-
 
             vm.season = {
                 _id: season._id,
@@ -124,6 +127,7 @@ class UserService {
                 team: {
                     gamesPlayed: gamesPlayed,
                     teamCurrentDate: dayjs(games?.length ? games[0].gameDate : currentDate).format("YYYY-MM-DD"),
+                    isQueued: await this.teamQueueService.isTeamQueued(team)
                 }
             }
             

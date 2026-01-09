@@ -37,11 +37,12 @@ class TeamQueueService {
         return this.teamQueueRepository.clear(options)
     }
 
-    async queueTeam(team:Team, options?: any): Promise<TeamQueue> {
+    async queueTeam(team:Team, league:League, options?: any): Promise<TeamQueue> {
 
         const tq = Object.assign(new TeamQueue(), {
             _id: uuidv4(),
             teamId: team._id,
+            leagueId: league._id,
             dateCreated: null,
             lastUpdated: null
         })

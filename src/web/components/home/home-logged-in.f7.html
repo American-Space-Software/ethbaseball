@@ -10,7 +10,6 @@
           <div class="block-title block-title-medium">Your Team</div>
           <div class="list media-list list-outline-ios list-strong">
             <ul>
-
               <li>
                 <a class="item-link item-content" href="/t/index/${vm.team._id}">
                   <div class="item-media">
@@ -35,15 +34,31 @@
                   </div>
                 </a>
               </li>
-
             </ul>
           </div>
 
           <div class="block-title block-title-medium">Current Season</div>
           <div class="block block-outline block-strong season-info-card">
 
+            <!-- Rewards (top-right) -->
+            <div class="season-info-rewards">
+              <div class="season-info-reward">
+                <div class="season-info-current-label">Season</div>
+                <div class="season-info-queue-date">
+                  ${universeWebService.displayDiamonds(vm.team.financeSeason.revenue.seasonToDate.total)}
+                </div>
+              </div>
+              <div class="season-info-reward">
+                <div class="season-info-current-label">Yesterday</div>
+                <div class="season-info-queue-date">
+                  ${universeWebService.displayDiamonds(vm.team.yesterdaysRewards)}
+                </div>
+              </div>
+            </div>
+
             <div class="season-info-range">
-              ${dayjs(vm.season.startDate).format('MMM D, YYYY')} → ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
+              ${dayjs(vm.season.startDate).format('MMM D, YYYY')} →
+              ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
             </div>
 
             <div class="row season-info-stats">
@@ -66,12 +81,18 @@
               </div>
 
               <div class="col text-align-right">
-                ${shouldShowJoinQueue(vm.season) ? $h`
+                ${!isSeasonComplete(vm.season) ? $h`
                   <div class="season-info-current-label">Queue for</div>
                   <div class="season-info-queue-date">
                     ${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}
                   </div>
-                ` : $h``}
+
+                  ${vm.season.team.isQueued == "true" ? $h`
+                    <div class="season-info-current-label" style="margin-top:4px;">
+                      ✅ Queued
+                    </div>
+                  ` : $h` `}
+                ` : $h` `}
               </div>
             </div>
 
@@ -80,7 +101,7 @@
                 <span></span>
               </div>
 
-              ${shouldShowCatchUp(vm.season) ? $h`
+              ${!isSeasonComplete(vm.season) ? $h`
                 <div class="season-info-markers">
                   <div
                     class="season-info-marker season-info-marker--you
@@ -115,83 +136,72 @@
               `}
             </div>
 
-            ${!isSeasonComplete(vm.season) && shouldShowCatchUp(vm.season) && isQueueClosedForUniverseDay(vm.season) ? $h`
+            ${!isSeasonComplete(vm.season) && isQueueClosedForUniverseDay(vm.season) ? $h`
               <div class="season-info-callout">
-                <div class="season-info-callout-title">Queue is closed for today</div>
+                <div class="season-info-callout-title">Today’s queue is closed</div>
                 <div class="season-info-callout-body">
-                  Catch up first. Once you’re up to date, you can join the queue for tomorrow.
+                  You can join the queue for tomorrow.
                 </div>
               </div>
             ` : $h``}
 
-            ${!isSeasonComplete(vm.season) && shouldShowJoinQueue(vm.season) && isQueueClosedForUniverseDay(vm.season) ? $h`
-              <div class="season-info-callout">
-                <div class="season-info-callout-title">Today’s queue is closed</div>
-
-                ${isGamesUnderway(vm.season) ? $h`
-                  <div class="season-info-callout-body">
-                    Games for <b>${dayjs(vm.season.universeDate).format('MMM D')}</b> are underway.
-                    You can join the queue for tomorrow.
-                  </div>
-                ` : isGamesWrappingUp(vm.season) ? $h`
-                  <div class="season-info-callout-body">
-                    Games for <b>${dayjs(vm.season.universeDate).format('MMM D')}</b> are wrapping up.
-                    You can join the queue for tomorrow.
-                  </div>
-                ` : $h`
-                  <div class="season-info-callout-body">
-                    You can join the queue for tomorrow.
-                  </div>
-                `}
-              </div>
-            ` : $h``}
-
           </div>
 
-          <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+          <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
             <ul>
 
               <li>
                 <a class="item-link item-content" href="/t/index/${vm.team._id}">
+                  <div class="item-media">👥</div>
                   <div class="item-inner">
-                    <div class="item-title">👥 Manage Team</div>
+                    <div class="item-title">Manage Team</div>
                   </div>
                 </a>
               </li>
 
-              ${!isSeasonComplete(vm.season) && shouldShowCatchUp(vm.season) ? $h`
-                <li>
-                  <a class="item-link item-content" href="/s/catchup/${vm.season._id}">
+              ${!isSeasonComplete(vm.season) ? $h`
+                ${vm.season.team.isQueued ? $h`
+                  <li class="item-content">
+                    <div class="item-media">✅</div>
                     <div class="item-inner">
-                      <div class="item-title">⏩ Catch Up</div>
-                    </div>
-                  </a>
-                </li>
-              ` : !isSeasonComplete(vm.season) && shouldShowJoinQueue(vm.season) ? $h`
-                <li>
-                  <a class="item-link item-content" href="/q/join/${vm.season._id}">
-                    <div class="item-inner">
-                      <div class="item-title">
-                        ${isNextQueueToday(vm.season) ? '🏟️ Join Queue for Today'
-                          : isNextQueueTomorrow(vm.season) ? '🏟️ Join Queue for Tomorrow'
-                          : `🏟️ Join Queue for ${dayjs(vm.season.nextQueueDate).format('MMM D')}`}
+                      <div class="item-title">You’re in the queue</div>
+                      <div class="item-text">
+                        Your team is queued for <b>${dayjs(vm.season.nextQueueDate).format('MMM D')}</b>. ${isBehind(vm.season) ? $h`When games begin, you’ll also play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'} to catch up.
+                        ` : $h``}
                       </div>
                     </div>
-                  </a>
-                </li>
+                  </li>
+                ` : $h`
+                  <li>
+                    <a class="item-link item-content" @click="${clickJoinQueue}">
+                      <div class="item-media">🏟️</div>
 
-                <li class="item-content">
-                  <div class="item-inner">
-                    <div class="item-subtitle">
-                      ${getQueueSubtitle(vm.season)}
-                    </div>
-                  </div>
-                </li>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title">
+                            ${isNextQueueToday(vm.season) ? 'Join Queue for Today'
+                              : isNextQueueTomorrow(vm.season) ? 'Join Queue for Tomorrow'
+                              : `Join Queue for ${dayjs(vm.season.nextQueueDate).format('MMM D')}`}
+                          </div>
+                        </div>
+
+                        <div class="item-text">
+                          ${isBehind(vm.season) ? $h`
+                            You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'} to catch up,
+                            in addition to your game for <b>${isNextQueueToday(vm.season) ? 'today' : isNextQueueTomorrow(vm.season) ? 'tomorrow' : dayjs(vm.season.nextQueueDate).format('MMM D')}</b>.
+                          ` : $h`
+                            ${getQueueSubtitle(vm.season)}
+                          `}
+                        </div>
+
+                      </div>
+                    </a>
+                  </li>
+                `}
               ` : $h``}
 
             </ul>
           </div>
-
 
 
           ${inProgressGame?.game?._id ? $h`
@@ -327,8 +337,23 @@
     
     let inProgressGame = props.inProgressGame
 
-    console.log(vm)
 
+    const clickJoinQueue = async (e) => {
+
+      e.preventDefault()
+
+      $f7.preloader.show()
+
+      try {
+        await gameWebService.queue()
+        $f7.views.main.router.refreshPage()
+      } catch(ex) { 
+        $f7.dialog.alert(ex.message, "There was an error")
+      }
+
+      $f7.preloader.hide()
+
+    }
 
 
     const clamp = (n, min, max) => Math.min(Math.max(n, min), max)
@@ -420,11 +445,6 @@
 
 
 
-
-
-
-
-
     const getOffChainDescription = (oce) => {
         return offChainEventWebService.getOffChainDescription(oce)
     }
@@ -436,139 +456,139 @@
         }
     }
 
-    const createLineupPopup = (lineup, confirmLineup) => {
+    // const createLineupPopup = (lineup, confirmLineup) => {
 
-          const rows = (lineup.lineup || []).map((p, index) => `
-        <tr>
-          <td>${index + 1}</td>
-          <td class="image">
-            <img src="/player/image/${p._id}" width="35" height="35" />
-          </td>
-          <td class="name">
-              <a href="${universeWebService.startDateLink(`/p/${p._id}`)}" class="popup-close">${p.fullName}</a><br />
-              <span class="position">${p.primaryPosition}</span>
+    //       const rows = (lineup.lineup || []).map((p, index) => `
+    //     <tr>
+    //       <td>${index + 1}</td>
+    //       <td class="image">
+    //         <img src="/player/image/${p._id}" width="35" height="35" />
+    //       </td>
+    //       <td class="name">
+    //           <a href="${universeWebService.startDateLink(`/p/${p._id}`)}" class="popup-close">${p.fullName}</a><br />
+    //           <span class="position">${p.primaryPosition}</span>
 
-              ${p.stamina < 1 && p.primaryPosition == Position.PITCHER ? `
-              Pitcher is tired.
-              ` : ` `}
+    //           ${p.stamina < 1 && p.primaryPosition == Position.PITCHER ? `
+    //           Pitcher is tired.
+    //           ` : ` `}
 
-          </td>
-          <td class="numeric-cell">
+    //       </td>
+    //       <td class="numeric-cell">
 
-            ${p.primaryPosition == Position.PITCHER ? `
-              <div class="stamina-bar ${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'}"
-                  data-pct="${(p.stamina * 100).toFixed(0)}">
-                <div class="gap">
-                  <span class="label">${(p.stamina * 100).toFixed(0)}</span>
-                </div>
-                <div class="fill" style="height:${(p.stamina * 100).toFixed(0)}%;">
-                  <span class="label">${(p.stamina * 100).toFixed(0)}</span>
-                </div>
-              </div>
-            ` : ` `}
+    //         ${p.primaryPosition == Position.PITCHER ? `
+    //           <div class="stamina-bar ${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'}"
+    //               data-pct="${(p.stamina * 100).toFixed(0)}">
+    //             <div class="gap">
+    //               <span class="label">${(p.stamina * 100).toFixed(0)}</span>
+    //             </div>
+    //             <div class="fill" style="height:${(p.stamina * 100).toFixed(0)}%;">
+    //               <span class="label">${(p.stamina * 100).toFixed(0)}</span>
+    //             </div>
+    //           </div>
+    //         ` : ` `}
 
-          </td>
-        </tr>
-      `).join("")
+    //       </td>
+    //     </tr>
+    //   `).join("")
 
-          const popup = $f7.popup.create({
-            content: `
-          <div class="popup confirm-lineup-popup">
-            <div class="page">
-              <div class="navbar">
-                <div class="navbar-bg"></div>
-                <div class="navbar-inner">
-                  <div class="title">Confirm Lineup</div>
-                  <div class="right">
-                    <a class="link popup-close">Close</a>
-                  </div>
-                </div>
-              </div>
+    //       const popup = $f7.popup.create({
+    //         content: `
+    //       <div class="popup confirm-lineup-popup">
+    //         <div class="page">
+    //           <div class="navbar">
+    //             <div class="navbar-bg"></div>
+    //             <div class="navbar-inner">
+    //               <div class="title">Confirm Lineup</div>
+    //               <div class="right">
+    //                 <a class="link popup-close">Close</a>
+    //               </div>
+    //             </div>
+    //           </div>
 
-              <div class="page-content">
-                <div class="stat-table-wrapper">
-                  <table class="data-table players confirm-lineup">
-                    <thead>
-                      <tr>
-                        <th>Order</th>
-                        <th class="image"></th>
-                        <th class="name">Name</th>
-                      </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                  </table>
-                </div>
+    //           <div class="page-content">
+    //             <div class="stat-table-wrapper">
+    //               <table class="data-table players confirm-lineup">
+    //                 <thead>
+    //                   <tr>
+    //                     <th>Order</th>
+    //                     <th class="image"></th>
+    //                     <th class="name">Name</th>
+    //                   </tr>
+    //                 </thead>
+    //                 <tbody>${rows}</tbody>
+    //               </table>
+    //             </div>
 
-                <div class="block split-row-both" style="margin-top: 5px;">
-                  <div>
-                    <a class="button button-outline color-gray popup-close" href="/t/index/${vm.team._id}">Edit Lineup</a>
-                  </div>
-                  <div>
-                    <a class="button button-fill confirm-lineup-btn">Confirm</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
+    //             <div class="block split-row-both" style="margin-top: 5px;">
+    //               <div>
+    //                 <a class="button button-outline color-gray popup-close" href="/t/index/${vm.team._id}">Edit Lineup</a>
+    //               </div>
+    //               <div>
+    //                 <a class="button button-fill confirm-lineup-btn">Confirm</a>
+    //               </div>
+    //             </div>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     `,
 
-            on: {
-              opened(p) {
-                // p.el is the popup root element
-                const btn = p.el.querySelector(".confirm-lineup-btn")
-                if (!btn) return
+    //         on: {
+    //           opened(p) {
+    //             // p.el is the popup root element
+    //             const btn = p.el.querySelector(".confirm-lineup-btn")
+    //             if (!btn) return
 
-                // attach once
-                btn.addEventListener("click", (e) => {
-                  e.preventDefault()
-                  confirmLineup?.(lineup)
-                  p.close()
-                }, { once: true })
-              },
+    //             // attach once
+    //             btn.addEventListener("click", (e) => {
+    //               e.preventDefault()
+    //               confirmLineup?.(lineup)
+    //               p.close()
+    //             }, { once: true })
+    //           },
 
-              closed(p) {
-                p.destroy()
-              }
-            }
-          })
+    //           closed(p) {
+    //             p.destroy()
+    //           }
+    //         }
+    //       })
 
-          popup.open()
-        }
+    //       popup.open()
+    //     }
 
-    const playBotClick = async (e) => {
+    // const playBotClick = async (e) => {
 
-      e.preventDefault()
+    //   e.preventDefault()
 
-      $f7.preloader.show()
+    //   $f7.preloader.show()
 
-      try {
+    //   try {
         
-        let lineup = await teamWebService.getActiveLineup(vm.team._id)
+    //     let lineup = await teamWebService.getActiveLineup(vm.team._id)
         
-        createLineupPopup(lineup, async () => {
+    //     createLineupPopup(lineup, async () => {
           
-          let gameInfo = await gameWebService.playBot()
+    //       let gameInfo = await gameWebService.playBot()
 
-          if (gameInfo.gameId) {
-            $f7.views.main.router.navigate(`/g/${gameInfo.gameId}`, { reloadCurrent: true })
-          }
+    //       if (gameInfo.gameId) {
+    //         $f7.views.main.router.navigate(`/g/${gameInfo.gameId}`, { reloadCurrent: true })
+    //       }
 
-        })
+    //     })
       
-      } catch(ex) { 
+    //   } catch(ex) { 
 
-        if (ex.response.data) {
-          $f7.dialog.alert(ex.response.data, "Lineup Error")
-        } else {
-          $f7.dialog.alert(ex.message, "There was an error")
-        }
+    //     if (ex.response.data) {
+    //       $f7.dialog.alert(ex.response.data, "Lineup Error")
+    //     } else {
+    //       $f7.dialog.alert(ex.message, "There was an error")
+    //     }
         
-      }
+    //   }
 
-      $f7.preloader.hide()
+    //   $f7.preloader.hide()
 
       
-    }
+    // }
 
     const onGameUpdate = async (game) => {
 

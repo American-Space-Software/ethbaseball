@@ -77,6 +77,11 @@ class GameWebService {
         return result.data
     }
 
+    async queue() {
+        let result = await axios.post(`/api/game/queue`)
+        return result.data
+    }
+
     async playBot() {
         //Download it.
         let result = await axios.post(`/api/game/play/bot`)

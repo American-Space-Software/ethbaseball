@@ -474,9 +474,7 @@ class GameService {
             let pls = plss.find( p => p.playerId == player._id)
 
             this.finalizePlayer(player, pls, gamePlayer, hittingRewards, pitchingRewards, game.seasonId != undefined)
-
-
-
+            
         }
 
 

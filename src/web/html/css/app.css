@@ -3049,7 +3049,6 @@ td.action, th.action {
 
 
 
-
 /* ===== Season Info Card ===== */
 
 .season-info-range {
@@ -3100,6 +3099,39 @@ td.action, th.action {
 .season-info-queue-date {
   font-size: 14px;
   font-weight: 600;
+}
+
+/* ===== NEW: Rewards Header ===== */
+
+/* season-info-card must already be block-level; we anchor rewards to it */
+.season-info-card {
+  position: relative;
+}
+
+/* container for Season / Yesterday rewards */
+.season-info-rewards {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 14px;
+  text-align: right;
+}
+
+/* each reward block */
+.season-info-reward {
+  min-width: 60px;
+}
+
+/* tighten rewards on small screens */
+@media (max-width: 480px) {
+  .season-info-rewards {
+    gap: 10px;
+  }
+
+  .season-info-reward {
+    min-width: 52px;
+  }
 }
 
 /* ===== Timeline ===== */
