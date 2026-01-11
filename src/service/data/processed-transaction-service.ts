@@ -395,7 +395,7 @@ class ProcessedTransactionService {
         for (let tokenId of tokenIds) {
 
             if (!result.tokensToUpdate[tokenId]) {
-                result.tokensToUpdate[tokenId] = await this.teamService.getByTokenId(tokenId, options)
+                result.tokensToUpdate[tokenId] = await this.playerService.getByTokenId(tokenId, options)
             }
 
         }

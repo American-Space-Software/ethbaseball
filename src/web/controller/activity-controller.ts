@@ -20,7 +20,7 @@ class ActivityController {
          private gameTransactionWebService:GameTransactionWebService
     ) {}
 
-    @routeMap("/activity")
+    @routeMap("/activity/on")
     async showOnChain(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
@@ -60,7 +60,7 @@ class ActivityController {
 
     }
 
-    @routeMap("/activity/off")
+    @routeMap("/activity")
     async showOffChain(): Promise<ModelView> {
         
         return new ModelView(async () => {

@@ -293,37 +293,17 @@ class LadderService {
 
             const pairs: { home: TeamBundle; away: TeamBundle }[] = []
 
+            // Pair adjacent teams in rating order: (0,1), (2,3), ...
             while (remaining.length >= 2) {
-
-                const home: TeamBundle = remaining.shift() as TeamBundle
-                const homeRating = getRating(home.team)
-
-                let bestIdx = 0
-                let bestDiff = Math.abs(
-                    homeRating - getRating(remaining[0].team)
-                )
-
-                for (let i = 1; i < remaining.length; i++) {
-                    const diff = Math.abs(
-                        homeRating - getRating(remaining[i].team)
-                    )
-                    if (diff < bestDiff) {
-                        bestDiff = diff
-                        bestIdx = i
-                    }
-                }
-
-                const away: TeamBundle = remaining.splice(bestIdx, 1)[0]
-
-                pairs.push({ home: home, away: away })
+                const home = remaining.shift() as TeamBundle
+                const away = remaining.shift() as TeamBundle
+                pairs.push({ home, away })
             }
 
+            // Odd one out gets a bot
             if (remaining.length === 1) {
-
                 const bye: TeamBundle = remaining[0]
-
-                const bot: Team = await this.teamService.getClosetRatedBot(  bye.team.longTermRating.rating, options )
-
+                const bot: Team = await this.teamService.getClosetRatedBot( bye.team.longTermRating.rating, options )
                 const botBundle = await this.getTeamBundle(bot, season, options)
 
                 if (isBundleEligible(botBundle)) {
@@ -333,6 +313,7 @@ class LadderService {
 
             return pairs
         }
+
 
         const pairs = await buildClosestPairs(teamBundles)
 

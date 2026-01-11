@@ -19,6 +19,7 @@ interface TeamLeagueSeasonRepository {
     listBySeason(season:Season, options?:any): Promise<TeamLeagueSeason[]>
     getByTeamSeason(team:Team, season:Season, options?:any): Promise<TeamLeagueSeason>
     listByUserAndSeason(user:User, season:Season, options?:any): Promise<TeamLeagueSeason[]>
+    listUserTeamsByLeagueAndSeason(league: League, season: Season, options?: any): Promise<TeamLeagueSeason[]>
 }
 
 export {

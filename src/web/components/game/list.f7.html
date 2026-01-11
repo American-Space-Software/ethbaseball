@@ -8,33 +8,15 @@
 
         <div class="fixed-width-content center">
 
-            <div class="block league-date">
+            <div class="block-title block-title-large">
+              Games for ${dayjs(gameDate).format('MMMM D, YYYY')} 
 
-                <div class="left list">
-                      <strong>League</strong><br />
-                      <select name="rank" class="rank-dropdown" @change="${rankChange}">
-                        ${leagues.map( (l, index) => $h`
-
-                            ${l.rank == universeWebService.getRank() ? $h`
-                              <option value="${l.rank}" selected >${l.name}</option>
-                            ` : $h` 
-                              <option value="${l.rank}">${l.name}</option>
-                            `}
-                        `)}
-                        
-                      </select>
-
-
-                </div>
-                
-                <div class="right">
-                  <div class="date-picker">
-                    <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
-                  </div>
-                </div>
-
+              <div class="date-picker">
+                <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
+              </div>
 
             </div>
+            
 
       
             ${games?.inProgress?.length > 0 ? $h`
@@ -77,6 +59,22 @@
             ` : $h` `}  
 
 
+
+            <div class="block split-row-both">
+              <div>
+                  ${previousPage ? $h`
+                  <a data-reload-current="true" data-force="true" data-browser-history="true" href="${universeWebService.startDateLink(`/games?gameDate=${dayjs(gameDate).subtract(1, 'day').format('YYYY-MM-DD')}`)}" class="button button-outline color-gray">Previous</a>
+                  ` : $h` `}
+              </div>
+              <div>
+                  ${nextPage ? $h`
+                  <a data-reload-current="true" data-force="true" data-browser-history="true" href="${universeWebService.startDateLink(`/games?gameDate=${dayjs(gameDate).subtract(1, 'day').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
+                  ` : $h` `}
+              </div>
+            </div>
+
+
+
         </div>
 
       ` : $h` `}
@@ -113,6 +111,10 @@
     let games = props.games
     let gameDate = props.gameDate
     let leagues = props.leagues
+
+    let previousPage = props.previousPage
+    let nextPage = props.nextPage
+
 
     // console.log(games, gameDate, leagues)
 

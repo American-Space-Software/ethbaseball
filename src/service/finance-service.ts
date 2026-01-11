@@ -259,7 +259,7 @@ class FinanceService {
 
         const BASE_RATING = 1500
         const STEP = 300
-        const MIN_RATING = 1450
+        const MIN_RATING = 1400
 
         if (teams.length === 0) return []
 

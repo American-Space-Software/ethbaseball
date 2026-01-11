@@ -226,6 +226,43 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
         return TeamLeagueSeason.findAll(Object.assign(query, options))
     }
 
+    async listUserTeamsByLeagueAndSeason(league: League, season: Season, options?: any): Promise<TeamLeagueSeason[]> {
+
+        const tlsAlias = TeamLeagueSeason.name
+
+        let query = {
+            where: {
+                seasonId: season._id,
+                leagueId: league._id,
+                '$team.userId$': { [Op.ne]: null },
+
+                [Op.and]: [
+                    Sequelize.literal(`
+                        EXISTS (
+                            SELECT 1
+                            FROM game_team gt
+                            JOIN game g ON g._id = gt.gameId
+                            WHERE gt.teamId = \`${tlsAlias}\`.\`teamId\`
+                            AND g.seasonId = :seasonId
+                            AND g.isComplete = 1
+                        )
+                    `)
+                ]
+            },
+            replacements: {
+                seasonId: season._id
+            },
+            order: [
+                ['longTermRating.rating', 'desc'],
+                ['seasonRating.rating', 'desc']
+            ],
+            include: [Team, League, Season, City, Stadium]
+        }
+
+        return TeamLeagueSeason.findAll(Object.assign(query, options))
+    }
+
+
     async listBySeason(season: Season, options?: any): Promise<TeamLeagueSeason[]> {
 
         let query = {

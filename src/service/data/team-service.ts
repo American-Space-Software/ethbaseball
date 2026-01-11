@@ -27,6 +27,7 @@ import { User } from "../../dto/user.js";
 import { v4 as uuidv4 } from 'uuid';
 import { ImageService } from "./image-service.js";
 import { LineupService } from "../lineup-service.js";
+import { TeamQueueService } from "./team-queue-service.js";
 
 
 const MAX_ROSTER_SIZE = 13
@@ -53,7 +54,8 @@ n
         private offchainEventService:OffchainEventService,
         private diamondMintPassService:DiamondMintPassService,
         private gameService:GameService,
-        private imageService:ImageService
+        private imageService:ImageService,
+        private teamQueueService:TeamQueueService
     ) { }
 
 
@@ -92,14 +94,6 @@ n
 
     async getOverallRecordBySeason(team:Team, season:Season, options?:any): Promise<TeamRecord> {
         return this.teamRepository.getOverallRecordBySeason(team, season, options)
-    }
-
-    async getByTokenId(tokenId: number, options?: any): Promise<Team> {
-        return this.teamRepository.getByTokenId(tokenId, options)
-    }
-
-    async getByTokenIds(_ids:number[], options?:any): Promise<Team[]> {
-        return this.teamRepository.getByTokenIds(_ids, options)
     }
 
     async listByLeagueAndSeason(league: League, season: Season, options?: any) {
@@ -175,10 +169,7 @@ n
         let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id, options)
         let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
 
-        let start = dayjs(currentDate).subtract(3, 'days').toDate()
-        let end = dayjs(currentDate).add(3, 'days').toDate()
-
-        let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
+        let gameIds = await this.gameRepository.getRecentIdsByTeam(team, 3, 0, options)
         let games = []
 
         if (gameIds?.length > 0) {
@@ -191,6 +182,8 @@ n
 
         }
 
+
+        let isQueued = await this.teamQueueService.isTeamQueued(team, options)
 
         return {
             team: {
@@ -213,6 +206,8 @@ n
                 overallRecord: t.overallRecord,
                 financeSeason: t.financeSeason,
                 diamondMintPasses: diamondMintPasses,
+                isQueued: isQueued,
+
 
                 owner: {
                     _id: team.userId,
@@ -411,7 +406,7 @@ n
 
         let leagueVm 
 
-        let teams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
+        let teams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listUserTeamsByLeagueAndSeason(league, season, options)
 
         let viewModels = teams.map((t, index) => {
             t = t.get({ plain: true })
@@ -1133,6 +1128,8 @@ interface TeamViewModel {
             discordId?:string
             discordUsername?:string
         }
+
+        isQueued:boolean
     }
 
     players?: PlayerRowViewModel[]

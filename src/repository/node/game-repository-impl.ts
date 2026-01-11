@@ -242,7 +242,7 @@ class GameRepositoryNodeImpl implements GameRepository {
             INNER JOIN game_team gt on gt.gameId = g._id
             WHERE 
                 gt.teamId = :teamId AND
-                DATE(g.startDate) < :theDate
+                DATE(g.startDate) <= :theDate
             ORDER BY g.startDate DESC
             ${limit ? `LIMIT ${limit}` : ''}
             ${offset ? `OFFSET ${offset}` : ''}

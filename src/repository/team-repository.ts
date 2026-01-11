@@ -7,10 +7,8 @@ import { TeamRating, TeamRecord } from "./node/team-repository-impl.js"
 
 interface TeamRepository {
     get(id:string, options?:any): Promise<Team>
-    getByTokenId(tokenId: number, options?: any): Promise<Team> 
-    getHighestTokenId(options?: any): Promise<Team>
+    // getHighestTokenId(options?: any): Promise<Team>
     getByIds(_ids:string[], options?:any): Promise<Team[]>
-    getByTokenIds(_ids:number[], options?:any): Promise<Team[]>
     getWithCityAndStadium(_id:string, options?:any): Promise<Team>
     put(team:Team, options?:any) : Promise<Team>
     getByUser(user:User, options?: any): Promise<Team[]>

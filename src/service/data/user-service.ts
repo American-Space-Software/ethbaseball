@@ -109,11 +109,16 @@ class UserService {
         
         vm.team.yesterdaysRewards = vm.offChainEvents.events.find( e => e.source?.type == "reward" && e.source?.rewardType == "daily" && dayjs(e.source?.fromDate).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, 'day').format("YYYY-MM-DD"))?.amount || "0"
 
+        
         if (season) {
 
             let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
 
-            let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses
+            let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses 
+
+            if (vm.inProgressGame?._id != undefined) {
+                gamesPlayed++
+            }
 
             vm.season = {
                 _id: season._id,
@@ -128,7 +133,8 @@ class UserService {
                     gamesPlayed: gamesPlayed,
                     teamCurrentDate: dayjs(games?.length ? games[0].gameDate : currentDate).format("YYYY-MM-DD"),
                     isQueued: await this.teamQueueService.isTeamQueued(team)
-                }
+                },
+                queuedTeams: await this.teamQueueService.count()
             }
             
 

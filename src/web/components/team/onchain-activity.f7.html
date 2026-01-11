@@ -8,8 +8,8 @@
 
             <div class="block">
                 <p class="segmented">
-                    <a href="${universeWebService.fullLink(`/t/activity/${teamId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
-                    <a href="${universeWebService.fullLink(`/t/activity/off/${teamId}`)}" class="button button-outline tab-link ">Off-chain</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link ">Rewards & Player Moves</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/on/${teamId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
                 </p>
             </div>
 
@@ -126,6 +126,8 @@
           detail: {
               tabLink: "/l/standings", 
               breadcrumbs: [
+                  { text: "Home", path: "/"},
+
                   {
                       text: "Standings",
                       path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}`)

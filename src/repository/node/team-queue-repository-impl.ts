@@ -22,6 +22,11 @@ class TeamQueueRepositoryNodeImpl implements TeamQueueRepository {
 
     }
 
+    async delete(tq:TeamQueue, options?:any): Promise<void> {
+        return tq.destroy(options)
+    }
+
+
     async list(limit:number, offset:number, options?: any): Promise<TeamQueue[]> {
         
         let query = {
@@ -51,6 +56,19 @@ class TeamQueueRepositoryNodeImpl implements TeamQueueRepository {
         return TeamQueue.findAll(Object.assign(query, options))
     }
 
+    async getByTeam(team:Team, options?: any): Promise<TeamQueue> {
+        
+        let query = {
+            where: {
+                teamId: team._id
+            },
+            order: [
+                ['dateCreated', 'DESC']
+            ]
+        }
+
+        return TeamQueue.findOne(Object.assign(query, options))
+    }
 
     async getByIds(ids: string[], options?: any): Promise<TeamQueue[]> {
 
@@ -81,6 +99,14 @@ class TeamQueueRepositoryNodeImpl implements TeamQueueRepository {
         }) as unknown as number
 
         return count > 0
+    }
+
+    async count(options?: any): Promise<number> {
+
+        return TeamQueue.count({
+            ...options
+        }) as unknown as number
+
     }
 
 

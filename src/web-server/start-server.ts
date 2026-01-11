@@ -433,7 +433,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/t/activity/off/:teamId", async function (req, res) {
+  app.get("/t/activity/on/:teamId", async function (req, res) {
 
       try {
 
@@ -687,7 +687,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get("/activity/off", async function (req, res) {
+  app.get("/activity/on", async function (req, res) {
 
       try {
 
@@ -1451,8 +1451,15 @@ let startWebServer = async () => {
         throw new Error("Invalid lineup.")
       }
 
+      let isQueued = await teamQueueService.isTeamQueued(team)
+
+      if (isQueued) {
+        throw new Error("Can not update lineup after entering queue.")
+      }
+
       await sequelize.transaction(async (t1) => {
         let options = { transaction: t1 }
+
         await teamService.updateRoster(roster.lineups, team, options)
       })
 
@@ -1707,7 +1714,45 @@ let startWebServer = async () => {
 
   })
 
+  app.post('/api/game/dequeue', async function (req, res) {
 
+    try {
+
+        //@ts-ignore
+        let userId = req.session?.passport?.user
+
+        if (!userId) {
+          res.status(401)
+          return res.send("Not authorized.")
+        }
+
+        let user:User = await userService.get(userId)
+
+        let teams:Team[] = await teamService.getByUser(user)
+        let team = teams[0]
+
+        await sequelize.transaction(async (t1) => {
+
+          let options = { transaction: t1 }
+
+          let isQueued = await teamQueueService.isTeamQueued(team, options)
+
+          if (!isQueued) {
+            throw new Error("Team is not queued.")
+          }
+
+          await teamQueueService.dequeueTeam(team, options)
+        })
+
+
+        return res.send("success")
+
+    } catch (ex:any) {      
+      console.log(ex)
+      res.sendStatus(500)
+    }
+
+  })
 
 
   app.get('/api/cities', cacheService.cacheResponse(), async function(req, res) {

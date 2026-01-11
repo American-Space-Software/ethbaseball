@@ -8,8 +8,8 @@
 
             <div class="block">
                 <p class="segmented">
-                    <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link" >On-chain</a>
-                    <a href="${universeWebService.fullLink(`/t/activity/off/${teamId}`)}" class="button button-outline tab-link tab-link-active">Off-chain</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link tab-link-active">Rewards & Player Moves</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/on/${teamId}`)}" class="button button-outline tab-link" >On-chain</a>
                 </p>
             </div>
 
@@ -97,7 +97,6 @@
     let previousPage = props.previousPage
     let nextPage = props.nextPage
 
-    console.log(eventsViewModel)
 
     $on('pageInit', async (e) => {
         await $update()
@@ -115,6 +114,7 @@
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: {
             tabLink: "/l/standings", breadcrumbs: [
+                { text: "Home", path: "/"},
                 {
                 text: "Standings",
                 path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}`)
@@ -122,7 +122,7 @@
                 { 
                     text: teamWebService.getTeamName(teamComponentService.team), 
                     path: universeWebService.startDateLink(`/t/index/${teamComponentService.team._id}`) 
-                }, { text: 'Activity'}]
+                }, { text: 'Rewards & Player Moves'}]
             }
         }))
 

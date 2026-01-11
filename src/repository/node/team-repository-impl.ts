@@ -19,35 +19,13 @@ class TeamRepositoryNodeImpl implements TeamRepository {
     @inject("sequelize")
     private sequelize:Function
     
-    async getHighestTokenId(options?: any): Promise<Team> {
 
-        let query = {
-
-            order: [
-                ['tokenId', 'DESC']
-            ]
-        }
-
-        return Team.findOne(Object.assign(query, options))
-    }
 
     async get(id:string, options?:any): Promise<Team> {
         return Team.findByPk(id, options)
     }
 
-    async getByTokenId(tokenId: number, options?: any): Promise<Team> {
 
-        let queryOptions = {
-            where: {
-                tokenId: tokenId
-            },
-            order: [
-                ['tokenId', 'desc']
-            ]
-        }
-
-        return Team.findOne(Object.assign(queryOptions, options))
-    }
 
     async getByIds(_ids:string[], options?:any): Promise<Team[]> {
 
@@ -72,28 +50,6 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
-    async getByTokenIds(_ids:number[], options?:any): Promise<Team[]> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.SELECT,
-            mapToModel: true,
-            model: Team,
-            replacements: {
-                ids: _ids
-            }
-        }
-
-        const queryResults = await s.query(`
-            select t.*
-            FROM team t
-            WHERE t.tokenId IN (:ids)
-        `, Object.assign(queryOptions, options))
-
-        return queryResults
-
-    }
 
     async getWithCityAndStadium(_id:string, options?:any): Promise<Team> {
 

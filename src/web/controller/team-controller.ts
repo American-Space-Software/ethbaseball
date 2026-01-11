@@ -21,6 +21,7 @@ import { UniverseWebService } from '../service/universe-web-service.js';
 import { TeamComponentService } from '../service/team-component-service.js';
 import { TeamWebService } from '../service/team-web-service.js';
 import { GameTransactionWebService } from '../service/game-transaction-web-service.js';
+import dayjs from 'dayjs';
 
 
 
@@ -90,10 +91,18 @@ class TeamController {
 
             let gameLogs = await this.teamWebService.getGameLog(teamId, date)
 
+
+            const todayMonth = dayjs.utc().startOf('month')
+
+            const previousPage = true
+            const nextPage = dayjs(date).isBefore(todayMonth, 'day')
+
             return {
                 teamId: teamId,
                 date: date,
                 gameLogs: gameLogs,
+                previousPage: previousPage,
+                nextPage: nextPage,
                 discord: this.discord
             }
         }, TeamResultsComponent)
@@ -101,7 +110,7 @@ class TeamController {
     }
 
 
-    @routeMap("/t/activity/index/:teamId")
+    @routeMap("/t/activity/on/:teamId")
     async showActivity(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {
@@ -144,7 +153,7 @@ class TeamController {
 
     }
 
-    @routeMap("/t/activity/off/:teamId")
+    @routeMap("/t/activity/index/:teamId")
     async showOffchainActivity(): Promise<ModelView> {
         
         return new ModelView(async (routeTo) => {

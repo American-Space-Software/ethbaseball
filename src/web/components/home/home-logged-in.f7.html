@@ -13,13 +13,13 @@
               <li>
                 <a class="item-link item-content" href="/t/index/${vm.team._id}">
                   <div class="item-media">
-                    <img src="/image/thumbnail/100/${vm.team.logoId}" width="56" height="56" style="border-radius: 12px;" />
+                    <img src="/image/thumbnail/100/${vm.team.logoId}" width="56" height="56" class="profilePic" />
                   </div>
 
                   <div class="item-inner">
                     <div class="item-title-row">
                       <div class="item-title">${teamWebService.getTeamName(vm.team)}</div>
-                      <div class="item-after">⭐ ${vm.team.longTermRating.rating.toFixed(0)}</div>
+                      <div class="item-after">${vm.team.longTermRating.rating.toFixed(0)} ⭐</div>
                     </div>
 
                     <div class="item-subtitle">
@@ -37,10 +37,11 @@
             </ul>
           </div>
 
+
           <div class="block-title block-title-medium">Current Season</div>
           <div class="block block-outline block-strong season-info-card">
 
-            <!-- Rewards (top-right) -->
+
             <div class="season-info-rewards">
               <div class="season-info-reward">
                 <div class="season-info-current-label">Season</div>
@@ -57,50 +58,34 @@
             </div>
 
             <div class="season-info-range">
-              ${dayjs(vm.season.startDate).format('MMM D, YYYY')} →
-              ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
+              ${dayjs(vm.season.startDate).format('MMM D, YYYY')} → ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
             </div>
 
             <div class="row season-info-stats">
               <div class="col">
-                <div class="season-info-day">
-                  Day ${vm.season.dayNumber} of ${vm.season.totalDays}
-                </div>
-
-                ${isSeasonComplete(vm.season) ? $h`
-                  <div class="season-info-complete">Season complete</div>
-                ` : $h`
-                  <div class="season-info-remaining">
-                    ${vm.season.daysRemaining} days remaining
-                  </div>
-                `}
-
-                <div class="season-info-games">
-                  Games played: ${vm.season.team.gamesPlayed}
-                </div>
+                <div class="season-info-day">Day ${vm.season.dayNumber} of ${vm.season.totalDays}</div>
+                ${isSeasonComplete(vm.season)
+                  ? $h`<div class="season-info-complete">Season complete</div>`
+                  : $h`<div class="season-info-remaining">${vm.season.daysRemaining} days remaining</div>`}
+                <div class="season-info-games">Games played: ${vm.season.team.gamesPlayed}</div>
               </div>
 
               <div class="col text-align-right">
                 ${!isSeasonComplete(vm.season) ? $h`
                   <div class="season-info-current-label">Queue for</div>
-                  <div class="season-info-queue-date">
-                    ${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}
+                  <div class="season-info-queue-date">${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}</div>
+                  <div class="season-info-current-label" style="margin-top:4px;">
+                    <b>${vm.season.queuedTeams}</b> team${vm.season.queuedTeams === 1 ? '' : 's'} in queue
                   </div>
-
-                  ${vm.season.team.isQueued == "true" ? $h`
-                    <div class="season-info-current-label" style="margin-top:4px;">
-                      ✅ Queued
-                    </div>
-                  ` : $h` `}
+                  ${vm.season.team.isQueued == "true"
+                    ? $h`<div class="season-info-current-label" style="margin-top:4px;">✅ Queued</div>`
+                    : $h` `}
                 ` : $h` `}
               </div>
             </div>
 
             <div class="season-info-timeline">
-              <div class="progressbar" data-progress="${getSeasonPercent(vm.season)}">
-                <span></span>
-              </div>
-
+              <div class="progressbar" data-progress="${getSeasonPercent(vm.season)}"><span></span></div>
               ${!isSeasonComplete(vm.season) ? $h`
                 <div class="season-info-markers">
                   <div
@@ -117,31 +102,19 @@
             </div>
 
             <div class="block-footer season-info-status">
-              ${isSeasonComplete(vm.season) ? $h`
-                <span class="season-info-status-strong">Status:</span>
-                <span>Season complete</span>
-              ` : isBehind(vm.season) ? $h`
-                <span class="season-info-status-strong">Status:</span>
-                <span>
-                  Behind by ${getDaysBehind(vm.season)} day${getDaysBehind(vm.season) === 1 ? '' : 's'}
-                </span>
-              ` : isAhead(vm.season) ? $h`
-                <span class="season-info-status-strong">Status:</span>
-                <span class="season-info-status-ahead">
-                  Ahead by ${getDaysAhead(vm.season)} day${getDaysAhead(vm.season) === 1 ? '' : 's'} (too far ahead)
-                </span>
-              ` : $h`
-                <span class="season-info-status-strong">Status:</span>
-                <span>Up to date</span>
-              `}
+              ${isSeasonComplete(vm.season)
+                ? $h`<span class="season-info-status-strong">Status:</span><span>Season complete</span>`
+                : isBehind(vm.season)
+                  ? $h`<span class="season-info-status-strong">Status:</span><span>Behind by ${getDaysBehind(vm.season)} day${getDaysBehind(vm.season) === 1 ? '' : 's'}</span>`
+                  : isAhead(vm.season)
+                    ? $h`<span class="season-info-status-strong">Status:</span><span class="season-info-status-ahead">Ahead by ${getDaysAhead(vm.season)} day${getDaysAhead(vm.season) === 1 ? '' : 's'} (too far ahead)</span>`
+                    : $h`<span class="season-info-status-strong">Status:</span><span>Up to date</span>`}
             </div>
 
-            ${!isSeasonComplete(vm.season) && isQueueClosedForUniverseDay(vm.season) ? $h`
+            ${!isSeasonComplete(vm.season) && isQueueClosedForUserDay(vm.season) ? $h`
               <div class="season-info-callout">
                 <div class="season-info-callout-title">Today’s queue is closed</div>
-                <div class="season-info-callout-body">
-                  You can join the queue for tomorrow.
-                </div>
+                <div class="season-info-callout-body">You can join the queue for tomorrow.</div>
               </div>
             ` : $h``}
 
@@ -161,39 +134,49 @@
 
               ${!isSeasonComplete(vm.season) ? $h`
                 ${vm.season.team.isQueued ? $h`
-                  <li class="item-content">
-                    <div class="item-media">✅</div>
-                    <div class="item-inner">
-                      <div class="item-title">You’re in the queue</div>
-                      <div class="item-text">
-                        Your team is queued for <b>${dayjs(vm.season.nextQueueDate).format('MMM D')}</b>. ${isBehind(vm.season) ? $h`When games begin, you’ll also play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'} to catch up.
-                        ` : $h``}
+                  <li>
+                    <a class="item-link item-content" @click="${clickLeaveQueue}">
+                      <div class="item-media">✅</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title">You’re in the queue</div>
+                          <div class="item-after">Leave</div>
+                        </div>
+                        <div class="item-text">
+                          Queued for <b>${dayjs(vm.season.nextQueueDate).format('MMM D')}</b>.
+                          ${isBehind(vm.season)
+                            ? $h`You’ll also play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'}.`
+                            : $h` `}
+                          <div style="opacity:.6; margin-top:4px;">Tap to leave the queue</div>
+                        </div>
                       </div>
-                    </div>
+                    </a>
                   </li>
                 ` : $h`
                   <li>
                     <a class="item-link item-content" @click="${clickJoinQueue}">
                       <div class="item-media">🏟️</div>
-
                       <div class="item-inner">
                         <div class="item-title-row">
                           <div class="item-title">
-                            ${isNextQueueToday(vm.season) ? 'Join Queue for Today'
-                              : isNextQueueTomorrow(vm.season) ? 'Join Queue for Tomorrow'
-                              : `Join Queue for ${dayjs(vm.season.nextQueueDate).format('MMM D')}`}
+                            ${isNextQueueTodayLocal(vm.season)
+                              ? 'Join Queue for Today'
+                              : isNextQueueTomorrowLocal(vm.season)
+                                ? 'Join Queue for Tomorrow'
+                                : `Join Queue for ${formatQueueDateLocal(vm.season)}`}
                           </div>
                         </div>
-
                         <div class="item-text">
                           ${isBehind(vm.season) ? $h`
-                            You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'} to catch up,
-                            in addition to your game for <b>${isNextQueueToday(vm.season) ? 'today' : isNextQueueTomorrow(vm.season) ? 'tomorrow' : dayjs(vm.season.nextQueueDate).format('MMM D')}</b>.
-                          ` : $h`
-                            ${getQueueSubtitle(vm.season)}
-                          `}
+                            You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'},
+                            in addition to your game for
+                            <b>${isNextQueueTodayLocal(vm.season)
+                              ? 'today'
+                              : isNextQueueTomorrowLocal(vm.season)
+                                ? 'tomorrow'
+                                : formatQueueDateLocal(vm.season)}</b>.
+                          ` : $h`${getQueueSubtitle(vm.season)}`}
                         </div>
-
                       </div>
                     </a>
                   </li>
@@ -337,6 +320,29 @@
     
     let inProgressGame = props.inProgressGame
 
+    console.log(vm)
+
+    const clickLeaveQueue = async (e) => {
+
+      e.preventDefault()
+
+
+      $f7.dialog.confirm("Are you sure you want to leave the queue?", async () => {
+
+        $f7.preloader.show()
+
+        try {
+          await gameWebService.dequeue()
+          $f7.views.main.router.refreshPage()
+        } catch(ex) { 
+          $f7.dialog.alert(ex.message, "There was an error")
+        }
+
+        $f7.preloader.hide()
+
+      }, () => {})
+
+    }
 
     const clickJoinQueue = async (e) => {
 
@@ -356,9 +362,10 @@
     }
 
 
+        
     const clamp = (n, min, max) => Math.min(Math.max(n, min), max)
 
-    const asDay = (d) => dayjs(d).format('YYYY-MM-DD')
+    const asDay = (d) => String(d).slice(0, 10) // YYYY-MM-DD
     const sameDay = (a, b) => asDay(a) === asDay(b)
 
     const getSeasonPercent = (season) =>
@@ -386,16 +393,46 @@
     const getYouLeftPercent = (season) =>
       clamp(((getTeamDayNumber(season) - 1) / (season.totalDays - 1)) * 100, 0, 100)
 
-    // queue/day model helpers
-    const isQueueClosedForUniverseDay = (season) =>
-      !sameDay(season.nextQueueDate, season.universeDate)
+    // =====================================================
+    // LOCAL "TODAY/TOMORROW" QUEUE LABELING (USER TIMEZONE)
+    // =====================================================
+    // Your queue dates are date-only strings generated by the server.
+    // They correspond to the queue day whose cutoff is 1PM ET.
+    // We'll treat season.nextQueueDate as a day in ET, then convert it to the user's local day
+    // before deciding whether to call it "Today" or "Tomorrow".
 
-    const isNextQueueToday = (season) =>
-      sameDay(season.nextQueueDate, season.universeDate)
+    const QUEUE_SOURCE_TZ = 'America/New_York' // the meaning of nextQueueDate in your system
+    const USER_TZ = dayjs.tz.guess()
 
-    const isNextQueueTomorrow = (season) =>
-      sameDay(season.nextQueueDate, dayjs(season.universeDate).add(1, 'day'))
+    const localTodayStr = () => dayjs().tz(USER_TZ).format('YYYY-MM-DD')
+    const localTomorrowStr = () => dayjs().tz(USER_TZ).add(1, 'day').format('YYYY-MM-DD')
 
+    // Convert the queue date (interpreted in ET) into the user's local calendar day.
+    // Use noon to avoid timezone edge cases around midnight/DST.
+    const queueDateAsLocalDayStr = (season) =>
+      dayjs.tz(`${season.nextQueueDate} 12:00`, QUEUE_SOURCE_TZ)
+        .tz(USER_TZ)
+        .format('YYYY-MM-DD')
+
+    const isNextQueueTodayLocal = (season) =>
+      queueDateAsLocalDayStr(season) === localTodayStr()
+
+    const isNextQueueTomorrowLocal = (season) =>
+      queueDateAsLocalDayStr(season) === localTomorrowStr()
+
+    const formatQueueDateLocal = (season) =>
+      dayjs.tz(`${season.nextQueueDate} 12:00`, QUEUE_SOURCE_TZ)
+        .tz(USER_TZ)
+        .format('MMM D')
+
+    // "Today's queue is closed" in the user's timezone means:
+    // If the thing you can queue for right now isn't the user's local today.
+    const isQueueClosedForUserDay = (season) =>
+      !isNextQueueTodayLocal(season)
+
+    // =====================================================
+    // EXISTING GAME/SEASON HELPERS (UNCHANGED)
+    // =====================================================
 
     const needsCatchUpToQueue = (season) =>
       season.team.gamesPlayed < (season.dayNumber - 1)
@@ -410,9 +447,12 @@
       !isAhead(season) &&
       !shouldShowCatchUp(season)
 
-    // callout timing (purely client-side messaging)
+    // =====================================================
+    // QUEUE DEADLINE + SUBTITLE (ET DEADLINE IS INTENTIONAL)
+    // =====================================================
+
     const getQueueDeadlineEt = (season) =>
-      dayjs.tz(`${season.universeDate} 13:00`, 'America/New_York')
+      dayjs.tz(`${season.nextQueueDate} 13:00`, 'America/New_York')
 
     const getTimeLeftToQueue = (season) =>
       dayjs().to(getQueueDeadlineEt(season))
@@ -437,11 +477,12 @@
 
     // subtitle under the join link
     const getQueueSubtitle = (season) => {
-      if (isQueueClosedForUniverseDay(season)) {
+      if (isQueueClosedForUserDay(season)) {
         return `✅ Today’s queue is closed`
       }
       return `⏰ Queue closes at 1:00 PM ET (${getTimeLeftToQueue(season)})`
     }
+
 
 
 

@@ -35,7 +35,6 @@ class GameController {
             this.universeWebService.setRank(routeTo?.query?.rank || 1)
 
 
-
             let gameDate = routeTo?.query?.gameDate || this.env().CURRENT_DATE
 
             if (!gameDate) {
@@ -51,17 +50,21 @@ class GameController {
 
             let games = await this.gameWebService.getGames(gameDate, this.universeWebService.getRank())
 
+            const today = dayjs(new Date(new Date().toUTCString())).format('YYYY-MM-DD')
 
-            console.log(games)
-
+            const previousPage = true
+            const nextPage = gameDate < today
 
             return {
                 lastGameUpdate: new Date(new Date().toUTCString()),
                 games: games,
                 leagues: leagues,
                 gameDate: gameDate,
+                previousPage: previousPage,
+                nextPage: nextPage, 
                 discord: this.discord
             }
+            
         }, GameListComponent)
 
     }

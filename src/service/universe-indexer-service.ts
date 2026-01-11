@@ -17,6 +17,8 @@ import { TeamService } from "./data/team-service.js";
 import { DiamondMintPass, Team } from "../dto/team.js";
 import { DiamondMintPassService } from "./data/diamond-mint-pass-service.js";
 import { LogEventService } from "./log-event-service.js";
+import { Player } from "../dto/player.js";
+import { PlayerService } from "./data/player-service.js";
 
 const MAX_BLOCKS_TO_INDEX = 10000
 
@@ -41,7 +43,7 @@ class UniverseIndexerService {
     private universeIndexResult:ERCIndexResult
 
     constructor(
-        private teamService:TeamService,
+        private playerService:PlayerService,
         @inject("WalletService") private walletService: WalletService,
         private blockService: BlockService,
         private processedTransactionService: ProcessedTransactionService,
@@ -446,7 +448,7 @@ class UniverseIndexerService {
                 result.tokensToUpdate[tokenId].ownerId = lastTransfer.toAddress
             }
 
-            await this.teamService.put(result.tokensToUpdate[tokenId], options)
+            await this.playerService.put(result.tokensToUpdate[tokenId], options)
         }
 
     }
@@ -688,10 +690,10 @@ class UniverseIndexerService {
 
         if (!result.tokensToUpdate[tokenId]) {
 
-            let team:Team = await this.teamService.getByTokenId(tokenId, options)
+            let player:Player = await this.playerService.getByTokenId(tokenId, options)
 
-            if (team) {
-                result.tokensToUpdate[tokenId] = team
+            if (player) {
+                result.tokensToUpdate[tokenId] = player
             }
 
         } 

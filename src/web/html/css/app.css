@@ -3258,3 +3258,19 @@ td.action, th.action {
     font-size: 13px;
   }
 }
+
+
+
+
+
+
+
+.block-lineup-table {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.block-lineup-table td:first-child {
+  padding-left:5px;
+  padding-right: 5px;
+}

@@ -105,13 +105,13 @@ For hosting/scaling in production you can run **web** and **engine** separately.
 This keeps the **minter private key off the web server** entirely (nice for security & ops).
 
 - **Web server**
-  - `npm run web`       → `.env.web.production`
-  - `npm run web:dev`   → `.env.web.development`
+  - `npm run web`         → `.env.web.production`
+  - `npm run web:dev`     → `.env.web.development`
   - `npm run web:sepolia` → `.env.web.sepolia`
 
 - **Engine (simulation)**
-  - `npm run engine`       → `.env.engine.production`
-  - `npm run engine:dev`   → `.env.engine.development`
+  - `npm run engine`         → `.env.engine.production`
+  - `npm run engine:dev`     → `.env.engine.development`
   - `npm run engine:sepolia` → `.env.engine.sepolia`
 
 ---
@@ -126,414 +126,317 @@ This keeps the **minter private key off the web server** entirely (nice for secu
 > - `ALCHEMY_API_KEY` is **only needed in sepolia/production**. Leave it blank in development.
 
 ### `.env.start.development` (combined web + engine)
+
+```env
+ENV_NAME=development
+
+DISCORD=
+
+WEB=http://localhost:8080
+SIM_DATE="2025-08-01 10:00:00"
+SECONDS_BETWEEN_SIMS=60
+
+MYSQL_TIMEOUT=30000
+# MYSQL_HOST=mysqldb
+MYSQL_HOST=127.0.0.1
+MYSQL_DATABASE_NAME=ebldev
+MYSQL_ALLOW_EMPTY_PASSWORD=true
+# MYSQL_ROOT_PASSWORD=
+
+# Only set ALCHEMY_API_KEY in sepolia/production; leave blank in dev.
+ALCHEMY_API_KEY=
+
+# If blank, engine will deploy a new Universe and print the address in logs.
+UNIVERSE_ADDRESS=
+
+DEFAULT_AIRDROP=true
+
+OPENAI_API_KEY=
+ETHERSCAN_API_KEY=
+COINMARKETCAP_API_KEY=
+
+# --- Web auth (Discord OAuth) ---
+SESSION_SECRET=
+DISCORD_OAUTH_CLIENT_ID=
+DISCORD_OAUTH_CLIENT_SECRET=
+
+# --- Minter ---
+# If blank, engine generates; in :dev defaults to Hardhat test wallet.
+MINTER_WALLET_KEY=
+
+# --- Optional Ethereum provider config (leave blank in dev unless you need custom RPC) ---
+PROVIDER_LINK=
+PROVIDER_CHAIN_ID=
+PROVIDER_CHAIN_NAME=
+PROVIDER_CHAIN_RPC_URL=
+PROVIDER_CHAIN_BLOCK_EXPLORER=
+
+# --- If collection is on opensea specify the URL
+OPENSEA_COLLECTION_URL=
 ```
-    ENV_NAME=development
 
-    DISCORD=
 
-    WEB=http://localhost:8080
-    SIM_DATE="2025-08-01 10:00:00"
-    SECONDS_BETWEEN_SIMS=60
-
-    MYSQL_TIMEOUT=30000
-    # MYSQL_HOST=mysqldb
-    MYSQL_HOST=127.0.0.1
-    MYSQL_DATABASE_NAME=ebldev
-    MYSQL_ALLOW_EMPTY_PASSWORD=true
-    # MYSQL_ROOT_PASSWORD=
-
-    # Only set ALCHEMY_API_KEY in sepolia/production; leave blank in dev.
-    ALCHEMY_API_KEY=
-
-    # If blank, engine will deploy a new Universe and print the address in logs.
-    UNIVERSE_ADDRESS=
-
-    DEFAULT_AIRDROP=true
-
-    OPENAI_API_KEY=
-    ETHERSCAN_API_KEY=
-    COINMARKETCAP_API_KEY=
-
-    # --- Web auth (Discord OAuth) ---
-    SESSION_SECRET=
-    DISCORD_OAUTH_CLIENT_ID=
-    DISCORD_OAUTH_CLIENT_SECRET=
-
-    # --- Minter ---
-    # If blank, engine generates; in :dev defaults to Hardhat test wallet.
-    MINTER_WALLET_KEY=
-
-    # --- Optional Ethereum provider config (leave blank in dev unless you need custom RPC) ---
-    PROVIDER_LINK=
-    PROVIDER_CHAIN_ID=
-    PROVIDER_CHAIN_NAME=
-    PROVIDER_CHAIN_RPC_URL=
-    PROVIDER_CHAIN_BLOCK_EXPLORER=
-
-    # --- If collection is on opensea specify the URL
-    OPENSEA_COLLECTION_URL=
-```
----
 
 ## Notes
 
 - The web server and engine are separate processes; both must be running to see live simulation output in the UI.
-- Assets (teams/diamonds) are on-chain; the simulation and state transitions run off-chain for performance.
+- Assets (teams/diamonds) can be on-chain; the simulation and state transitions run off-chain for performance.
 - Keep production secrets out of version control. Use distinct `.env.*` files per environment as shown above.
 
 ---
 
-## Quick Start: What Is EBL?
+## What Is EBL?
 
-**Ethereum Baseball League (EBL)** is a baseball team-management sim. You set lineups and strategy; the sim plays one game per team per real-world day (1PM / 4PM / 7PM ET). Seasons last 162 days with a 30-day offseason.
+**Ethereum Baseball League (EBL)** is a baseball team-management sim. You run a franchise by managing rosters, lineups, and pitching rotations with the goal of winning games and building a strong baseball business.
 
-- **Hands-Off Gameplay:** You manage the team; the sim runs games with daily box scores and play-by-play.
-- **Global Ladder:** 10 leagues, 280 total teams, promotion/relegation each season.
-- **Ownership:** Teams are ERC-721 NFTs; **🔷 Diamonds** (ERC-20) fund contracts and operations.
-- **Open Source:** MIT-licensed — you can fork and run your own universe.
-
----
-
-### How to Start
-
-1. **Get a Team:** Claim via airdrop or buy a team NFT.
-2. **Login:** Connect wallet (sign message) or link Discord.
-3. **Set Daily Stuff:** Choose lineup + rotation. The sim handles the rest.
-4. **Fund Operations:** Deposit 🔷 if needed for payroll or signings.
-
-*You don’t need to be online at game time — results post automatically after each game.*
-
-**Pro Tip:** If you log in with Discord and link your wallet once, you can make all non-transactional moves (like setting lineups) just by logging in with Discord — no wallet needed on that device. For example: use your desktop wallet for important transactions, but log into your phone with Discord for day-to-day team management.
+- **Team Management:** Set lineups and rotations, then play games on demand. Box scores and pitch-by-pitch post right after each game.
+- **Anyone Can Play:** Sign in with Discord and you are instantly given a team with generated players.
+- **Diamonds 🔷:** Earned in-game from play and performance. Withdrawal to Ethereum is optional.
+- **Open Source:** MIT licensed. Fork and run your own universe.
+- **Season Length:** Seasons last 162 days.
 
 ---
 
-### Daily Responsibilities
+## Get Started
 
-- Set lineup: batting order, fielding positions.
-- Manage rotation: rest pitchers, plan matchups.
-- Adjust for fatigue, performance, and strategy.
+1. **Login:** Sign in with Discord.
+2. **Get Your Team:** On your first login, you are given a team with generated players.
+3. **Set Lineup and Rotation:** Choose batting order, fielding positions, and plan pitcher usage.
+4. **Play Games:** Join the PvP queue or play a bot whenever you want. Pitcher stamina affects who is available.
+5. **Optional Wallet:** Link a wallet only if you want to withdraw Diamonds to Ethereum or deposit from Ethereum.
+
+*You do not need a wallet to play. Results post immediately after each game.*
+
+**Pro Tip:** Discord login works great on mobile for day-to-day management. If you link a wallet, you only need it for on-chain actions.
+
+---
+
+## Wallet Linking (Optional)
+
+1. Open your profile and choose **Link Wallet**.
+2. Sign a message to confirm the wallet address.
+3. Once linked, you can withdraw Diamonds to Ethereum or deposit Diamonds from Ethereum.
+
+*Wallet linking is optional. You can play fully with Discord only.*
+
+---
+
+## Regular Responsibilities
+
+- Set lineup: batting order and fielding positions.
+- Manage rotation: rest pitchers and plan matchups.
+- Adjust for fatigue, performance, and team strategy.
 
 **Tip:** Small, regular adjustments beat neglect. Missing starters? The sim auto-fills with minimum-salary rookies.
 
 ---
 
-### Diamonds in Brief
+## Daily and Season Diamond Rewards
 
-**🔷 Diamonds** are ERC-20. **Your team** earns them through wins, attendance, and media deals, and spends them on player salaries, free agents, waivers, and upgrades.
+Each night, a **1,000 🔷 daily reward pool** is split across all teams that played at least one completed game that day.
 
-- **Deposits:** Burn 🔷 on-chain to credit your team’s off-chain balance (~15 min).
-- **Withdrawals:** Burn off-chain balance to mint 🔷 back to your wallet (~15 min).
-- Negative team balances soft-lock roster moves until you’re positive again.
+Your share of the pool is based on a blended rating that uses both your:
 
----
+- **Season rating** (resets to 1500 each season)
+- **Long-term rating** (never resets)
 
-### Goals
+On the final day of the season, we also distribute a **20,000 🔷 season bonus pool** that is split across every team that played at least one completed game at any point during the season, using the same blended rating formula.
 
-- **Fun, strategic baseball sim:** Authentic pressure, meaningful decisions.
-- **Free to join, open to fork:** Open source; rules enforced by contracts.
-- **Focus on management:** Scouting, roster planning, player development, budget.
-- **True ownership, real consequences:** Lose the wallet, lose the team.
-- **Scarcity matters:** Limited stars and Diamonds make every choice count.
-- **Build a baseball universe:** Compete, analyze, scout, or just watch.
+> **Note:** 1,000 🔷 is the total pool for everyone that day — not a per-team payout.
 
 ---
 
-### One Last Thing
+## Diamonds in Brief
 
-EBL is a **hobby game**, not an investment. Treat spend like entertainment — you’re here to compete and have fun.
+**Diamonds 🔷** are EBL’s in-game currency. Teams earn them through play and reward pools. Your team balance lives off-chain by default.
+
+- **Withdrawals (Optional):** If you link a wallet, you can withdraw Diamonds to Ethereum. Diamonds are created on-chain at the moment you withdraw.
+- **Deposits (Optional):** If you have on-chain Diamonds, you can deposit them back to your team balance.
+- Negative team balances soft-lock roster moves until the balance is positive again.
+
+---
+
+## Player Ownership and Trading
+
+Players can be listed for sale and traded. Some trading features may use Ethereum-based assets for transfer and marketplace support. Details will expand over time as the market tools mature.
+
+---
+
+## Goals
+
+- **Fun, strategic baseball sim:** Feel like you run a real franchise with real choices.
+- **Forkable:** MIT licensed so anyone can create a custom EBL universe.
+- **Focus on management:** Scouting, roster building, player development, and payroll.
+- **Scarcity matters:** Limited stars and limited Diamonds make choices matter.
+- **Regular engagement, not grind:** 5 to 10 minutes a day is enough to stay competitive.
+- **Community growth:** Trading, rivalries, and collaboration between managers.
+- **Transparency:** Core code and reward logic are open source and documented.
+- **Expandable:** Room for staff roles, stadium upgrades, and more.
+- **Ethereum integration:** Optional withdrawals and deposits for Diamonds, with more market features over time.
+
+**EBL is a hobby game, not an investment.** Treat spending like entertainment. You are here to compete and have fun.
 
 ---
 
 ## Player Manual
 
----
-
 ### The Sim Engine
 
-One game per team per day; time slots (1PM, 4PM, 7PM ET) are assigned and locked ahead. Results (box scores, stats, pitch-by-pitch) post immediately after games. The sim uses ratings, matchups, stamina, and in-game context to resolve every pitch.
+You can play at any time by joining PvP matchmaking or playing a bot. Pitcher stamina limits how often you can run your best arms, so rotation planning and roster depth matter.
 
-You control strategy, lineups, rotations, and roster moves. The engine runs off-chain for speed; assets are on-chain for security.
-
----
-
-### Leagues & Ladder
-
-10 leagues × 28 teams. Top 3 promote; bottom 3 risk relegation. City caps limit duplicate top-tier teams from the same city. Negative revenue or balance triggers roster-lock until positive again.
-
-**Foreclosure risk:** bottom 3 in the Tenth League must confirm activity or be re-auctioned.
+Results like box scores, stats, and pitch-by-pitch post right after games. The sim uses ratings, matchups, stamina, and game context to resolve every pitch.
 
 ---
 
-### Ownership & NFTs
+### Strategy and Control
 
-Teams are ERC-721 NFTs tied to a wallet. Lose the wallet, lose the team. Use hardware wallets and secure keys. Transfers move control instantly. After a 🔷 withdrawal, team transfers are locked for ~1 hour to prevent sellers from draining Diamonds right before a sale.
-
----
-
-### How to Buy or Sell a Team
-
-Teams are ERC-721 NFTs. Buy them on secondary markets or directly from other managers.
-
-- Ownership transfers instantly once the blockchain transaction confirms.
-- **Buyer Protection:** After a 🔷 withdrawal, team transfers are locked for ~1 hour. This prevents sellers from withdrawing Diamonds right before a sale so buyers receive the advertised balance.
-- Use hardware wallets or secure key management — loss of a wallet means loss of the team.
+You control strategy, lineups, rotations, and roster moves. The engine runs off-chain for speed. Diamonds can be withdrawn to Ethereum if you choose.
 
 ---
 
-### Contracts
+### Ratings and Rewards
 
-**Rookies (Years 1–7)**
+Each team has a **season rating** and a **long-term rating**.
 
-- Years 1–3: League minimum (varies by league; adjusts if traded/promoted).
-- Years 4–7: Arbitration based on rating vs league averages.
-- Promotion doubles rookie minimum (e.g., L2 → Apex).
+- When you start playing and at the start of each season, both begin at **1500**.
+- Your **season rating resets** each season.
+- Your **long-term rating never resets**.
 
-**Veterans**
-
-- After Year 7: 30-day free-agency countdown; asking price drops daily to final arb number.
-- Contracts are fully guaranteed; all remaining owed on drop.
+Rewards use a blended rating so long-term strength still matters, but the advantage is naturally smaller at the start of each season.
 
 ---
 
-### Dropping Players & Prospects
+### Reward Pools
 
-- Drop rookie: pay remainder of this season.
-- Drop veteran: pay all remaining seasons.
-- Dropping generates a new 17–21 prospect (rookie deal) to fill the spot.
+Two reward pools exist:
 
----
-
-### Ratings, Stats & Progression
-
-Players start 40–60 overall at age 17–21. Growth is performance-based; peak near age 27 (cap 100). After that, ratings decline gradually with age. Stats update after every game and influence contracts and value.
+- **Nightly pool:** teams that played at least one completed game that day
+- **Season bonus pool:** on the final day of the season, teams that played at least once during the season
 
 ---
 
-### Free Agents & Prospects
+### Accounts and Wallets
 
-Free agents appear after rookie contracts. Salary asks drop daily during a 30-day countdown. Prospects are generated for dropped players, feeding lower leagues with talent for higher tiers to acquire.
+Your team is tied to your Discord account for day-to-day play. Linking a wallet is optional and only required for on-chain deposits and withdrawals of Diamonds.
 
 ---
 
-### Team Finances
+### Dropping Players and Prospects
 
-Balance = spendable 🔷. Revenue and expenses project daily. Profit/loss affects roster-lock status. See Reference for lease costs and revenue breakdown.
+Dropping a player creates a new 17 to 21 year old prospect on a rookie deal to fill the open roster spot.
+
+---
+
+### Ratings, Stats, and Progression
+
+Players start between **10 and 20 overall** at ages **17 to 21**. Growth is based on performance. Most players peak near age 27 with a maximum rating of 100. After that, ratings decline with age. Stats update after every game and affect value and contracts.
 
 ---
 
 ## Full Rules & Reference
 
-### Leagues & Ladder Table
-
-- Apex League
-- The Second League
-- The Third League
-- The Fourth League
-- The Fifth League
-- The Sixth League
-- The Seventh League
-- The Eighth League
-- The Ninth League
-- The Tenth League
-
----
-
-### Stadium Lease Costs
-
-| League             | Lease Cost (🔷) |
-|--------------------|-----------------|
-| Apex League        | 1,500,000 🔷    |
-| The Second League  | 750,000 🔷      |
-| The Third League   | 375,000 🔷      |
-| The Fourth League  | 187,500 🔷      |
-| The Fifth League   | 93,750 🔷       |
-| The Sixth League   | 46,875 🔷       |
-| The Seventh League | 23,438 🔷       |
-| The Eighth League  | 11,719 🔷       |
-| The Ninth League   | 5,859 🔷        |
-| The Tenth League   | 2,930 🔷        |
-
-Lease is auto-deducted each game day.
-
----
-
-### National Media Deal
-
-| League             | Revenue (🔷)   |
-|--------------------|----------------|
-| Apex League        | 24,300,000 🔷  |
-| The Second League  | 12,150,000 🔷  |
-| The Third League   | 6,075,000 🔷   |
-| The Fourth League  | 3,037,500 🔷   |
-| The Fifth League   | 1,518,750 🔷   |
-| The Sixth League   | 759,375 🔷     |
-| The Seventh League | 379,688 🔷     |
-| The Eighth League  | 189,844 🔷     |
-| The Ninth League   | 94,922 🔷      |
-| The Tenth League   | 47,461 🔷      |
-
-**Other Revenue Sources:**
-
-- **Local Media Deals** are based on your city’s population plus your long-term and short-term ratings.
-- **Season Ticket Revenue** is determined at the start of each season based on those same factors, and then guaranteed each game.
-- **Gate Revenue** is driven more by short-term ratings and game-to-game excitement.
-
----
-
 ### Diamonds (ERC-20)
 
-Deposits burn on-chain and credit your team’s off-chain balance (~15 min). Withdrawals burn off-chain and mint on-chain (~15 min). Negative balances cause roster-lock until positive again.
+Diamonds are tracked off-chain by default. When you withdraw, Diamonds are created on-chain and sent to your wallet. If a wallet is linked, on-chain Diamonds can be deposited back into your team balance. Negative balances cause a roster lock until the balance is positive again.
 
 ---
 
 ### Deposits & Withdrawals
 
-- **Deposits:** Click “Deposit” → burn 🔷 → server credits off-chain (~15 min).
-- **Withdrawals:** Burn off-chain → mint 🔷 to wallet (~15 min). Only to owner wallet.
-- After a 🔷 withdrawal, team transfers are paused for ~1 hour (buyer protection window).
+- **Deposits:** Click “Deposit” → transfer 🔷 from a linked wallet into your team balance (~15 min).
+- **Withdrawals:** transfer 🔷 from your team balance to your linked wallet (~15 min).
+- Only a linked wallet can deposit or withdraw.
 
 ---
 
-### Game Simulation: Off-Chain Logic, On-Chain Assets
+### Game Simulation: Off-Chain Logic, On-Chain Tokens
 
-Gameplay is computed off-chain for speed and cost; ownership (teams/NFTs) and Diamonds live on-chain for transparency and security.
-
----
-
-### Contracts Reference
-
-All contracts are guaranteed.  
-- **Rookies:** league min (years 1–3) then arbitration (years 4–7)  
-- **Veterans:** free agency with 30-day decreasing ask.  
-
-See Player Manual for details.
+Gameplay is computed off-chain for speed and cost control. Diamonds remain off-chain unless withdrawn to Ethereum.
 
 ---
 
 ### Authentication
 
-Wallet login: sign message, sets secure cookie. Discord login: optional; link/unlink wallets. Non-transactional actions can be done via Discord login on any device; on-chain actions still require wallet.
-
----
-
-### Universe Contract (ERC-721)
-
-280 fixed team NFTs; transfers move control; foreclosures can re-mint to new owners via minter key.
-
----
-
-### Diamond Contract (ERC-20)
-
-Used for all deposits/withdrawals; links on-chain value to off-chain play.
-
----
-
-### Forking & Decentralization
-
-Anyone with a modern computer can host a universe. Growth limits keep databases manageable. Tools will allow downloading and running a full copy of any EBL universe locally.
+Discord login is the default authentication method. Wallet linking is optional and only required for on-chain Diamond deposits and withdrawals.
 
 ---
 
 ### License & Legal
 
-MIT-licensed. No legal rights are tied to NFTs or tokens. You may manage multiple teams/wallets. Assume others may coordinate; play accordingly.
+EBL is MIT licensed. No legal rights are tied to playing the game. Diamonds function as in-game currency.
 
 ---
 
-### Foreclosure
+### Moderation and Bans
 
-Bottom 3 teams in Tenth League must confirm activity or be foreclosed. Foreclosed teams are re-auctioned to new owners.
-
----
-
-### Moderation & Bans
-
-Discord and website access are centralized. Harassment, spam, or attacks on infrastructure may result in bans or lineup-tool blocks.
+Website and Discord access are centralized. Harassment, spam, or infrastructure abuse can result in bans or lineup tool restrictions.
 
 ---
 
 ### Franchise Management (Future)
 
-- Agent roles for contract negotiations.
-- Franchise staff, scouting, and training systems.
-- Stadium upgrades, cosmetic customization, media roles.
-- Inter-league competitions and richer trading economy.
+Planned systems include agent roles for contract negotiation, staff and scouting systems, stadium upgrades, cosmetic customization, and expanded player trading tools.
 
 ---
 
-### FAQ
+## FAQ
 
-**Can the operator mint Diamonds at any time?**  
-Yes. The operator can mint Diamonds at any time.
+**What is Ethereum Baseball League and how does it work?**  
+EBL is a baseball management sim. You sign in with Discord, get a team with generated players, set lineups and rotations, and play games on demand by joining the PvP queue or playing a bot. Results post right after each game. You adjust strategy and roster between games.
 
-**Can the operator repossess teams?**  
-Yes. The foreclosure mechanism allows for teams to be repossessed in theory at any time, though it is primarily used for inactive teams in the bottom league.
+**Do I need a wallet to play?**  
+No. You can play fully with Discord only. A wallet is only needed if you want to withdraw Diamonds to Ethereum or deposit them from Ethereum.
 
-**What happens if I lose my wallet?**  
-You lose the team. Teams are ERC-721 NFTs tied to a wallet; without the keys, there is no recovery.
-
-**Can I own multiple teams?**  
-Yes. There’s no limit to the number of teams you can own or manage.
-
-**How many games are played per day?**  
-One game per team per day, scheduled in one of three time slots: 1PM, 4PM, or 7PM ET.
+**How do I get a team?**  
+When you log in with Discord for the first time, you are automatically given a team with generated players.
 
 **How long is a season?**  
-162 real-world days, followed by a 30-day offseason.
+162 days of games.
 
-**How does promotion and relegation work?**  
-Top 3 teams in each league are promoted to the next tier up; bottom 3 are relegated down (with foreclosure checks in the lowest league).
+**Do I have to be online during games?**  
+No. You can play at any time. Results post immediately after each game.
 
-**What are Diamonds used for?**  
-Your team uses Diamonds for player salaries, free agents, waivers, and upgrades.
+**How are games simulated?**  
+An off-chain engine processes every pitch using ratings, matchups, stamina, and game context. Results, stats, and standings update right after each game.
 
-**How do teams earn Diamonds?**  
-Teams earn Diamonds from wins, attendance, media deals, and other revenue sources like season tickets and gate sales.
+**How much time does it take to manage a team?**  
+About 5 to 10 minutes a day is enough for competitive play. More time helps with scouting, roster moves, and deeper strategy.
 
-**What happens if my team’s Diamond balance is negative?**  
-Roster moves are locked until the balance is brought back to zero or positive.
+**Can I own multiple teams?**  
+Yes. Each Discord account manages one team. You can also run multiple teams if you choose, especially when testing or managing teams across different strategies.
 
-**How do I deposit Diamonds?**  
-Burn Diamonds on-chain via the “Deposit” function; your off-chain team balance updates in ~15 minutes.
+**How do daily Diamond rewards work?**  
+Each night, a **1,000 🔷 daily reward pool** is split across all teams that played at least one completed game that day. Your share is based on a blended rating that uses both season rating and long-term rating. Season rating resets to 1500 each season and long-term rating never resets.
 
-**How do I withdraw Diamonds?**  
-Burn Diamonds from your off-chain balance; they are minted back on-chain to your wallet in ~15 minutes. After a withdrawal, your team transfer is locked for ~1 hour to protect buyers.
+**Is there a season-end reward?**  
+On the final day of the season, a **20,000 🔷 season bonus pool** is split across all teams that played at least one completed game during the season, using the same blended rating formula.
 
-**Do I have to be online when my games happen?**  
-No. Games are simulated automatically; you can check results after they finish.
+**Are Diamonds on Ethereum?**  
+Diamonds are created on-chain when you withdraw to Ethereum. If you never withdraw, your balance stays off-chain.
 
-**What happens if I don’t set a lineup?**  
-The sim will auto-fill with minimum-salary rookies to keep games playable.
+**What can Diamonds be spent on?**  
+Free agents, waiver claims, and other future upgrades.
 
-**How do I drop a player?**  
-Pay the remaining contract obligation (season for rookies, all years for veterans). A new 17–21-year-old prospect is generated to fill the spot.
+**How long do deposits and withdrawals take?**  
+Usually about 15 minutes.
 
-**How does free agency work?**  
-After a rookie’s 7-year contract ends, they enter a 30-day free agency where their asking price drops daily until it reaches their final arbitration value.
+**What happens when I drop a player?**  
+They are available to be signed by any other team, and a new 17 to 21 year old prospect is generated to fill the open roster spot.
 
-**What are the long-term and short-term ratings?**  
-Long-term rating reflects your franchise’s sustained performance; short-term rating reflects your recent success and is used for dynamic factors like gate revenue.
+**How do free agents work?**  
+Asking prices drop daily.
 
-**How are local media deals and season tickets calculated?**  
-Local media revenue and season ticket sales depend on your city’s population plus both long-term and short-term ratings. Season tickets are set at the start of the season and guaranteed each game.
+**Can I manage my team from my phone?**  
+Yes. Discord login works on mobile. On-chain actions still need your wallet.
 
-**How is gate revenue calculated?**  
-Gate revenue is more sensitive to your short-term rating and game-to-game excitement.
+**Is the sim run on-chain?**  
+No. The sim runs off-chain. Diamonds can be withdrawn to Ethereum if you want.
 
-**How do I link Discord to my wallet?**  
-Log in with Discord, then link your wallet in the settings. Once linked, you can make all non-transactional moves using only your Discord login.
+**Is this an investment?**  
+No. EBL is a hobby game. Spend only what you are comfortable treating as entertainment.
 
-**Can I play entirely without a wallet?**  
-No. You need a wallet for ownership and any on-chain transactions, but daily management can be done via Discord once linked.
+**Can I fork the code and run my own league?**  
+Yes. EBL is MIT licensed. You can fork it and run your own version with your own rules.
 
-**Is the sim engine on-chain?**  
-No. Game simulation happens off-chain for performance reasons; only assets like teams and Diamonds are on-chain.
-
-**Can I fork the game and run my own league?**  
-Yes. The entire EBL codebase is open source (MIT license), and the airdrop/contract systems can be reused for custom universes.
-
-**Are you affiliated with MLB Champions or other baseball NFT projects?**  
-No. We simply recognize historic communities by reading public on-chain data for distribution purposes.
-
-**Can the game change after launch?**  
-Yes. The operator can push updates, change sim logic, or modify contracts, but all source code is public so you can review or fork at any time.
+**Are there moderators?**  
+Yes. Harassment, spam, or attacks on infrastructure can result in bans or limits on lineup tools.

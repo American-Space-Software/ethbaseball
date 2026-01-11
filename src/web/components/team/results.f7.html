@@ -7,13 +7,28 @@
         <div class="card card-outline card-header-divider">
 
             <div class="card-header">
-                <input type="text" placeholder="Month" readonly="readonly" id="picker-date" />
+                ${dayjs(date).format('MMMM YYYY')} Results
             </div>
 
             <div class="card-content card-content-padding">
                 <${ResultTable} logs="${gameLogs}" />
             </div>
 
+        </div>
+
+
+        <div class="block split-row-both">
+        <div>
+            ${previousPage ? $h`
+                <a href="${universeWebService.startDateLink(`/t/results/${teamId}?date=${dayjs(date).subtract(1, 'month').startOf('month').format('YYYY-MM-DD')}`)}" class="button button-outline color-gray">Previous</a>
+            ` : $h` `}
+        </div>
+
+        <div>
+            ${nextPage ? $h`
+                <a href="${universeWebService.startDateLink(`/t/results/${teamId}?date=${dayjs(date).add(1, 'month').startOf('month').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
+            ` : $h` `}
+        </div>
         </div>
 
      
@@ -61,8 +76,9 @@
     let teamId = props.teamId
     let date = props.date
     let gameLogs = props.gameLogs
+    let previousPage = props.previousPage
+    let nextPage = props.nextPage
 
-    console.log(gameLogs)
 
     const PAGE_SIZE = 25
 
@@ -76,63 +92,63 @@
         return `${after.toFixed(0)} (${change > 0 ? "+" : ""}${(change).toFixed(0)})`
     }
 
-    const pickerChange = (picker, values, displayValues) => {
+    // const pickerChange = (picker, values, displayValues) => {
 
-        let date = dayjs(`${values[1]}-${values[0] + 1}-01`).toDate()
+    //     let date = dayjs(`${values[1]}-${values[0] + 1}-01`).toDate()
 
-        if (picker.cols?.length > 0) {
-            picker.cols[0].setValue(values[1])
-            picker.cols[1].setValue(values[0])
-        }
+    //     if (picker.cols?.length > 0) {
+    //         picker.cols[0].setValue(values[1])
+    //         picker.cols[1].setValue(values[0])
+    //     }
 
-    }
+    // }
 
-    const pickerClose = (picker, values, displayValues) => {
+    // const pickerClose = (picker, values, displayValues) => {
 
-        let date = dayjs(`${picker.getValue()[1]}-${parseInt(picker.getValue()[0]) + 1}-01`).toDate()
+    //     let date = dayjs(`${picker.getValue()[1]}-${parseInt(picker.getValue()[0]) + 1}-01`).toDate()
 
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/schedule/${teamId}?date=${dayjs(date).format('YYYY-MM-DD')}`), { reloadCurrent: true })
+    //     $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/schedule/${teamId}?date=${dayjs(date).format('YYYY-MM-DD')}`), { reloadCurrent: true })
 
-    }
+    // }
 
 
 
-    const initPicker = (theDate) => {
+    // const initPicker = (theDate) => {
 
-        // Inline date-time
-        const d = dayjs(theDate).toDate()
-        picker = $f7.picker.create({
-            inputEl: '#picker-date',
-            value: [
-                d.getMonth(),
-                d.getFullYear()
-            ],
-            formatValue: function (values, displayValues) {
-                return displayValues[0] + ' ' + values[1];
-            },
-            cols: [
-                // Months
-                {
-                    values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                    displayValues: ('January February March April May June July August September October November December').split(' '),
-                    textAlign: 'left'
-                },
-                // Years
-                {
-                    values: (function () {
-                        var arr = [];
-                        for (var i = 1950; i <= 2030; i++) { arr.push(i); }
-                        return arr;
-                    })(),
-                }
-            ],
-            on: {
-                change: pickerChange,
-                close: pickerClose
-            }
-        })
+    //     // Inline date-time
+    //     const d = dayjs(theDate).toDate()
+    //     picker = $f7.picker.create({
+    //         inputEl: '#picker-date',
+    //         value: [
+    //             d.getMonth(),
+    //             d.getFullYear()
+    //         ],
+    //         formatValue: function (values, displayValues) {
+    //             return displayValues[0] + ' ' + values[1];
+    //         },
+    //         cols: [
+    //             // Months
+    //             {
+    //                 values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    //                 displayValues: ('January February March April May June July August September October November December').split(' '),
+    //                 textAlign: 'left'
+    //             },
+    //             // Years
+    //             {
+    //                 values: (function () {
+    //                     var arr = [];
+    //                     for (var i = 1950; i <= 2030; i++) { arr.push(i); }
+    //                     return arr;
+    //                 })(),
+    //             }
+    //         ],
+    //         on: {
+    //             change: pickerChange,
+    //             close: pickerClose
+    //         }
+    //     })
 
-    }
+    // }
 
     $on('pageInit', async (e) => {
         
@@ -150,6 +166,7 @@
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: {
             tabLink: "/l/standings", breadcrumbs: [
+                { text: "Home", path: "/"},
                 {
                 text: "Standings",
                 path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}`)
@@ -173,7 +190,7 @@
         $f7.emit('team-loaded')
         $f7.emit('refresh')
 
-        initPicker(date)
+        // initPicker(date)
 
         await $update()
 

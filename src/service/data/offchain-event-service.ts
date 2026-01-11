@@ -57,7 +57,7 @@ class OffchainEventService {
 
     async createTeamMintEvent(toTeamId:string, amount:string, source:OffChainEventSource, options?:any) {
 
-        if (BigInt(amount) <= 0) throw new Error("Mint amount can not be negative.")
+        if (BigInt(amount) < 0) throw new Error("Mint amount can not be negative.")
 
         let offChainEvent:OffchainEvent = new OffchainEvent()
         offChainEvent._id = uuidv4() 

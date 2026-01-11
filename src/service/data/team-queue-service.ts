@@ -50,8 +50,23 @@ class TeamQueueService {
         return this.teamQueueRepository.put(tq, options)
     }
 
+    async dequeueTeam(team:Team, options?: any): Promise<void> {
+
+        let existing = await this.teamQueueRepository.getByTeam(team, options)
+
+        if (existing) {
+            await this.teamQueueRepository.delete(existing, options)
+        }
+
+    }
+
+
     async isTeamQueued(team:Team, options?: any): Promise<boolean> {
         return this.teamQueueRepository.isTeamQueued(team, options)
+    }
+
+    async count(options?: any): Promise<number> {
+        return this.teamQueueRepository.count(options)
     }
 
 

@@ -19,6 +19,139 @@
         </div>
 
 
+        <div class="block-title block-title-medium">Current Season, Queue, and Deadlines</div>
+        <div class="block block-strong block-outline">
+          <p>
+            Seasons run on a real-world calendar. Each day has a queue window for that day’s games. You can play on your schedule,
+            but your games are still tied to the season timeline.
+          </p>
+
+          <ul>
+            <li>
+              <strong>Current Season card:</strong> Shows the season date range, <strong>Day X of Y</strong>, your <strong>games played</strong>,
+              and your <strong>queue date</strong>.
+            </li>
+            <li>
+              <strong>Queue deadline:</strong> Once “Today’s queue is closed,” you can no longer join for today. You can still queue for tomorrow.
+            </li>
+            <li>
+              <strong>Behind / Up to date / Ahead:</strong> Your status compares your games played to the season day. If you’re behind, you’ll need to catch up with makeup games.
+            </li>
+          </ul>
+
+          <p>
+            <strong>Makeup games:</strong> If you missed prior days, joining the next available queue can also schedule makeup games to help you catch up.
+            Makeup games are played in addition to your game for the queued date.
+          </p>
+        </div>
+
+
+        <div class="block-title block-title-medium">Daily and Season Diamond Rewards</div>
+        <div class="block block-strong block-outline">
+          <p>
+            Each night, we distribute a <strong>1,000 🔷 daily reward pool</strong> that is <strong>split across all teams</strong> that played <strong>at least one completed game</strong> that day (including makeup games).
+          </p>
+
+          <ul>
+            <li>
+              <strong>Eligibility:</strong> You must play at least one completed game that day to earn a share.
+            </li>
+            <li>
+              <strong>How shares are calculated:</strong> Your share is based on a blended rating that uses both your <strong>season rating</strong> and <strong>long-term rating</strong>.
+              <ul>
+                <li><strong>Season rating</strong> resets to <strong>1500</strong> each season.</li>
+                <li><strong>Long-term rating</strong> never resets.</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Season bonus:</strong> On the <strong>final day of the season</strong>, we also distribute a <strong>20,000 🔷 season bonus pool</strong> split across every team that played at least one completed game at any point during the season, using the same blended rating formula.
+            </li>
+          </ul>
+
+          <p><em>Note: 1,000 🔷 is the total pool for everyone that day — not a per-team payout.</em></p>
+        </div>
+
+        <div class="block-title block-title-medium">Tokenomics (Diamonds 🔷)</div>
+        <div class="block block-strong block-outline">
+          <p>
+            <strong>Diamonds 🔷</strong> are EBL’s in-game currency. This section describes how Diamonds are created, distributed, and tracked in practice.
+          </p>
+
+          <h4>Supply at Launch</h4>
+          <ul>
+            <li><strong>Starting supply:</strong> 0 🔷 at the start of Season 1.</li>
+            <li>Diamonds are introduced over time through game reward pools.</li>
+          </ul>
+
+          <h4>Season Emissions</h4>
+          <ul>
+            <li><strong>Daily reward pool:</strong> 1,000 🔷 per day, split across all teams that played at least one completed game that day.</li>
+            <li><strong>Season bonus pool:</strong> 20,000 🔷 on the final day of the season, split across teams that played at least one completed game at any point during the season.</li>
+            <li><strong>Season length:</strong> 162 days.</li>
+          </ul>
+
+          <h4>Totals (Per Season)</h4>
+          <ul>
+            <li>Daily pools: 1,000 🔷 × 162 days = <strong>162,000 🔷</strong></li>
+            <li>Season bonus pool: <strong>20,000 🔷</strong></li>
+            <li><strong>Total Diamonds allocated per season:</strong> <strong>182,000 🔷</strong></li>
+            <li><strong>Average over the season timeline:</strong> approximately <strong>1,123 🔷 per day</strong> (most days distribute 1,000 🔷; the final day includes the separate season bonus pool).</li>
+          </ul>
+
+          <h4>Where Diamonds Exist</h4>
+          <ul>
+            <li><strong>Off-chain by default:</strong> Team balances are tracked by the game.</li>
+            <li><strong>On-chain only when withdrawn (optional):</strong> Diamonds are created on-chain at the moment a team withdraws.</li>
+            <li><strong>Deposits (optional):</strong> On-chain Diamonds can be deposited back into a team’s off-chain balance.</li>
+          </ul>
+
+          <h4>Trust and Control Model</h4>
+          <ul>
+            <li><strong>On-chain supply is incomplete by design:</strong> Because Diamonds only exist on-chain when withdrawn, the on-chain total supply does not reflect total Diamonds earned or spent in the game.</li>
+            <li><strong>Administrative control:</strong> Game administrators can modify reward pools and can technically mint or credit Diamonds as part of operating the game (for example: fixes, migrations, promotions, testing, or balance changes).</li>
+            <li><strong>Security considerations:</strong> Like any software system, bugs or compromised keys could allow unintended Diamond creation.</li>
+            <li><strong>Forked universes:</strong> Anyone can fork EBL and run their own universe with their own Diamonds, rules, and trust assumptions.</li>
+          </ul>
+
+          <p>
+            In short, Diamonds are a video game currency governed by game rules and operators. The Ethereum component enables optional transfers, but the system as a whole is not designed to be trustless in isolation.
+          </p>
+        </div>
+
+        <div class="block-title block-title-medium">Audience Participation Rewards (Planned)</div>
+        <div class="block block-strong block-outline">
+          
+          <p>
+            In addition to team-based rewards, EBL plans to introduce <strong>audience participation rewards</strong> tied to live broadcast games.
+          </p>
+
+          <p>
+            On selected days, a featured game between two top teams will be played during the evening and broadcast live (for example on Twitch or YouTube). During the broadcast, a short-lived code will be shown on screen.
+          </p>
+
+          <ul>
+            <li>Anyone watching the broadcast can enter the code.</li>
+            <li>All valid entries share a dedicated reward pool for that broadcast.</li>
+            <li>The reward is distributed among participants.</li>
+          </ul>
+
+          <p>
+            From a tokenomics perspective, this reward pool is intended to function like an extension of the daily reward system rather than a separate mechanic.
+          </p>
+
+          <ul>
+            <li><strong>Planned size:</strong> approximately <strong>200 🔷 per day</strong> when active.</li>
+            <li><strong>Distribution:</strong> split across viewers who successfully enter the broadcast code.</li>
+            <li><strong>Purpose:</strong> encourage live viewing, shared moments, and spectator participation.</li>
+          </ul>
+
+          <p>
+            Like all other reward pools, audience participation rewards are subject to change, may be paused or adjusted, and are governed by game rules and operators.
+          </p>
+        </div>
+
+
+
         <div class="block-title block-title-medium">Get Started</div>
         <div class="block block-strong block-outline">
           <ol>
@@ -33,17 +166,6 @@
         </div>
 
 
-        <div class="block-title block-title-medium">Wallet Linking (Optional)</div>
-        <div class="block block-strong block-outline">
-          <ol>
-            <li>Open your profile and choose <strong>Link Wallet</strong>.</li>
-            <li>Sign a message to confirm the wallet address.</li>
-            <li>Once linked, you can withdraw Diamonds to Ethereum or deposit Diamonds from Ethereum.</li>
-          </ol>
-          <p><em>Wallet linking is optional. You can play fully with Discord only.</em></p>
-        </div>
-
-
         <div class="block-title block-title-medium">Regular Responsibilities</div>
         <div class="block block-strong block-outline">
           <ul>
@@ -55,24 +177,22 @@
             with minimum salary rookies.</p>
         </div>
 
-        <div class="block-title block-title-medium">Daily and Season Diamond Rewards</div>
-        <div class="block block-strong block-outline">
-          <p>Each night, we distribute a <strong>1,000 🔷 daily reward pool</strong> that is <strong>split across all teams</strong> that played <strong>at least one completed game</strong> that day. Your share of the pool is based on a blended rating that uses both your <strong>season rating</strong> and <strong>long-term rating</strong>. The season rating resets to <strong>1500</strong> each season, while the long-term rating never resets, so long-term strength still matters but the advantage is naturally smaller at the start of each season. On the <strong>final day of the season</strong>, we also distribute a <strong>20,000 🔷 season bonus pool</strong> that is <strong>split across every team</strong> that played at least one completed game at any point during the season, using the same blended rating formula.</p>
-          <p><em>Note: 1,000 🔷 is the total pool for everyone that day — not a per-team payout.</em></p>
-        </div>
-
-        <div class="block-title block-title-medium">Diamonds in Brief</div>
-        <div class="block block-strong block-outline">
-          <p><strong>Diamonds 🔷</strong> are EBL's in game currency. Teams earn them through play and reward pools. Your team balance lives off-chain by default.</p>
-          <p><strong>Withdrawals (Optional):</strong> If you link a wallet, you can withdraw Diamonds to Ethereum. Diamonds are created on-chain at the moment you withdraw.</p>
-          <p><strong>Deposits (Optional):</strong> If you have on-chain Diamonds, you can deposit them back to your team balance.</p>
-          <p>Negative team balances soft lock roster moves until the balance is positive again.</p>
-        </div>
 
         <div class="block-title block-title-medium">Player Ownership and Trading</div>
         <div class="block block-strong block-outline">
           <p>Players can be listed for sale and traded. Some trading features may use Ethereum-based assets for transfer and marketplace support. Details will expand over time as the market tools mature.</p>
         </div>
+
+        <div class="block-title block-title-medium">Wallet Linking (Optional)</div>
+        <div class="block block-strong block-outline">
+          <ol>
+            <li>Open your profile and choose <strong>Link Wallet</strong>.</li>
+            <li>Sign a message to confirm the wallet address.</li>
+            <li>Once linked, you can withdraw Diamonds to Ethereum or deposit Diamonds from Ethereum.</li>
+          </ol>
+          <p><em>Wallet linking is optional. You can play fully with Discord only.</em></p>
+        </div>
+
 
         <div class="block-title block-title-medium">Goals</div>
         <div class="block block-strong block-outline">
@@ -95,10 +215,6 @@
         </div>
 
 
-
-
-
-
         <div class="list list-dividers-ios list-strong-ios accordion-list ">
           <ul>
 
@@ -113,11 +229,6 @@
                 <div class="block block-strong block-outline">
                   <strong>What is Ethereum Baseball League and how does it work?</strong><br />
                   EBL is a baseball management sim. You sign in with Discord, get a team with generated players, set lineups and rotations, and play games on demand by joining the PvP queue or playing a bot. Results post right after each game. You adjust strategy and roster between games.
-                </div>
-
-                <div class="block block-strong block-outline">
-                  <strong>Do I need a wallet to play?</strong><br />
-                  No. You can play fully with Discord only. A wallet is only needed if you want to withdraw Diamonds to Ethereum or deposit them from Ethereum.
                 </div>
 
                 <div class="block block-strong block-outline">
@@ -150,14 +261,38 @@
                   Yes. Each Discord account manages one team. You can also run multiple teams if you choose, especially when testing or managing teams across different strategies.
                 </div>
 
+
+                <div class="block block-strong block-outline">
+                  <strong>How does the season schedule work?</strong><br />
+                  Each season runs on a real-world date range. Each day has a queue window for that day’s games. Your home page shows the
+                  current season day, how many games you’ve played, and the next date you can queue for.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>What does “Today’s queue is closed” mean?</strong><br />
+                  It means the queue deadline for today has passed. You can still join the queue for tomorrow.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>What are makeup games?</strong><br />
+                  If you fall behind the season day, joining the next available queue can also schedule makeup games so you can catch up.
+                  Makeup games are played in addition to your game for the queued date.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>What does Behind / Up to date / Ahead mean?</strong><br />
+                  It compares your games played to the season timeline. Behind means you owe games (makeups help). Up to date means you’re even.
+                </div>
+
+
                 <div class="block block-strong block-outline">
                   <strong>How do daily Diamond rewards work?</strong><br />
-                  Each night, a <strong>1,000 🔷 daily reward pool</strong> is <strong>split across all teams</strong> that played at least one completed game that day. Your share is based on a blended rating that uses both season rating and long-term rating. Season rating resets to 1500 each season and long-term rating never resets.
+                  Each night, a <strong>1,000 🔷 daily reward pool</strong> is split across all teams that played at least one completed game that day (including makeup games).
                 </div>
 
                 <div class="block block-strong block-outline">
                   <strong>Is there a season-end reward?</strong><br />
-                  On the final day of the season, a <strong>20,000 🔷 season bonus pool</strong> is <strong>split across all teams</strong> that played at least one completed game during the season, using the same blended rating formula.
+                  On the final day of the season, a <strong>20,000 🔷 season bonus pool</strong> is split across all teams that played at least one completed game during the season, using the same blended rating formula.
                 </div>
 
                 <div class="block block-strong block-outline">
@@ -210,6 +345,11 @@
                   Yes. Harassment, spam, or attacks on infrastructure can result in bans or limits on lineup tools.
                 </div>
 
+                <div class="block block-strong block-outline">
+                  <strong>Do I need a wallet to play?</strong><br />
+                  No. You can play fully with Discord only. A wallet is only needed if you want to withdraw Diamonds to Ethereum or deposit them from Ethereum.
+                </div>
+
               </div>
 
             </li>
@@ -225,6 +365,30 @@
                 <div class="block block-strong block-outline">
                   <strong>The Sim Engine</strong><br />
                   You can play at any time by joining PvP matchmaking or playing a bot. Pitcher stamina limits how often you can run your best arms, so rotation planning and roster depth matter. Results like box scores, stats, and pitch by pitch post right after games. The sim uses ratings, matchups, stamina, and game context to resolve every pitch.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>The Season Timeline</strong><br />
+                  Seasons run on a real-world date range. Each day has a queue window for that day’s games. Your home page shows the current
+                  season day, the season date range, and how many games you’ve played so far.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>Queue Deadlines</strong><br />
+                  Each day’s queue closes after a cutoff. If you see “Today’s queue is closed,” you can no longer join for today, but you can
+                  join for tomorrow.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>Makeup Games</strong><br />
+                  If you fall behind the season day, joining the next available queue can also schedule makeup games to help you catch up.
+                  Makeup games are played in addition to your game for the queued date.
+                </div>
+
+                <div class="block block-strong block-outline">
+                  <strong>Status: Behind / Up to Date / Ahead</strong><br />
+                  Your status compares your games played to the season timeline. Behind means you owe games, up to date means you’re even,
+                  and ahead means you’re too far ahead and may be blocked from queuing until the season catches up.
                 </div>
 
                 <div class="block block-strong block-outline">

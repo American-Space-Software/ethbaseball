@@ -8,8 +8,8 @@
 
                 <div class="block">
                     <p class="segmented">
-                        <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link" >On-chain</a>
-                        <a href="${universeWebService.fullLink(`/activity/off`)}" class="button button-outline tab-link tab-link-active">Off-chain</a>
+                        <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active">Rewards & Player Moves</a>
+                        <a href="${universeWebService.fullLink(`/activity/on`)}" class="button button-outline tab-link" >On-chain</a>
                     </p>
                 </div>
 
@@ -148,8 +148,8 @@
 
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {
-                    tabLink: "/activity/off",
-                    breadcrumbs: [{ text: "Home", path: "/" }, { text: "Activity (Off-chain)" }],
+                    tabLink: "/activity",
+                    breadcrumbs: [{ text: "Home", path: "/" }, { text: "Rewards & Player Moves" }],
                 }
             }))
 

@@ -21,30 +21,41 @@
 
             ${teamComponentService.team ? $h`
 
-                <div class="block block-outline block-strong">
-                    <div class="team-info">
+                <div class="list media-list list-outline-ios list-strong">
+                    <ul>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-media">
+                                    <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" width="100" height="100" class="profilePic" />
+                                </div>
 
-                        <div class="left">
-                            <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" class="profilePic" height="100" width="100" />
-                        </div>
+                                <div class="item-inner">
 
-                        <div class="right">
+                                    <div class="item-title-row">
+                                        <div class="item-title">${teamWebService.getTeamName(teamComponentService.team)}</div>
+                                        <div class="item-after">⭐ ${ teamComponentService.team.longTermRating.rating.toFixed(0) }</div>
+                                    </div>
 
-                            <span class="name">${teamWebService.getTeamName(teamComponentService.team)}</span> 
+                                    <div class="item-subtitle">
+                                        ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)}
+                                    </div>
 
-                            <div class="team-record">
-                                ${teamComponentService.team.owner?.discordId ? $h`
-                                    <span class="label">Discord:</span> <a class="external link" href="https://discord.com/users/${teamComponentService.team.owner?.discordId}">${teamComponentService.team.owner?.discordUsername}</a><br /><br />
-                                ` : $h` `}
-                                <span class="label">Rating: </span> ${ teamComponentService.team.longTermRating.rating.toFixed(0) } <br />
-                                <span class="label">Record: </span> ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} <br />
-                                <span class="label">Cash: </span> ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}<br /><br />
+                                    <div class="item-text">
+                                        Cash: ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}
+                                    </div>
+                                    
+                                </div>
                             </div>
-
-                        </div>
-
-                    </div>
+                        </li>
+                    </ul>
                 </div>
+
+
+
+
+
+
+
 
                 <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
                     <ul>
@@ -58,10 +69,35 @@
                     </ul>
                 </div>
 
+                ${teamComponentService.isTeamOwner() && teamComponentService.team.isQueued ? $h`
+                    <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                        <ul>
+                            <li>
+                                <a class="item-link item-content">
+                                    <div class="item-media">🏟️</div>
+
+                                    <div class="item-inner">
+                                        <div class="item-title-row">
+                                        <div class="item-title">
+                                            Your team is queued.
+                                        </div>
+                                        </div>
+
+                                        <div class="item-text">
+                                        Rosters are locked while in the queue.
+                                        </div>
+
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                ` : $h` `}
+
 
                 <div class="block-title block-title-medium">Lineup</div>
 
-                <div class="block block-outline block-strong ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
+                <div class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
                         ${teamComponentService.selected == "stats" ? $h`
                         <hitter-stats hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
                             filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}"
@@ -98,7 +134,7 @@
                     Pitching Rotation 
                 </div>
 
-                <div class="block block-outline block-strong ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
+                <div class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}" >
 
                         ${teamComponentService.selected == "stats" ? $h`
                         <pitcher-stats pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
@@ -418,9 +454,6 @@
         displayPitchers.push(...teamComponentService.getDisplayPitchers())
 
     }
-
-
-
 
     const isSigned = (mp) => {
       return (mp?.r && mp.s && mp.v)
@@ -837,7 +870,8 @@
 
         return () => {
 
-            if (teamComponentService.isTeamOwner()) {
+
+            if (teamComponentService.isTeamOwner() && !teamComponentService.team.isQueued ) {
 
                 switch (type) {
                     case "hitters":
@@ -947,8 +981,6 @@
         element.addClass("button-fill")
     }
 
-
-
     const load = async () => {
 
       $f7.preloader.show()
@@ -958,8 +990,6 @@
       $f7.preloader.hide()
 
     }
-
-
 
     const checkForMintPassProcessing = async () => {
 
@@ -976,17 +1006,15 @@
     $on('pageInit', async (e) => {
     })
 
-
     $on('pageReinit', async () => {
     })
 
-
     $on('pageBeforeIn', async () => {
-
 
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: {
             tabLink: "/l/standings", breadcrumbs: [
+                { text: "Home", path: "/"},
                 {
                 text: "Standings",
                 path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team?.leagueRank}/1`)
@@ -1001,7 +1029,6 @@
             `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
             `${teamComponentService.team.city?.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
         ) 
-
 
 
         $f7.emit('team-loaded')
