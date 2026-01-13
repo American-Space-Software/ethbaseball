@@ -21,6 +21,10 @@ class PlayerWebService {
         let result = await fetch(`/api/player/drop/${player._id}`, {
             method: 'POST'
         })
+        
+        if (result.status != 200) {
+            throw new Error(await result.text())
+        }
 
         return result
 

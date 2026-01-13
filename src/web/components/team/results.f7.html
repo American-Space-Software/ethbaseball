@@ -4,34 +4,47 @@
 
     <div class="page-content">
 
-        <div class="card card-outline card-header-divider">
+        <div class="fixed-width-content center">
 
-            <div class="card-header">
-                ${dayjs(date).format('MMMM YYYY')} Results
+            <div class="card card-outline card-header-divider">
+
+                <div class="card-header">
+                    ${dayjs(date).format('MMMM YYYY')} Results
+                </div>
+
+                <div class="card-content">
+
+                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
+        
+                        ${gameLogs?.map( game => $h`
+                            <${Result} game=${game} />                        
+                        `)}
+        
+                    </ul>
+        
+                </div>
+
+                </div>
+
             </div>
 
-            <div class="card-content card-content-padding">
-                <${ResultTable} logs="${gameLogs}" />
+            <div class="block split-row-both">
+                <div>
+                    ${previousPage ? $h`
+                        <a href="${universeWebService.startDateLink(`/t/results/${teamId}?date=${dayjs(date).subtract(1, 'month').startOf('month').format('YYYY-MM-DD')}`)}" class="button button-outline color-gray">Previous</a>
+                    ` : $h` `}
+                </div>
+
+                <div>
+                    ${nextPage ? $h`
+                        <a href="${universeWebService.startDateLink(`/t/results/${teamId}?date=${dayjs(date).add(1, 'month').startOf('month').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
+                    ` : $h` `}
+                </div>
             </div>
 
         </div>
 
-
-        <div class="block split-row-both">
-        <div>
-            ${previousPage ? $h`
-                <a href="${universeWebService.startDateLink(`/t/results/${teamId}?date=${dayjs(date).subtract(1, 'month').startOf('month').format('YYYY-MM-DD')}`)}" class="button button-outline color-gray">Previous</a>
-            ` : $h` `}
-        </div>
-
-        <div>
-            ${nextPage ? $h`
-                <a href="${universeWebService.startDateLink(`/t/results/${teamId}?date=${dayjs(date).add(1, 'month').startOf('month').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
-            ` : $h` `}
-        </div>
-        </div>
-
-     
     </div>
 
   </div>
@@ -47,7 +60,8 @@
 
 
   import Navbar from "../common/navbar.f7.html"
-  import ResultTable from "./result-table.f7.html"
+  import Result from "../home/result.f7.html"
+
 
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"
@@ -169,7 +183,7 @@
                 { text: "Home", path: "/"},
                 {
                 text: "Standings",
-                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}`)
+                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}/1`)
                 }, 
                 { 
                     text: teamWebService.getTeamName(teamComponentService.team), 

@@ -987,7 +987,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/player/:playerId/:startDate', cacheService.cacheResponse({ tag: PLAYERS }), async function (req, res) {
+  app.get('/api/player/:playerId/:startDate', async function (req, res) {
 
     try {
 
@@ -1095,6 +1095,13 @@ let startWebServer = async () => {
         return res.send("Not authorized.")
       }
 
+      //Must not be queued.
+      let isQueued = await teamQueueService.isTeamQueued(team)
+      if (isQueued) {
+        throw new Error("Team is queued for a game. Cannot drop player.")
+      }
+
+
       await refreshUniverse()
 
       await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
@@ -1106,6 +1113,7 @@ let startWebServer = async () => {
       res.send("success")
 
     } catch (ex) {
+      console.log(ex)
       res.status(500)
       res.send(ex.message);
     }
@@ -1198,7 +1206,7 @@ let startWebServer = async () => {
 
       let season:Season = await seasonService.getMostRecent()
 
-      let events = await offchainEventService.list(ContractType.DIAMONDS, options)
+      let events = await offchainEventService.listAll(options)
 
       return res.json(await offchainEventService.getOffChainEventViewModels(events, season))
 
@@ -1237,7 +1245,7 @@ let startWebServer = async () => {
       let teamId = req.params.teamId
 
       let season:Season = await seasonService.getMostRecent()
-      let events = await offchainEventService.getByTeamId(ContractType.DIAMONDS, teamId, options)
+      let events = await offchainEventService.getByTeamId(teamId, options)
 
       return res.json(await offchainEventService.getOffChainEventViewModels(events, season))
 
@@ -1324,7 +1332,6 @@ let startWebServer = async () => {
 
   })
 
-
   app.get('/api/team/games/:teamId/:start', async function (req, res) {
 
     try {
@@ -1344,7 +1351,6 @@ let startWebServer = async () => {
     }
 
   })
-
 
   app.get('/api/team/lineup/:teamId', async function (req, res) {
 
@@ -1379,7 +1385,7 @@ let startWebServer = async () => {
       let teamBundle = await getTeamBundle(team)
 
       
-      teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher, universe.currentDate)
+      teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher)
 
       const lineup = teamBundle.tls.lineups[0].order
         .map(p => {
@@ -1423,8 +1429,6 @@ let startWebServer = async () => {
     }
 
   })
-
-  
 
   app.post('/api/team/roster/:teamId', async function (req, res) {
 
@@ -1529,7 +1533,6 @@ let startWebServer = async () => {
     }
 
   })
-
 
   app.get('/api/team/team-mint-pass/:teamId', async function (req, res) {
 
@@ -1647,6 +1650,7 @@ let startWebServer = async () => {
 
       let allLeagues: League[] = await leagueService.listByRankAsc()
       let league:League = allLeagues.find( l => l.rank == parseIntWithException(req.params.rank))
+
       let date = dayjs(req.params.date).toDate()
 
       let vm = await gameService.getGames(date, league)
@@ -1702,14 +1706,19 @@ let startWebServer = async () => {
         let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
         let league:League = await leagueService.get(tls.leagueId)
 
+        let plss: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeamSeason(team, season)
+        let startingPitcher:RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
+
+        teamService.validateLineup(team, tls.lineups[0], plss.map( pls => pls.get({ plain: true})), startingPitcher)
+
 
         await teamQueueService.queueTeam(team, league)
 
         return res.send("success")
 
     } catch (ex:any) {      
-      console.log(ex)
-      res.sendStatus(500)
+      res.status(500)
+      return res.send(ex.message)
     }
 
   })
@@ -1753,7 +1762,6 @@ let startWebServer = async () => {
     }
 
   })
-
 
   app.get('/api/cities', cacheService.cacheResponse(), async function(req, res) {
     return res.json(await cityService.list(1000, 0))

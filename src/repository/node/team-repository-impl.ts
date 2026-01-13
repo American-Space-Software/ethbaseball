@@ -242,52 +242,6 @@ class TeamRepositoryNodeImpl implements TeamRepository {
 
     }
 
-    // async ghost(options?:any): Promise<Team> {
-
-    //     let query = {
-    //         where: {
-    //             isGhost: true
-    //         }
-    //     }
-
-    //     return Team.findOne(Object.assign(query, options))
-
-    // }
-
-    async getEligibleTeams(options?:any): Promise<Team[]> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: true,
-            model:Team
-        }
-
-        const [queryResults, metadata] = await s.query(`
-            select 
-            t._id, 
-            t.seasonRating, 
-            JSON_EXTRACT(t.seasonRating, '$.seasonRating') AS sortRating 
-            from team t
-            where t.isGhost = 0 AND t.hasValidLineup = 1 AND t._id NOT IN (
-                select 
-                    JSON_UNQUOTE(JSON_EXTRACT(g.away, '$._id')) id
-                FROM game g
-                WHERE g.isComplete = 0
-                Union
-                select 
-                    JSON_UNQUOTE(JSON_EXTRACT(g.home, '$._id')) id
-                FROM game g
-                WHERE g.isComplete = 0
-            )
-            ORDER BY sortRating DESC
-        `, Object.assign(queryOptions, options))
-
-        return queryResults
-
-    }
 
     async getRatings(options?:any)  {
 

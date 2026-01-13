@@ -22,12 +22,13 @@ import { PlayerLeagueSeason } from "../../dto/player-league-season.js";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
-import { GameService } from "./game-service.js";
+import { GameService, GameSummaryViewModel } from "./game-service.js";
 import { User } from "../../dto/user.js";
 import { v4 as uuidv4 } from 'uuid';
 import { ImageService } from "./image-service.js";
 import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
+import { StatService } from "../stat-service.js";
 
 
 const MAX_ROSTER_SIZE = 13
@@ -55,7 +56,8 @@ n
         private diamondMintPassService:DiamondMintPassService,
         private gameService:GameService,
         private imageService:ImageService,
-        private teamQueueService:TeamQueueService
+        private teamQueueService:TeamQueueService,
+        private statService:StatService
     ) { }
 
 
@@ -278,17 +280,17 @@ n
 
     }
 
-    async getTeamGameLogViewModels(team: Team, start: Date, end: Date, options?: any): Promise<TeamGame[]> {
+    async getTeamGameLogViewModels(team: Team, start: Date, end: Date, options?: any): Promise<GameSummaryViewModel[]> {
 
         let gameIds = await this.gameRepository.getIdsByTeamAndPeriod(team, start, end, options)
 
         if (gameIds.length == 0) return []
 
-        return this.getTeamGameViewModelsById(team, gameIds, options)
+        return this.getTeamGameViewModelsById(gameIds, options)
 
     }
 
-    private async getTeamGameViewModelsById(team, gameIds, options?: any) {
+    private async getTeamGameViewModelsById(gameIds, options?: any) {
 
         let games: Game[] = await this.gameRepository.getByIds(gameIds, options)
 
@@ -297,7 +299,7 @@ n
             return gameIds.indexOf(a._id) - gameIds.indexOf(b._id)
         })
 
-        return games.map(g => { return this.createTeamGameViewModel(team, g) })
+        return games.map(g => { return this.gameService.getGameSummaryViewModel(g) })
     }
 
     createTeamGameViewModel(team: Team, g: Game) {
@@ -546,7 +548,7 @@ n
 
             let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
 
-            this.validateLineup(team, lineup, plss, startingPitcher, gameDate)
+            this.validateLineup(team, lineup, plss, startingPitcher)
 
             if (lineup.valid == true) {
                 tls.hasValidLineup = true
@@ -573,16 +575,19 @@ n
     }
 
 
-    validateLineup(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[], startingPitcher: RotationPitcher, gameDate: Date) {
+    validateLineup(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[], startingPitcher: RotationPitcher) {
 
         lineup.valid = false
 
         //Make sure there are 9 spots in the order and 5 spots in the rotation
-        if (lineup.order.length != 9) {
+        //We should have 8 actual players with ids and an empty pitcher spot in the order.
+        let orderIds = lineup.order.filter(p => p._id != undefined).map(p => p._id)
+        if (orderIds?.length != 8) {
             throw new Error("Lineup must have 9 players.")
         }
 
-        if (lineup.rotation.length != 5) {
+        let rotationIds = lineup.rotation.filter(p => p._id != undefined).map(p => p._id)
+        if (rotationIds?.length != 5) {
             throw new Error("Rotation must have 5 players.")
         }
 
@@ -623,7 +628,7 @@ n
         }
 
         if (!startingPitcher) {
-            throw new Error(`No valid starting pitcher for ${dayjs(gameDate).format('YYYY-MM-DD')}`)
+            throw new Error(`No valid starting pitcher`)
         }
 
         //Lineup must have 8 hitters, one empty pitcher spot, and 5 pitchers in the rotation to be valid.
@@ -642,11 +647,14 @@ n
         lineup.valid = false
 
         //Make sure there are 9 spots in the order and 5 spots in the rotation
-        if (lineup.order.length != 9) {
+        //We should have 8 actual players with ids and an empty pitcher spot in the order.
+        let orderIds = lineup.order.filter(p => p._id != undefined).map(p => p._id)
+        if (orderIds?.length != 8) {
             throw new Error("Lineup must have 9 players.")
         }
 
-        if (lineup.rotation.length != 5) {
+        let rotationIds = lineup.rotation.filter(p => p._id != undefined).map(p => p._id)
+        if (rotationIds?.length != 5) {
             throw new Error("Rotation must have 5 players.")
         }
 
@@ -699,11 +707,6 @@ n
             lineup.valid = true
         }
 
-    }
-
-
-    async getEligibleTeams(options?: any): Promise<Team[]> {
-        return this.teamRepository.getEligibleTeams(options)
     }
 
     getStartingPitcherFromPLS( rotation: RotationPitcher[], plss: PlayerLeagueSeason[] ): RotationPitcher {
@@ -971,7 +974,7 @@ n
 
 
         let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
-        this.validateLineup(team, tls.lineups[0], plss, startingPitcher, date)
+        this.validateLineup(team, tls.lineups[0], plss, startingPitcher)
 
         if (originalLineup != tls.lineups[0]) {
             tls.changed("lineups", true)
@@ -1024,21 +1027,17 @@ n
             //Update team. Remove from lineup and rotation.
             let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
 
-
-            let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+            // let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
 
             this.lineupService.lineupRemove(tls.lineups[0], player._id)
             this.lineupService.rotationRemove(tls.lineups[0], player._id)
 
             tls.changed("lineups", true)
 
-
-
             //End current PLS
             pls.endDate = date
 
             await this.playerLeagueSeasonService.put(pls, options)
-
 
             //Create new PLS
             let nextPLS = new PlayerLeagueSeason()
@@ -1049,6 +1048,8 @@ n
             nextPLS.overallRating = pls.overallRating
             nextPLS.hittingRatings = pls.hittingRatings
             nextPLS.pitchRatings = pls.pitchRatings
+            nextPLS.overallRating = pls.overallRating
+            nextPLS.displayRating = pls.displayRating
             nextPLS.startDate = date
             nextPLS.endDate = season.endDate
             nextPLS.age = player.age

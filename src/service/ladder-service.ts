@@ -274,8 +274,7 @@ class LadderService {
                     bundle.team,
                     bundle.tls.lineups[0],
                     bundle.plssPlain,
-                    bundle.startingPitcher,
-                    currentDate
+                    bundle.startingPitcher
                 )
                 return true
             } catch {
@@ -389,61 +388,29 @@ class LadderService {
     private async finishDay(universe:Universe, leagues:League[], season:Season, options?:any) {
 
         //Tasks to finish day.
-        let teamIds:string[] = await this.teamService.getTeamIdsByGameDate(universe.currentDate, options)
-        let playerIds:string[] = await this.playerService.getPlayerIdsByGameDate(universe.currentDate, options)
+        let gameIds:string[] = await this.gameService.getIdsByDate(universe.currentDate, options)
+        let games:Game[] = await this.gameService.getByIds(gameIds, options)
 
-        if (playerIds?.length > 0) {
+        if (games?.length > 0) {
 
-            //Update player ratings.
-            let players:Player[] = await this.playerService.getByIds(playerIds, options)
-            let plss = await this.playerLeagueSeasonService.getByPlayersSeason(players, season, options)
-
-            for (let player of players) {
-
-                let pls = plss.find( p => p.playerId == player._id)
-
-                //Update overall rating
-                //Get player's full results for the day. If WPA is positive they go up. Otherwise, down. Recalculate ratings after.
-                if (player.primaryPosition == Position.PITCHER) {
-                    let gprSums = await this.gamePitchResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
-                    player.overallRating = this.playerService.updateOverallRating(player.overallRating, gprSums.wpa > 0, player.age, true)
-                } else {
-
-                    let ghrSums = await this.gameHitResultRepository.getSumsByPlayerAndDate(player, universe.currentDate, options)
-                    player.overallRating = this.playerService.updateOverallRating(player.overallRating, ghrSums.wpa > 0, player.age, false)
-                }
-
-                await this.playerService.updateHittingPitchingRatings(player)
-
-                player.changed("overallRating", true)
-                player.changed("displayRating", true)
-                player.changed("hittingRatings", true)
-                player.changed("pitchRatings", true)
-
-                pls.overallRating = player.overallRating
-                pls.hittingRatings = player.hittingRatings
-                pls.pitchRatings = player.pitchRatings
-                
-                pls.changed("overallRating", true)
-                pls.changed("displayRating", true)
-                pls.changed("hittingRatings", true)
-                pls.changed("pitchRatings", true)
-
-                await this.playerService.put(player, options)
-                await this.playerLeagueSeasonService.put(pls, options)
-
+            let playerIds = []
+            for (let game of games) {
+                playerIds.push(...[].concat(game.home.players).concat(game.away.players).map( p => p._id))
             }
 
-            //Distribute team rewards
-            let teams:Team[] = await this.teamService.getByIds(teamIds, options)
-
-            let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
-
+            let teams:Team[] = await this.teamService.getByIds(games.flatMap( g => [g.home._id, g.away._id] ), options)
+            let teamSeasonIds:TeamSeasonId[] = teams.map( t => { return { teamId: t._id, seasonId: season._id } })
             let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
 
+
+            //Update player ratings.
+            await this.updatePlayers(playerIds, season, universe.currentDate, options)
+
+        
             //Calculate daily rewards. Only to teams that played.
             let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, teams)
 
+             //Distribute team rewards
             await this.distributeRewards(rewardsPerTeam, teams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
             
             //save.
@@ -472,6 +439,50 @@ class LadderService {
         universe.changed('currentDate', true)
         await this.universeRepository.put(universe, options)
 
+
+    }
+
+    private async updatePlayers(playerIds:string[], season:Season, currentDate:Date, options?:any) {
+
+        //Update player ratings.
+        let players:Player[] = await this.playerService.getByIds(playerIds, options)
+        let plss = await this.playerLeagueSeasonService.getByPlayersSeason(players, season, options)
+
+        for (let player of players) {
+
+            let pls = plss.find( p => p.playerId == player._id)
+
+            //Update overall rating
+            //Get player's full results for the day. If WPA is positive they go up. Otherwise, down. Recalculate ratings after.
+            if (player.primaryPosition == Position.PITCHER) {
+                let gprSums = await this.gamePitchResultRepository.getSumsByPlayerAndDate(player, currentDate, options)
+                player.overallRating = this.playerService.updateOverallRating(player.overallRating, gprSums.wpa > 0, player.age, true)
+            } else {
+
+                let ghrSums = await this.gameHitResultRepository.getSumsByPlayerAndDate(player, currentDate, options)
+                player.overallRating = this.playerService.updateOverallRating(player.overallRating, ghrSums.wpa > 0, player.age, false)
+            }
+
+            await this.playerService.updateHittingPitchingRatings(player)
+
+            player.changed("overallRating", true)
+            player.changed("displayRating", true)
+            player.changed("hittingRatings", true)
+            player.changed("pitchRatings", true)
+
+            pls.overallRating = player.overallRating
+            pls.hittingRatings = player.hittingRatings
+            pls.pitchRatings = player.pitchRatings
+            
+            pls.changed("overallRating", true)
+            pls.changed("displayRating", true)
+            pls.changed("hittingRatings", true)
+            pls.changed("pitchRatings", true)
+
+            await this.playerService.put(player, options)
+            await this.playerLeagueSeasonService.put(pls, options)
+
+        }
 
     }
 

@@ -104,10 +104,13 @@ class UserService {
         vm.completedGames = games?.filter( g => g.isFinished)?.map( g => this.gameService.getGameSummaryViewModel(g))
         vm.inProgressGame = games?.find( g => !g.isFinished)
 
-        let events = await this.offchainEventService.getByTeamId(ContractType.DIAMONDS, team._id, { limit: 5, offset: 0})
+        let events = await this.offchainEventService.getByTeamId(team._id, { limit: 5, offset: 0})
         vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
         
-        vm.team.yesterdaysRewards = vm.offChainEvents.events.find( e => e.source?.type == "reward" && e.source?.rewardType == "daily" && dayjs(e.source?.fromDate).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, 'day').format("YYYY-MM-DD"))?.amount || "0"
+
+        const rewards = (vm.offChainEvents?.events || []).filter(e => e?.source?.type === 'reward' && e?.source?.rewardType === 'daily')
+
+        vm.team.yesterdaysRewards = rewards.find( e => dayjs(e.source?.fromDate).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, 'day').format("YYYY-MM-DD"))?.amount || "0"
 
         
         if (season) {

@@ -68,7 +68,7 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
 
 
-    async getByTeamId(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]>  {
+    async getByTeamIdAndContractType(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]>  {
 
         return OffchainEvent.findAll(Object.assign({
             where: {
@@ -82,6 +82,20 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
     }
 
+    async getByTeamId(teamId:string, options?:any) : Promise<OffchainEvent[]>  {
+
+        return OffchainEvent.findAll(Object.assign({
+            where: {
+                [Op.and]: {
+                    [Op.or]: [{ fromTeamId: teamId }, { toTeamId: teamId }]
+                }
+            },
+            order: [ ['dateCreated', 'DESC'] ]
+        }, options))
+
+    }
+
+
     async list(contractType:string, options?:any) : Promise<OffchainEvent[]>  {
 
         return OffchainEvent.findAll(Object.assign({
@@ -94,6 +108,15 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
         }, options))
 
     }
+
+    async listAll(options?:any) : Promise<OffchainEvent[]>  {
+
+        return OffchainEvent.findAll(Object.assign({
+            order: [ ['dateCreated', 'DESC'] ]
+        }, options))
+
+    }
+
 
 }
 

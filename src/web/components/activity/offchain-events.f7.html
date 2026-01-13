@@ -3,58 +3,64 @@
     <div class="card card-outline card-header-divider">
         <div class="card-header">Rewards & Player Moves</div>
         <div class="card-content">
-            <div class="stat-table-wrapper">
-                <table class="data-table game-transactions">
-                    <thead>
-
-                        <th class="date">Date</th>
-                        <th>Description</th>
-                        <th>From/To</th>
-                        <th class="numeric-cell">Amount</th>
-                        <th>Game</th>
-                    </thead>
-                    <tbody>
-
-                        ${eventsViewModel.events.map( oce => $h`
-                            <tr>
-                                <td>
-                                    ${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}<br />
-                                    <span class="id">${oce._id}</span>
-                                </td>
-                                <td>${getOffChainDescription(oce)}</td>
-                                <td>
-
+            <div class="list media-list inset">
+                <ul>
+                    ${eventsViewModel.events.map(oce => $h`
+                    <li>
+                        <div class="item-content">
+                            <div class="item-inner">
+    
+                                <div class="item-title-row">
+                                    <div class="item-title">
+                                        ${getOffChainDescription(oce)}
+                                    </div>
+                                    <div class="item-after">
+                                        ${getOffChainAmount(oce)}
+                                    </div>
+                                </div>
+    
+                                <div class="item-subtitle">
+                                    ${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}
+                                </div>
+    
+                                <div class="item-text">
                                     ${oce.fromTeamId ? $h`
-                                        <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">${getTeamName(oce.fromTokenId)}</a>
+                                    <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">
+                                        ${teamWebService.getTeamName(getTeam(oce.fromTeamId))}
+                                    </a>
                                     ` : $h``}
-
+    
                                     ${oce.fromAddress ? $h`
-                                        <a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
-                                    ` : $h` `}
-
-                                    <span class="event-arrow">➡️</span>
-                                    
+                                    <a href="/u/activity?address=${oce.fromAddress}">
+                                        ${walletService.truncateEthAddress(oce.fromAddress)}
+                                    </a>
+                                    ` : $h``}
+    
+                                    <span class="event-arrow"> ➡️ </span>
+    
                                     ${oce.toTeamId ? $h`
-                                        <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">${getTeamName(oce.toTeamId)}</a>
-                                    ` : $h` `} 
-
+                                    <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">
+                                        ${teamWebService.getTeamName(getTeam(oce.toTeamId))}
+                                    </a>
+                                    ` : $h``}
+    
                                     ${oce.toAddress ? $h`
-                                        <a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
-                                    ` : $h` `}
-
-                                </td>
-                                <td class="numeric-cell">${getOffChainAmount(oce)}</td>
-                                <td>${oce.gameId ? $h`<a
-                                        href="${universeWebService.startDateLink(`/g/${oce.gameId}`)}">Link</a>`
-                                    : $h` `}</td>
-                            </tr>
-                        `)}
-
-                    </tbody>
-                </table>
+                                    <a href="/u/activity?address=${oce.toAddress}">
+                                        ${walletService.truncateEthAddress(oce.toAddress)}
+                                    </a>
+                                    ` : $h``}
+                                </div>
+    
+                            </div>
+                        </div>
+                    </li>
+                    `)}
+                </ul>
             </div>
         </div>
     </div>
+
+
 
 
 </template>
@@ -67,6 +73,7 @@
     import { LoginWebService } from "../../service/login-web-service"
     import { UniverseWebService } from "../../service/universe-web-service"
     import { GameWebService } from "../../service/game-web-service"
+    import { TeamWebService } from "../../service/team-web-service"
 
     import logo from "../../html/images/logo.png"
     import { ethers } from "ethers"
@@ -81,6 +88,7 @@
         let universeWebService = ContainerService.getInstance(UniverseWebService)
         let gameWebService = ContainerService.getInstance(GameWebService)
         let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
+        let teamWebService = ContainerService.getInstance(TeamWebService)
 
         const getOffChainDescription = (oce) => {
             return offChainEventWebService.getOffChainDescription(oce)
@@ -101,13 +109,6 @@
             return eventsViewModel.teams?.find( t => t._id == teamId)
         }
 
-        const getTeamName = (teamId) => {
-            
-            let team = getTeam(teamId)
-
-            return `${team.cityName ? team.cityName : ''} ${team.name}`
-
-        }
 
 
         return $render

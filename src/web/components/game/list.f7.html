@@ -68,7 +68,7 @@
               </div>
               <div>
                   ${nextPage ? $h`
-                  <a data-reload-current="true" data-force="true" data-browser-history="true" href="${universeWebService.startDateLink(`/games?gameDate=${dayjs(gameDate).subtract(1, 'day').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
+                  <a data-reload-current="true" data-force="true" data-browser-history="true" href="${universeWebService.startDateLink(`/games?gameDate=${dayjs(gameDate).add(1, 'day').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
                   ` : $h` `}
               </div>
             </div>

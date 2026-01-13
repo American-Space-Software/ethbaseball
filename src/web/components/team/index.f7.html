@@ -51,15 +51,9 @@
                 </div>
 
 
-
-
-
-
-
-
                 <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
                     <ul>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">📝 Activity</a></li>
+                        <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">🔷 Rewards & Player Moves</a></li>
                         <!-- <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>    -->
 
                         ${games?.length > 0 ? $h`
@@ -95,7 +89,7 @@
                 ` : $h` `}
 
 
-                <div class="block-title block-title-medium">Lineup</div>
+                <div class="block-title block-title-medium">Lineup ${teamComponentService.team.hasValidLineup ? '🟢' : $h`🔴 <span class="invalid-lineup">Lineup is invalid. Fix before queueing.</span>`}</div>
 
                 <div class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
                         ${teamComponentService.selected == "stats" ? $h`
@@ -412,7 +406,6 @@
   import InProgress from "../game/in-progress.f7.html"
   import Scheduled from "../game/scheduled.f7.html"
   import Result from "../game/result.f7.html"
-  import ResultTable from "./result-table.f7.html"
 
   import { ethers } from "ethers"
 

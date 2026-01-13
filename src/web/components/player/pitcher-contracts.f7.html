@@ -50,7 +50,7 @@
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
                                     ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a>` : $h` `}
-                                ` : $h` `}
+                                ` : $h`- Empty rotation spot -`}
                             </td>
 
                             ${actions? $h`
@@ -63,8 +63,7 @@
 
 
                             <td class="numeric-cell">
-                                <${StaminaBar} stamina=${p.stamina} />
-
+                                ${p._id ? $h`<${StaminaBar} stamina=${p.stamina} />` : $h` `}
                             </td>
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>

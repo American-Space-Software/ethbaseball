@@ -650,6 +650,7 @@ class GameService {
         let result:SimPitchResult
 
         let continueAtBat = true
+        let isInningEndingEvent = false
 
         //Do matchup
         try {
@@ -659,116 +660,117 @@ class GameService {
             //Ignore inning ending events errors.
             if (!(ex instanceof InningEndingEvent)) throw ex
             continueAtBat = false
+            isInningEndingEvent = true
         }
 
 
         if (!continueAtBat) {
-            this.finishPlay(game, command)
+            this.finishPlay(game, command, isInningEndingEvent)
         }
         
 
     }
 
 
-    finishPlay(game:Game, command:SimPitchCommand) {
+    finishPlay(game:Game, command:SimPitchCommand, isInningEndingEvent:boolean) {
 
         let fielderPlayer:GamePlayer
 
-        if (command.play.pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)) {
+        if (!command.play.pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)) {
 
-            //In play
-            let pitch = command.play.pitchLog.pitches[command.play.pitchLog.pitches.length - 1]
-
-            //How much better than average?
-            let pitchQualityChange = this.rollService.getChange(command.leagueAverages.pitchQuality, pitch.quality)
-
-            let contactRollChart:RollChart = this.rollService.getMatchupContactRollChart(command.leagueAverages, command.hitter.hittingRatings.contactProfile, command.pitcher.pitchRatings.contactProfile)
-
-            const pickFielder = (contact:Contact) => {
-
-                let ignoreList = []
-                
-                switch(contact) {
-                    case Contact.LINE_DRIVE:
-                        //No line drives to the catcher. 
-                        ignoreList.push(Position.CATCHER)
-                        break
-                    
-                }
-
-                //Who did it get hit towards?
-                fielderPlayer = undefined
-
-                command.play.fielder = this.rollService.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
-
-                //If we match on the ignore list get fielders until we don't.
-                while (ignoreList.includes(command.play.fielder)) {
-                    command.play.fielder = this.rollService.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
-                }
-
-                fielderPlayer = command.defense.players.find(p => p.currentPosition == command.play.fielder)
-
-            }
-
-            let hitQuality:number
-
-            //What kind of contact? 
-            command.play.contact = contactRollChart.entries.get(this.rollService.getRoll(command.rng, 0, 99)) as Contact
-
-
-            pickFielder(command.play.contact)
-
-            //Calculate team defense. We're going to use this overall average to simulate being slightly better or worse at positioning.
-            let teamDefenseChange:number = this.rollService.getChange(command.leagueAverages.hittingRatings.defense, this.rollService.getTeamDefense(command.defense))
-            let fielderDefenseChange:number = this.rollService.getChange(command.leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
-
-
-            //Was it high quality contact? 1-1000
-            hitQuality = this.rollService.getHitQuality(command.rng, pitchQualityChange, teamDefenseChange, fielderDefenseChange, command.play.contact, pitch.guess)
-
-            let powerRollChart:RollChart = this.rollService.getMatchupPowerRollChart(command.leagueAverages, command.hitterChange, command.pitcherChange)
-
-            //O, 1B, 2B, 3B, or HR
-            command.play.result = powerRollChart.entries.get(hitQuality) as PlayResult
-
-
-            //No pop up/line drive hits to IF. 
-            while (this.rollService.isInAir(command.play.contact) && !this.rollService.isToOF(command.play.fielder) && command.play.result != PlayResult.OUT) {
-                pickFielder(command.play.contact)
-            }
-
-            //No ground ball outs to the OF. Redirect to infielder.
-            while (command.play.contact == Contact.GROUNDBALL && this.rollService.isToOF(command.play.fielder) && command.play.result == PlayResult.OUT) {
-                pickFielder(command.play.contact)
-            }
-
-            //No doubles or triples to infielders
-            while ( (command.play.result == PlayResult.DOUBLE || command.play.result == PlayResult.TRIPLE) && this.rollService.isToInfielder(command.play.fielder)) {
-                pickFielder(command.play.contact)
-            }
-
-
-            if (this.rollService.isToOF(command.play.fielder)) {
-                command.play.shallowDeep = this.rollService.getShallowDeep(command.rng, command.leagueAverages)
-            }
-
-            if (command.play.result == PlayResult.HR) {
-                if (command.play.contact == Contact.GROUNDBALL) {
-                    command.play.contact = hitQuality > 70 ? Contact.LINE_DRIVE : Contact.FLY_BALL
-                }
-
-                command.play.shallowDeep = ShallowDeep.DEEP
-            } 
-
-            if (command.play.result == PlayResult.TRIPLE) {
-                command.play.shallowDeep = ShallowDeep.DEEP //Triples always deep for now.
-            } 
-
-        } else {
-            if (command.play.result != PlayResult.STRIKEOUT && command.play.result != PlayResult.BB &&  command.play.result != PlayResult.HIT_BY_PITCH) {
+            //If the ball isn't in play let's make sure it's a legit reason.
+            if (command.play.result != PlayResult.STRIKEOUT && command.play.result != PlayResult.BB &&  command.play.result != PlayResult.HIT_BY_PITCH && !isInningEndingEvent) {
                 throw new Error("Error with pitchlog")
             }
         }
+
+        //In play
+        let pitch = command.play.pitchLog.pitches[command.play.pitchLog.pitches.length - 1]
+
+        //How much better than average?
+        let pitchQualityChange = this.rollService.getChange(command.leagueAverages.pitchQuality, pitch.quality)
+
+        let contactRollChart:RollChart = this.rollService.getMatchupContactRollChart(command.leagueAverages, command.hitter.hittingRatings.contactProfile, command.pitcher.pitchRatings.contactProfile)
+
+        const pickFielder = (contact:Contact) => {
+
+            let ignoreList = []
+            
+            switch(contact) {
+                case Contact.LINE_DRIVE:
+                    //No line drives to the catcher. 
+                    ignoreList.push(Position.CATCHER)
+                    break
+                
+            }
+
+            //Who did it get hit towards?
+            fielderPlayer = undefined
+
+            command.play.fielder = this.rollService.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
+
+            //If we match on the ignore list get fielders until we don't.
+            while (ignoreList.includes(command.play.fielder)) {
+                command.play.fielder = this.rollService.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
+            }
+
+            fielderPlayer = command.defense.players.find(p => p.currentPosition == command.play.fielder)
+
+        }
+
+        let hitQuality:number
+
+        //What kind of contact? 
+        command.play.contact = contactRollChart.entries.get(this.rollService.getRoll(command.rng, 0, 99)) as Contact
+
+
+        pickFielder(command.play.contact)
+
+        //Calculate team defense. We're going to use this overall average to simulate being slightly better or worse at positioning.
+        let teamDefenseChange:number = this.rollService.getChange(command.leagueAverages.hittingRatings.defense, this.rollService.getTeamDefense(command.defense))
+        let fielderDefenseChange:number = this.rollService.getChange(command.leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
+
+
+        //Was it high quality contact? 1-1000
+        hitQuality = this.rollService.getHitQuality(command.rng, pitchQualityChange, teamDefenseChange, fielderDefenseChange, command.play.contact, pitch.guess)
+
+        let powerRollChart:RollChart = this.rollService.getMatchupPowerRollChart(command.leagueAverages, command.hitterChange, command.pitcherChange)
+
+        //O, 1B, 2B, 3B, or HR
+        command.play.result = powerRollChart.entries.get(hitQuality) as PlayResult
+
+
+        //No pop up/line drive hits to IF. 
+        while (this.rollService.isInAir(command.play.contact) && !this.rollService.isToOF(command.play.fielder) && command.play.result != PlayResult.OUT) {
+            pickFielder(command.play.contact)
+        }
+
+        //No ground ball outs to the OF. Redirect to infielder.
+        while (command.play.contact == Contact.GROUNDBALL && this.rollService.isToOF(command.play.fielder) && command.play.result == PlayResult.OUT) {
+            pickFielder(command.play.contact)
+        }
+
+        //No doubles or triples to infielders
+        while ( (command.play.result == PlayResult.DOUBLE || command.play.result == PlayResult.TRIPLE) && this.rollService.isToInfielder(command.play.fielder)) {
+            pickFielder(command.play.contact)
+        }
+
+
+        if (this.rollService.isToOF(command.play.fielder)) {
+            command.play.shallowDeep = this.rollService.getShallowDeep(command.rng, command.leagueAverages)
+        }
+
+        if (command.play.result == PlayResult.HR) {
+            if (command.play.contact == Contact.GROUNDBALL) {
+                command.play.contact = hitQuality > 70 ? Contact.LINE_DRIVE : Contact.FLY_BALL
+            }
+
+            command.play.shallowDeep = ShallowDeep.DEEP
+        } 
+
+        if (command.play.result == PlayResult.TRIPLE) {
+            command.play.shallowDeep = ShallowDeep.DEEP //Triples always deep for now.
+        } 
 
 
         //Players could have moved. Grab the correct base runners.
@@ -776,7 +778,19 @@ class GameService {
         let runner2B = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
         let runner3B = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
 
-        
+        if (command.play.runner.result.end.first && !runner1B) {
+            throw new Error("Missing 1B runner.")
+        }
+
+        if (command.play.runner.result.end.second && !runner2B) {
+            throw new Error("Missing 2B runner.")
+        }
+
+        if (command.play.runner.result.end.third && !runner3B) {
+            throw new Error("Missing 3B runner.")
+        }
+
+
 
         //Add in-play runner events
         let inPlayRunnerEvents = this.rollService.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.credits, 
@@ -797,7 +811,7 @@ class GameService {
 
         command.play.fielderId = fielderPlayer?._id
 
-        this.rollService.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, command.play.contact, command.play.officialPlayResult, command.play.result, command.play.pitchLog)
+        this.rollService.logResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, command.play.contact, command.play.officialPlayResult, command.play.result, command.play.pitchLog, isInningEndingEvent)
 
 
         //Reset count
@@ -17898,6 +17912,6 @@ const WIN_EXPECTANCY_CHART = [
 
 
 export {
-    GameService, SimGameCommand, LastPlay, GameViewModel
+    GameService, SimGameCommand, LastPlay, GameViewModel, GameSummaryViewModel
 }
 

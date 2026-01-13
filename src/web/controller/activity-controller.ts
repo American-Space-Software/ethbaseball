@@ -40,11 +40,11 @@ class ActivityController {
 
 
             if (page > 1) {
-                previousPage = page - 1
+                nextPage = page - 1
             }
 
             if (onChainEvents?.length == 25 ) {
-                nextPage = page + 1
+                previousPage = page + 1
             }
 
 
@@ -63,8 +63,35 @@ class ActivityController {
     @routeMap("/activity")
     async showOffChain(): Promise<ModelView> {
         
-        return new ModelView(async () => {
+        return new ModelView(async (routeTo) => {
+            
+        
+            let rank = routeTo?.query?.rank || 0
+
+            if (rank > 0) {
+                this.universeWebService.setRank(routeTo?.query?.rank)
+            } 
+
+            let page = parseInt(routeTo?.query?.page || 1)
+            let previousPage
+            let nextPage
+            
+            let offChainEvents = await this.gameTransactionWebService.getOffChain(page)
+            
+            if (page > 1) {
+                nextPage = page - 1
+            }
+
+            if (offChainEvents?.events?.length == 25 ) {
+                previousPage = page + 1
+            }
+            
             return {
+                previousPage: previousPage,
+                nextPage: nextPage,
+                rank: rank,
+                page: page,
+                offChainEvents: offChainEvents,
                 discord: this.discord,
             }
         }, OffchainActivityComponent)

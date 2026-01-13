@@ -26,18 +26,44 @@
               <span><strong>Overall Rating:</strong> ${player.displayRating.toFixed(0)}</span><br />     
 
 
-              ${authInfo?._id != undefined && authInfo._id == player.team?.userId ? $h`
+              <!-- ${authInfo?._id != undefined && authInfo._id == player.team?.userId && !player.team.isQueued ? $h`
                 <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
-              ` : $h` `}
+              ` : $h` `} -->
                   
               <!-- ${player.askingPrice ? $h`
                 <a data-popup=".sign-popup" class="button button-fill color-green sign-button popup-open">Sign Player</a>  
               ` : $h` `} -->
 
-
             </div>
 
           </div>
+
+          ${authInfo?._id != undefined && authInfo._id == player.team?.userId && player.team.isQueued ? $h`
+              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
+                      <li>
+                          <a class="item-link item-content">
+                              <div class="item-media">🏟️</div>
+
+                              <div class="item-inner">
+                                  <div class="item-title-row">
+                                  <div class="item-title">
+                                      Your team is queued.
+                                  </div>
+                                  </div>
+
+                                  <div class="item-text">
+                                  Rosters are locked while in the queue.
+                                  </div>
+
+                              </div>
+                          </a>
+                      </li>
+                  </ul>
+              </div>
+          ` : $h` `}
+
+
 
           ${player.primaryPosition == Position.PITCHER ? $h`
             
@@ -816,7 +842,7 @@
         $f7.popup.close('.drop-popup')
         $f7.views.main.router.refreshPage()
       } catch(ex) {
-        $f7.dialog.alert(ex.message, "There was an error")
+        $f7.dialog.alert(ex.message)
       }
     }
 

@@ -25,9 +25,9 @@ class OffChainEventWebService {
                 if (oce.toTeamId) {
 
                     if (oce.source?.type == "reward" && oce.source?.rewardType == "daily") {
-                        return `Daily reward for ${dayjs(oce.source?.fromDate).format("MMM D, YYYY")}`
+                        return `Daily reward`
                     } else if (oce.source?.type == "reward" && oce.source?.rewardType == "season") {
-                        return `Season rewards for ${dayjs(oce.source?.fromDate).format("MMM D, YYYY")}`
+                        return `Season reward`
 
                     }
                 }

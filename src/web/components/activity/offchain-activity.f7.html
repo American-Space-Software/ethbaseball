@@ -6,36 +6,38 @@
 
             <div class="hidden-on-load">
 
-                <div class="block">
-                    <p class="segmented">
-                        <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active">Rewards & Player Moves</a>
-                        <a href="${universeWebService.fullLink(`/activity/on`)}" class="button button-outline tab-link" >On-chain</a>
-                    </p>
+                <div class="fixed-width-content center">
+
+                    <div class="block">
+                        <p class="segmented">
+                            <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active">Rewards & Player Moves</a>
+                            <a href="${universeWebService.fullLink(`/activity/on`)}" class="button button-outline tab-link" >On-chain</a>
+                        </p>
+                    </div>
+
+
+                    ${eventsViewModel.events?.length > 0 ? $h`
+                        <${OffChainEvents} model="${eventsViewModel}" />
+                    ` : $h` `}
+
+                    <div class="block split-row-both">
+                        <div>
+                            ${previousPage ? $h`
+                            <a href="/activity?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
+                                class="button button-outline color-gray">Previous</a>
+                            ` : $h` `}
+                        </div>
+                        <div>
+                            ${nextPage ? $h`
+                            <a href="/activity?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
+                                class="button button-fill">Next</a>
+                            ` : $h` `}
+                        </div>
+                    </div>
+
                 </div>
 
-
-                ${eventsViewModel.events?.length > 0 ? $h`
-                    <${OffChainEvents} model="${eventsViewModel}" />
-                ` : $h` `}
-
-                <div class="block split-row-both">
-                    <div>
-                        ${previousPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true"
-                            href="/activity/off?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
-                            class="button button-outline color-gray">Previous</a>
-                        ` : $h` `}
-                    </div>
-                    <div>
-                        ${nextPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true"
-                            href="/activity/off?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${rank}"
-                            class="button button-fill">Next</a>
-                        ` : $h` `}
-                    </div>
-                </div>
-
-
+                
             </div>
 
             <div class="hide-on-pageinit">
@@ -92,59 +94,19 @@
         let gameTransactionWebService = ContainerService.getInstance(GameTransactionWebService)
         let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
 
-        let eventsViewModel = {}
-        let page = 1
+        let eventsViewModel = props.offChainEvents
+        let page = props.page
 
-        let previousPage 
-        let nextPage
+        let previousPage = props.previousPage
+        let nextPage = props.nextPage
 
-        let rank
-
-        const loadActivity = async () => {
-
-            $f7.preloader.show()
-
-            try {
-
-                rank = $f7.views.main.router.currentRoute?.query?.rank || 0
-
-                if (rank > 0) {
-                    universeWebService.setRank($f7.views.main.router.currentRoute?.query?.rank)
-                } 
-
-                let page = parseInt($f7.views.main.router.currentRoute?.query?.page || 1)
-
-                Object.assign(eventsViewModel, await gameTransactionWebService.getOffChain(page))
-
-                if (page > 1) {
-                    previousPage = page - 1
-                }
-
-                if (eventsViewModel.events?.length == 25 ) {
-                    nextPage = page + 1
-                }
-
-
-                await $update()
-
-            } catch (ex) { console.log(ex) }
-
-            $f7.preloader.hide()
-
-        }
-
-
-        const link = (href) => {
-            return "/" + href
-        }
+        let rank = props.rank
 
 
         $on('pageInit', async () => { })
 
 
         $on('pageBeforeIn', async () => {
-
-            await loadActivity()
 
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {

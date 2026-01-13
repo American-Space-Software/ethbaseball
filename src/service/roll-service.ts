@@ -336,47 +336,8 @@ class RollService {
         return result
     }
 
-    validateLineup(teamInfo: TeamInfo) {
 
-        //Make sure the lineup contains one player at every position and there's a starting pitcher
-        let lineupPlayers = teamInfo.lineupIds.map(id => teamInfo.players.find(p => p._id == id))
-
-        let positions = [Position.PITCHER, Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.SHORTSTOP, Position.THIRD_BASE, Position.LEFT_FIELD, Position.RIGHT_FIELD, Position.CENTER_FIELD]
-
-        for (let position of positions) {
-
-            let players = lineupPlayers.filter(p => p.currentPosition == position)
-
-            if (players.length != 1) {
-                throw new Error(`Invalid lineup for team: ${players.length} players listed as ${position}`)
-            }
-
-            //Make sure they are in the lineup.
-            if (!teamInfo.lineupIds.includes(players[0]._id)) {
-                throw new Error(`Invalid lineup for team: ${players[0]._id} listed as ${position} but not in lineup.`)
-            }
-
-        }
-
-        //Check pitcher
-        if (!teamInfo.currentPitcherId) {
-
-            throw new Error(`Invalid lineup for team: no pitcher`)
-
-        } else {
-
-            if (!teamInfo.lineupIds.includes(teamInfo.currentPitcherId)) {
-                throw new Error(`Invalid lineup for team: current pitcher not in lineup.`)
-            }
-
-        }
-
-
-
-
-    }
-
-    logResults(offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, runner1BId:string, runner2BId:string, runner3BId:string, defensiveCredits:DefensiveCredit[], runnerEvents: RunnerEvent[], contact: Contact, officialPlayResult: OfficialPlayResult, playResult: PlayResult, pitchLog: PitchLog) {
+    logResults(offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, runner1BId:string, runner2BId:string, runner3BId:string, defensiveCredits:DefensiveCredit[], runnerEvents: RunnerEvent[], contact: Contact, officialPlayResult: OfficialPlayResult, playResult: PlayResult, pitchLog: PitchLog, isInningEndingEvent:boolean) {
 
         let outEvents = runnerEvents.filter( re => re.movement?.isOut)
 
@@ -574,7 +535,10 @@ class RollService {
                 break
                 
             default: 
-                throw Error(`Error logging unknown play result ${playResult}`)
+
+                if (!isInningEndingEvent) {
+                    throw Error(`Error logging unknown play result ${playResult}`)
+                }
 
 
         }
@@ -979,12 +943,10 @@ class RollService {
                             break
                         }
 
-
-
                         //Handle runner on third. 
-                        if (runnerResult.third != undefined) {
+                        if (runner3B != undefined) {
     
-                            runner3bRA.isForce = (runnerResult.second != undefined && runnerResult.first != undefined)
+                            runner3bRA.isForce = (runner2B != undefined && runner1B != undefined)
     
                             if (runner3bRA.isForce) {
     
@@ -1050,9 +1012,9 @@ class RollService {
                         }
     
                         //Handle runner on second
-                        if (runnerResult.second != undefined) {
+                        if (runner2B != undefined) {
     
-                            runner2bRA.isForce = (runnerResult.first != undefined)
+                            runner2bRA.isForce = (runner1B != undefined)
     
                             if (runner2bRA.isForce) {
     
@@ -1095,7 +1057,7 @@ class RollService {
                         }
     
                         //Handle runner on 1B
-                        if (runnerResult.first != undefined) {
+                        if (runner1B != undefined) {
     
                             runner1bRA.isForce = true
     

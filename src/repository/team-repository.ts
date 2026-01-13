@@ -17,7 +17,6 @@ interface TeamRepository {
     list(limit: number, skip: number, options?:any): Promise<Team[]> 
     listByLeagueAndSeason(league:League, season:Season, options?:any): Promise<Team[]>
     listBySeason(season:Season, options?:any): Promise<Team[]>
-    getEligibleTeams(options?:any) : Promise<Team[]>
     getRatings(options?:any)
     getRatingsForIds(teamIds:string[], options?:any)
     getMaxRanking(options?:any) : Promise<number>

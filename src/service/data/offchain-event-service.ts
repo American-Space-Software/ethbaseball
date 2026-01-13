@@ -150,8 +150,8 @@ class OffchainEventService {
         return this.offchainEventRepository.getByOwner(contractType, owner, options)
     }
 
-    async getByTeamId(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]> {
-        return this.offchainEventRepository.getByTeamId(contractType, teamId, options)
+    async getByTeamId(teamId:string, options?:any) : Promise<OffchainEvent[]> {
+        return this.offchainEventRepository.getByTeamId(teamId, options)
     }
 
     async getBalanceForOwner(contractType:string, owner:Owner, options?:any) {
@@ -184,7 +184,7 @@ class OffchainEventService {
 
     async getBalanceForTeamId(contractAddress:string, teamId:string, options?:any) {
 
-        let events:OffchainEvent[] = await this.offchainEventRepository.getByTeamId(contractAddress, teamId, options)
+        let events:OffchainEvent[] = await this.offchainEventRepository.getByTeamIdAndContractType(contractAddress, teamId, options)
 
         let diamondBalance = "0"
 
@@ -233,6 +233,10 @@ class OffchainEventService {
 
     async list(contractType:string, options?:any) : Promise<OffchainEvent[]> {
         return this.offchainEventRepository.list(contractType, options)
+    }
+
+    async listAll(options?:any) : Promise<OffchainEvent[]> {
+        return this.offchainEventRepository.listAll(options)
     }
 
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {

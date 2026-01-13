@@ -19,6 +19,7 @@ import dayjs from "dayjs"
 import { OffchainEventService } from "./data/offchain-event-service.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
+import { TeamQueueService } from "./data/team-queue-service.js"
 
 
 
@@ -33,6 +34,7 @@ class PlayerViewService {
 
 
     constructor(
+        private teamQueueService:TeamQueueService,
         private playerService:PlayerService,
         private seasonService:SeasonService,
         private teamService:TeamService,
@@ -113,7 +115,7 @@ class PlayerViewService {
             let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season )
 
             let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
-            
+
             tls = tls.get({ plain: true })
 
             result.team = {
@@ -121,7 +123,8 @@ class PlayerViewService {
                 cityName: tls.city?.name,
                 _id: tls.team?._id,
                 userId: tls.team.userId,
-                diamondBalance: diamondBalance
+                diamondBalance: diamondBalance,
+                isQueued: await this.teamQueueService.isTeamQueued(team)
             }
 
             // let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
@@ -170,6 +173,7 @@ interface PlayerViewModel {
         userId?:string
 
         diamondBalance:string
+        isQueued:boolean
     }
 
     dropCost?:string

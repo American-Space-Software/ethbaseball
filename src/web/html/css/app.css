@@ -43,8 +43,15 @@
 }
 
 .logo {
-  height: 50px;
-  width: 50px;
+  height: 60px;
+  width: 60px;
+}
+
+@media only screen and (max-width: 1024px) {
+  .logo {
+    height: 42px;
+    width: 42px;
+  }
 }
 
 /* .ios .toolbar-pane {
@@ -3273,4 +3280,74 @@ td.action, th.action {
 .block-lineup-table td:first-child {
   padding-left:5px;
   padding-right: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.landing-hero-title {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.landing-hero-subtitle {
+  margin: 0 0 14px 0;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+.landing-hero-actions,
+.landing-footer-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.landing-note {
+  margin: 10px 0 0 0;
+  opacity: 0.75;
+  font-size: 0.95em;
+  line-height: 1.35;
+}
+
+.landing-paragraph {
+  margin: 0 0 12px 0;
+  line-height: 1.35;
+}
+
+.landing-footnote {
+  margin: 12px 0 0 0;
+  opacity: 0.7;
+  font-size: 0.95em;
+  line-height: 1.35;
+}
+
+
+
+.about-leadin .item-title { font-weight: 400; white-space: normal; }
+
+.invalid-lineup {
+  font-size: .65em;
+  font-weight: normal;
+  display: block;
+  color: var(--f7-list-item-text-text-color);
 }

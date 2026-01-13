@@ -1,44 +1,116 @@
 <template es>
 
-  <div class="page page-with-subnavbar" data-name="home">
+  <div class="page" data-name="home">
 
 
     <div class="page-content">
 
         <div class="fixed-width-content center">
 
-          <div class="block-title block-title-large">Ethereum Baseball League</div>
-          <div class="block">
+          <div class="block-title block-title-medium">Ethereum Baseball League</div>
+          <div class="block block-strong block-outline">
+            <p class="landing-hero-title">Run a franchise. Win games. Build a baseball business.</p>
+            <p class="landing-hero-subtitle">Manage rosters, lineups, and pitching rotations in a season-long management sim. Seasons run 162 real-world days.</p>
 
-              <p>
-                A competitive PvP baseball ownership and business sim powered by Ethereum.
-              </p>
-
-              <hr />
-
-              <p>
-                
-                Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy
-                where players and Diamonds are bought, sold, and earned. <strong><a class="link"  href="/about">Learn More...</a></strong>
-
-                <ul>
-                  <li>Own players as an NFTs (ERC-721) on Ethereum.</li>
-                  <li>Live simulated games with box scores and play-by-play.</li>
-                  <li>100% open source (MIT) — fork and run your own custom universe.</li>
-                </ul>
-
-              </p>
-
-
-              <a data-popup=".login-popup" href="#" class="button button-fill main-button color-green popup-open">Get Started</a>
-              
-
-              <p>
-                Join the community on <a class="link external" href="${discord}" target="_blank">Discord</a>. 
-              </p>
-
+            <div class="landing-hero-actions">
+              <a data-popup=".login-popup" href="#" class="button button-fill color-green popup-open">Login or Sign Up</a>
+              <a href="/about" class="button button-outline">Read the Manual</a>
+            </div>
           </div>
 
+          <div class="block-title block-title-medium">How It Works</div>
+          <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios landing-feature-list">
+            <ul>
+              <li>
+                <div class="item-content">
+                  <div class="item-media">🧢</div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title item-title-wrap">Manage your roster</div>
+                    </div>
+                    <div class="item-text">Set lineups and rotations. Stamina and depth determine how often you can push your best arms.</div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media">📅</div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title item-title-wrap">One game per day</div>
+                    </div>
+                    <div class="item-text">Each real-world day has a queue window for that day’s games.</div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media">🛠️</div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title item-title-wrap">Makeup games if you fall behind</div>
+                    </div>
+                    <div class="item-text">If you miss days, joining the next available queue can schedule additional makeup games.</div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media">📣</div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title item-title-wrap">Results post immediately</div>
+                    </div>
+                    <div class="item-text">Box scores and pitch-by-pitch are available right after each game.</div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="block-title block-title-medium">Diamonds 🔷</div>
+          <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+            <ul>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media">📅</div>
+                  <div class="item-inner">
+                    <div class="item-title">Daily reward pool</div>
+                    <div class="item-text">A 1,000 🔷 pool is split nightly across teams that completed at least one game that day.</div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media">🏁</div>
+                  <div class="item-inner">
+                    <div class="item-title">Season bonus</div>
+                    <div class="item-text">On the final day, a 20,000 🔷 bonus pool is distributed across teams that played at least once that season.</div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="item-content">
+                  <div class="item-media">🔗</div>
+                  <div class="item-inner">
+                    <div class="item-title">Ethereum Optional</div>
+                    <div class="item-text">Diamonds appear on-chain only if you withdraw. A wallet is only needed for deposits/withdrawals.</div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="block-title block-title-medium">Open Source</div>
+          <div class="block block-strong block-outline">
+            <p class="landing-paragraph"><strong>MIT licensed.</strong> Anyone can fork the code and run their own universe.</p>
+          </div>
 
         </div>
 
