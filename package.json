@@ -1,6 +1,6 @@
 {
   "name": "ethbaseball",
-  "version": "1.1.16",
+  "version": "1.1.17",
   "description": "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned.",
   "repository": {
     "type": "git",
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register",
-    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-team-queue-repository.spec.ts",
+    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-game-service.spec.ts",
 
     "test:contracts": "export NODE_ENV=development && npx hardhat test test/hardhat/test-universe.spec.js",
 

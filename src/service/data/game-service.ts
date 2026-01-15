@@ -671,7 +671,6 @@ class GameService {
 
     }
 
-
     finishPlay(game:Game, command:SimPitchCommand, isInningEndingEvent:boolean) {
 
         let fielderPlayer:GamePlayer
@@ -881,7 +880,6 @@ class GameService {
         }
 
     }
-
 
     createSimPitchCommand(game:Game, rng:any) {
         
@@ -1570,7 +1568,6 @@ class GameService {
             matchup = this.getUpcomingMatchup(game)
         }
 
-
         let plays:LastPlay[] = this.getLastPlays(game)
 
         let play = plays?.length > 0 ? plays[plays.length -1] : undefined
@@ -1588,6 +1585,8 @@ class GameService {
             _id: game._id,
             isStarted: game.isStarted,
             isFinished: game.isFinished,
+            isTopInning: game.isTopInning,
+            currentInning: game.currentInning,
             score: game.score,
             away: {
                 _id: game.away._id,
@@ -2145,6 +2144,8 @@ interface GameSummaryViewModel {
     play:LastPlay
     linescoreViewModel
     score:Score
+    isTopInning:boolean
+    currentInning:number
 
 }
 

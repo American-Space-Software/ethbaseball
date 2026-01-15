@@ -16,7 +16,9 @@
                     <th class="image"></th>
                     <th @click=${sortPitchers} data-sort="fullName" class="name">Name</th>
                     ${actions ? $h`<th class="action"></th>` : $h` `}
-                    <th class="stamina" data-sort="stamina">🪫</th>                    
+                    <th class="stamina" data-sort="stamina">🪫</th>  
+                    ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
+                                      
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
 
 
@@ -67,7 +69,9 @@
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
                                     ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a>` : $h` `}
-                                ` : $h`- Empty rotation spot -`}
+                                ` : $h`
+                                    <a href="${universeWebService.startDateLink(`/players/?position=P&rank=0`)}" style="font-weight: normal;">${p.fullName}</a><br />
+                                `}
                             </td>
 
 
@@ -79,10 +83,15 @@
                                 </td>
                             ` : $h` `}
 
-
                             <td class="numeric-cell">
                                 ${p._id ? $h`<${StaminaBar} stamina=${p.stamina} />` : $h` `}
                             </td>
+
+                            ${showAskingPrice ? $h`
+                                <td class="numeric-cell">${universeWebService.displayDiamonds(p.askingPrice)}</td>
+                            ` : $h` `}                            
+
+
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
                             <td>${p?.throws}</td>
@@ -173,6 +182,13 @@
 
     if (props.actions) {
       actions = props.actions()
+    }
+
+
+    let showAskingPrice = false 
+
+    if (props.showaskingprice) {
+      showAskingPrice = true
     }
 
     const moveFilter = props.movefilter

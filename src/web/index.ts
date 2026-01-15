@@ -24,7 +24,7 @@ export default async (env, footerRoutes) => {
 
     let baseURI = '/'
 
-    const wb = new Workbox(`${env.WEB}${baseURI}sw-${env.VERSION}.js?baseURI=${baseURI}`, {
+    const wb = new Workbox(`${env.WEB}${baseURI}sw-${env.BUILD_ID}.js?baseURI=${baseURI}`, {
         scope: `${env.WEB}${baseURI}`
     })
 

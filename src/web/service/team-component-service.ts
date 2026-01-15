@@ -60,7 +60,7 @@ class TeamComponentService {
                     //     primaryPosition: Position.PITCHER
                     // })
                 } else {
-                    h.push({ })
+                    h.push({ fullName: "Sign a free agent.", primaryPosition: player.position } )
                 }
             }
 
@@ -78,7 +78,7 @@ class TeamComponentService {
             if (player._id) {
                 p.push(this.getPlayer(player._id))
             } else {
-                p.push({ })
+                p.push({ fullName: "Sign a free agent.", primaryPosition: "P" } )
             }
 
         }
@@ -108,7 +108,7 @@ class TeamComponentService {
 
             this.authInfo = await this.loginWebService.getAuthInfo()
             let teamViewModel = await this.teamWebService.getByDate(teamId, startDate)
-
+            
             this.team = teamViewModel.team
             this.startDate = startDate
            
@@ -117,6 +117,16 @@ class TeamComponentService {
 
             this.games.length = 0
             this.games.push(...teamViewModel.games)
+
+            //Add placeholder positions for any missing lineup spots
+            let order = this.team.lineups[0].order
+            
+            let missingPositions = this.listMissingPositionsInLineup(order)
+
+            for (let position of missingPositions) {
+                let firstBlankSpot = order.find( o => !o.position)
+                firstBlankSpot.position = position                
+            }
 
 
             this.hasChanges = false
@@ -164,60 +174,6 @@ class TeamComponentService {
         }
     }
 
-
-    // removeRosterHitter(player) {
-
-    //     this.removeRoster(player)
-
-    //     for (let lineup of this.team.lineups) {
-    //         this.lineupService.lineupRemove(lineup, player._id)
-    //     }
-
-    // }
-
-
-    // removeRosterPitcher(player) {
-
-    //     this.removeRoster(player)
-
-    //     for (let lineup of this.team.lineups) {
-    //         this.lineupService.rotationRemove(lineup, player._id)
-    //     }
-
-    // }
-
-
-    // addRoster(player) {
-
-    //     //Remove from unrostered
-    //     this.arrayRemove(this.unrosteredPlayers, player._id)
-
-    //     //Add to rostered
-    //     this.arrayAdd(this.rosterPlayers, player)
-
-    //     player.team = {
-    //         cityName: this.team.city ? this.team.city.name : undefined,
-    //         name: this.team.name,
-    //         _id: this.team._id
-    //     }
-
-    // }
-
-    // removeRosterById(id) {
-    //     this.removeRoster(this.getPlayer(id))
-    // }
-
-    // removeRoster(player) {
-
-    //     //Remove existing player from roster
-    //     this.arrayRemove(this.rosterPlayers, player._id)
-
-    //     //Add to unrostered
-    //     this.arrayAdd(this.unrosteredPlayers, player)
-
-    //     player.team = undefined
-
-    // }
 
     
 
@@ -348,26 +304,6 @@ class TeamComponentService {
 
     }
 
-
-
-    // getLastAvailableOrderSpot(lineup) {
-    //     //Find the first empty spot from the end for a pitcher.
-    //     for ( let i =8; i >=0; i--) {
-    //         if (!lineup.order[i]?._id) {
-    //             return i
-    //         }
-    //     }
-    // }
-
-    // getLastAvailableRotationSpot(lineup) {
-    //     //Find the first empty spot from the end for a pitcher.
-    //     for ( let i =4; i >=0; i--) {
-    //         if (!lineup.rotation[i]?._id) {
-    //             return i
-    //         }
-    //     }
-    // }
-
     
     arrayRemove(arr, id) {
         const index = arr.indexOf( arr.find(p => p._id == id) )
@@ -391,81 +327,33 @@ class TeamComponentService {
         this.hasChanges = false
     }
 
-    // autoFillLineup() {
 
-    //     let lineup = this.team.lineups[0]
+    listMissingPositionsInLineup(order): Position[] {
 
-    //     let positions = [
-    //         Position.CATCHER,
-    //         Position.FIRST_BASE,
-    //         Position.SECOND_BASE,
-    //         Position.SHORTSTOP,
-    //         Position.THIRD_BASE,
-    //         Position.LEFT_FIELD,
-    //         Position.RIGHT_FIELD,
-    //         Position.CENTER_FIELD        
-    //     ]
+        let required: Position[] = []
 
+        let positions = [
+            Position.CATCHER,
+            Position.FIRST_BASE,
+            Position.SECOND_BASE,
+            Position.SHORTSTOP,
+            Position.THIRD_BASE,
+            Position.LEFT_FIELD,
+            Position.RIGHT_FIELD,
+            Position.CENTER_FIELD,
+        ]
 
-    //     for (let position of positions) {
+        for (let position of positions) {
+            let current = order.filter(p => p.position == position).length
+            if (current == 0) {
+                required.push(position)
+            }
+        }
 
-    //         //Look for a player at this position
-    //         if (lineup.order.filter( p => p.position == position).length == 0) {
+        return required
 
-    //             //Find the highest rated player that's not on another team
-    //             let matches = this.unrosteredPlayers.filter(p => p.primaryPosition == position && p.team?._id == undefined).sort( (a,b) => b.overallRating - a.overallRating)
+    }
 
-    //             if (matches.length > 0) {
-
-
-    //                 this.hasChanges = true
-
-    //                 let highestRated = matches[0]
-
-    //                 //Find the next open slot
-    //                 let spot = this.lineupService.getFirstAvailableOrderSpot(lineup)
-
-    //                 //Add player to roster
-    //                 this.addRoster(highestRated)
-
-    //                 //Add player to lineup
-    //                 this.lineupService.lineupAdd(lineup, highestRated, spot)
-
-    //             }
-
-
-    //         }
-
-    //     }
-
-
-    //     //Make sure we're at 5 pitchers
-    //     let pitcherCount = lineup.rotation.filter( p => p._id != undefined).length
-
-    //     if (pitcherCount < 5) {
-
-    //         let unrosteredPitchers = this.unrosteredPlayers.filter(p => p.primaryPosition == Position.PITCHER && p.team?._id == undefined).sort( (a,b) => b.overallRating - a.overallRating)
-
-    //         let pitchersToAdd = unrosteredPitchers.slice(0, 5 - pitcherCount)
-
-    //         this.hasChanges = true
-
-    //         for (let pitcher of pitchersToAdd) {
-
-    //             //Find the next open slot
-    //             let spot = this.lineupService.getFirstAvailableRotationSpot(lineup)
-
-    //             //Add player to roster
-    //             this.addRoster(pitcher)
-
-    //             //Add player to lineup
-    //             this.lineupService.rotationAdd(lineup, pitcher, spot)
-
-    //         }
-
-    //     }
-
-    // }
 
 
 }

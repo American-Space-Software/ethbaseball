@@ -35,12 +35,20 @@ class GameController {
             this.universeWebService.setRank(routeTo?.query?.rank || 1)
 
 
-            let gameDate = routeTo?.query?.gameDate || this.env().CURRENT_DATE
+            let gameDate = routeTo?.query?.gameDate
 
             if (!gameDate) {
 
                 if (this.universeWebService.isCurrentSeason) {
-                    gameDate = dayjs(new Date(new Date().toUTCString())).format('YYYY-MM-DD')
+
+                    const nowET = dayjs().tz('America/New_York')
+                    const cutoff = nowET.hour(13) // 1 PM ET today
+
+                    gameDate = (nowET.isBefore(cutoff)
+                        ? nowET.subtract(1, 'day')
+                        : nowET
+                    ).format('YYYY-MM-DD')  
+
                 } else {
                     gameDate = dayjs(this.universeWebService.getStartDate()).format('YYYY-MM-DD')
                 }

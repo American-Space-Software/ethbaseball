@@ -65,7 +65,7 @@
                 <div>
 
                     ${selected == "stats" ? $h`
-                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats" selected>Season Stats</option>
                                 <option value="ratings">Ratings</option>
@@ -74,7 +74,7 @@
                     ` : $h` `}
 
                     ${selected == "ratings" ? $h`
-                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" selected>Ratings</option>
@@ -83,7 +83,7 @@
                     ` : $h` `}
 
                     ${selected == "contracts" ? $h`
-                        <pitcher-contracts pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <pitcher-contracts pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" >Ratings</option>
@@ -96,7 +96,7 @@
                 <div>
 
                     ${selected == "stats" ? $h`
-                        <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats" selected>Season Stats</option>
                                 <option value="ratings">Ratings</option>
@@ -105,7 +105,7 @@
                     ` : $h` `}
 
                     ${selected == "ratings" ? $h`
-                        <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" selected>Ratings</option>
@@ -114,7 +114,7 @@
                     ` : $h` `}
 
                     ${selected == "contracts" ? $h`
-                        <hitter-contracts hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <hitter-contracts hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings">Ratings</option>

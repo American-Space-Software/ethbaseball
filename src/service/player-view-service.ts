@@ -20,6 +20,7 @@ import { OffchainEventService } from "./data/offchain-event-service.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
 import { TeamQueueService } from "./data/team-queue-service.js"
+import { LeagueService } from "./data/league-service.js"
 
 
 
@@ -37,6 +38,7 @@ class PlayerViewService {
         private teamQueueService:TeamQueueService,
         private playerService:PlayerService,
         private seasonService:SeasonService,
+        private leagueSerivce:LeagueService,
         private teamService:TeamService,
         private gameService:GameService,
         private offchainEventService:OffchainEventService,
@@ -62,11 +64,17 @@ class PlayerViewService {
         let hitterGameLog = await this.gameHitResultRepository.getByPlayer(player._id, { limit: 10 } )
         let pitcherGameLog = await this.gamePitchResultRepository.getStartsByPlayer(player._id, { limit: 10 } )
 
+        let askingPrice 
+        
+        if (!currentPls.teamId) {
+            askingPrice = this.playerService.getAskingPrice(currentPls, await this.leagueSerivce.getByRank(1) )
+        }
+        
         let result:PlayerViewModel = {
             _id: player._id,
             displayRating: player.displayRating,
             isRetired: player.isRetired,
-            askingPrice: currentPls?.askingPrice ? ethers.parseUnits(currentPls?.askingPrice.toString(), 'ether').toString() : undefined,
+            askingPrice: askingPrice,
             team: currentPls?.team,
             hits: player.hits,
             age: player.age,

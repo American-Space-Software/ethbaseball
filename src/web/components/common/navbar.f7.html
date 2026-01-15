@@ -18,29 +18,23 @@
         </div>
 
         <div class="popover popover-menu">
-            <div class="popover-angle"></div>
-            <div class="popover-inner">
-              <div class="list inset list-strong list-dividers-ios">
-                <ul>
-                  <li><a href="/" class="list-button popover-close" >Home</a></li>
-                  <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a></li>
-                  <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">Scores</a></li>
-                  <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">Players</a></li>
-                  <!-- <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a></li> -->
-                  <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">Activity</a></li>
-                  <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">About</a></li>
-                  <!-- <li><a class="list-button external popover-close" href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a></li> -->
-<!-- 
-                  ${env.OPENSEA_COLLECTION_URL ? $h`
-                    <li><a class="list-button external popover-close" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a></li>
-                    ` : $h` `} -->
-                  <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
-
-
-                </ul>
-              </div>
+          <div class="popover-angle"></div>
+          <div class="popover-inner">
+            <div class="list inset list-strong list-dividers-ios">
+              <ul>
+                <li><a href="/" class="list-button popover-close">🏠 Home</a></li>
+                <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}">📊 Standings</a></li>
+                <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">🏟️ Scores</a></li>
+                <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">🧢 Players</a></li>
+                <!-- <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">👥 Owners</a></li> -->
+                <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">⚡ Activity</a></li>
+                <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">📖 About</a></li>
+                <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
+              </ul>
             </div>
+          </div>
         </div>
+
 
         <a href="/" class="logo" aria-label="Home">
           <img src="${logo}" alt="Logo" class="logo" />
@@ -53,6 +47,7 @@
 
         <div class="large-only-flex">
 
+          <a href="/" class="link first ${tabLink == `/` ? 'active' : ''}" >Home</a>
           <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
           <a href="${universeWebService.fullLink(`/games`)}" class="link ${tabLink == '/games' ? 'active' : ''}">Scores</a>
           <a href="${universeWebService.fullLink(`/players/`)}"  class="link  ${tabLink == '/players/' ? 'active' : ''}">Players</a>
@@ -70,13 +65,34 @@
 
       </div>
 
+
       ${!authInfo ? $h`
-
         <div class="right">
-            <a data-popup=".login-popup" href="#" class="popup-open link">Login</a>
+          <a data-popup=".login-popup" href="#" class="popup-open link">Login</a>
         </div>
+      ` : $h` 
+        <div class="right no-circle">
 
-        ` : $h` `}
+          <a href="#" class="popover-open" data-popover=".popover-profile">
+            <img src="/team/image/60/${authInfo?.teamId}" class="profilePic" />
+          </a> 
+
+          <div class="popover popover-profile">
+            <div class="popover-angle"></div>
+            <div class="popover-inner">
+              <div class="list inset list-strong list-dividers-ios">
+                <ul>
+                  <li><a href="/t/index/${authInfo?.teamId}" class="list-button popover-close">🛠️ Manage Team</a></li>
+                  <li><a class="popover-close popup-open list-button" data-popup=".logged-in-popup" href="#">👤 Account</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+
+
+        </div>
+      `}
 
 
 
@@ -167,7 +183,7 @@
             <div class="navbar-bg"></div>
             <div class="navbar-inner">
               <div class="title">
-                Profile
+                Account
               </div>
               <div class="right">
                 <!-- Link to close popup -->
@@ -439,7 +455,6 @@
     let subnavVisible = false
     let isAdmin = false
     let contractBalance
-
 
 
     const unlinkUserClicked = async (e) => {

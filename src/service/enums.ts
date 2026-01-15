@@ -1274,10 +1274,9 @@ const MINIMUM_PLAYER_POOL = 1400
 const TEAMS_PER_TIER = 28
 const SERIES_LENGTH = 3
 
-const MAX_AAV_CONTRACT = 40000000
-const AVG_AAV_CONTRACT = 10000000
-
-const MIN_AAV_CONTRACT = 500000
+const STARTING_FREE_AGENT_PRICE = 250
+const FREE_AGENT_FLOOR_PRICE = 10         
+const FREE_AGENT_DAYS_TO_FLOOR = 30
 
 const LEASE_PER_CAPACITY = 100
 
@@ -1369,7 +1368,7 @@ interface SeasonInfo {
 }
 
 
-export  { SeasonInfo, RewardPerTeam, OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+export  { STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimPitchCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

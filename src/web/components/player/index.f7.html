@@ -24,15 +24,32 @@
               <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
               <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
               <span><strong>Overall Rating:</strong> ${player.displayRating.toFixed(0)}</span><br />     
+              
+              ${player.askingPrice ? $h`
+                <span><strong>Cost:</strong> ${universeWebService.displayDiamonds(player.askingPrice)}</span><br />    
+              ` : $h` `}
 
-
-              <!-- ${authInfo?._id != undefined && authInfo._id == player.team?.userId && !player.team.isQueued ? $h`
+              ${authInfo?._id != undefined && authInfo._id == player.team?.userId && !player.team.isQueued ? $h`
                 <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
-              ` : $h` `} -->
+              ` : $h` `}
                   
-              <!-- ${player.askingPrice ? $h`
-                <a data-popup=".sign-popup" class="button button-fill color-green sign-button popup-open">Sign Player</a>  
-              ` : $h` `} -->
+              ${player.askingPrice ? $h`
+
+                ${authInfo?._id ? $h`
+                  
+                  ${BigInt(authInfo.teamDiamondBalance >= BigInt(player.askingPrice)) ? $h`
+                    <a data-popup=".sign-popup" class="button button-fill color-orange sign-button popup-open">Sign Player</a> 
+                  ` : $h` 
+                    
+                    <p>
+                      Your team does not have enough diamonds to sign this player.
+                    </p>
+                  `}
+
+                ` : $h` `}
+
+                
+              ` : $h` `}
 
             </div>
 
@@ -247,133 +264,6 @@
                 </div>
             </div>
           ` : $h` ` }
-
-
-          <!-- <div class="block-title block-title-small">${ player.primaryPosition != "P" ? "Hitting Ratings" : "Pitching Ratings" }</div>
-          <div class="block block-outline block-strong">
-            <div class="stat-table-wrapper">
-              ${player.primaryPosition != "P" ? $h`
-                <table class="data-table small">
-                  <thead>
-                    <tr>
-                      <th class="numeric-cell" >DEF</th>
-                      <th class="numeric-cell" >ARM</th>
-                      <th class="numeric-cell" >SPD</th>
-                      <th  class="numeric-cell" >STL</th>
-
-                      <th class="handed-label">vsR</th>
-                      <th  class="numeric-cell" >EYE</th>
-                      <th  class="numeric-cell" >CON</th>
-                      <th  class="numeric-cell" >GAP</th>
-                      <th  class="numeric-cell" >HR</th>
-                      <th class="handed-label">vsL</th>
-                      <th  class="numeric-cell" >EYE</th>
-                      <th  class="numeric-cell" >CON</th>
-                      <th  class="numeric-cell" >GAP</th>
-                      <th  class="numeric-cell">HR</th>
-
-                      <th  class="numeric-cell" >GB</th>
-                      <th  class="numeric-cell" >FB</th>
-                      <th  class="numeric-cell" >LD</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                      <tr>
-                        <td class="numeric-cell">${player?.hittingRatings?.defense}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.arm}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.speed}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.steals}</td>
-                        
-                        <td class="handed-label" ></td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsR?.plateDiscipline}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsR?.contact}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsR?.gapPower}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsR?.homerunPower}</td>
-                        
-                        <td class="handed-label" ></td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsL?.plateDiscipline}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsL?.contact}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsL?.gapPower}</td>
-                        <td class="numeric-cell">${player?.hittingRatings?.vsL?.homerunPower}</td>
-
-                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.groundball / 1000)}</td>
-                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.flyBall / 1000)}</td>
-                        <td class="numeric-cell">${statService.displayPercent(player?.hittingRatings?.contactProfile?.lineDrive / 1000)}</td>
-
-                      </tr>
-                  </tbody>
-
-                </table>
-              ` : $h`
-                <table class="data-table small">
-                  <thead>
-                    <tr>
-                      <th class="numeric-cell" >POW</th>
-
-                      <th class="handed-label">vsR</th>
-                      <th class="numeric-cell" >CON</th>
-                      <th class="numeric-cell" >MOV</th>
-
-                      <th class="handed-label">vsL</th>
-                      <th class="numeric-cell">CON</th>
-                      <th class="numeric-cell">MOV</th>
-
-                      <th class="numeric-cell"  title="Fastball">FF</th>
-                      <th class="numeric-cell"  title="Curveball">CU</th>
-                      <th class="numeric-cell"  title="Changeup">CH</th>
-                      <th class="numeric-cell"  title="Cutter">FC</th>
-                      <th class="numeric-cell"  title="Forkball">FO</th>
-                      <th class="numeric-cell"  title="Knuckleball">KN</th>
-                      <th class="numeric-cell"  title="Knuckle-curve">KC</th>
-                      <th class="numeric-cell"  title="Screwball">SC</th>
-                      <th class="numeric-cell"  title="Sinker">SI</th>
-                      <th class="numeric-cell"  title="Slider">SL</th>
-                      <th class="numeric-cell"  title="Slurve">SV</th>
-                      <th class="numeric-cell"  title="Splitter">FS</th>
-                      <th class="numeric-cell"  title="Sweeper">ST</th>
-
-
-                    </tr> 
-                  </thead>
-                  
-                  <tbody>
-
-                    <tr>
-                      <td class="numeric-cell">${player?.pitchRatings?.power}</td>
-
-                      <td class="handed-label" ></td>
-                      <td class="numeric-cell">${player?.pitchRatings?.vsR?.control}</td>
-                      <td class="numeric-cell">${player?.pitchRatings?.vsR?.movement}</td>
-
-                      <td class="handed-label" ></td>
-                      <td class="numeric-cell">${player?.pitchRatings?.vsL?.control}</td>
-                      <td class="numeric-cell">${player?.pitchRatings?.vsL?.movement}</td>
-
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "FF")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "CU")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "CH")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "FC")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "FO")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "KN")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "KC")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "SC")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "SI")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "SL")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "SV")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "FS")?.rating}</td>
-                      <td class="numeric-cell">${player?.pitchRatings.pitches.find( pi => pi.type == "ST")?.rating}</td>
-
-
-                    </tr>
-                  </tbody>
-                  
-
-
-                </table>
-              `} 
-            </div>
-          </div> -->
-
 
 
           <div class="block-title block-title-small">Career Stats</div>
@@ -772,7 +662,55 @@
                 </div>
               </div>
             </div>
-          ` : $h` `}
+          ` : $h`
+            <div class="popup sign-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Sign Player</div>
+                      <div class="right">
+                        <!-- Link to close popup -->
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                        ${authInfo?.teamDiamondBalance ? $h` 
+                          
+                          <div class="block">
+
+                            <p>
+                              <strong>Cost To Sign:</strong><br />
+                              ${universeWebService.displayDiamonds(player.askingPrice)}
+                            </p>
+
+                            <p>
+                              <strong>Balance:</strong><br />
+                              ${universeWebService.displayDiamonds(authInfo.teamDiamondBalance)}
+                            </p>
+
+                            <p>
+                              Are you sure you want to sign ${player.fullName} for ${universeWebService.displayDiamonds(player.askingPrice)}?
+                            </p>
+                            
+                            <a @click="${signButtonClick}" class="button button-fill color-red sign-button">Sign Player</a>
+
+                          </div>
+
+
+                          
+                        ` : $h` `}
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+          `}
 
 
 
@@ -810,7 +748,7 @@
   import { Position } from "../../../service/enums.ts"
   import StartDate from "../common/start-date.f7.html"
 
-  export default (props, { $on, $, $f7, $update }) => {
+  export default (props, { $on, $, $f7, $update, $onMounted }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
@@ -825,22 +763,51 @@
     let playerId
     let player = props.player
 
-    console.log(player)
-
-    let itemViewModel
-
-
-    let loading
-    let latest
-
-    let animationContentHTML
+    console.log(authInfo)
 
     const dropButtonClick = async (e) => {
 
       try {
         await playerWebService.dropPlayer(player)
         $f7.popup.close('.drop-popup')
-        $f7.views.main.router.refreshPage()
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/index/${player.team._id}`))
+
+        const toast = $f7.toast.create({
+            text: 'Player dropped successfully.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
+
+        toast.open()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
+    }
+
+    const signButtonClick = async (e) => {
+
+      try {
+        await playerWebService.signPlayer(player)
+        $f7.popup.close('.sign-popup')
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/index/${player.team._id}`))
+
+        const toast = $f7.toast.create({
+            text: 'Player dropped signed.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
+
+        toast.open()
+
       } catch(ex) {
         $f7.dialog.alert(ex.message)
       }
@@ -931,6 +898,20 @@
     $on('pageBeforeOut', async () => {
     })
 
+
+    $onMounted(() => {
+      
+
+      $('.sign-popup').on('popup:opened', async (e) => {
+        console.log('here')
+            // $f7.preloader.show()
+            // await loadUser(true)
+            // await $update()
+            // $f7.preloader.hide()
+      })
+
+
+    })
 
 
     return $render

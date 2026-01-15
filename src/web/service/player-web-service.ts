@@ -1,8 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
 import { HitterPitcher, PitchType, Position } from "../../service/enums.js";
-import dayjs from "dayjs";
-import { WalletService } from "../../service/wallet-service.js";
 import { Player } from "../../dto/player.js";
 import { UniverseWebService } from "./universe-web-service.js";
 
@@ -12,7 +10,6 @@ import { UniverseWebService } from "./universe-web-service.js";
 class PlayerWebService {
 
     constructor(
-        @inject("WalletService") private walletService: WalletService,
         private universeWebService:UniverseWebService
     ) { }
 
@@ -30,6 +27,20 @@ class PlayerWebService {
 
     }
 
+
+    async signPlayer(player:Player) {
+    
+        let result = await fetch(`/api/player/sign/${player._id}`, {
+            method: 'POST'
+        })
+        
+        if (result.status != 200) {
+            throw new Error(await result.text())
+        }
+
+        return result
+
+    }
 
     async get(_id: number, startDate:string) {
         try {

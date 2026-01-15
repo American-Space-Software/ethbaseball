@@ -90,8 +90,15 @@
         let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
         let teamWebService = ContainerService.getInstance(TeamWebService)
 
+        
+
+
+        let eventsViewModel = props.model
+
+
+
         const getOffChainDescription = (oce) => {
-            return offChainEventWebService.getOffChainDescription(oce)
+            return offChainEventWebService.getOffChainDescription(oce, eventsViewModel.players, eventsViewModel.teams)
         }
 
         const getOffChainAmount = (oce) => {
@@ -100,10 +107,7 @@
                 if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return universeWebService.displayDiamonds(oce.amount)
             }
         }
-        
 
-
-        let eventsViewModel = props.model
 
         const getTeam = (teamId) => {
             return eventsViewModel.teams?.find( t => t._id == teamId)

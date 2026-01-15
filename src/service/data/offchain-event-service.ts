@@ -12,6 +12,8 @@ import { TeamService } from "./team-service.js";
 import { Team } from "../../dto/team.js";
 import { TeamRepository } from "../../repository/team-repository.js";
 import { SeasonService } from "./season-service.js";
+import { PlayerService } from "./player-service.js";
+import { Player } from "../../dto/player.js";
 
 
 
@@ -26,7 +28,7 @@ class OffchainEventService {
 
     constructor(
         private teamLeagueSeasonService:TeamLeagueSeasonService,
-        private seasonService:SeasonService
+        private playerService:PlayerService
     ) {}
 
     async createMintEvent(toAddress:string, amount:string, options?:any) {
@@ -242,13 +244,13 @@ class OffchainEventService {
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {
 
         let teamIds = oce.flatMap( e => [e.fromTeamId, e.toTeamId])
-        let uniqueTokenIds = Array.from(new Set(teamIds.filter( i => i != null)))
+        let uniqueTeamIds = Array.from(new Set(teamIds.filter( i => i != undefined)))
 
         let tlssPlain:TeamLeagueSeason[] = []
 
-        if (uniqueTokenIds?.length > 0) {
+        if (uniqueTeamIds?.length > 0) {
 
-            let teams:Team[] = await this.teamRepository.getByIds(uniqueTokenIds, options)
+            let teams:Team[] = await this.teamRepository.getByIds(uniqueTeamIds, options)
 
             let teamSeasonIds:TeamSeasonId[] = teams.map( t => { return { teamId: t._id, seasonId: season._id } })
 
@@ -257,10 +259,14 @@ class OffchainEventService {
         }
 
 
+        let playerIds = oce.map( e => e.playerId).filter( i => i != undefined)
+        let players:Player[] = await this.playerService.getByIds(playerIds, options)
+
 
         return {
             events:oce,
-            teams: tlssPlain.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city?.name } })
+            teams: tlssPlain?.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city?.name } }),
+            players: players?.map( p => { return { _id: p._id, fullName: p.fullName } })
         }
     }
 

@@ -27,7 +27,7 @@ const packageConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
 
 
 const VERSION = JSON.stringify(packageConfig.version)
-
+const BUILD_ID = JSON.stringify(process.env.BUILD_ID ?? Date.now().toString())
 
 
 // import 'dotenv/config'
@@ -218,13 +218,10 @@ let browserConfig = {
       }
     }
 
-
-
-
   ],
   output: {
     library: "ebl",
-    filename: `js/[name]-${VERSION.replace('"', '').replace('"', '')}.ebl.js`,
+    filename: `js/[name]-${BUILD_ID.replace('"', '').replace('"', '')}.ebl.js`,
     path: path.resolve(__dirname, 'public')
   },
   optimization: {
@@ -257,7 +254,7 @@ let serviceWorkerConfig = {
   },
 
   output: {
-    filename: `sw-${VERSION.replace('"', '').replace('"', '')}.js`,
+    filename: `sw-${BUILD_ID.replace('"', '').replace('"', '')}.js`,
     path: path.resolve(__dirname, 'public'),
   },
 
@@ -462,7 +459,8 @@ let webServerConfig = {
     // }),
 
     new webpack.DefinePlugin({
-      VERSION: VERSION      
+      VERSION: VERSION,
+      BUILD_ID: BUILD_ID.replace('"', '').replace('"', '')
     })
     
   ]

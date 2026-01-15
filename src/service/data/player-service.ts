@@ -17,7 +17,7 @@ import { Animation } from "../../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract, MIN_AAV_CONTRACT, AVG_AAV_CONTRACT, MAX_AAV_CONTRACT, PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher } from "../enums.js"
+import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -29,6 +29,7 @@ import { PlayerLeagueSeason } from "../../dto/player-league-season.js"
 import { SeasonService } from "./season-service.js"
 import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
+import dayjs from "dayjs"
 
 
 const zodiac = zodiacFn("en")
@@ -1057,175 +1058,6 @@ class PlayerService {
 
 
 
-    // async getCareerSeasonsHitResult(playerId: string, options?: any): Promise<HitResult[]> {
-    //     return this.gameHitResultRepository.getCareerSeasonsHitResult(playerId, options)
-    // }
-
-    // async getCareerSeasonsPitchResult(playerId: string, options?: any): Promise<PitchResult[]> {
-    //     return this.gamePitchResultRepository.getCareerSeasonsPitchResult(playerId, options)
-    // }
-
-    async getRowItemViewModelsByTokenId(tokenId: number, options?: any): Promise<RowItemViewModel> {
-
-        let player: Player = await this.playerRepository.getByTokenId(tokenId, options)
-
-        let rowItemVm = {
-            _id: player._id,
-            title: `${player.fullName} #${player.tokenId}`,
-            tokenId: player.tokenId
-        }
-
-        return rowItemVm
-
-    }
-
-    async getRowItemViewModelsByTokenIds(tokenIds: number[], options?: any): Promise<RowItemViewModel[]> {
-
-        let vms = []
-
-        let players: Player[] = await this.playerRepository.getByTokenIds(tokenIds, options)
-
-        for (let player of players) {
-
-            vms.push({
-                _id: player._id,
-                title: `${player.fullName} #${player.tokenId}`,
-                tokenId: player.tokenId
-            })
-        }
-
-        return vms
-
-    }
-
-    // async getPlayerRowssByTokenIds(tokenIds: number[], options?: any): Promise<PlayerRowViewModel[]> {
-
-    //     let vms: PlayerRowViewModel[] = []
-
-    //     let players: Player[] = await this.playerRepository.getByTokenIds(tokenIds, options)
-
-    //     for (let player of players) {
-
-    //         let pitchRating = {}
-
-    //         for (let pitchType in PitchType) {
-    //             pitchRating[pitchType] = 0
-    //         }
-
-    //         for (let pitch of player.pitchRatings.pitches) {
-    //             pitchRating[Object.keys(PitchType)[Object.values(PitchType).indexOf(pitch.type)]] = pitch.rating
-    //         }
-
-
-    //         vms.push({
-    //             _id: player._id,
-    //             coverImageCid: player.coverImageCid,
-    //             fullName: `${player.fullName}`,
-    //             firstName: player.firstName,
-    //             lastName: player.lastName,
-    //             primaryPosition: player.primaryPosition,
-    //             age: player.age,
-    //             zodiacSign: player.zodiacSign,
-    //             ownerId: player.ownerId,
-    //             throws: player.throws,
-    //             hits: player.hits,
-    //             lastGamePlayed: player.lastGamePlayed,
-
-    //             hittingRatings: player.hittingRatings,
-    //             pitchRatings: player.pitchRatings,
-
-    //             stats: player.careerStats
-    //         })
-    //     }
-
-    //     return vms
-
-    // }
-
-    async getPlayerRowHittingRatingsByTokenIds(tokenIds: string[], options?: any): Promise<PlayerRowViewModel[]> {
-
-        let vms: PlayerRowViewModel[] = []
-
-        let players = await this.playerRepository.getWithTeamByIds(tokenIds, options)
-
-        for (let player of players) {
-
-            vms.push({
-                _id: player._id,
-                coverImageCid: player.coverImageCid,
-                fullName: `${player.firstName} ${player.lastName}`,
-                firstName: player.firstName,
-                lastName: player.lastName,
-                primaryPosition: player.primaryPosition,
-                age: player.age,
-                zodiacSign: player.zodiacSign,
-                ownerId: player.ownerId,
-                throws: player.throws,
-                hits: player.hits,
-                lastGamePlayed: player.lastGamePlayed,
-
-                team: {
-                    name: player.teamName,
-                    cityName: player.cityName,
-                    _id: player.teamId
-                },
-
-                hittingRatings: player.hittingRatings,
-                pitchRatings: player.pitchRatings
-            })
-        }
-
-        return vms
-
-    }
-
-    async getPlayerRowPitchingRatingsByTokenIds(tokenIds: string[], options?: any): Promise<PlayerRowViewModel[]> {
-
-        let vms: PlayerRowViewModel[] = []
-
-        let players = await this.playerRepository.getWithTeamByIds(tokenIds, options)
-
-        for (let player of players) {
-
-            let pitchRating = {}
-
-            for (let pitchType in PitchType) {
-                pitchRating[pitchType] = 0
-            }
-
-            for (let pitch of player.pitchRatings.pitches) {
-                pitchRating[Object.keys(PitchType)[Object.values(PitchType).indexOf(pitch.type)]] = pitch.rating
-            }
-
-            vms.push({
-                _id: player._id,
-                coverImageCid: player.coverImageCid,
-                fullName: `${player.firstName} ${player.lastName}`,
-                firstName: player.firstName,
-                lastName: player.lastName,
-                primaryPosition: player.primaryPosition,
-                age: player.age,
-                zodiacSign: player.zodiacSign,
-                ownerId: player.ownerId,
-                throws: player.throws,
-                hits: player.hits,
-                lastGamePlayed: player.lastGamePlayed,
-
-                team: {
-                    cityName: player.cityName,
-                    name: player.teamName,
-                    _id: player.teamId,
-                },
-
-                hittingRatings: player.hittingRatings,
-                pitchRatings: player.pitchRatings
-            })
-        }
-
-        return vms
-
-    }
-
     async clearAllTransactions(options?: any): Promise<void> {
         return this.playerRepository.clearAllTransactions(options)
     }
@@ -1298,130 +1130,15 @@ class PlayerService {
 
     // }
 
-    translateHitterRowsToHitter(hitterRows) {
-
-        return hitterRows.map(player => {
-
-            let stats = {}
-            for (let key of Object.keys(player)) {
-                if (key.startsWith("gs_")) {
-                    stats[key.replace("gs_", "")] = parseFloat(player[key])
-                }
-            }
-
-            return {
-                _id: player._id,
-                coverImageCid: player.cid,
-                fullName: `${player.firstName} ${player.lastName}`,
-                firstName: player.firstName,
-                lastName: player.lastName,
-                primaryPosition: player.primaryPosition,
-                age: player.age,
-                zodiacSign: player.zodiacSign,
-                ownerId: player.ownerId,
-                throws: player.throws,
-                hits: player.hits,
-                // rating: parseInt(player.rating.rating.toFixed(0)),
-                lastGamePlayed: player.lastGamePlayed,
-                overallRating: player.overallRating,
-                playerLevel: player.playerLevel,
-
-                team: {
-                    name: player.teamName,
-                    cityName: player.cityName,
-                    _id: player.teamId
-                },
-
-                careerStats: {
-                    //@ts-ignore
-                    hitting: this.hitResultToHitterStatLine(stats)
-                }
-            }
-
-        })
-    }
-
-    translatePitcherRowsToPitcher(pitcherRows) {
-        return pitcherRows.map(player => {
 
 
-            let stats = {}
-            for (let key of Object.keys(player)) {
-                if (key.startsWith("gs_")) {
-                    stats[key.replace("gs_", "")] = parseFloat(player[key])
-                }
-            }
-
-            return {
-                _id: player._id,
-                coverImageCid: player.cid,
-                fullName: `${player.firstName} ${player.lastName}`,
-                firstName: player.firstName,
-                lastName: player.lastName,
-                primaryPosition: player.primaryPosition,
-                age: player.age,
-                zodiacSign: player.zodiacSign,
-                ownerId: player.ownerId,
-                throws: player.throws,
-                hits: player.hits,
-                // rating: parseInt(player.rating.rating.toFixed(0)),
-                lastGamePlayed: player.lastGamePlayed,
-                overallRating: player.overallRating,
-                playerLevel: player.playerLevel,
-
-                team: {
-                    name: player.teamName,
-                    cityName: player.cityName,
-                    _id: player.teamId
-                },
-
-                careerStats: {
-                    //@ts-ignore
-                    pitching: this.pitchResultToPitcherStatLine(stats)
-                }
-            }
-
-        })
-    }
-
-    translatePlayerRowsToViewModel(playerRows) : PlayerRowViewModel[] {
-
-        return playerRows.map(player => {
-
-            return {
-                _id: player._id,
-                coverImageCid: player.cid,
-                fullName: `${player.firstName} ${player.lastName}`,
-                firstName: player.firstName,
-                lastName: player.lastName,
-                primaryPosition: player.primaryPosition,
-                age: player.age,
-                zodiacSign: player.zodiacSign,
-                ownerId: player.ownerId,
-                throws: player.throws,
-                hits: player.hits,
-                lastGamePlayed: player.lastGamePlayed,
-                overallRating: player.overallRating,
-                playerLevel: player.playerLevel,
-
-                hittingRatings: player.hittingRatings,
-                pitchRatings: player.pitchRatings,
-
-                team: {
-                    name: player.teamName,
-                    cityName: player.cityName,
-                    _id: player.teamId
-                },
-
-                careerStats: player.careerStats
-            }
-
-        })
-    }
-
-    async getPlayerViewModels(startDate:Date, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
+    async getPlayerViewModels(startDate:Date, rankOneLeague:League, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
 
         let season:Season = await this.seasonService.getByDate(startDate)
+
+
+        let laPitcherRating:number
+        let laHitterRating:number
 
         let tlss:TeamLeagueSeason[] = []
 
@@ -1437,6 +1154,10 @@ class PlayerService {
             tlss = await this.teamLeagueSeasonService.getByTeamSeasonIds( teamSeasonIds)
 
         } else {
+
+            laPitcherRating = this.getAveragePitchingRating(rankOneLeague.averageRating.pitchRatings) 
+            laHitterRating = this.getAverageHittingRating(rankOneLeague.averageRating.hittingRatings) 
+
             plss = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, positions, sortColumn, sortDirection, options)
         }
 
@@ -1448,8 +1169,6 @@ class PlayerService {
             let tls = tlss.find( tl => tl.teamId == p.teamId)
             let t = tls?.get({ plain: true})
 
-            let salaryDecimal = 0
-            
             let vm:any = {
                 _id: p.player._id,
                 displayRating: p.player.displayRating,
@@ -1464,8 +1183,6 @@ class PlayerService {
                 throws: p.player.throws,
                 hits: p.player.hits,
                 lastGamePlayed: p.player.lastGamePlayed,
-                salary: salaryDecimal ? ethers.parseUnits(salaryDecimal.toString(), "ether").toString() : undefined,
-                salaryDecimal: salaryDecimal,
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
                 careerStats: p.player.careerStats,
@@ -1483,6 +1200,16 @@ class PlayerService {
                         _id: t.team.userId
                     }
                 }
+
+            } else {
+
+                const daysFreeAgent = Math.max( 0, dayjs().startOf('day').diff(  dayjs(pls.startDate).startOf('day'), 'day' ))
+
+                let laRating = p.primaryPosition == Position.PITCHER ? laPitcherRating : laHitterRating
+
+                vm.askingPrice =  this.getFreeAgentSalary(p.player.displayRating, laRating, daysFreeAgent)
+
+            
             }
 
 
@@ -1493,185 +1220,99 @@ class PlayerService {
 
     }
 
-    async getPlayerViewModelsByOwner(owner:Owner) {
-        let players = await this.playerRepository.listByOwnerWithTeams(owner)
-        return this.translatePlayerRowsToViewModel(players)
-    }
+    getAskingPrice(pls:PlayerLeagueSeason, rankOneLeague:League) {
 
-    async getPlayerRowViewModelsById(playerIds:string[], options?:any) : Promise<PlayerRowViewModel[]> {
-        let playerRows = await this.playerRepository.getByIds(playerIds, options)
-        return this.translatePlayerRowsToViewModel(playerRows)
-    }
+        let plsPlain = pls.get({ plain: true})
 
+        const daysFreeAgent = Math.max( 0, dayjs().startOf('day').diff(  dayjs(pls.startDate).startOf('day'), 'day' ))
 
-    getFreeAgentSalary(playerRating:number, laOverallRating:number, laSalary:number) {
+        let laPitcherRating = this.getAveragePitchingRating(rankOneLeague.averageRating.pitchRatings) 
+        let laHitterRating = this.getAverageHittingRating(rankOneLeague.averageRating.hittingRatings) 
 
-        let overallRatingChange = this.rollService.getChange(laOverallRating, playerRating)
+        let laRating = pls.primaryPosition == Position.PITCHER ? laPitcherRating : laHitterRating
 
-        overallRatingChange *= 5
-
-        let salary = this.rollService.applyChange(laSalary, overallRatingChange)
-
-        if (salary < MIN_AAV_CONTRACT) return MIN_AAV_CONTRACT
-        if (salary > MAX_AAV_CONTRACT) return MAX_AAV_CONTRACT
-
-        return salary
+        return this.getFreeAgentSalary(plsPlain.player.displayRating, laRating, daysFreeAgent)
     }
 
 
-    getArbitrationSalary(playerRating:number, laOverallRating:number, laSalary:number, rookieSalary:number) {
+    getFreeAgentSalary(playerRating: number, leagueAvgRating: number, daysFreeAgent: number) {
 
-        let overallRatingChange = this.rollService.getChange(laOverallRating, playerRating)
+        // We only care about the first 30 days.
+        // After that, the player is at the minimum price.
+        const daysOnMarket = Math.max(
+            0,
+            Math.min(daysFreeAgent, FREE_AGENT_DAYS_TO_FLOOR)
+        )
 
-        overallRatingChange *= 5
+        // Convert days-on-market into a 0..1 progress value
+        // 0 = just became a free agent
+        // 1 = reached the minimum price
+        const marketProgress = daysOnMarket / FREE_AGENT_DAYS_TO_FLOOR
 
-        let salary = this.rollService.applyChange(laSalary, overallRatingChange)
+        /**
+         * Price decay curve:
+         *  - Starts at 1.0 on day 0
+         *  - Falls quickly early
+         *  - Flattens out as it approaches the floor
+         */
+        const STEEPNESS = 3
+        const decayMultiplier = Math.pow(1 - marketProgress, STEEPNESS)
 
-        if (salary < rookieSalary) return rookieSalary
-        if (salary > MAX_AAV_CONTRACT) return MAX_AAV_CONTRACT
+        /**
+         * Rating multiplier:
+         * League-average player costs STARTING_FREE_AGENT_PRICE on day 0.
+         * Better players cost more, worse players cost less.
+         */
+        const STEP = 12 // ~12 rating points = ~2x price
+        const ratingDelta = playerRating - leagueAvgRating
+        const ratingMultiplier = Math.pow(2, ratingDelta / STEP)
 
-        return salary
+        // Day-0 asking price for this player
+        const startingPrice =
+            STARTING_FREE_AGENT_PRICE * ratingMultiplier
+
+        // Apply time-based decay down toward the floor
+        const price =
+            FREE_AGENT_FLOOR_PRICE +
+            (startingPrice - FREE_AGENT_FLOOR_PRICE) * decayMultiplier
+
+        // Never go below the floor
+        return ethers.parseUnits(Math.max(FREE_AGENT_FLOOR_PRICE, Math.round(price)).toString(), 'ether').toString()
     }
 
-    // createRookieContract(player:Player) {
-    //     player.contract = {
 
-    //         isRookie: true,
 
-    //         years:[ { 
-    //             complete: false, 
-    //             isArbitration: false,
-    //             isPlayerOption: false,
-    //             isPreArbitration: true,
-    //             isTeamOption: false
-    //         },
-    //         { 
-    //             complete: false, 
-    //             isArbitration: false,
-    //             isPlayerOption: false,
-    //             isPreArbitration: true,
-    //             isTeamOption: false
-    //         },
-    //         { 
-    //             complete: false, 
-    //             isArbitration: false,
-    //             isPlayerOption: false,
-    //             isPreArbitration: true,
-    //             isTeamOption: false
-    //         },
-    //         { 
-    //             complete: false, 
-    //             isArbitration: true,
-    //             isPlayerOption: false,
-    //             isPreArbitration: false,
-    //             isTeamOption: false
-    //         },
-    //         { 
-    //             complete: false, 
-    //             isArbitration: true,
-    //             isPlayerOption: false,
-    //             isPreArbitration: false,
-    //             isTeamOption: false
-    //         },
-    //         { 
-    //             complete: false, 
-    //             isArbitration: true,
-    //             isPlayerOption: false,
-    //             isPreArbitration: false,
-    //             isTeamOption: false
-    //         },
-    //         { 
-    //             complete: false, 
-    //             isArbitration: true,
-    //             isPlayerOption: false,
-    //             isPreArbitration: false,
-    //             isTeamOption: false
-    //         }      
-        
-    //         ]
-    //     }
+    // getArbitrationSalary(playerRating:number, laOverallRating:number, laSalary:number, rookieSalary:number) {
+
+    //     let overallRatingChange = this.rollService.getChange(laOverallRating, playerRating)
+
+    //     overallRatingChange *= 5
+
+    //     let salary = this.rollService.applyChange(laSalary, overallRatingChange)
+
+    //     if (salary < rookieSalary) return rookieSalary
+    //     if (salary > MAX_AAV_CONTRACT) return MAX_AAV_CONTRACT
+
+    //     return salary
     // }
 
-    // createFreeAgentContract(player:Player, laOverallRating:number, laSalary:number, years:number, modifier:number) {
+    // getSalaryModifier(leagueRank:number) {
 
-    //     player.contract = {
-    //         isRookie: false,
-    //         years:[ ]
-    //     }
+    //     let salaryModifier = 1
 
-    //     for (let i=0; i < years; i++) {
-    //         player.contract.years.push({ 
-    //             complete: false, 
-    //             isArbitration: false,
-    //             isPlayerOption: false,
-    //             isPreArbitration: false,
-    //             isTeamOption: false
-    //         })
-    //     }
+    //     Array.from({ length: leagueRank - 1 }, () => {
+    //         salaryModifier *= .5
+    //     })    
 
-    //     for (let year of player.contract.years) {
-    //         let salary = this.getFreeAgentSalary(player.overallRating, laOverallRating, laSalary) * modifier
-    //         year.salary = ethers.parseUnits(salary.toString(), 'ether').toString()
-    //     }
-
+    //     return salaryModifier
     // }
 
-    // getCostToDrop(player:Player, gamesPerSeason:number, gamesRemaining:number) {
+    // getRookieSalary(leagueRank:number) {
 
-    //     let currentSalary = player.contract.years.find( y => !y.complete && y.salary).salary
-    //     let salaryPerGame = BigInt(currentSalary) / BigInt(gamesPerSeason)
-
-    //     if (player.contract.isRookie) {
-    //         return (salaryPerGame * BigInt(gamesRemaining)).toString()
-    //     }
-            
-    //     //Get total cost of remaining contract
-    //     let cost = BigInt(0)
-
-    //     for (let year of player.contract.years.filter( y => y.complete == false)) {
-    //         cost += BigInt(year.salary)
-    //     }
-
-    //     //Subtract what's been paid this season.
-    //     cost -= BigInt(gamesPerSeason - gamesRemaining) * salaryPerGame
-
-    //     return cost.toString()        
-
+    //     let salaryModifier = this.getSalaryModifier(leagueRank)
+    //     return MIN_AAV_CONTRACT * salaryModifier
     // }
 
-    getSalaryModifier(leagueRank:number) {
-
-        let salaryModifier = 1
-
-        Array.from({ length: leagueRank - 1 }, () => {
-            salaryModifier *= .5
-        })    
-
-        return salaryModifier
-    }
-
-    getRookieSalary(leagueRank:number) {
-
-        let salaryModifier = this.getSalaryModifier(leagueRank)
-        return MIN_AAV_CONTRACT * salaryModifier
-    }
-
-    // signContract(league:League, player:Player, season:Season, date:Date) {
-
-    //     player.contract.startDate = dayjs(date).format("YYYY-MM-DD")
-    //     player.contract.years[0].startDate = player.contract.startDate
-    //     player.contract.years[0].endDate = dayjs(season.endDate).format("YYYY-MM-DD")
-
-    //     if (player.contract.isRookie) {
-
-    //         let rookieSalary = this.getRookieSalary(league.rank)
-
-    //         player.contract.years[0].salary = ethers.parseUnits(rookieSalary.toString(), 'ether').toString()
-    //     }
-
-    //     player.lastTeamChange = date
-    //     player.changed('contract', true)
-    // }
 
     getYearsContractAsk(yearsOld: number): number {
 

@@ -73,6 +73,9 @@ let startWebServer = async () => {
   //@ts-ignore
   const version = VERSION
 
+  //@ts-ignore
+  const buildId = BUILD_ID
+
   console.log(`
 ***********************************
 * Web server starting ${version}  *
@@ -229,6 +232,7 @@ let startWebServer = async () => {
       'START_DATE': dayjs(season.startDate).format("YYYY-MM-DD"),
       //@ts-ignore
       'VERSION': VERSION,
+      'BUILD_ID': buildId,
       'PROVIDER_CHAIN_ID': PROVIDER_CHAIN_ID,
       'PROVIDER_CHAIN_NAME': PROVIDER_CHAIN_NAME,
       'PROVIDER_CHAIN_RPC_URL': PROVIDER_CHAIN_RPC_URL,
@@ -257,6 +261,7 @@ let startWebServer = async () => {
         url: `${process.env.WEB}${props.url}`,
         twitter: TWITTER,
         VERSION: version,
+        BUILD_ID: buildId,
         FOOTER_ROUTES: FOOTER_ROUTES,
         FOOTER_SCRIPT: FOOTER_SCRIPT,
         ENV: await getEnv()
@@ -1018,11 +1023,18 @@ let startWebServer = async () => {
       let page = parseIntWithException(req.params.page)
       let options = { limit: perPage, offset: (page - 1) * perPage }
 
-
+      let rankOneLeague
       let league:League
       if (rank > 0) {
         league = await leagueService.getByRank(rank)
       }
+
+      if (league?.rank == 1) {
+        rankOneLeague = league
+      } else {
+        rankOneLeague = await leagueService.getByRank(1)
+      }
+
 
       let sortColumn = req.query.sortColumn ? req.query.sortColumn.toString() : 'displayRating'
       let sortDirection = req.query.sortDirection ? req.query.sortDirection.toString() : 'DESC'
@@ -1053,7 +1065,7 @@ let startWebServer = async () => {
         positions = [playerPosition as Position]
       }
 
-      return res.json(await playerService.getPlayerViewModels(startDate, league, positions, sortColumn, sortDirection, options))
+      return res.json(await playerService.getPlayerViewModels(startDate, rankOneLeague, league, positions, sortColumn, sortDirection, options))
     } catch (ex) {
       console.log(ex)
       res.sendStatus(404)
@@ -1075,50 +1087,134 @@ let startWebServer = async () => {
         return res.send("Not authorized.")
       }
 
-      let user: User = await userService.get(userId)
-
-      //Make sure this user owns this player
-      let player:Player = await playerService.get(playerId)
-      let season:Season = await seasonService.getMostRecent()
-      
-      let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-      
-      if (!pls.teamId) {
-        throw new Error("Player is not rostered.")
-      }
-      
-      let team:Team = await teamService.get(pls.teamId)
-      
-      //Must be team owner
-      if (user._id != team.userId) {
-        res.status(401)
-        return res.send("Not authorized.")
-      }
-
-      //Must not be queued.
-      let isQueued = await teamQueueService.isTeamQueued(team)
-      if (isQueued) {
-        throw new Error("Team is queued for a game. Cannot drop player.")
-      }
-
-
       await refreshUniverse()
 
-      await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+
+          //Make sure this user owns this player
+          let player:Player = await playerService.get(playerId, options)
+          let season:Season = await seasonService.getMostRecent(options)
+          
+          let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+          
+          if (!pls.teamId) {
+            throw new Error("Player is not rostered.")
+          }
+          
+          let team:Team = await teamService.get(pls.teamId, options)
+          
+          //Must be team owner
+          if (user._id != team.userId) {
+            throw new Error ("Not authorized.")
+          }
+
+          //Must not be queued.
+          let isQueued = await teamQueueService.isTeamQueued(team, options)
+          if (isQueued) {
+            throw new Error("Team is queued for a game. Cannot drop player.")
+          }
+
+          await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
+
+      })
 
       //Clear cache 
       await cacheService.clearPlayersTag()
       await cacheService.clearTeamsTag()
 
-      res.send("success")
+      return res.send("success")
 
     } catch (ex) {
-      console.log(ex)
       res.status(500)
       res.send(ex.message);
     }
 
   })
+
+  app.post('/api/player/sign/:playerId', async function (req, res) {
+
+    try {
+
+      let playerId = req.params.playerId
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      await refreshUniverse()
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+
+          //Make sure this user owns this player
+          let player:Player = await playerService.get(playerId, options)
+          let season:Season = await seasonService.getMostRecent(options)
+          
+          let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+          
+          if (pls.teamId) {
+            throw new Error("Player is rostered.")
+          }
+          
+          let team:Team = await teamService.get(pls.teamId, options)
+          let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season, options)
+          
+          //Must be team owner
+          if (user._id != team.userId) {
+            throw new Error("Not authorized.")
+          }
+
+          //Must not be queued.
+          let isQueued = await teamQueueService.isTeamQueued(team, options)
+          if (isQueued) {
+            throw new Error("Team is queued for a game. Cannot sign player.")
+          }
+
+          //Make sure the roster has space for a player at this position
+          let currentPLSS:PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
+
+          let requiredPositions:Position[] = teamService.listRequiredRosterSpots(currentPLSS)
+
+          if (!requiredPositions.includes(pls.primaryPosition)) {
+            throw new Error(`Team roster does not have space for a player at position ${pls.primaryPosition}.`)
+          }
+
+          //Make sure the team has enough budget to sign this player
+          let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+
+          let askingPrice = this.playerService.getAskingPrice(pls, await this.leagueSerivce.getByRank(1) )
+
+          if (BigInt(diamondBalance) < BigInt(askingPrice)) {
+            throw new Error(`Team does not have enough diamonds to sign this player.`)
+          }
+
+          await teamService.signPlayer(pls, player, team, season, universe.currentDate)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
+
 
 /**
  * End Players
@@ -1302,8 +1398,43 @@ let startWebServer = async () => {
   /** End game transactions */
 
 
+  app.get('/team/image/60/:teamId', cacheService.cacheResponse({ tag: TEAMS }), async function (req, res) {
+
+    try {
+
+      let id = req.params.teamId
+
+      let team:Team = await teamService.get(id)
+      let tls:TeamLeagueSeason = await teamLeagueSeasonService.getMostRecent(team)
+
+      let image:Image = await imageService.get(tls.logoId)
+
+      if (image.svg) {
+
+        res.writeHead(200, {
+          'Content-Type': 'image/svg+xml',
+          'Content-Length': image.svg.length
+        })
+
+        res.end(image.svg)
+
+      } else {
+        
+        res.writeHead(200, {
+          'Content-Type': 'image/png',
+          'Content-Length': image.data60x60.length
+        })
+
+        res.end(image.data60x60)
+
+      }
 
 
+    } catch (ex) {
+      res.sendStatus(404)
+    }
+
+  })
 
   app.get('/api/team/date/:teamId/:startDate', async function (req, res) {
 
@@ -1352,83 +1483,83 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/team/lineup/:teamId', async function (req, res) {
+  // app.get('/api/team/lineup/:teamId', async function (req, res) {
 
-    try {
+  //   try {
 
-      let teamId = req.params.teamId
-      let team: Team = await teamService.get(teamId)
+  //     let teamId = req.params.teamId
+  //     let team: Team = await teamService.get(teamId)
 
-      const getTeamBundle = async (theTeam) => {
+  //     const getTeamBundle = async (theTeam) => {
         
-        let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
-        let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
+  //       let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
+  //       let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
 
-        let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
-        let plsPlain = pls.map( pls => pls.get({ plain: true}))
+  //       let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
+  //       let plsPlain = pls.map( pls => pls.get({ plain: true}))
 
-        let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
+  //       let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
 
-        return {
-          tls: tls,
-          tlsPlain: tlsPlain,
-          plss: pls,
-          plssPlain: plsPlain,
-          startingPitcher: startingPitcher,
-          team: theTeam
-        }
+  //       return {
+  //         tls: tls,
+  //         tlsPlain: tlsPlain,
+  //         plss: pls,
+  //         plssPlain: plsPlain,
+  //         startingPitcher: startingPitcher,
+  //         team: theTeam
+  //       }
 
-      }
+  //     }
 
-      let season:Season = await seasonService.getMostRecent()
+  //     let season:Season = await seasonService.getMostRecent()
 
-      let teamBundle = await getTeamBundle(team)
+  //     let teamBundle = await getTeamBundle(team)
 
       
-      teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher)
+  //     teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher)
 
-      const lineup = teamBundle.tls.lineups[0].order
-        .map(p => {
+  //     const lineup = teamBundle.tls.lineups[0].order
+  //       .map(p => {
 
-          let pls 
+  //         let pls 
 
-          if (p.position == Position.PITCHER) {
-            pls = teamBundle.plss.find(x => x.playerId === teamBundle.startingPitcher._id)!
-          } else {
-            pls = teamBundle.plss.find(x => x.playerId === p._id)!
-          }
+  //         if (p.position == Position.PITCHER) {
+  //           pls = teamBundle.plss.find(x => x.playerId === teamBundle.startingPitcher._id)!
+  //         } else {
+  //           pls = teamBundle.plss.find(x => x.playerId === p._id)!
+  //         }
           
-          const pl = pls.get({ plain: true })
-          return {
-            _id: pl.playerId,
-            displayRating: pl.player.displayRating,
-            fullName: `${pl.player.firstName} ${pl.player.lastName}`,
-            firstName: pl.player.firstName,
-            lastName: pl.player.lastName,
-            primaryPosition: pl.primaryPosition,
-            throws: pl.player.throws,
-            hits: pl.player.hits,
-            lastGamePlayed: pl.player.lastGamePlayed,
-            lastGamePitched: pl.player.lastGamePitched,
-            stamina: pl.player.stamina
-          }
-        })
+  //         const pl = pls.get({ plain: true })
+  //         return {
+  //           _id: pl.playerId,
+  //           displayRating: pl.player.displayRating,
+  //           fullName: `${pl.player.firstName} ${pl.player.lastName}`,
+  //           firstName: pl.player.firstName,
+  //           lastName: pl.player.lastName,
+  //           primaryPosition: pl.primaryPosition,
+  //           throws: pl.player.throws,
+  //           hits: pl.player.hits,
+  //           lastGamePlayed: pl.player.lastGamePlayed,
+  //           lastGamePitched: pl.player.lastGamePitched,
+  //           stamina: pl.player.stamina
+  //         }
+  //       })
 
 
-      res.json({
-        lineup: lineup,
-        startingPitcher: teamBundle.startingPitcher
-      })
+  //     res.json({
+  //       lineup: lineup,
+  //       startingPitcher: teamBundle.startingPitcher
+  //     })
 
-      return 
+  //     return 
       
 
-    } catch (ex) {
-        res.status(500)
-        res.send(ex.message)
-    }
+  //   } catch (ex) {
+  //       res.status(500)
+  //       res.send(ex.message)
+  //   }
 
-  })
+  // })
 
   app.post('/api/team/roster/:teamId', async function (req, res) {
 

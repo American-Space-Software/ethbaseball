@@ -61,13 +61,14 @@ class UserService {
     async getAuthInfo(user:User) {
 
         let teams:Team[]  = await this.teamService.getByUser(user)
+        let team = teams[0]
 
         let authInfo:any = { 
           _id: user._id, 
           discordUsername: user.discordProfile?.username, 
           discordId: user.discordId,
           address: user.address, 
-          teamIds: teams.map( t => {  return { _id: t._id} })
+          teamId: team?._id
         }
     
         if (user.address) {
@@ -81,6 +82,10 @@ class UserService {
           }
         }
         
+        if (team) {
+            authInfo.teamDiamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+        }
+
 
         return authInfo
     }

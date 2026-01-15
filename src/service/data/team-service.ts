@@ -6,7 +6,7 @@ import { TeamRepository } from "../../repository/team-repository.js";
 import { Player } from "../../dto/player.js";
 import { GLICKO_SETTINGS, NFTMetadata, PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import { ContractType, MAX_AAV_CONTRACT, MIN_AAV_CONTRACT, Position, Rating, TeamInfo, TEAMS_PER_TIER } from "../enums.js";
+import { ContractType, Position, Rating, TeamInfo, TEAMS_PER_TIER } from "../enums.js";
 import { TeamRating, TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
@@ -1017,63 +1017,116 @@ n
 
     }
 
-    async dropPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date) {
+    async dropPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, options?:any) {
 
-        let s = await this.sequelize()
-        await s.transaction(async (t1) => {
-        
-            let options = { transaction: t1 }
+        //Update team. Remove from lineup and rotation.
+        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
 
-            //Update team. Remove from lineup and rotation.
-            let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+        // let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
 
-            // let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+        this.lineupService.lineupRemove(tls.lineups[0], player._id)
+        this.lineupService.rotationRemove(tls.lineups[0], player._id)
 
-            this.lineupService.lineupRemove(tls.lineups[0], player._id)
-            this.lineupService.rotationRemove(tls.lineups[0], player._id)
+        tls.lineups[0].valid = false
+        tls.hasValidLineup = false
 
-            tls.changed("lineups", true)
+        tls.changed("lineups", true)
+        tls.changed("hasValidLineup", true)
 
-            //End current PLS
-            pls.endDate = date
+        //End current PLS
+        pls.endDate = date
 
-            await this.playerLeagueSeasonService.put(pls, options)
+        await this.playerLeagueSeasonService.put(pls, options)
 
-            //Create new PLS
-            let nextPLS = new PlayerLeagueSeason()
-            nextPLS.playerId = pls.playerId
-            nextPLS.seasonId = season._id
-            nextPLS.seasonIndex = pls.seasonIndex + 1
-            nextPLS.primaryPosition = pls.primaryPosition
-            nextPLS.overallRating = pls.overallRating
-            nextPLS.hittingRatings = pls.hittingRatings
-            nextPLS.pitchRatings = pls.pitchRatings
-            nextPLS.overallRating = pls.overallRating
-            nextPLS.displayRating = pls.displayRating
-            nextPLS.startDate = date
-            nextPLS.endDate = season.endDate
-            nextPLS.age = player.age
+        //Create new PLS
+        let nextPLS = new PlayerLeagueSeason()
+        nextPLS.playerId = pls.playerId
+        nextPLS.seasonId = season._id
+        nextPLS.seasonIndex = pls.seasonIndex + 1
+        nextPLS.primaryPosition = pls.primaryPosition
+        nextPLS.overallRating = pls.overallRating
+        nextPLS.hittingRatings = pls.hittingRatings
+        nextPLS.pitchRatings = pls.pitchRatings
+        nextPLS.overallRating = pls.overallRating
+        nextPLS.displayRating = pls.displayRating
+        nextPLS.startDate = date
+        nextPLS.endDate = season.endDate
+        nextPLS.age = player.age
 
-            nextPLS.stats = {
-                //@ts-ignore
-                hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-                //@ts-ignore
-                pitching: this.statService.mergePitchResultsToStatLine({}, {})
-            }
+        nextPLS.stats = {
+            //@ts-ignore
+            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
+            //@ts-ignore
+            pitching: this.statService.mergePitchResultsToStatLine({}, {})
+        }
 
-            await this.playerLeagueSeasonService.put(nextPLS, options)
+        await this.playerLeagueSeasonService.put(nextPLS, options)
 
-            //drop the player
-            await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, options)
+        //drop the player
+        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, options)
 
 
-            await this.put(team, options)
-            await this.teamLeagueSeasonService.put(tls, options)
-
-        })
+        await this.put(team, options)
+        await this.teamLeagueSeasonService.put(tls, options)
 
 
     }
+
+
+    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, options?:any) {
+
+        //Update team. Remove from lineup and rotation.
+        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+
+        // let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+
+        this.lineupService.lineupRemove(tls.lineups[0], player._id)
+        this.lineupService.rotationRemove(tls.lineups[0], player._id)
+
+        tls.lineups[0].valid = false
+        tls.hasValidLineup = false
+
+        tls.changed("lineups", true)
+        tls.changed("hasValidLineup", true)
+
+        //End current PLS
+        pls.endDate = date
+
+        await this.playerLeagueSeasonService.put(pls, options)
+
+        //Create new PLS
+        let nextPLS = new PlayerLeagueSeason()
+        nextPLS.playerId = pls.playerId
+        nextPLS.seasonId = season._id
+        nextPLS.seasonIndex = pls.seasonIndex + 1
+        nextPLS.primaryPosition = pls.primaryPosition
+        nextPLS.overallRating = pls.overallRating
+        nextPLS.hittingRatings = pls.hittingRatings
+        nextPLS.pitchRatings = pls.pitchRatings
+        nextPLS.overallRating = pls.overallRating
+        nextPLS.displayRating = pls.displayRating
+        nextPLS.startDate = date
+        nextPLS.endDate = season.endDate
+        nextPLS.age = player.age
+
+        nextPLS.stats = {
+            //@ts-ignore
+            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
+            //@ts-ignore
+            pitching: this.statService.mergePitchResultsToStatLine({}, {})
+        }
+
+        await this.playerLeagueSeasonService.put(nextPLS, options)
+
+        //drop the player
+        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, options)
+
+
+        await this.put(team, options)
+        await this.teamLeagueSeasonService.put(tls, options)
+
+
+    }    
 
     async updateSeasonRecord(team:Team, season:Season, tls:TeamLeagueSeason, options?:any) : Promise<OverallRecord> {
 

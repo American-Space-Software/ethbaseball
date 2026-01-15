@@ -17,8 +17,10 @@
                     <th class="image"></th>
                     <th @click=${sortPitchers} class="name" data-sort="fullName">Name</th>
                     ${actions ? $h`<th class="action"></th>` : $h` `}
-                              
-                    <th class="stamina" data-sort="stamina">🪫</th>                    
+                    <th class="stamina" data-sort="stamina">🪫</th> 
+                    ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}        
+
+                                       
 
                     <th @click=${sortPitchers} class="numeric-cell" data-sort="displayRating">OVR</th>
                     <th @click=${sortPitchers} data-sort="throws">Throws</th>
@@ -61,10 +63,15 @@
                                 </td>
                             ` : $h` `}
 
-
                             <td class="numeric-cell">
                                 ${p._id ? $h`<${StaminaBar} stamina=${p.stamina} />` : $h` `}
                             </td>
+
+                            ${showAskingPrice ? $h`
+                            <td class="numeric-cell">${universeWebService.displayDiamonds(p.askingPrice)}</td>
+                            ` : $h` `}
+
+
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
 
@@ -130,6 +137,13 @@
 
     if (props.actions) {
       actions = props.actions()
+    }
+
+
+    let showAskingPrice = false 
+
+    if (props.showaskingprice) {
+      showAskingPrice = true
     }
 
     const moveFilter = props.movefilter

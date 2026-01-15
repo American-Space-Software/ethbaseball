@@ -14,6 +14,7 @@
             <th class="image"></th>
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
             ${actions ? $h`<th class="action"></th>` : $h` `}     
+            ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
             <th @click=${sortHitters} class="numeric-cell" data-sort="displayRating">OVR</th>
             <th @click=${sortHitters} data-sort="hits">Bats</th>
@@ -58,12 +59,13 @@
                     ${p?._id ? $h`
                       <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
                     ` : $h` 
-                      ${p?.fullName ? $h`${p?.fullName}<br />` : $h` `}
-                    `}
-  
-                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
+                      <a href="${universeWebService.startDateLink(`/players/?position=${p?.primaryPosition}&rank=0`)}" style="font-weight: normal;">${p.fullName}</a><br />
 
-                  ` : $h`- Empty lineup spot -`}
+                    `}
+
+                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
+                    
+                  ` : $h` `}
                 </td>
 
 
@@ -74,6 +76,11 @@
                     ` : $h` `}
                   </td>
                 ` : $h` `}
+                
+                ${showAskingPrice ? $h`
+                  <td class="numeric-cell">${universeWebService.displayDiamonds(p.askingPrice)}</td>
+                ` : $h` `}
+
 
                 <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
                 <td>${p?.hits}</td>
@@ -161,6 +168,12 @@
       actions = props.actions()
     }
 
+
+    let showAskingPrice = false 
+
+    if (props.showaskingprice) {
+      showAskingPrice = true
+    }
 
     const moveFilter = props.movefilter
     const sortable = props.sortable == "true"

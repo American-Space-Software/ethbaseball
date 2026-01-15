@@ -52,7 +52,6 @@ class LeagueService {
             await this.put(league, options)
         }
 
-
     }
 
 

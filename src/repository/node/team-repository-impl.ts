@@ -19,13 +19,9 @@ class TeamRepositoryNodeImpl implements TeamRepository {
     @inject("sequelize")
     private sequelize:Function
     
-
-
     async get(id:string, options?:any): Promise<Team> {
         return Team.findByPk(id, options)
     }
-
-
 
     async getByIds(_ids:string[], options?:any): Promise<Team[]> {
 

@@ -6,7 +6,7 @@ import { PlayerLeagueSeason } from "../../dto/player-league-season.js";
 import { PlayerLeagueSeasonRepository } from "../../repository/player-league-season-repository.js";
 import { Player } from "../../dto/player.js";
 import { Team } from "../../dto/team.js";
-import { HitterPitcher, MIN_AAV_CONTRACT, Position } from "../enums.js";
+import { HitterPitcher,  Position } from "../enums.js";
 import { PlayerService } from "./player-service.js";
 import { v4 as uuidv4 } from 'uuid';
 
