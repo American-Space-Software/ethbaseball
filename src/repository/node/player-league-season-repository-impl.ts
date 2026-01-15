@@ -261,17 +261,19 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         }
 
         const [idQueryResults, metadata] = await s.query(`
-            WITH ranked_seasons AS (
-                SELECT pls._id, pls.playerId, pls.teamId, pls.seasonIndex, pls.startDate,
-                    ROW_NUMBER() OVER (PARTITION BY pls.playerId ORDER BY pls.seasonIndex DESC) AS row_num
-                FROM player_league_season pls
-                WHERE pls.seasonId = :seasonId
+            SELECT pls._id
+            FROM player_league_season pls
+            JOIN (
+                SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
+                FROM player_league_season
+                WHERE seasonId = :seasonId
+                GROUP BY playerId
+            ) latest
+                ON latest.playerId = pls.playerId
+            AND latest.maxSeasonIndex = pls.seasonIndex
+            WHERE pls.seasonId = :seasonId
                 AND pls.teamId = :teamId
-            )
-            SELECT _id
-            FROM ranked_seasons
-            WHERE row_num = 1
-            ORDER BY startDate DESC, seasonIndex DESC;
+            ORDER BY pls.startDate DESC, pls.seasonIndex DESC
 
         `, Object.assign(queryOptions, options))
 
@@ -457,31 +459,26 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? 'overallRating'
         const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
         let theQuery = `
-            WITH latest AS (
-                SELECT
-                playerId,
-                startDate,
-                ROW_NUMBER() OVER (
-                    PARTITION BY playerId
-                    ORDER BY startDate DESC
-                ) AS rn
+            SELECT pls._id
+            FROM player_league_season pls
+            JOIN (
+                SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
                 FROM player_league_season
                 WHERE seasonId = :seasonId
-            )
-            SELECT pls._id
-            FROM player_league_season AS pls
-            JOIN latest l
-                ON l.playerId = pls.playerId
-            AND l.startDate = pls.startDate
-            AND l.rn = 1
-            JOIN player AS p
+                GROUP BY playerId
+            ) latest
+            ON latest.playerId = pls.playerId
+                AND latest.maxSeasonIndex = pls.seasonIndex
+            JOIN player p
                 ON p._id = pls.playerId
             WHERE pls.leagueId = :leagueId
-                AND pls.seasonId = :seasonId
-                AND pls.primaryPosition IN (:positions)
+            AND pls.seasonId = :seasonId
+            AND pls.primaryPosition IN (:positions)
+            AND pls.teamId IS NOT NULL
             ORDER BY ${expr} ${safeDir}
             LIMIT ${Number(options.limit) | 0}
             OFFSET ${Number(options.offset) | 0};
+
         `
 
         const [idQueryResults, metadata] = await s.query(theQuery, Object.assign(queryOptions, options))
@@ -553,29 +550,23 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? 'overallRating'
         const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
         let theQuery = `
-            WITH latest AS (
-                SELECT
-                playerId,
-                startDate,
-                ROW_NUMBER() OVER (
-                    PARTITION BY playerId
-                    ORDER BY startDate DESC
-                ) AS rn
-                FROM player_league_season
-                WHERE seasonId = :seasonId
-            )
-            SELECT pls._id
-            FROM player_league_season AS pls
-            JOIN latest l
-                ON l.playerId = pls.playerId
-            AND l.startDate = pls.startDate
-            AND l.rn = 1
-            WHERE pls.seasonId = :seasonId
-                AND pls.teamId IS NULL
-                AND pls.primaryPosition IN (:positions)
-            ORDER BY ${expr} ${safeDir}
-            LIMIT ${Number(options.limit) | 0}
-            OFFSET ${Number(options.offset) | 0};
+SELECT pls._id
+FROM player_league_season pls
+JOIN (
+  SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
+  FROM player_league_season
+  WHERE seasonId = :seasonId
+  GROUP BY playerId
+) latest
+  ON latest.playerId = pls.playerId
+ AND latest.maxSeasonIndex = pls.seasonIndex
+WHERE pls.seasonId = :seasonId
+  AND pls.teamId IS NULL
+  AND pls.primaryPosition IN (:positions)
+ORDER BY ${expr} ${safeDir}
+LIMIT ${Number(options.limit) | 0}
+OFFSET ${Number(options.offset) | 0};
+
         `
 
         const [idQueryResults, metadata] = await s.query(theQuery, Object.assign(queryOptions, options))
@@ -597,36 +588,6 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         return pls
     }
 
-    async getFreeAgentIdsBySeason(season:Season, options?:any): Promise<string[]> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: QueryTypes.RAW,
-            plain: false,
-            mapToModel: false,
-            replacements: {
-                seasonId: season._id
-            }
-        }
-
-        const [idQueryResults, metadata] = await s.query(`
-            SELECT 
-                pls._id
-            FROM player_league_season pls 
-            INNER JOIN (
-				SELECT pls.playerId, MAX(pls.startDate) startDate 
-				FROM player_league_season pls 
-                WHERE pls.seasonId = :seasonId
-				GROUP BY pls.playerId
-            ) recent ON pls.playerId = recent.playerID AND pls.startDate = recent.startDate
-            WHERE pls.seasonId = :seasonId AND pls.teamId is null
-			ORDER BY pls.startDate DESC, pls.seasonIndex DESC
-        `, Object.assign(queryOptions, options))
-
-        return idQueryResults
-
-    }
 
     async listAll(options?: any): Promise<PlayerLeagueSeason[]> {
 

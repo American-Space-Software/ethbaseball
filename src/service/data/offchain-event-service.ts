@@ -77,7 +77,7 @@ class OffchainEventService {
 
     async createTeamBurnEvent(fromTeamId:string, amount:string, options?:any) {
 
-        if (BigInt(amount) >= 0) throw new Error("Burn amount can not be positive.")
+        if (BigInt(amount) <= 0) throw new Error("Burn amount can not be negative.")
 
         let offChainEvent:OffchainEvent = new OffchainEvent()
         offChainEvent._id = uuidv4() 
@@ -85,7 +85,7 @@ class OffchainEventService {
         offChainEvent.event = "Transfer"
         offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
         offChainEvent.fromTeamId = fromTeamId
-        offChainEvent.amount = (BigInt(0) - BigInt(amount)).toString()
+        offChainEvent.amount = BigInt(amount).toString()
 
         await this.put(offChainEvent, options)
 
@@ -139,6 +139,7 @@ class OffchainEventService {
         return offChainEvent
 
     }
+    
 
     async get(_id:string, options?:any) : Promise<OffchainEvent> {
         return this.offchainEventRepository.get(_id, options)

@@ -133,10 +133,6 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getByPlayer(player, options)
     }
 
-    async getFreeAgentIdsBySeason(season:Season, options?:any): Promise<string[]> {
-        return this.playerLeagueSeasonRepository.getFreeAgentIdsBySeason(season, options)
-    }
-
     async delete(pls:PlayerLeagueSeason, options?:any) {
         return this.playerLeagueSeasonRepository.delete(pls, options)
     }

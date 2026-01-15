@@ -763,7 +763,6 @@
     let playerId
     let player = props.player
 
-    console.log(authInfo)
 
     const dropButtonClick = async (e) => {
 
@@ -794,10 +793,10 @@
       try {
         await playerWebService.signPlayer(player)
         $f7.popup.close('.sign-popup')
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/index/${player.team._id}`))
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/index/${authInfo.teamId}`))
 
         const toast = $f7.toast.create({
-            text: 'Player dropped signed.',
+            text: 'Player signed to roster.',
             closeTimeout: 5000,
             position: 'bottom',
             horizontalPosition: 'center',

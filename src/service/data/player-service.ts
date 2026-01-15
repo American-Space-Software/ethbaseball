@@ -1235,50 +1235,49 @@ class PlayerService {
     }
 
 
-    getFreeAgentSalary(playerRating: number, leagueAvgRating: number, daysFreeAgent: number) {
+    getFreeAgentSalary( playerRating: number, leagueAvgRating: number, daysFreeAgent: number ) {
 
-        // We only care about the first 30 days.
-        // After that, the player is at the minimum price.
         const daysOnMarket = Math.max(
             0,
             Math.min(daysFreeAgent, FREE_AGENT_DAYS_TO_FLOOR)
         )
 
-        // Convert days-on-market into a 0..1 progress value
-        // 0 = just became a free agent
-        // 1 = reached the minimum price
         const marketProgress = daysOnMarket / FREE_AGENT_DAYS_TO_FLOOR
 
-        /**
-         * Price decay curve:
-         *  - Starts at 1.0 on day 0
-         *  - Falls quickly early
-         *  - Flattens out as it approaches the floor
-         */
+        // Steep early drop, flat late
         const STEEPNESS = 3
         const decayMultiplier = Math.pow(1 - marketProgress, STEEPNESS)
 
         /**
-         * Rating multiplier:
-         * League-average player costs STARTING_FREE_AGENT_PRICE on day 0.
-         * Better players cost more, worse players cost less.
+         * Rating discount ONLY (never increases price)
+         * League-average or better starts at 250
+         * Worse players start cheaper
          */
-        const STEP = 12 // ~12 rating points = ~2x price
+        const STEP = 12
         const ratingDelta = playerRating - leagueAvgRating
-        const ratingMultiplier = Math.pow(2, ratingDelta / STEP)
 
-        // Day-0 asking price for this player
+        const ratingMultiplier = Math.pow(
+            2,
+            Math.min(0, ratingDelta) / STEP
+        )
+
         const startingPrice =
             STARTING_FREE_AGENT_PRICE * ratingMultiplier
 
-        // Apply time-based decay down toward the floor
         const price =
             FREE_AGENT_FLOOR_PRICE +
             (startingPrice - FREE_AGENT_FLOOR_PRICE) * decayMultiplier
 
-        // Never go below the floor
-        return ethers.parseUnits(Math.max(FREE_AGENT_FLOOR_PRICE, Math.round(price)).toString(), 'ether').toString()
+        const finalPrice = Math.max(
+            FREE_AGENT_FLOOR_PRICE,
+            Math.round(price)
+        )
+
+        return ethers
+            .parseUnits(finalPrice.toString(), 'ether')
+            .toString()
     }
+
 
 
 

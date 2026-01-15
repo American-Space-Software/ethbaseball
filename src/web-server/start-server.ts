@@ -1155,6 +1155,10 @@ let startWebServer = async () => {
           let options = { transaction: t1 }
 
           let user: User = await userService.get(userId, options)
+          let teams:Team[] = await teamService.getByUser(user, options)
+          let team = teams[0]
+
+
 
           //Make sure this user owns this player
           let player:Player = await playerService.get(playerId, options)
@@ -1166,7 +1170,7 @@ let startWebServer = async () => {
             throw new Error("Player is rostered.")
           }
           
-          let team:Team = await teamService.get(pls.teamId, options)
+          
           let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season, options)
           
           //Must be team owner
@@ -1186,19 +1190,21 @@ let startWebServer = async () => {
           let requiredPositions:Position[] = teamService.listRequiredRosterSpots(currentPLSS)
 
           if (!requiredPositions.includes(pls.primaryPosition)) {
-            throw new Error(`Team roster does not have space for a player at position ${pls.primaryPosition}.`)
+            throw new Error(`Your roster does not have space for a ${pls.primaryPosition}. Drop your current ${pls.primaryPosition} to make room.`)
           }
 
           //Make sure the team has enough budget to sign this player
-          let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+          let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
 
-          let askingPrice = this.playerService.getAskingPrice(pls, await this.leagueSerivce.getByRank(1) )
+          let leagueRankOne = await leagueService.getByRank(1, options)
+
+          let askingPrice = playerService.getAskingPrice(pls, leagueRankOne)
 
           if (BigInt(diamondBalance) < BigInt(askingPrice)) {
             throw new Error(`Team does not have enough diamonds to sign this player.`)
           }
 
-          await teamService.signPlayer(pls, player, team, season, universe.currentDate)
+          await teamService.signPlayer(pls, player, team, season, universe.currentDate, askingPrice, options)
 
       })
 
@@ -1209,6 +1215,7 @@ let startWebServer = async () => {
       return res.send("success")
 
     } catch (ex) {
+      console.log(ex)
       res.status(500)
       res.send(ex.message);
     }
@@ -1642,7 +1649,7 @@ let startWebServer = async () => {
 
         mintPass = await diamondMintPassService.generateWithdrawPass(team.userId, team._id, BigInt(balance).toString(), options)
 
-        await offchainEventService.createTeamBurnEvent(team._id, `-${balance}`, options)
+        await offchainEventService.createTeamBurnEvent(team._id, balance , options)
 
         //Refetch tls so it's part of this transaction
         let tls = await teamLeagueSeasonService.getByTeamSeason(team, season, options)

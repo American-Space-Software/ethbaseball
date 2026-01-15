@@ -181,7 +181,7 @@
                     </li>
                   ` : $h`
                     <li>
-                      <a class="item-link item-content" @click="${clickJoinQueue}">
+                      <a class="item-link item-content bg-color-green text-color-black" @click="${clickJoinQueue}">
                         <div class="item-media">🏟️</div>
                         <div class="item-inner">
                           <div class="item-title-row">
@@ -193,7 +193,7 @@
                                   : `Join Queue for ${formatQueueDateLocal(vm.season)}`}
                             </div>
                           </div>
-                          <div class="item-text">
+                          <div class="item-text  text-color-black">
                             ${isBehind(vm.season) ? $h`
                               You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'},
                               in addition to your game for <b>${isNextQueueTodayLocal(vm.season) ? 'today' : isNextQueueTomorrowLocal(vm.season) ? 'tomorrow' : formatQueueDateLocal(vm.season)}</b>.
@@ -339,7 +339,7 @@
     
     let inProgressGame = props.inProgressGame
 
-    console.log(vm)
+    // console.log(vm)
 
     const clickLeaveQueue = async (e) => {
 

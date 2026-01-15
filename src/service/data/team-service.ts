@@ -557,19 +557,23 @@ n
 
     }
 
-    validateLineupsAllowTiredStarters(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[], gameDate: Date) {
+    setLineupValidityAllowTiredStarters(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[], gameDate: Date) {
 
         tls.hasValidLineup = false
 
         for (let lineup of tls.lineups) {
 
-            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
+            try {
+                let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
 
-            this.validateLineupAllowTiredStarters(team, lineup, plss, startingPitcher, gameDate)
+                this.validateLineupAllowTiredStarters(team, lineup, plss, startingPitcher, gameDate)
 
-            if (lineup.valid == true) {
-                tls.hasValidLineup = true
-            }
+                if (lineup.valid == true) {
+                    tls.hasValidLineup = true
+                }
+
+            } catch(ex) { }
+
         }
 
     }
@@ -789,7 +793,7 @@ n
         currentTLS.lineups = lineups
         currentTLS.changed('lineups', true)
 
-        await this.validateLineupsAllowTiredStarters(team, currentTLS, currentPLSPlain, nextStartDate)
+        await this.setLineupValidityAllowTiredStarters(team, currentTLS, currentPLSPlain, nextStartDate)
 
         await this.teamLeagueSeasonService.put(currentTLS, options)
     }
@@ -1073,24 +1077,22 @@ n
     }
 
 
-    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, options?:any) {
+    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, askingPrice:string, options?:any) {
 
-        //Update team. Remove from lineup and rotation.
+        //Update team. Add to lineup/rotation.
         let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
 
-        // let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
+        if (player.primaryPosition == Position.PITCHER) {
+            let spot = this.lineupService.getFirstAvailableRotationSpot(tls.lineups[0])
+            this.lineupService.rotationAdd(tls.lineups[0], player, spot)
+        } else {
+            let spot = this.lineupService.getFirstAvailableOrderSpot(tls.lineups[0])
+            this.lineupService.lineupAdd(tls.lineups[0], player, spot)
+        }
 
-        this.lineupService.lineupRemove(tls.lineups[0], player._id)
-        this.lineupService.rotationRemove(tls.lineups[0], player._id)
-
-        tls.lineups[0].valid = false
-        tls.hasValidLineup = false
-
-        tls.changed("lineups", true)
-        tls.changed("hasValidLineup", true)
 
         //End current PLS
-        pls.endDate = date
+        pls.startDate = date
 
         await this.playerLeagueSeasonService.put(pls, options)
 
@@ -1098,6 +1100,7 @@ n
         let nextPLS = new PlayerLeagueSeason()
         nextPLS.playerId = pls.playerId
         nextPLS.seasonId = season._id
+        nextPLS.teamId = team._id
         nextPLS.seasonIndex = pls.seasonIndex + 1
         nextPLS.primaryPosition = pls.primaryPosition
         nextPLS.overallRating = pls.overallRating
@@ -1118,11 +1121,21 @@ n
 
         await this.playerLeagueSeasonService.put(nextPLS, options)
 
-        //drop the player
-        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, options)
+
+        //Set lineup validity
+        let currentTeamPLSS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(team, options)
+        this.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS, date)
+
+        tls.changed("lineups", true)
+        tls.changed("hasValidLineup", true)
 
 
-        await this.put(team, options)
+        //sign the player
+        await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, options)
+
+        //transfer diamonds
+        await this.offchainEventService.createTeamBurnEvent(team._id, askingPrice, options)
+
         await this.teamLeagueSeasonService.put(tls, options)
 
 
