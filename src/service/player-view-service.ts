@@ -61,11 +61,12 @@ class PlayerViewService {
             currentPls = thisSeasonPls[thisSeasonPls.length - 1]
         }
 
-        let hitterGameLog = await this.gameHitResultRepository.getByPlayer(player._id, { limit: 10 } )
+        let hitterGameLog = await this.gameHitResultRepository.getByPlayer(player, { limit: 10 } )
         let pitcherGameLog = await this.gamePitchResultRepository.getStartsByPlayer(player._id, { limit: 10 } )
 
         let askingPrice 
-        
+        let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
+
         if (!currentPls.teamId) {
             askingPrice = this.playerService.getAskingPrice(currentPls, await this.leagueSerivce.getByRank(1) )
         }
@@ -75,6 +76,7 @@ class PlayerViewService {
             displayRating: player.displayRating,
             isRetired: player.isRetired,
             askingPrice: askingPrice,
+            minimumPlayerSalary: minimumPlayerSalary,
             team: currentPls?.team,
             hits: player.hits,
             age: player.age,
@@ -135,11 +137,6 @@ class PlayerViewService {
                 isQueued: await this.teamQueueService.isTeamQueued(team)
             }
 
-            // let gamesPerSeason = tls.financeSeason.totalGamesPlayed + tls.financeSeason.totalGamesRemaining
-            // let gamesRemaining = tls.financeSeason.homeGamesRemaining + tls.financeSeason.awayGamesRemaining
-
-            // result.dropCost = this.playerService.getCostToDrop(player, gamesPerSeason, gamesRemaining)
-
         }
 
 
@@ -166,6 +163,7 @@ interface PlayerViewModel {
     hittingRatings:HittingRatings
     pitchRatings:PitchRatings
     askingPrice:string
+    minimumPlayerSalary:string
     displayRating:number
 
     careerHitterStats: HitterStatLine

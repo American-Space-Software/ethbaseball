@@ -42,7 +42,6 @@ class PlayerController {
                 authInfo = await this.loginWebService.getAuthInfo()
             }
 
-            
 
             return {
                 player: player,

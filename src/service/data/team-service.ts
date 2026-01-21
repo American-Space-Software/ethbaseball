@@ -157,35 +157,20 @@ n
         })
     }
 
-    async getTeamViewModel(team: Team, season: Season, currentDate:Date, userOwner:User, options?: any): Promise<TeamViewModel> {
-
-        // let tlss: TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeam(team, options)
+    async getTeamViewModel(team: Team, season: Season, userOwner:User, options?: any): Promise<TeamViewModel> {
 
         let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
         let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
 
         let t = tls.get({ plain: true })
 
+        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
 
-        let diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id, options)
-        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
-
-        let gameIds = await this.gameRepository.getRecentIdsByTeam(team, 3, 0, options)
-        let games = []
-
-        if (gameIds?.length > 0) {
-            games = await this.gameService.getByIds(gameIds, options)
-
-            //Sort so it matches ids order
-            games.sort(function(a,b) {
-                return gameIds.indexOf( a._id ) - gameIds.indexOf( b._id )
-            })
-
-        }
-
-
         let isQueued = await this.teamQueueService.isTeamQueued(team, options)
+
+        let games:Game[] = await this.gameService.getRecentByTeam(team, { limit: 5 } )
+
 
         return {
             team: {
@@ -207,7 +192,6 @@ n
                 overallRank: t.overallRecord.rank + ((t.league.rank - 1) * TEAMS_PER_TIER),
                 overallRecord: t.overallRecord,
                 financeSeason: t.financeSeason,
-                diamondMintPasses: diamondMintPasses,
                 isQueued: isQueued,
 
 
@@ -252,7 +236,7 @@ n
 
                 }
             }),
-            games: games.map(g => { return this.createTeamGameViewModel(team, g) })
+            games: games?.map( g => this.gameService.getGameSummaryViewModel(g))
         }
 
     }
@@ -522,51 +506,50 @@ n
 
     }
 
-    validateRoster(owner:User, players: Player[]) {
+    // validateRoster(owner:User, players: Player[]) {
 
-        //Make sure there's the right number of players
-        if (players.length > MAX_ROSTER_SIZE) {
-            throw new Error(`Roster must have ${MAX_ROSTER_SIZE} players.`)
-        }
+    //     //Make sure there's the right number of players
+    //     if (players.length > MAX_ROSTER_SIZE) {
+    //         throw new Error(`Roster must have ${MAX_ROSTER_SIZE} players.`)
+    //     }
 
-        //Make sure they're owned by the right owner and eligible
-        for (let player of players) {
+    //     //Make sure they're owned by the right owner and eligible
+    //     for (let player of players) {
 
-            if (player.ownerId != owner.address) {
-                throw new Error(`Can not add unowned player to team roster.`)
-            }
+    //         if (player.ownerId != owner.address) {
+    //             throw new Error(`Can not add unowned player to team roster.`)
+    //         }
 
-        }
+    //     }
 
-    }
+    // }
 
-    validateLineups(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[], gameDate: Date) {
+    // validateLineups(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[], gameDate: Date) {
 
-        tls.hasValidLineup = false
+    //     tls.hasValidLineup = false
 
-        for (let lineup of tls.lineups) {
+    //     for (let lineup of tls.lineups) {
 
-            let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
+    //         let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
 
-            this.validateLineup(team, lineup, plss, startingPitcher)
+    //         this.validateLineup(team, lineup, plss, startingPitcher)
 
-            if (lineup.valid == true) {
-                tls.hasValidLineup = true
-            }
-        }
+    //         if (lineup.valid == true) {
+    //             tls.hasValidLineup = true
+    //         }
+    //     }
 
-    }
+    // }
 
-    setLineupValidityAllowTiredStarters(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[], gameDate: Date) {
+    setLineupValidityAllowTiredStarters(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[]) {
 
         tls.hasValidLineup = false
 
         for (let lineup of tls.lineups) {
 
             try {
-                let startingPitcher: RotationPitcher = this.getStartingPitcherFromPLS(lineup.rotation, plss)
 
-                this.validateLineupAllowTiredStarters(team, lineup, plss, startingPitcher, gameDate)
+                this.validateLineupAllowTiredStarters(team, lineup, plss)
 
                 if (lineup.valid == true) {
                     tls.hasValidLineup = true
@@ -646,7 +629,7 @@ n
 
     }
 
-    validateLineupAllowTiredStarters(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[], startingPitcher: RotationPitcher, gameDate: Date) {
+    validateLineupAllowTiredStarters(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[]) {
 
         lineup.valid = false
 
@@ -729,6 +712,7 @@ n
         let bestStamina = -Infinity
 
         for (const pitcher of rotation) {
+            
             const pls = plss.find(p => p.playerId === pitcher._id)
             const player = getPlayer(pls)
             if (!player) continue
@@ -746,13 +730,8 @@ n
             }
         }
 
-        if (!selected) {
-            throw new Error("No starting pitcher could be resolved from rotation/PLS.")
-        }
-
         return selected
     }
-
 
     getNextStartDate(team: Team): Date {
 
@@ -786,14 +765,10 @@ n
 
         let currentPLSPlain = currentPLS.map( pls => pls.get({ plain: true}))
 
-
-        //Update team
-        let nextStartDate = this.getNextStartDate(options)
-
         currentTLS.lineups = lineups
         currentTLS.changed('lineups', true)
 
-        await this.setLineupValidityAllowTiredStarters(team, currentTLS, currentPLSPlain, nextStartDate)
+        await this.setLineupValidityAllowTiredStarters(team, currentTLS, currentPLSPlain)
 
         await this.teamLeagueSeasonService.put(currentTLS, options)
     }
@@ -1123,8 +1098,8 @@ n
 
 
         //Set lineup validity
-        let currentTeamPLSS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(team, options)
-        this.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS, date)
+        let currentTeamPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
+        this.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS.map( pls => pls.get({ plain: true})))
 
         tls.changed("lineups", true)
         tls.changed("hasValidLineup", true)
@@ -1187,7 +1162,6 @@ interface TeamViewModel {
         // seasonHistory: SeasonHistory[]
         // teamCost
 
-        diamondMintPasses: DiamondMintPass[]
         diamondBalance:string,
 
         owner?: {

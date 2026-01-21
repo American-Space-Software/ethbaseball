@@ -67,13 +67,14 @@ import DataTable from 'framework7/components/data-table'
 
 import Messages from 'framework7/components/messages'
 import ProgressBar from 'framework7/components/progressbar'
+import PullToRefresh from 'framework7/components/pull-to-refresh'
 
 
 import { OwnerWebService } from "./service/owner-web-service.js";
 import { PlayerWebService } from "./service/player-web-service.js";
 import { TransactionWebService } from "./service/transaction-web-service.js";
 
-Framework7.use([ ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
+Framework7.use([ PullToRefresh, ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
 
 
 import TransactionRow from './components/common/transaction-row.f7.html'
@@ -81,10 +82,8 @@ import TransactionRow from './components/common/transaction-row.f7.html'
 
 import HitterStats from './components/player/hitter-stats.f7.html'
 import HitterRatings from './components/player/hitter-ratings.f7.html'
-import HitterContracts from './components/player/hitter-contracts.f7.html'
 import PitcherStats from './components/player/pitcher-stats.f7.html'
 import PitcherRatings from './components/player/pitcher-ratings.f7.html'
-import PitcherContracts from './components/player/pitcher-contracts.f7.html'
 
 import { NewsController } from "./controller/news-controller.js";
 
@@ -117,11 +116,9 @@ Framework7.registerComponent("transaction-row", TransactionRow)
 
 Framework7.registerComponent("hitter-stats", HitterStats)
 Framework7.registerComponent("hitter-ratings", HitterRatings)
-Framework7.registerComponent("hitter-contracts", HitterContracts)
 
 Framework7.registerComponent("pitcher-stats", PitcherStats)
 Framework7.registerComponent("pitcher-ratings", PitcherRatings)
-Framework7.registerComponent("pitcher-contracts", PitcherContracts)
 
 
 let _diamondsAddress:string

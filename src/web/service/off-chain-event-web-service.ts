@@ -45,7 +45,7 @@ class OffChainEventWebService {
 
             if (oce.toAddress == "0x0000000000000000000000000000000000000000") {
 
-                if (oce.fromTokenId) {
+                if (oce.fromTeamId) {
                     return "Expenses"
                 } else {
                     return "Created Mint Pass"

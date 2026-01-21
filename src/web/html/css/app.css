@@ -481,6 +481,7 @@ h1 {
   background: rgb(77, 77, 0);
 }
 
+
 .players thead,
 .players tbody,
 .players tr,
@@ -527,7 +528,6 @@ h1 {
   /* position: sticky; */
   z-index: 2;
   background-color: inherit; 
-
 }
 
 
@@ -543,21 +543,26 @@ h1 {
   /* background: var(--f7-block-strong-bg-color); */
 }
 
+.players td.name {
+  font-size: 1.3em;
+}
 
+.players td.image img {
+  margin-top: 3px;
+  height: 32px;
+  width: 32px;
+}
 
 .players .name .position {
-  font-weight: bold;
+  font-weight: normal;
+
 }
 
-.players .name .position, .players .name .teamAbbrev, .players .name .small {
+/* .players .name .position, .players .name .teamAbbrev, .players .name .small {
   font-size: .75em;
   color: darkslategray;
-}
+} */
 
-.players .name .rest {
-  font-size: .75em;
-  color: darkslategray;
-}
 
 .players .stamina {
   width: 45px;
@@ -568,6 +573,24 @@ h1 {
 .dark .players .name .position, .dark .players .name .teamAbbrev, .dark .players .name .small, .dark .players .name .rest {
   color: white;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .game-table.data-table .image  {
   width: 50px;
@@ -595,9 +618,9 @@ h1 {
   background: unset;
 } */
 
-.stat-table .name .position, .data-table .name .position {
+/* .stat-table .name .position, .data-table .name .position {
   font-weight: bold;
-}
+} */
 
 .stat-table .name .position, .stat-table .name .teamAbbrev, .stat-table .name .small, .data-table .name .position, .data-table .name .teamAbbrev, .data-table .name .small {
   font-size: .75em;
@@ -2522,18 +2545,13 @@ td.diamonds {
 }
 
 td.action, th.action {
-  /* padding-left: 5px;
-  padding-right: 5px; */
-  vertical-align: top;
-  width: 50px;
-  max-width: 50px;
+  width: 60px;
+  min-width: 60px;
 }
 
 .button-move {
-  width: 40px;
   font-size: .75em;
-  margin-left: -10px;
-  margin-top: 9px;
+  margin-left: 2px;
 }
 
 .dark .button-move {
@@ -3049,6 +3067,14 @@ td.action, th.action {
   background-color: rgb(90, 90, 0);
 }
 
+.players tr.next-starter td.name, .players tr.next-starter td.image {
+  background: yellow;
+} 
+
+.dark .players tr.next-starter td.name, .dark .players tr.next-starter td.image {
+  background: rgb(90, 90, 0);
+} 
+
 
 
 
@@ -3142,7 +3168,7 @@ td.action, th.action {
 
 .about-leadin .item-title { font-weight: 400; white-space: normal; }
 
-.invalid-lineup {
+.block-title-detail {
   font-size: .65em;
   font-weight: normal;
   display: block;
@@ -3176,4 +3202,42 @@ td.action, th.action {
 
 .list-button {
   text-align: left;
+}
+
+
+.small-tabs {
+  width: 350px;
+}
+
+
+
+
+.data-table.players tbody td.name {
+  position: relative;
+  cursor: pointer;
+}
+
+.data-table.players tbody td.name a {
+  position: static;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* expand the existing link to cover the full cell */
+.data-table.players tbody td.name a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* keep text above the overlay */
+.data-table.players tbody td.name * {
+  position: relative;
+  z-index: 2;
+}
+
+/* optional hover feedback */
+.data-table.players tbody td.name:hover {
+  background: rgba(255, 255, 255, 0.04);
 }

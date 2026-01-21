@@ -22,8 +22,6 @@ interface PlayerRepository {
     listByOwnerWithTeams(owner:Owner, options?: any) : Promise<any[]>
     getByOwner(owner:Owner, options?:any): Promise<Player[]>
 
-    getLatest(options?:any): Promise<Player>
-
     countByOwner(owner:Owner, options?:any) : Promise<number>
     count(options?:any): Promise<number>
     countActive(options?:any): Promise<number>

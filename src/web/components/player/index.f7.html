@@ -29,7 +29,7 @@
                 <span><strong>Cost:</strong> ${universeWebService.displayDiamonds(player.askingPrice)}</span><br />    
               ` : $h` `}
 
-              ${authInfo?._id != undefined && authInfo._id == player.team?.userId && !player.team.isQueued ? $h`
+              ${authInfo?._id != undefined && authInfo._id == player.team?.userId && !player.team.isQueued && canAffordDrop() ? $h`
                 <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
               ` : $h` `}
                   
@@ -757,19 +757,26 @@
     let statService = ContainerService.getInstance(StatService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
-
     let authInfo = props.authInfo
-
-    let playerId
     let player = props.player
+    
+    const canAffordDrop = () => {
 
+      if (!authInfo?.teamDiamondBalance) return false
+      if (!player?.minimumPlayerSalary) return false
+
+      if (BigInt(authInfo.teamDiamondBalance) < BigInt(player.minimumPlayerSalary)) return false
+
+      return true
+
+    }
 
     const dropButtonClick = async (e) => {
 
       try {
         await playerWebService.dropPlayer(player)
         $f7.popup.close('.drop-popup')
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/index/${player.team._id}`))
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
 
         const toast = $f7.toast.create({
             text: 'Player dropped successfully.',
@@ -793,7 +800,7 @@
       try {
         await playerWebService.signPlayer(player)
         $f7.popup.close('.sign-popup')
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/t/index/${authInfo.teamId}`))
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
 
         const toast = $f7.toast.create({
             text: 'Player signed to roster.',

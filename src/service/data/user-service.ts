@@ -97,32 +97,32 @@ class UserService {
         let teams:Team[] = await this.teamService.getByUser(user)
         let team = teams[0]
 
-        let tls = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
+        vm.teamInfo = await this.teamService.getTeamViewModel(team, season, user)
 
-        let tlsPlain = tls.get({ plain: true })
-        vm.team = this.teamService.getTeamStandingsViewModel(tlsPlain, 1)
-        vm.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+        vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+        vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id)
 
-        //Get games for teams
-        let games:Game[] = await this.gameService.getRecentByTeam(team, { limit: 10 } )
 
-        vm.completedGames = games?.filter( g => g.isFinished)?.map( g => this.gameService.getGameSummaryViewModel(g))
-        vm.inProgressGame = games?.find( g => !g.isFinished)
+    
+        const ev = await this.offchainEventService.getMostRecentDailyDiamondRewardByTeamId(team._id)
 
-        let events = await this.offchainEventService.getByTeamId(team._id, { limit: 5, offset: 0})
-        vm.offChainEvents = await this.offchainEventService.getOffChainEventViewModels(events, season)
-        
+        if (ev?.source?.fromDate) {
+            const from = ev?.source?.fromDate
+            const isYesterday = dayjs(from).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, "day").format("YYYY-MM-DD")
 
-        const rewards = (vm.offChainEvents?.events || []).filter(e => e?.source?.type === 'reward' && e?.source?.rewardType === 'daily')
+            vm.teamInfo.team.yesterdaysRewards = isYesterday ? (ev?.amount ?? "0") : "0"
+        } else {
+            vm.teamInfo.team.yesterdaysRewards = "0"
+        }
 
-        vm.team.yesterdaysRewards = rewards.find( e => dayjs(e.source?.fromDate).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, 'day').format("YYYY-MM-DD"))?.amount || "0"
+
 
         
         if (season) {
 
             let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
 
-            let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses 
+            let gamesPlayed = vm.teamInfo.team.overallRecord.wins + vm.teamInfo.team.overallRecord.losses 
 
             if (vm.inProgressGame?._id != undefined) {
                 gamesPlayed++
@@ -139,8 +139,7 @@ class UserService {
                 nextQueueDate: this.ladderService.getQueueForDate(currentDate),
                 team: {
                     gamesPlayed: gamesPlayed,
-                    teamCurrentDate: dayjs(games?.length ? games[0].gameDate : currentDate).format("YYYY-MM-DD"),
-                    isQueued: await this.teamQueueService.isTeamQueued(team)
+                    teamCurrentDate: dayjs(vm.teamInfo.games?.length > 0 ? vm.teamInfo.games[0].gameDate : currentDate).format("YYYY-MM-DD"),
                 },
                 queuedTeams: await this.teamQueueService.count()
             }

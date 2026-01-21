@@ -540,9 +540,6 @@
         })
 
 
-        $f7.once('team-loaded', async (e) => {
-            await $update()
-        })
 
         $onMounted(async (e) => {
             authInfo = await loginWebService.getAuthInfo()

@@ -217,7 +217,6 @@
             filters.position = undefined
 
             $update()
-            $f7.emit('refresh')
         }
 
         const positionClick = (e) => {
@@ -234,7 +233,6 @@
             filters.position = value
 
             $update()
-            $f7.emit('refresh')
 
         }
 
@@ -259,7 +257,6 @@
 
                     // allPlayers.push(...result)
 
-                    $f7.emit('refresh')
 
                 } catch (ex) {
                     console.log(ex)

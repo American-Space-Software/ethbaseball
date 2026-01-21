@@ -685,18 +685,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getLatest(options?: any): Promise<Player> {
 
-        let s = await this.sequelize()
-
-        const maxIdToken = await Player.findOne({
-            attributes: [[s.fn('max', s.col('_id')), 'max_id']],
-            //@ts-ignore
-        }, options)
-
-        //@ts-ignore
-        return this.get(maxIdToken?.get('max_id', options))
-    }
 
     async clearAllTransactions(options?: any): Promise<void> {
 
@@ -723,7 +712,6 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
         return Player.findAll(Object.assign(queryOptions, options))
 
     }
-
 
     async getLeagueAverageHitterRatings(league: League, season: Season, options?: any): Promise<HittingRatings> {
 
@@ -865,28 +853,7 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    // async getPurgeable(options?: any): Promise<Player[]> {
-
-    //     let s = await this.sequelize()
-
-
-    //     let queryOptions = {
-    //         type: QueryTypes.RAW,
-    //         plain: false,
-    //         mapToModel: false
-    //     }
-
-    //     const [queryResults, metadata] = await s.query(`
-    //         SELECT  
-    //             p._id
-	// 		FROM player as p
-    //         WHERE p.overallRating = 40 AND p.age > 20
-    //     `, Object.assign(queryOptions, options))
-
-    //     return this.getByIds(queryResults.map(qr => qr._id), options)
-
-
-    // }
+   
 
     async getPlayerPercentileRatings(options?: any): Promise<PlayerPercentileRatings[]> {
 

@@ -13,7 +13,8 @@ interface OffchainEventRepository {
     list(contractType:string, options?:any) : Promise<OffchainEvent[]>
     getByTeamId(teamId:string, options?:any) : Promise<OffchainEvent[]> 
     listAll(options?:any) : Promise<OffchainEvent[]>
-
+    getDailyDiamondRewardByTeamIdForDate( teamId: string, forDate: string,  options?: any ): Promise<OffchainEvent | null>
+    getMostRecentDailyDiamondRewardByTeamId( teamId: string, options?: any ): Promise<OffchainEvent | null>
 }
 
 export {

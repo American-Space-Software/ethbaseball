@@ -106,27 +106,10 @@ class TeamComponentService {
 
             this.loading = true
 
-            this.authInfo = await this.loginWebService.getAuthInfo()
+            let authInfo = await this.loginWebService.getAuthInfo()
             let teamViewModel = await this.teamWebService.getByDate(teamId, startDate)
-            console.log(teamViewModel)
-            this.team = teamViewModel.team
-            this.startDate = startDate
-           
-            this.rosterPlayers.length = 0
-            this.rosterPlayers.push(...teamViewModel.players)
-
-            this.games.length = 0
-            this.games.push(...teamViewModel.games)
-
-            //Add placeholder positions for any missing lineup spots
-            let order = this.team.lineups[0].order
-            
-            let missingPositions = this.listMissingPositionsInLineup(order)
-
-            for (let position of missingPositions) {
-                let firstBlankSpot = order.find( o => !o.position)
-                firstBlankSpot.position = position                
-            }
+  
+            this.setLoadedTeam(teamViewModel, authInfo, startDate)
 
 
             this.hasChanges = false
@@ -139,6 +122,31 @@ class TeamComponentService {
 
     }
 
+
+    setLoadedTeam(teamViewModel, authInfo, startDate) {
+
+        this.authInfo = authInfo
+
+        this.team = teamViewModel.team
+        this.startDate = startDate
+        
+        this.rosterPlayers.length = 0
+        this.rosterPlayers.push(...teamViewModel.players)
+
+
+        //Add placeholder positions for any missing lineup spots
+        let order = this.team.lineups[0].order
+        
+        let missingPositions = this.listMissingPositionsInLineup(order)
+
+        for (let position of missingPositions) {
+            let firstBlankSpot = order.find( o => !o.position)
+            firstBlankSpot.position = position                
+        }
+
+        this.hasChanges = false
+
+    }
 
 
     dropPlayer(id) {

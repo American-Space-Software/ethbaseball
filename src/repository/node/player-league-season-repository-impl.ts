@@ -450,13 +450,17 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             mapToModel: true,
             model: PlayerLeagueSeason,
             replacements: {
+                limit: Math.max(0, Number(options.limit) | 0),
+                offset: Math.max(0, Number(options.offset) | 0),
                 leagueId: league._id,
                 seasonId: season._id,
                 positions: positions
             }
         }
 
-        const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? 'overallRating'
+        const DEFAULT_SORT = 'displayRating' 
+        const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? PLAYER_STATS_SORT_EXPRESSION[DEFAULT_SORT]
+
         const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
         let theQuery = `
             SELECT pls._id
@@ -476,8 +480,8 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             AND pls.primaryPosition IN (:positions)
             AND pls.teamId IS NOT NULL
             ORDER BY ${expr} ${safeDir}
-            LIMIT ${Number(options.limit) | 0}
-            OFFSET ${Number(options.offset) | 0};
+            LIMIT :limit OFFSET :offset
+
 
         `
 
@@ -541,31 +545,33 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             plain: false,
             mapToModel: false,
             replacements: {
+                limit: Math.max(0, Number(options.limit) | 0),
+                offset: Math.max(0, Number(options.offset) | 0),
                 seasonId: season._id,
                 positions: positions
             }
         }
 
+        const DEFAULT_SORT = 'displayRating' 
+        const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? PLAYER_STATS_SORT_EXPRESSION[DEFAULT_SORT]
 
-        const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? 'overallRating'
         const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
         let theQuery = `
-SELECT pls._id
-FROM player_league_season pls
-JOIN (
-  SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
-  FROM player_league_season
-  WHERE seasonId = :seasonId
-  GROUP BY playerId
-) latest
-  ON latest.playerId = pls.playerId
- AND latest.maxSeasonIndex = pls.seasonIndex
-WHERE pls.seasonId = :seasonId
-  AND pls.teamId IS NULL
-  AND pls.primaryPosition IN (:positions)
-ORDER BY ${expr} ${safeDir}
-LIMIT ${Number(options.limit) | 0}
-OFFSET ${Number(options.offset) | 0};
+            SELECT pls._id
+            FROM player_league_season pls
+            JOIN (
+                SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
+                FROM player_league_season
+                WHERE seasonId = :seasonId
+                GROUP BY playerId
+            ) latest
+            ON latest.playerId = pls.playerId
+            AND latest.maxSeasonIndex = pls.seasonIndex
+            WHERE pls.seasonId = :seasonId
+            AND pls.teamId IS NULL
+            AND pls.primaryPosition IN (:positions)
+            ORDER BY ${expr} ${safeDir}
+            LIMIT :limit OFFSET :offset
 
         `
 

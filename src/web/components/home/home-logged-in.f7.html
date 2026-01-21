@@ -1,280 +1,226 @@
 <template es>
 
-  <div class="page" data-name="home">
+  <div class="page" data-name="home" >
 
 
-    <div class="page-content">
+    ${teamComponentService.isTeamOwner() && teamComponentService.hasChanges ? $h`
 
-        <div class="fixed-width-content center">
-
-          <div class="block-title block-title-medium">Your Team</div>
-          <div class="list media-list list-outline-ios list-strong">
-            <ul>
-              <li>
-                <a class="item-link item-content" href="/t/index/${vm.team._id}">
-                  <div class="item-media">
-                    <img src="/image/thumbnail/100/${vm.team.logoId}" width="56" height="56" class="profilePic" />
-                  </div>
-
-                  <div class="item-inner">
-                    <div class="item-title-row">
-                      <div class="item-title">${teamWebService.getTeamName(vm.team)}</div>
-                      <div class="item-after">${vm.team.longTermRating.rating.toFixed(0)} ⭐</div>
-                    </div>
-
-                    <div class="item-subtitle">
-                      ${vm.team.overallRecord.wins}-${vm.team.overallRecord.losses}
-                      <span class="separator">|</span>
-                      ${statService.formatRatio(vm.team.overallRecord.winPercent)}
-                    </div>
-
-                    <div class="item-text">
-                      Cash: ${universeWebService.displayDiamonds(vm.team.diamondBalance)}
-                    </div>
-                  </div>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div class="block-title block-title-medium season-header">
-            Current Season
-            <span class="season-header-range">
-              ${dayjs(vm.season.startDate).format('MMM D, YYYY')}
-              → ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
-            </span>
-          </div>
-
-
-          <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-            <ul>
-
-              <li>
-                <div class="item-content">
-                  <div class="item-media">🗓️</div>
-                  <div class="item-inner">
-                    <div class="item-title-row">
-                      <div class="item-title item-title-wrap">
-                        Day ${vm.season.dayNumber} of ${vm.season.totalDays}
-                      </div>
-                    </div>
-                    <div class="item-text">
-                      ${isSeasonComplete(vm.season)
-                        ? $h`Season complete`
-                        : $h`${vm.season.daysRemaining} days remaining`}
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              <li>
-                <div class="item-content">
-                  <div class="item-media">🔷</div>
-                  <div class="item-inner">
-                    <div class="item-title-row">
-                      <div class="item-title item-title-wrap">Diamond earnings</div>
-                    </div>
-                    <div class="item-text">
-                      Season: ${universeWebService.displayDiamonds(vm.team.financeSeason.revenue.seasonToDate.total)}
-                      <span class="separator">|</span>
-                      Yesterday: ${universeWebService.displayDiamonds(vm.team.yesterdaysRewards)}
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              ${!isSeasonComplete(vm.season) ? $h`
-                <li>
-                  <div class="item-content">
-                    <div class="item-media">⏱️</div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title item-title-wrap">Now queueing</div>
-                      </div>
-                      <div class="item-text">
-                        ${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}
-                        <span class="separator">|</span>
-                        ${vm.season.queuedTeams} team${vm.season.queuedTeams === 1 ? '' : 's'}
-                        ${vm.season.team.isQueued == "true"
-                          ? $h` <span class="separator">|</span> ✅ You’re queued`
-                          : $h` `}
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ` : $h``}
-
-              ${isBehind(vm.season) && !vm.season.team.isQueued ? $h`
-                <li>
-                  <div class="item-content">
-                    <div class="item-media">⏳</div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title item-title-wrap">Behind schedule</div>
-                      </div>
-                      <div class="item-text">
-                        ${getDaysBehind(vm.season)} day${getDaysBehind(vm.season) === 1 ? '' : 's'} behind.
-                        You’ll need makeup games to catch up.
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ` : $h``}
-
-              ${isAhead(vm.season) ? $h`
-                <li>
-                  <div class="item-content">
-                    <div class="item-media">⚠️</div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title item-title-wrap">Too far ahead</div>
-                      </div>
-                      <div class="item-text">
-                        ${getDaysAhead(vm.season)} day${getDaysAhead(vm.season) === 1 ? '' : 's'} ahead.
-                        You may be blocked from queueing.
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ` : $h``}
-
-              ${isSeasonComplete(vm.season) ? $h`
-                <li>
-                  <div class="item-content">
-                    <div class="item-media">🏁</div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title item-title-wrap">Season complete</div>
-                      </div>
-                      <div class="item-text">
-                        Final results locked in.
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ` : $h``}
-
-            </ul>
-          </div>
-
-          ${!isSeasonComplete(vm.season) ? $h`
-            <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-              <ul>
-            
-                  ${vm.season.team.isQueued ? $h`
-                    <li>
-                      <a class="item-link item-content" @click="${clickLeaveQueue}">
-                        <div class="item-media">✅</div>
-                        <div class="item-inner">
-                          <div class="item-title-row">
-                            <div class="item-title">You’re in the queue</div>
-                            <div class="item-after">Leave</div>
-                          </div>
-                          <div class="item-text">
-                            Queued for <b>${dayjs(vm.season.nextQueueDate).format('MMM D')}</b>. ${isBehind(vm.season)
-                              ? $h`You’ll also play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'}.`
-                              : $h` `}
-                            <div style="opacity:.6; margin-top:4px;">Tap to leave the queue</div>
-                          </div>
-                        </div>
-                      </a>
-                    </li>
-                  ` : $h`
-                    <li>
-                      <a class="item-link item-content bg-color-green text-color-black" @click="${clickJoinQueue}">
-                        <div class="item-media">🏟️</div>
-                        <div class="item-inner">
-                          <div class="item-title-row">
-                            <div class="item-title">
-                              ${isNextQueueTodayLocal(vm.season)
-                                ? 'Join Queue for Today'
-                                : isNextQueueTomorrowLocal(vm.season)
-                                  ? 'Join Queue for Tomorrow'
-                                  : `Join Queue for ${formatQueueDateLocal(vm.season)}`}
-                            </div>
-                          </div>
-                          <div class="item-text  text-color-black">
-                            ${isBehind(vm.season) ? $h`
-                              You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'},
-                              in addition to your game for <b>${isNextQueueTodayLocal(vm.season) ? 'today' : isNextQueueTomorrowLocal(vm.season) ? 'tomorrow' : formatQueueDateLocal(vm.season)}</b>.
-                            ` : $h`${getQueueSubtitle(vm.season)}`}
-                          </div>
-                        </div>
-                      </a>
-                    </li>
-                  `}
-                  
-              </ul>
-            </div>
-          ` : $h``}
-
-          ${inProgressGame?.game?._id ? $h`
-              <div class="block-title block-title-medium">In Progress</div>
-              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
-                    <${InProgress} vm=${inProgressGame} />
-                  </ul>
-              </div>
-          ` : $h` `}
-
-
-          <div class="block-title block-title-medium">Daily Rewards & Transactions</div>
-          ${vm.offChainEvents?.events?.length > 0 ? $h`
-
-            <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                <ul>
-
-                  ${vm.offChainEvents.events.map( oce => $h`
-                    <li>
-                      <div class="item-content">
-                          <div class="item-media">
-                              🔷
-                          </div>
-                          <div class="item-inner">
-
-                              <div class="item-title">
-                                ${getOffChainDescription(oce)}
-                                <div class="item-footer">${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}</div>
-                              </div>
-
-                              <div class="item-after">
-                                  ${getOffChainAmount(oce)}
-                              </div>
-                          </div>
-                      </div>
-                    </li>                          
-                  `)}
-
-                </ul>
-            </div>
-
-          ` : $h`
-            <div class="block block-outline block-strong">
-              No rewards yet. Play at least one game each day to earn rewards.
-            </div>          
-          `}
-
-
-
-          ${vm?.completedGames?.length > 0 ? $h`
-
-              <div class="block-title block-title-medium">Recent Games</div>
-              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
-      
-                      ${vm?.completedGames?.map( game => $h`
-                          <${Result} game=${game} />                      
-                      `)}
-      
-                  </ul>
-      
-              </div>
-
-          ` : $h` `}
-              
+        <div class="fab fab-extended fab-right-bottom color-orange">
+            <a href="#" @click="${saveClick}">
+                <div class="fab-text">Save Lineup</div>
+            </a>
         </div>
 
-        <${Footer} />
+    ` : $h` `}
+
+
+    <div class="page-content ptr-content" @ptr:refresh=${refreshPage}>
+
+        ${vm ? $h`
+          
+          <div class="fixed-width-content center">
+
+            <div class="list media-list list-outline-ios list-strong">
+              <ul>
+                <li>
+                  <div class="item-content">
+                    <div class="item-media">
+                      <img src="/image/thumbnail/100/${vm.teamInfo.team.logoId}" width="56" height="56" class="profilePic" />
+                    </div>
+
+                    <div class="item-inner">
+                      <div class="item-title-row">
+                        <div class="item-title">${teamWebService.getTeamName(vm.teamInfo.team)}</div>
+                        <div class="item-after">${vm.teamInfo.team.longTermRating.rating.toFixed(0)} ⭐</div>
+                      </div>
+
+                      <div class="item-subtitle">
+                        ${vm.teamInfo.team.overallRecord.wins}-${vm.teamInfo.team.overallRecord.losses}
+                        <span class="separator">|</span>
+                        ${statService.formatRatio(vm.teamInfo.team.overallRecord.winPercent)}
+                      </div>
+
+                      <div class="item-text">
+                        Cash: ${universeWebService.displayDiamonds(vm.teamInfo.team.diamondBalance)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="block-title block-title-medium season-header">
+              Current Season
+              <span class="season-header-range">
+                ${dayjs(vm.season.startDate).format('MMM D, YYYY')}
+                → ${dayjs(vm.season.endDate).format('MMM D, YYYY')}
+              </span>
+            </div>            
+
+            <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+              <ul>
+
+                <li>
+                  <a href="/t/activity/index/${vm.teamInfo.team._id}" class="item-link item-content">
+                    <div class="item-media">🔷</div>
+                    <div class="item-inner">
+                      <div class="item-title-row">
+                        <div class="item-title item-title-wrap">Rewards & Player Moves</div>
+                      </div>
+                      <div class="item-text">
+                        Season: ${universeWebService.displayDiamonds(vm.teamInfo.team.financeSeason.revenue.seasonToDate.total)}
+                        <span class="separator">|</span>
+                        Yesterday: ${universeWebService.displayDiamonds(vm.teamInfo.team.yesterdaysRewards)}
+                      </div>
+                    </div>
+                  </a>
+                </li>
+
+                ${!isSeasonComplete(vm.season) ? $h`
+                  <li>
+                    <div class="item-content">
+                      <div class="item-media">⏱️</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title item-title-wrap">Now queueing</div>
+                        </div>
+                        <div class="item-text">
+                          ${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}
+                          <span class="separator">|</span>
+                          ${vm.season.queuedTeams} team${vm.season.queuedTeams === 1 ? '' : 's'} ${vm.teamInfo.team.isQueued == "true" ? $h` <span class="separator">|</span> ✅ You’re queued` : $h` `}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ` : $h``}
+
+
+                ${isAhead(vm.season) ? $h`
+                  <li>
+                    <div class="item-content">
+                      <div class="item-media">⚠️</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title item-title-wrap">Too far ahead</div>
+                        </div>
+                        <div class="item-text">
+                          ${getDaysAhead(vm.season)} day${getDaysAhead(vm.season) === 1 ? '' : 's'} ahead.
+                          You may be blocked from queueing.
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ` : $h``}
+
+                ${isSeasonComplete(vm.season) ? $h`
+                  <li>
+                    <div class="item-content">
+                      <div class="item-media">🏁</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title item-title-wrap">Season complete</div>
+                        </div>
+                        <div class="item-text">
+                          Final results locked in.
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ` : $h``}
+
+              </ul>
+            </div>
+
+            ${!isSeasonComplete(vm.season) ? $h`
+              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                <ul>
+              
+                    ${vm.teamInfo.team.isQueued ? $h`
+                      <li>
+                        <a class="item-link item-content" @click="${clickLeaveQueue}">
+                          <div class="item-media">✅</div>
+                          <div class="item-inner">
+                            <div class="item-title-row">
+                              <div class="item-title">You’re in the queue</div>
+                              <div class="item-after">Leave</div>
+                            </div>
+                            <div class="item-text">
+                              Queued for <b>${dayjs(vm.season.nextQueueDate).format('MMM D')}</b>. ${isBehind(vm.season)
+                                ? $h`You’ll also play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'}.`
+                                : $h` `}
+                              <div style="opacity:.6; margin-top:4px;">Tap to leave the queue</div>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    ` : $h`
+                      <li>
+                        <a class="item-link item-content bg-color-green text-color-black" @click="${clickJoinQueue}">
+                          <div class="item-media">🏟️</div>
+                          <div class="item-inner">
+                            <div class="item-title-row">
+                              <div class="item-title">
+                                ${isNextQueueTodayLocal(vm.season)
+                                  ? 'Join Queue for Today'
+                                  : isNextQueueTomorrowLocal(vm.season)
+                                    ? 'Join Queue for Tomorrow'
+                                    : `Join Queue for ${formatQueueDateLocal(vm.season)}`}
+                              </div>
+                            </div>
+                            <div class="item-text  text-color-black">
+                              ${isBehind(vm.season) ? $h`
+                                You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'},
+                                in addition to your game for <b>${isNextQueueTodayLocal(vm.season) ? 'today' : isNextQueueTomorrowLocal(vm.season) ? 'tomorrow' : formatQueueDateLocal(vm.season)}</b>.
+                              ` : $h`${getQueueSubtitle(vm.season)}`}
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    `}
+                    
+                </ul>
+              </div>
+            ` : $h``}
+
+            
+            ${vm?.teamInfo.games?.find( g => !g.isFinished )?._id ? $h`
+                <div class="block-title block-title-medium">In Progress</div>
+                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
+                      <${InProgress} vm=${vm?.teamInfo.games?.find( g => !g.isFinished )} />
+                    </ul>
+                </div>
+            ` : $h` `}
+
+
+            <${Roster} />
+
+
+
+            ${vm?.teamInfo.games?.filter( g => g.isFinished == true)?.length > 0 ? $h`
+
+                <div class="block-title block-title-medium">Recent Games</div>
+                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
+        
+                        ${vm?.teamInfo.games?.filter( g => g.isFinished == true)?.map( game => $h`
+                            <${Result} game=${game} />                      
+                        `)}
+        
+                    </ul>
+        
+                </div>
+
+            ` : $h` `}
+            
+                
+          </div>
+
+          <${Footer} />          
+        
+        ` : $h` `}
+
+
 
     </div>
 
@@ -295,6 +241,8 @@
   import Footer from "../common/footer.f7.html"
   import Toolbar from "../common/toolbar.f7.html"
 
+  import Roster from "../team/roster.f7.html"
+
 
   import GameTransactions from "../activity/game-transaction-events.f7.html"
   import OnChainEvents from "../activity/onchain-events.f7.html"
@@ -305,6 +253,7 @@
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
   import { GameWebService } from "../../service/game-web-service.ts"
+  import { TeamComponentService } from "../../service/team-component-service.ts"
 
   import { StatService } from "../../../service/stat-service.ts"
   import { Position } from "../../../service/enums.ts"
@@ -331,6 +280,7 @@
     let statService = ContainerService.getInstance(StatService)
     let gameWebService = ContainerService.getInstance(GameWebService)
     let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
 
     let authInfo = props.authInfo
     let vm = props.vm
@@ -339,7 +289,10 @@
     
     let inProgressGame = props.inProgressGame
 
-    // console.log(vm)
+
+    const saveClick = (e) => {
+        $f7.emit('save-roster-click', e)
+    }
 
     const clickLeaveQueue = async (e) => {
 
@@ -624,41 +577,6 @@
     //       popup.open()
     //     }
 
-    // const playBotClick = async (e) => {
-
-    //   e.preventDefault()
-
-    //   $f7.preloader.show()
-
-    //   try {
-        
-    //     let lineup = await teamWebService.getActiveLineup(vm.team._id)
-        
-    //     createLineupPopup(lineup, async () => {
-          
-    //       let gameInfo = await gameWebService.playBot()
-
-    //       if (gameInfo.gameId) {
-    //         $f7.views.main.router.navigate(`/g/${gameInfo.gameId}`, { reloadCurrent: true })
-    //       }
-
-    //     })
-      
-    //   } catch(ex) { 
-
-    //     if (ex.response.data) {
-    //       $f7.dialog.alert(ex.response.data, "Lineup Error")
-    //     } else {
-    //       $f7.dialog.alert(ex.message, "There was an error")
-    //     }
-        
-    //   }
-
-    //   $f7.preloader.hide()
-
-      
-    // }
-
     const onGameUpdate = async (game) => {
 
       Object.assign(inProgressGame, gameWebService.getGameViewModel(game))
@@ -672,7 +590,19 @@
 
     }
 
+    const refreshPage = (e, done) => {
+      $f7.views.main.router.refreshPage()
+    }
+
     $on('pageBeforeIn', async (e) => {
+
+        $f7.off('roster-refresh-lineup')
+        $f7.on('roster-refresh-lineup', () => {
+            console.log('roster-refresh-home')
+            $update()
+        })
+
+
 
       //Start watching game if in progress
       if (inProgressGame?.game?._id) {

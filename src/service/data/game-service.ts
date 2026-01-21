@@ -473,7 +473,7 @@ class GameService {
             let player = players.find(p => p._id == gamePlayer._id)
             let pls = plss.find( p => p.playerId == player._id)
 
-            this.finalizePlayer(player, pls, gamePlayer, hittingRewards, pitchingRewards, game.seasonId != undefined)
+            this.finalizePlayer(player, pls, gamePlayer, hittingRewards, pitchingRewards)
             
         }
 
@@ -490,7 +490,7 @@ class GameService {
 
     }
 
-    private finalizePlayer(player:Player, pls:PlayerLeagueSeason, gamePlayer:GamePlayer, hittingRewards:WPAReward, pitchingRewards:WPAReward, isSeasonGame:boolean) {
+    private finalizePlayer(player:Player, pls:PlayerLeagueSeason, gamePlayer:GamePlayer, hittingRewards:WPAReward, pitchingRewards:WPAReward) {
 
         if (!player) {
             throw new Error("Can not finalize invalid (null) player.")
@@ -510,29 +510,6 @@ class GameService {
             }
 
             player.changed('stamina', true)
-
-        }
-
-    
-        if (isSeasonGame) {
-
-            player.careerStats = {
-                //@ts-ignore
-                hitting: this.statService.mergeHitResultsToStatLine(player.careerStats.hitting, gamePlayer.hitResult),
-                //@ts-ignore
-                pitching: this.statService.mergePitchResultsToStatLine(player.careerStats.pitching, gamePlayer.pitchResult)
-            }
-
-            player.changed("careerStats", true)
-
-            pls.stats = {
-                //@ts-ignore
-                hitting: this.statService.mergeHitResultsToStatLine(pls.stats?.hitting, gamePlayer.hitResult),
-                //@ts-ignore
-                pitching: this.statService.mergePitchResultsToStatLine(pls.stats?.pitching, gamePlayer.pitchResult)
-            }
-
-            pls.changed("stats", true)
 
         }
 

@@ -19,9 +19,7 @@ contract Universe is ERC721, ERC721URIStorage, AccessControl {
 
     enum MintType { MINT, FORCLOSURE, MINT_DIAMONDS }
 
-
     Diamonds private _diamonds;
-
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 

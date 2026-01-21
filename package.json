@@ -1,7 +1,7 @@
 {
   "name": "ethbaseball",
-  "version": "1.1.17",
-  "description": "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned.",
+  "version": "1.1.18",
+  "description": "Ethereum Baseball League (EBL)</strong> is a baseball team-management sim. You run a franchise by managing rosters, lineups, and pitching rotations with the goal of winning games and building a strong baseball business.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/American-Space-Software/ethbaseball"

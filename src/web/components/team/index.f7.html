@@ -6,7 +6,7 @@
 
         <div class="fab fab-extended fab-right-bottom color-orange">
             <a href="#" @click="${saveClick}">
-                <div class="fab-text">Save Roster</div>
+                <div class="fab-text">Save Lineup</div>
             </a>
         </div>
 
@@ -56,9 +56,7 @@
                         <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">🔷 Rewards & Player Moves</a></li>
                         <!-- <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>    -->
 
-                        ${games?.length > 0 ? $h`
-                            <a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> 
-                        ` : $h` `}
+                        <a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> 
 
                     </ul>
                 </div>
@@ -88,117 +86,7 @@
                     </div>
                 ` : $h` `}
 
-
-                <div class="block-title block-title-medium">Lineup ${teamComponentService.team.hasValidLineup ? '🟢' : $h`🔴 <span class="invalid-lineup">Lineup is invalid. Fix before queueing.</span>`}</div>
-
-                <div class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
-                        ${teamComponentService.selected == "stats" ? $h`
-                        <hitter-stats hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
-                            filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}"
-                            statprop="seasonStats">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats" selected>Season Stats</option>
-                                <option value="ratings">Ratings</option>
-                            </select>
-                        </hitter-stats>
-                        ` : $h` `}
-
-                        ${teamComponentService.selected == "ratings" ? $h`
-                        <hitter-ratings hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
-                            filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats">Season Stats</option>
-                                <option value="ratings" selected>Ratings</option>
-                            </select>
-                        </hitter-ratings>
-                        ` : $h` `}
-
-                        ${teamComponentService.selected == "contracts" ? $h`
-                        <hitter-contracts hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE}
-                            filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats">Season Stats</option>
-                                <option value="ratings">Ratings</option>
-                            </select>
-                        </hitter-contracts>
-                        ` : $h` `}
-                </div>
-
-                <div class="block-title block-title-medium " >
-                    Pitching Rotation 
-                </div>
-
-                <div class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}" >
-
-                        ${teamComponentService.selected == "stats" ? $h`
-                        <pitcher-stats pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
-                            filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}"
-                            statprop="seasonStats">
-                            <span />
-                        </pitcher-stats>
-                        ` : $h` `}
-
-                        ${teamComponentService.selected == "ratings" ? $h`
-                        <pitcher-ratings pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
-                            filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
-                            <span />
-                        </pitcher-ratings>
-                        ` : $h` `}
-
-                        ${teamComponentService.selected == "contracts" ? $h`
-                        <pitcher-contracts pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE}
-                            filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
-                            <span />
-                        </pitcher-contracts>
-                        ` : $h` `}
-
-                </div>
-
-                <!-- ${teamComponentService?.team?.seasonHistory ? $h`
-
-                    <div class="block-title block-title-medium " >
-                        History
-                    </div>
-
-                    <div class="block block-outline block-strong">
-                        <div class="stat-table-wrapper">
-                        <table class="data-table">
-                            <thead>
-                            <tr>
-                                <th class="label-cell" style="min-width: 110px;">Season</th>
-                                <th>League</th>
-                                <th class="numeric-cell">Rank</th>
-                                <th>Record</th>
-                                <th class="numeric-cell">Win%</th>
-                                <th class="numeric-cell">Rating</th>
-                                <th class="numeric-cell" style="min-width: 70px;">Cash</th>
-                                <th class="numeric-cell">Revenue</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            ${teamComponentService.team.seasonHistory.map( (sh, index) => $h`
-                            <tr>
-                                <td class="label-cell">
-                                <a href="/t/?startDate=${sh.startDate}&tokenId=${teamComponentService.team.tokenId}">${sh.startDate}</a>
-                                </td>
-                                <td class="numeric-cell">${sh.leagueRank}</td>
-                                <td class="numeric-cell">${sh.overallRecord.rank}</td>
-                                <td class="numeric-cell">${sh.overallRecord.wins}-${sh.overallRecord.losses}</td>
-                                <td class="numeric-cell">${statService.formatRatio(sh.overallRecord.winPercent)}</td>
-                                <td class="numeric-cell">${sh.rating.rating.toFixed(0)}</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(sh.financeSeason.diamondBalance)}</td>
-                                <td class="numeric-cell">${universeWebService.displayDiamonds(sh.financeSeason.revenue.seasonToDate.total)}</td>
-    
-                            </tr>
-                            `)}
-                            </tbody>
-                        </table>
-                        </div>
-                    </div>
-
-
-                ` : $h` `} -->
-
+                <${Roster} />
 
                 <!-- And somewhere in DOM -->
                 <div class="popup front-office-popup">
@@ -235,69 +123,13 @@
                                                 </div>
                                             </li>
 
-                                            ${authInfo?.address && authInfo?.address == teamComponentService.team.ownerId ? $h`
 
-                                                <div class="item-inner">
-                                                    <div class="item-title-row">
-                                                        <div class="item-title">
-
-                                                        <div style="padding: 10px;">
-
-                                                                ${teamComponentService.team.diamondBalance && BigInt(teamComponentService.team.diamondBalance) > 0 ? $h`
-                                                                    <a @click="${withdrawClick}" class="button button-fill withdraw-button color-red">Withdraw</a>
-                                                                ` : $h``}
-
-                                                                <a @click="${depositClick}" class="button button-fill withdraw-button color-green">Deposit</a>
-
-                                                        </div>
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            ` : $h` `}
 
                                         </ul>
                                     </div>
 
 
-                                    ${teamComponentService.team.diamondMintPasses?.length > 0 ? $h`
 
-                                        <br /><br />
-
-                                        <strong>Mint Pass History</strong>
-                                        <br /><br />
-                                        <div class="list media-list">
-                                            <ul>
-
-                                            ${teamComponentService.team.diamondMintPasses.map( mp => $h`
-                                                <li>
-                                                <div class="item-content">
-                                                    <div class="item-inner">
-                                                        <div class="item-title-row">
-                                                        <div class="item-title">${universeWebService.displayDiamonds(mp.amount)}</div>
-                                                        <div class="item-after">
-                                                            ${isSigned(mp) ? $h`
-                                                                <a class="button button-outline" @click="${mintPassClick}" data-id="${mp._id}">Redeem</a>
-                                                            ` : $h`
-                                                                Processing...
-                                                            `}
-                                                            
-                                                        </div>
-                                                        </div>
-                                                        <div class="item-text">Expires ${dayjs(mp.expires * 1000 ).fromNow()}</div>
-                                                    </div>
-                            
-                                                </div>
-                                                </li>
-                                            `)}
-
-                                            </ul>
-                                        </div>
-
-
-                                        
-                                        ` : $h` `}
 
 
                                 </div>
@@ -387,6 +219,7 @@
 
 
   import Navbar from "../common/navbar.f7.html"
+  import Roster from "./roster.f7.html"
 
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"
@@ -422,7 +255,6 @@
 
     let statService = ContainerService.getInstance(StatService)
 
-    const MAX_ROSTER_SIZE = 13
 
     let loading
     let startDate
@@ -431,21 +263,10 @@
     let authInfo = props.authInfo
     let games = props.games
 
-    let tokenId = props.tokenId
-    let team = props.team
-    
-    let displayHitters = teamComponentService.getDisplayHitters()
-    let displayPitchers = teamComponentService.getDisplayPitchers()
-
-    const refreshLineup = () => {
-
-        displayHitters.length = 0
-        displayHitters.push(...teamComponentService.getDisplayHitters())
-
-        displayPitchers.length = 0
-        displayPitchers.push(...teamComponentService.getDisplayPitchers())
-
+    const saveClick = (e) => {
+        $f7.emit('save-roster-click', e)
     }
+
 
     const isSigned = (mp) => {
       return (mp?.r && mp.s && mp.v)
@@ -614,365 +435,7 @@
     }
 
 
-
-    const PAGE_SIZE = 25
-
-    const autoFillClick = (e) => {
-
-        teamComponentService.autoFillLineup()
-
-        resetMoves()
-
-        refreshLineup()
-        // $f7.emit('refresh')
-
-        $update()
-
-    }
-
-    const saveClick = async (e) => {
-
-        try {
-            await teamComponentService.save()
-
-            await teamComponentService.loadTeam(teamComponentService.team._id, universeWebService.getStartDate())
-
-            resetMoves()
-
-            // $f7.emit('refresh')
-            refreshLineup()
-
-            $update()
-
-            const toast = $f7.toast.create({
-                text: 'Roster saved',
-                closeTimeout: 5000,
-                position: 'bottom',
-                horizontalPosition: 'center',
-                on: {
-                    opened: function () { }
-                }
-            })
-
-            toast.open()
-
-        } catch (ex) {
-            $f7.dialog.alert(ex.response.data, "There was an error")
-        }
-
-    }
-
-    let rosterFilters = {
-        position: undefined,
-        name: undefined
-    }
-
-    let unrosteredFilters = {
-        position: undefined,
-        name: undefined
-    }
-
-    let moveFilter = {
-        moveTarget: undefined,
-        isMoveTarget: true,
-        position: undefined,
-        showEmpty: false
-    }
-
-    const moveActive = {}
-
-    const resetMoves = () => {
-
-        $('.button-move').addClass("button-outline")
-        $('.button-move').removeClass("button-fill")
-        $('.split-row-both a').show()
-        $('.stats-dropdown').show()
-
-
-        moveFilter.moveTarget = undefined
-        moveFilter.isMoveTarget = true
-        moveFilter.position = undefined
-        moveFilter.showEmpty = false
-        moveFilter.hidePitcherSlot = false
-
-    }
-
-    const moveRoster = (e) => {
-
-        let actionRow = $(e.srcElement).data('action-row')
-        let moveTarget = $(e.srcElement).data('move-target')
-
-        //Get if move is already active
-        let selectedId = moveActive[moveTarget]
-
-        //Reset all move buttons
-        resetMoves()
-
-        moveFilter.moveTarget = moveTarget
-
-        if (!selectedId) {
-
-            moveFilter.moveTarget = moveTarget
-            moveFilter.isMoveTarget = true
-            moveFilter.position = undefined
-            moveFilter.showEmpty = true
-            moveFilter.hidePitcherSlot = true
-
-            //Fill this one in.
-            fillButton($(e.srcElement))
-
-            $(`.action-row.${actionRow}`).show()
-
-            $('.stats-dropdown').hide()
-
-            moveActive[moveTarget] = $(e.srcElement).data('id')
-
-
-        } else {
-
-            let currentPlayerId = $(e.srcElement).data('id')
-            let spot = $(e.srcElement).data('spot')
-
-            if (currentPlayerId != selectedId) {
-                teamComponentService.moveToRoster(selectedId, currentPlayerId, parseInt(spot), 0)
-            }
-
-
-            resetMoves()
-
-            $('.stats-dropdown').show()
-
-            $(`.action-row.${actionRow}`).hide()
-
-            moveActive[moveTarget] = undefined
-
-        }
-
-        // $f7.emit('refresh')
-        refreshLineup()
-
-
-        $update()
-
-    }
-
-    const moveUnrostered = (e) => {
-
-        let actionRow = $(e.srcElement).data('action-row')
-        let moveTarget = $(e.srcElement).data('move-target')
-
-        //Get if move is already active
-        let activeId = moveActive[moveTarget]
-
-        //Reset all move buttons
-        resetMoves()
-
-        if (!activeId) {
-
-            moveFilter.moveTarget = moveTarget
-            moveFilter.isMoveTarget = true
-            moveFilter.position = $(e.srcElement).data('position')
-            moveFilter.showEmpty = true
-
-            //Fill this one in.
-            fillButton($(e.srcElement))
-
-            //Disable previous/next
-            $('.split-row-both a').hide()
-            $('.stats-dropdown').hide()
-
-
-
-            moveActive[moveTarget] = $(e.srcElement).data('id')
-
-        } else {
-
-            resetMoves()
-
-            $('.split-row-both a').show()
-            $('.stats-dropdown').show()
-
-
-            moveActive[moveTarget] = undefined
-
-        }
-
-        $f7.emit('refresh')
-        refreshLineup()
-
-
-        $update()
-
-
-    }
-
-    const drop = (e) => {
-
-        let moveTarget = $(e.srcElement).data('move-target')
-        let actionRow = $(e.srcElement).data('action-row')
-
-        let dropId = moveActive[moveTarget]
-
-        //   teamComponentService.dropPlayer(dropId)
-
-        // console.log(teamComponentService.rosterPlayers.map(p => p._id))
-
-
-        moveActive[moveTarget] = undefined
-
-        // updateDisplayRoster()
-
-        $(`.action-row.${actionRow}`).hide()
-        resetMoves()
-
-
-        // $f7.emit('refresh')
-        refreshLineup()
-
-        $update()
-
-    }
-
-    const showMoveRoster = (p, moveTarget) => {
-
-        if (moveFilter.hidePitcherSlot == true && p.fullName == "Pitcher Slot") return false
-        if (moveFilter.moveTarget && moveFilter.moveTarget != moveTarget) return false
-        if (moveFilter.showEmpty && p?._id == undefined) return true
-        if (!p) return false
-        if (p._id) return true
-        if (moveActive[moveTarget] && (p._id != undefined || p.primaryPosition == moveFilter.position)) return true
-        if (moveFilter.position && moveFilter.position == p.primaryPosition) return true
-
-        return false
-    }
-
-    const showMoveRosterText = (p, moveTarget) => {
-        if (moveActive[moveTarget]) return "Here"
-        return "Move"
-    }
-
-    const showMoveUnrostered = (p, moveTarget) => {
-        if (moveActive[moveTarget] == p._id) return true
-        if (moveActive[moveTarget]) return false
-        if (moveFilter.position && moveFilter.position != p.primaryPosition) return false
-        return true
-    }
-
-    const getActions = (type, isRostered) => {
-
-        return () => {
-
-
-            if (teamComponentService.isTeamOwner() && !teamComponentService.team.isQueued ) {
-
-                switch (type) {
-                    case "hitters":
-                        return isRostered ? rosterHittersActions : unrosteredHittersActions
-                    case "pitchers":
-                        return isRostered ? rosterPitchersActions : unrosteredPitchersActions
-                }
-
-            } else {
-                return undefined
-            }
-
-        }
-
-
-    }
-
-    let rosterHittersActions = {
-        drop: drop,
-        move: moveRoster,
-        moveTarget: "roster-hitters",
-        isMoveTarget: "true",
-        showMove: (p) => {
-            return showMoveRoster(p, "roster-hitters")
-        },
-        moveText: (p) => {
-            return showMoveRosterText(p, "roster-hitters")
-        }
-    }
-
-    let rosterPitchersActions = {
-        drop: drop,
-        move: moveRoster,
-        moveTarget: "roster-pitchers",
-        isMoveTarget: "true",
-        showMove: (p) => {
-            return showMoveRoster(p, "roster-pitchers")
-        },
-        moveText: (p) => {
-            return showMoveRosterText(p, "roster-pitchers")
-        }
-    }
-
-    let unrosteredHittersActions = {
-        move: moveUnrostered,
-        moveTarget: "roster-hitters",
-        isMoveTarget: "false",
-        showMove: (p) => {
-            return showMoveUnrostered(p, "roster-hitters")
-        },
-        moveText: (p) => {
-            return "Move"
-        }
-    }
-
-    let unrosteredPitchersActions = {
-        move: moveUnrostered,
-        moveTarget: "roster-pitchers",
-        isMoveTarget: "false",
-        showMove: (p) => {
-            return showMoveUnrostered(p, "roster-pitchers")
-        },
-        moveText: (p) => {
-            return "Move"
-        }
-    }
-
-    const statsChange = async (e) => {
-
-        teamComponentService.selected = $(e.srcElement).val()
-
-        // $f7.emit('refresh')
-        refreshLineup()
-
-        await $update()
-
-    }
-
-    const positionClick = (e) => {
-
-        // currentPage = 0
-
-        $('.position a').removeClass("active")
-        $(e.srcElement).addClass("active")
-
-        $('#playerSearch').val("")
-
-        let value = $(e.srcElement).data('pos')
-
-        unrosteredFilters.position = value
-
-        // updateDisplayRoster()
-
-        // setCurrentPage()
-
-
-        // $f7.emit('refresh')
-        refreshLineup()
-
-
-        $update()
-
-    }
-
-    const fillButton = (element) => {
-        element.removeClass("button-outline")
-        element.addClass("button-fill")
-    }
-
+    
     const load = async () => {
 
       $f7.preloader.show()
@@ -1003,6 +466,13 @@
 
     $on('pageBeforeIn', async () => {
 
+        $f7.off('roster-refresh-lineup')
+        $f7.on('roster-refresh-lineup', () => {
+            console.log('roster-refresh-index')
+            $update()
+        })
+
+
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: {
             tabLink: "/l/standings", breadcrumbs: [
@@ -1016,16 +486,13 @@
 
 
         universeWebService.setMetadata(
-            `${team.city?.name ? team.city.name : ""} ${team.name} - Ethereum Baseball League`, 
+            `${teamComponentService.team.city?.name ? teamComponentService.team.city.name : ""} ${teamComponentService.team.name} - Ethereum Baseball League`, 
             window.location.href, 
             `${env.WEB}/image/thumbnail/1024/${teamComponentService.team.logoId}`, 
             `${teamComponentService.team.city?.name} ${teamComponentService.team.name} is a franchise in Ethereum Baseball League.`
         ) 
 
 
-        $f7.emit('team-loaded')
-        // $f7.emit('refresh')
-        refreshLineup()
 
         await $update()
 

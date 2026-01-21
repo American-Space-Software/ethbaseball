@@ -271,6 +271,14 @@ class OffchainEventService {
         }
     }
 
+    async getDailyDiamondRewardByTeamIdForDate( teamId: string, forDate: string,  options?: any ): Promise<OffchainEvent | null> {
+        return this.offchainEventRepository.getDailyDiamondRewardByTeamIdForDate(teamId, forDate, options)
+    }
+
+    async getMostRecentDailyDiamondRewardByTeamId( teamId: string, options?: any ): Promise<OffchainEvent | null> {
+        return this.offchainEventRepository.getMostRecentDailyDiamondRewardByTeamId(teamId, options)
+    }
+
 }
 
 

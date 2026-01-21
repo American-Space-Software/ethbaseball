@@ -73,23 +73,9 @@
       ` : $h` 
         <div class="right no-circle">
 
-          <a href="#" class="popover-open" data-popover=".popover-profile">
+          <a href="#" class="popup-open" data-popup=".logged-in-popup">
             <img src="/team/image/60/${authInfo?.teamId}" class="profilePic" />
           </a> 
-
-          <div class="popover popover-profile">
-            <div class="popover-angle"></div>
-            <div class="popover-inner">
-              <div class="list inset list-strong list-dividers-ios">
-                <ul>
-                  <li><a href="/t/index/${authInfo?.teamId}" class="list-button popover-close">🛠️ Manage Team</a></li>
-                  <li><a class="popover-close popup-open list-button" data-popup=".logged-in-popup" href="#">👤 Account</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-
 
         </div>
       `}

@@ -7,6 +7,7 @@ import { Op } from "sequelize"
 import { Season } from "../../dto/season.js"
 import { Team } from "../../dto/team.js"
 import { Sequelize } from "sequelize-typescript"
+import dayjs from "dayjs"
 
 
 @injectable()
@@ -93,6 +94,56 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
             order: [ ['dateCreated', 'DESC'] ]
         }, options))
 
+    }
+
+    async getDailyDiamondRewardByTeamIdForDate( teamId: string, forDate: string,  options?: any ): Promise<OffchainEvent | null> {
+        
+        const start = dayjs(forDate).startOf("day").toISOString()
+        const end = dayjs(forDate).add(1, "day").startOf("day").toISOString()
+
+        return OffchainEvent.findOne(
+            Object.assign(
+            {
+                where: {
+                [Op.and]: [
+                    { contractType: "DIAMONDS" },
+                    { [Op.or]: [{ fromTeamId: teamId }, { toTeamId: teamId }] },
+                    { "source.type": "reward" },
+                    { "source.rewardType": "daily" },
+                    {
+                        "source.fromDate": {
+                            [Op.gte]: start,
+                            [Op.lt]: end
+                        }
+                    }
+                ]
+                },
+                order: [["dateCreated", "DESC"]]
+            },
+            options || {}
+            )
+        )
+
+    }
+
+
+    async getMostRecentDailyDiamondRewardByTeamId( teamId: string, options?: any ): Promise<OffchainEvent | null> {
+        return OffchainEvent.findOne(
+            Object.assign(
+            {
+                where: {
+                    [Op.and]: [
+                        { contractType: "DIAMONDS" },
+                        { [Op.or]: [{ fromTeamId: teamId }, { toTeamId: teamId }] },
+                        { "source.type": "reward" },
+                        { "source.rewardType": "daily" }
+                    ]
+                },
+                order: [["dateCreated", "DESC"]]
+            },
+            options || {}
+            )
+        )
     }
 
 

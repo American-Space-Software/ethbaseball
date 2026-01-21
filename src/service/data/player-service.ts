@@ -998,10 +998,6 @@ class PlayerService {
 
     }
 
-    async getLatest(options?: any): Promise<Player> {
-        return this.playerRepository.getLatest(options)
-    }
-
     async list(options?: any): Promise<Player[]> {
         return this.playerRepository.list(options)
     }

@@ -7,35 +7,20 @@
 
       <${StartDate} />
 
-        <div class="block">
 
-            <div class="list">
-
-            <strong>League</strong><br />
-            <select name="rank" class="rank-dropdown" @change="${rankChange}">
-
-                ${rank == 0 ? $h`
-                    <option value="0" selected>Free Agents</option>
-                ` : $h`
-                    <option value="0">Free Agents</option>
-                `}
-
-
-                ${leagues.map( (l, index) => $h`
-
-                    ${l.rank == rank ? $h`
-                        <option value="${l.rank}" selected >${l.name}</option>
-                    ` : $h` 
-                        <option value="${l.rank}">${l.name}</option>
-                    `}
-                `)}
-                
-            </select>
-
-            </div>
-
+        <div class="block small-only">
+            <p class="segmented">
+                 <a href="${$f7.views.main.router.currentRoute.path}?rank=1&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 1 ? 'tab-link-active' : ''}" >League Leaders</a>
+                <a href="${$f7.views.main.router.currentRoute.path}?rank=0&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 0 ? 'tab-link-active' : ''}">Shop for Free Agents</a>
+            </p>
         </div>
-        
+
+        <div class="block large-only-block small-tabs">
+            <p class="segmented">
+                <a href="${$f7.views.main.router.currentRoute.path}?rank=1&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 1 ? 'tab-link-active' : ''}" >League Leaders</a>
+                <a href="${$f7.views.main.router.currentRoute.path}?rank=0&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 0 ? 'tab-link-active' : ''}">Shop for Free Agents</a>
+            </p>
+        </div>
 
 
         <div class="block block-strong block-outline">
@@ -65,7 +50,7 @@
                 <div>
 
                     ${selected == "stats" ? $h`
-                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats" selected>Season Stats</option>
                                 <option value="ratings">Ratings</option>
@@ -74,7 +59,7 @@
                     ` : $h` `}
 
                     ${selected == "ratings" ? $h`
-                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" selected>Ratings</option>
@@ -83,7 +68,7 @@
                     ` : $h` `}
 
                     ${selected == "contracts" ? $h`
-                        <pitcher-contracts pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <pitcher-contracts pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" >Ratings</option>
@@ -96,7 +81,7 @@
                 <div>
 
                     ${selected == "stats" ? $h`
-                        <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats" selected>Season Stats</option>
                                 <option value="ratings">Ratings</option>
@@ -220,22 +205,17 @@
 
         let sort = target.data("sort")
 
-        let direction = $(target).hasClass("sortable-desc") ? "DESC" : "ASC"
+        //If it's sortable-desc or it's neither we do desc
+        let direction = $(target).hasClass("sortable-desc") || ( !$(target).hasClass("sortable-desc") && !$(target).hasClass("sortable-asc")   ) ? "DESC" : "ASC"
 
-        let url = `/players/?rank=${universeWebService.getRank()}&startDate=${universeWebService.getStartDate()}&position=${position}&page=1&sortColumn=${sort}&sortDirection=${direction}`
+        let url = `/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=1&sortColumn=${sort}&sortDirection=${direction}`
         $f7.views.main.router.navigate(url, { reloadCurrent: true })
 
-    }
-
-
-    const link = (href) => {
-        return "/" + href
     }
 
     const statusChange = (e) => {
         filters.status = $(e.srcElement).val()
         $update()
-        $f7.emit('refresh')
     }
 
     const statsChange = async (e) => {
@@ -253,7 +233,6 @@
         filters.position = undefined
 
         $update()
-        $f7.emit('refresh')
     }
 
     const positionClick = (e) => {
@@ -282,7 +261,7 @@
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: { tabLink: "/players/", breadcrumbs:[
                 { text: "Home", path: "/"},
-                { text: "Players" }
+                { text: rank == 0 ? "Shop for Free Agents" : "League Leaders" }
             ] }
         }))
 
@@ -295,7 +274,6 @@
         ) 
 
 
-        $f7.emit('refresh')
         await $update()
     })
 

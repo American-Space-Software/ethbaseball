@@ -1301,7 +1301,7 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
   'age': 'pls.age',
   'throws': 'p.throws',
   'hits': 'p.hits',
-
+  
   // hitting
   'hitting.games':           'CAST(stats->>"$.hitting.games" AS SIGNED)',
   'hitting.pa':              'CAST(stats->>"$.hitting.pa" AS SIGNED)',

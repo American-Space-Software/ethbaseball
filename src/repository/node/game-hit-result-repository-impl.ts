@@ -4,6 +4,8 @@ import { GameHitResultRepository } from "../game-hit-result-repository.js"
 import { GameHitResult, HitResult } from "../../dto/game-hit-result.js"
 import { Player } from "../../dto/player.js"
 import dayjs from "dayjs"
+import { Game } from "../../dto/game.js"
+import { Season } from "../../dto/season.js"
 
 const SUM_QUERY_FIELDS = `
     SUM(pa) pa,
@@ -69,19 +71,19 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
     @inject("sequelize")
     private sequelize:Function
 
-    async get(gameId:string, playerId:string, options?:any): Promise<GameHitResult> {
+    async get(game:Game, player:Player, options?:any): Promise<GameHitResult> {
 
         let queryOptions = {
             where: {
-                gameId: gameId,
-                playerId: playerId
+                gameId: game._id,
+                playerId: player._id
             }
         }
 
         return GameHitResult.findOne(Object.assign(queryOptions, options))
     }
 
-    async getByPlayer(playerId:string, options?:any): Promise<GameHitResult[]> {
+    async getByPlayer(player:Player, options?:any): Promise<GameHitResult[]> {
 
         let s = await this.sequelize()
 
@@ -92,7 +94,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
             model: GameHitResult,
 
             replacements: { 
-                playerId: playerId
+                playerId: player._id
             }
         }
 
@@ -115,41 +117,60 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
         return gameHitResult
     }
 
-    async getCareerSeasonsHitResult(playerId:string, options?:any) : Promise<HitResult[]> {
+    async getPlayersCareerHitResults(playerIds: string[], options?: any): Promise<HitResult[]> {
 
-        let s = await this.sequelize()
+        const s = await this.sequelize()
 
-        let queryOptions = {
+        const queryOptions = {
             type: s.QueryTypes.RAW,
-            plain: true,
+            plain: false,
             mapToModel: true,
             model: GameHitResult,
-
-            replacements: { 
-                playerId: playerId
-            }
+            replacements: { playerIds }
         }
 
-        const [queryResults, metadata] = await s.query(`
-
-            SELECT 
-                playerId,
-                age,
-                COUNT(*) games,
-                ${SUM_QUERY_FIELDS}
+        const [rows, metadata] = await s.query(`
+            SELECT
+            ghr.playerId,
+            COUNT(*) games,
+            ${SUM_QUERY_FIELDS}
             FROM game_hit_result ghr
-            INNER join game g on ghr.gameId = g._id
-
-            WHERE playerId = :playerId
-            GROUP BY playerId, age
-            ORDER by age asc
+            WHERE ghr.playerId IN (:playerIds)
+            GROUP BY ghr.playerId
         `, Object.assign(queryOptions, options))
 
-        return queryResults
+        return (rows || []) as HitResult[]
 
     }
 
-    async getCareerHitResult(playerId:string, options?:any) : Promise<HitResult> {
+    async getPlayersSeasonHitResults(playerIds: string[], seasonId: string, options?: any): Promise<HitResult[]> {
+
+        const s = await this.sequelize()
+
+        const queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: false,
+            mapToModel: true,
+            model: GameHitResult,
+            replacements: { playerIds, seasonId }
+        }
+
+        const [rows, metadata] = await s.query(`
+            SELECT
+                ghr.playerId,
+                COUNT(*) games,
+            ${SUM_QUERY_FIELDS}
+            FROM game_hit_result ghr
+            JOIN game g ON g._id = ghr.gameId
+            WHERE g.seasonId = :seasonId
+            AND ghr.playerId IN (:playerIds)
+            GROUP BY ghr.playerId
+        `, Object.assign(queryOptions, options))
+
+        return (rows || []) as HitResult[]
+    }
+
+    async getPlayerCareerHitResult(player:Player, options?:any) : Promise<HitResult> {
 
         let s = await this.sequelize()
 
@@ -160,7 +181,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
             model: GameHitResult,
 
             replacements: { 
-                playerId: playerId
+                playerId: player._id
             }
         }
 
@@ -183,32 +204,33 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
 
     }
 
-    async getTeamHitResult(teamId:number, options?:any) : Promise<HitResult> {
+    async getPlayerSeasonHitResult(player: Player, season: Season, options?: any): Promise<HitResult | undefined> {
 
-        let s = await this.sequelize()
+        const s = await this.sequelize()
 
-        let queryOptions = {
+        const queryOptions = {
             type: s.QueryTypes.RAW,
             plain: true,
             mapToModel: true,
             model: GameHitResult,
-
-            replacements: { 
-                teamId: teamId
+            replacements: {
+                playerId: player._id,
+                seasonId: season._id
             }
         }
 
         const [queryResults, metadata] = await s.query(`
 
-            SELECT 
-                teamId,
+            SELECT
+                ghr.playerId,
                 COUNT(*) games,
                 ${SUM_QUERY_FIELDS}
-            FROM game_hit_result
+            FROM game_hit_result ghr
+            JOIN game g ON g._id = ghr.gameId
+            WHERE ghr.playerId = :playerId
+            AND g.seasonId = :seasonId
+            GROUP BY ghr.playerId
 
-            WHERE teamId = :teamId
-
-            GROUP BY teamId
         `, Object.assign(queryOptions, options))
 
         if (queryResults?.length > 0) {
@@ -236,186 +258,6 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
                 ${SUM_QUERY_FIELDS}
             FROM game_hit_result
             
-        `, Object.assign(queryOptions, options))
-
-        if (queryResults?.length > 0) {
-            return queryResults[0]
-        }
-
-    }
-
-
-    async getAverageCareerHitResult(playerId:string, options?:any) : Promise<HitResult> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-
-            replacements: { 
-                playerId: playerId
-            }
-        }
-
-        const [queryResults, metadata] = await s.query(`
-
-            select 
-                playerId,
-                COUNT(*) games,
-                AVG(pa) pa,
-                AVG(assists) assists,
-                AVG(atBats) atBats,
-                AVG(hits) hits,
-                AVG(runs) runs,
-                AVG(bb) bb,
-                AVG(cs) cs,
-                AVG(singles) singles,
-                AVG(doubles) doubles,
-                AVG(triples) triples,
-                AVG(e) e,
-                AVG(flyBalls) flyBalls,
-                AVG(flyOuts) flyOuts,
-                AVG(gidp) gidp,
-                AVG(passedBalls) passedBalls,
-                AVG(groundBalls) groundBalls,
-                AVG(groundOuts) groundOuts,
-                AVG(hbp) hbp,
-                AVG(homeRuns) homeRuns,
-                AVG(lineDrives) lineDrives,
-                AVG(lineOuts) lineOuts,
-                AVG(outs) outs,
-                AVG(lob) lob,
-                AVG(po) po,
-                AVG(rbi) rbi,
-                AVG(sacBunts) sacBunts,
-                AVG(sacFlys) sacFlys,
-                AVG(sb) sb,
-                AVG(so) so,
-                AVG(wpa) wpa,
-                AVG(experience) experience,
-                AVG(teamWins) teamWins,
-                AVG(teamLosses) teamLosses,
-                AVG(pitches) pitches,
-                AVG(balls) balls,
-                AVG(strikes) strikes,
-                AVG(fouls) fouls,
-
-                AVG(swings) swings,
-                AVG(swingAtBalls) swingAtBalls,
-                AVG(swingAtStrikes) swingAtStrikes,
-                AVG(sbAttempts) sbAttempts,
-
-                AVG(inZone) inZone,
-                AVG(ballsInPlay) ballsInPlay,
-
-                AVG(inZoneContact) inZoneContact,
-                AVG(outZoneContact) outZoneContact,
-
-                AVG(totalPitchQuality) totalPitchQuality,
-                AVG(totalPitchPowerQuality) totalPitchPowerQuality,
-                AVG(totalPitchLocationQuality) totalPitchLocationQuality,
-                AVG(totalPitchMovementQuality) totalPitchMovementQuality,
-
-
-            FROM (SELECT 
-                ${SUM_QUERY_FIELDS}
-            FROM game_hit_result ghr
-                INNER JOIN 'game' g on ghr.gameId = g._id
-            WHERE ghr.playerId = :playerId
-            GROUP BY playerId
-            ORDER BY g.lastUpdated desc)
-        `, Object.assign(queryOptions, options))
-
-        if (queryResults?.length > 0) {
-            return queryResults[0]
-        }
-
-    }
-
-    async getGameAverageHitResult(options?:any) : Promise<HitResult> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-
-        }
-
-        const [queryResults, metadata] = await s.query(`
-
-            select 
-                COUNT(*) games,
-                AVG(pa) pa,
-                AVG(assists) assists,
-                AVG(atBats) atBats,
-                AVG(hits) hits,
-                AVG(runs) runs,
-                AVG(bb) bb,
-                AVG(cs) cs,
-                AVG(singles) singles,
-                AVG(doubles) doubles,
-                AVG(triples) triples,
-                AVG(e) e,
-                AVG(flyBalls) flyBalls,
-                AVG(flyOuts) flyOuts,
-                AVG(gidp) gidp,
-                AVG(passedBalls) passedBalls,
-                AVG(groundBalls) groundBalls,
-                AVG(groundOuts) groundOuts,
-                AVG(hbp) hbp,
-                AVG(homeRuns) homeRuns,
-                AVG(lineDrives) lineDrives,
-                AVG(lineOuts) lineOuts,
-                AVG(outs) outs,
-                AVG(lob) lob,
-                AVG(po) po,
-                AVG(rbi) rbi,
-                AVG(sacBunts) sacBunts,
-                AVG(sacFlys) sacFlys,
-                AVG(sb) sb,
-                AVG(so) so,
-                AVG(wpa) wpa,
-                AVG(experience) experience,
-                AVG(teamWins) teamWins,
-                AVG(teamLosses) teamLosses,
-                AVG(sbAttempts) sbAttempts,
-
-                AVG(pitches) pitches,
-                AVG(balls) balls,
-                AVG(strikes) strikes,
-                AVG(fouls) fouls,
-
-                AVG(swings) swings,
-                AVG(swingAtBalls) swingAtBalls,
-                AVG(swingAtStrikes) swingAtStrikes,
-
-                AVG(inZone) inZone,
-                AVG(ballsInPlay) ballsInPlay,
-
-                AVG(inZoneContact) inZoneContact,
-                AVG(outZoneContact) outZoneContact,
-
-
-                AVG(totalPitchQuality) totalPitchQuality,
-                AVG(totalPitchPowerQuality) totalPitchPowerQuality,
-                AVG(totalPitchLocationQuality) totalPitchLocationQuality,
-                AVG(totalPitchMovementQuality) totalPitchMovementQuality
-
-
-            FROM (SELECT 
-                ${SUM_QUERY_FIELDS}
-            FROM game_hit_result ghr
-                INNER JOIN 'game' g on ghr.gameId = g._id
-            WHERE g.isComplete = true
-            GROUP BY gameId
-            ORDER BY g.lastUpdated desc
-            ${options?.limit ? `LIMIT ${options.limit}` : ''}
-            ) 
-
         `, Object.assign(queryOptions, options))
 
         if (queryResults?.length > 0) {
@@ -457,7 +299,6 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
         }
 
     }
-
 
     async updateGameHitResults(hitResults: GameHitResult[], options?: any) {
 

@@ -13,6 +13,7 @@ import { WalletService } from '../../service/wallet-service.js';
 import { LoginWebService } from '../service/login-web-service.js';
 import { GameWebService } from '../service/game-web-service.js';
 
+import { TeamComponentService } from '../service/team-component-service.js';
 
 
 @injectable()
@@ -23,6 +24,7 @@ class HomeController {
         private universeWebService:UniverseWebService,
         private loginWebService:LoginWebService,
         private gameWebService:GameWebService,
+        private teamComponentService:TeamComponentService,
         @inject("WalletService") private walletService:WalletService
     ) {}
 
@@ -31,38 +33,42 @@ class HomeController {
         
         let authInfo = await this.loginWebService.getAuthInfo()
 
-        let component = HomeComponent
-
         if (authInfo?._id) {
-            component = HomeLoggedInComponent
+
+            return new ModelView(async (routeTo) => {
+
+                this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+
+                let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
+
+                console.log(vm)
+
+                let contractBalance
+
+                let walletAddresses = await this.walletService.getAddress()
+                
+                if (this.walletService.provider && walletAddresses) {
+                    contractBalance = await this.universeWebService.getContractBalance()
+                }
+
+
+                await this.teamComponentService.setLoadedTeam(vm.teamInfo, authInfo, this.universeWebService.getStartDate())
+
+
+                return {
+                    contractBalance: contractBalance,
+                    authInfo: authInfo,
+                    vm: vm,
+                    discord: this.discord
+                }
+
+            }, HomeLoggedInComponent)
+
         }
 
         return new ModelView(async (routeTo) => {
-
-            this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
-
-            let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
-
-            let contractBalance
-
-            let walletAddresses = await this.walletService.getAddress()
-            
-            if (this.walletService.provider && walletAddresses) {
-                contractBalance = await this.universeWebService.getContractBalance()
-            }
-
-            let inProgressGame = vm.inProgressGame ? this.gameWebService.getGameViewModel(vm.inProgressGame) : {}
-
-
-            return {
-                contractBalance: contractBalance,
-                authInfo: authInfo,
-                vm: vm,
-                inProgressGame: inProgressGame,
-                discord: this.discord
-            }
-
-        }, component)
+            return {}
+        }, HomeComponent)
 
     }
 

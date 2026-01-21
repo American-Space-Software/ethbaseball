@@ -11,9 +11,9 @@
       <table class="data-table players ${actions ? $h`actions`: $h` `}">
         <thead>
           <tr>
+            ${actions ? $h`<th class="action"></th>` : $h` `}     
             <th class="image"></th>
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
-            ${actions ? $h`<th class="action"></th>` : $h` `}     
             ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
             <th @click=${sortHitters} class="numeric-cell" data-sort="displayRating">OVR</th>
@@ -47,8 +47,17 @@
             ${displayHitters?.map( (p,index) => $h`
               <tr>
 
+                ${actions ? $h`
+                  <td class="action">
+                    ${actions.showMove(p) ? $h`
+                      <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-ratings" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>  
+                    ` : $h` `}
+                  </td>
+                ` : $h` `}
+
+
                 <td class="image">
-                  ${p?._id ? $h`<img src="/player/image/${p._id}" width="25" height="25" />` : $h`<span />`}
+                  ${p?._id ? $h`<img src="/player/image/${p._id}" />` : $h`<span />`}
                 </td>
 
 
@@ -63,19 +72,13 @@
 
                     `}
 
-                    ${p.team ? $h`<a href="${universeWebService.startDateLink(`/t/index/${p.team?._id}`)}" class="position">${teamWebService.getTeamName(p.team)}</a> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
+                    ${p.team ? $h`<span class="position">${teamWebService.getTeamName(p.team)}</span> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
                     
                   ` : $h` `}
                 </td>
 
 
-                ${actions ? $h`
-                  <td class="action">
-                    ${actions.showMove(p) ? $h`
-                      <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-ratings" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>  
-                    ` : $h` `}
-                  </td>
-                ` : $h` `}
+
                 
                 ${showAskingPrice ? $h`
                   <td class="numeric-cell">${universeWebService.displayDiamonds(p.askingPrice)}</td>

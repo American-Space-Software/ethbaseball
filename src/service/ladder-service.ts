@@ -29,8 +29,8 @@ import { UniverseRepository } from "../repository/universe-repository.js"
 import { StatService } from "./stat-service.js"
 import { faker } from '@faker-js/faker'
 import { OffchainEventService } from "./data/offchain-event-service.js"
-import { GameHitResult } from "../dto/game-hit-result.js"
-import { GamePitchResult } from "../dto/game-pitch-result.js"
+import { GameHitResult, HitResult } from "../dto/game-hit-result.js"
+import { GamePitchResult, PitchResult } from "../dto/game-pitch-result.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
 import { ethers } from "ethers"
@@ -389,9 +389,11 @@ class LadderService {
 
         //Tasks to finish day.
         let gameIds:string[] = await this.gameService.getIdsByDate(universe.currentDate, options)
-        let games:Game[] = await this.gameService.getByIds(gameIds, options)
 
-        if (games?.length > 0) {
+        if (gameIds?.length > 0) {
+
+            let games:Game[] = await this.gameService.getByIds(gameIds, options)
+
 
             let playerIds = []
             for (let game of games) {
@@ -623,6 +625,52 @@ class LadderService {
 
         await this.gameHitResultRepository.updateGameHitResults(ghr, options)
         await this.gamePitchResultRepository.updateGamePitchResults(gpr, options)
+
+        //If this is a season game then update the player's season and career stats
+        if (game.seasonId != undefined) {
+
+            const playerIds = players.map(p => p._id)
+
+            const careerHitRows = await this.gameHitResultRepository.getPlayersCareerHitResults(playerIds, options)
+            const seasonHitRows = await this.gameHitResultRepository.getPlayersSeasonHitResults(playerIds, season._id, options)
+
+            const careerPitchRows = await this.gamePitchResultRepository.getPlayersCareerPitchResults(playerIds, options)
+            const seasonPitchRows = await this.gamePitchResultRepository.getPlayersSeasonPitchResults(playerIds, season._id, options)
+
+            const careerHitByPlayerId = new Map(careerHitRows.map(r => [r.playerId, r]))
+            const seasonHitByPlayerId = new Map(seasonHitRows.map(r => [r.playerId, r]))
+
+            const careerPitchByPlayerId = new Map(careerPitchRows.map(r => [r.playerId, r]))
+            const seasonPitchByPlayerId = new Map(seasonPitchRows.map(r => [r.playerId, r]))
+
+            for (const player of players) {
+
+                let pls = plss.find( p => p.playerId == player._id)
+
+                const careerHitResult:HitResult = careerHitByPlayerId.get(player._id)
+                const seasonHitResult:HitResult = seasonHitByPlayerId.get(player._id)
+
+                const careerPitchResult:PitchResult = careerPitchByPlayerId.get(player._id)
+                const seasonPitchResult:PitchResult = seasonPitchByPlayerId.get(player._id)
+
+                player.careerStats = {
+                    hitting: this.statService.hitResultToHitterStatLine(careerHitResult),
+                    pitching: this.statService.pitchResultToPitcherStatLine(careerPitchResult)
+                }
+
+                player.changed("careerStats", true)
+
+
+                pls.stats = {
+                    hitting: this.statService.hitResultToHitterStatLine(seasonHitResult),
+                    pitching: this.statService.pitchResultToPitcherStatLine(seasonPitchResult)
+                }
+
+                pls.changed("stats", true)
+
+            }
+
+        }
 
         await this.playerLeagueSeasonService.updateGameFields(plss, options)
         await this.playerService.updateGameFields(players, options)

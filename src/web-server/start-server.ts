@@ -1118,6 +1118,17 @@ let startWebServer = async () => {
             throw new Error("Team is queued for a game. Cannot drop player.")
           }
 
+          //Team must have at least the minimum player salary in their balance. Otherwise they are stuck.
+          let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
+
+          let minimumPlayerSalary = playerService.getFreeAgentSalary(1, 50, 365)
+
+          if (BigInt(diamondBalance) < BigInt(minimumPlayerSalary)) {
+            throw new Error(`Team does not have enough diamonds to drop this player.`)
+          }
+
+
+
           await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
 
       })
@@ -1461,7 +1472,7 @@ let startWebServer = async () => {
           user = await userService.get(team.userId)
       }
 
-      return res.json(await teamService.getTeamViewModel(team, season, universe.currentDate, user))
+      return res.json(await teamService.getTeamViewModel(team, season, user))
 
     } catch (ex) {
       console.log(ex)
@@ -2024,7 +2035,7 @@ let startWebServer = async () => {
       failureRedirect: '/auth/discord',
     }),
     (req, res) => {
-      res.redirect('/#!/')
+      res.redirect('/')
     }
   )
 
