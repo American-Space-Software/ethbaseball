@@ -124,7 +124,7 @@ class UserService {
 
             let gamesPlayed = vm.teamInfo.team.overallRecord.wins + vm.teamInfo.team.overallRecord.losses 
 
-            if (vm.inProgressGame?._id != undefined) {
+            if (vm.teamInfo?.inProgressGame?._id != undefined) {
                 gamesPlayed++
             }
 

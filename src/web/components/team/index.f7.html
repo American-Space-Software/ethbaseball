@@ -86,7 +86,36 @@
                     </div>
                 ` : $h` `}
 
+
+                ${teamComponentService.inProgressGame?.game?._id ? $h`
+                    <div class="block-title block-title-medium">In Progress</div>
+                    <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                        <ul>
+                        <${InProgress} vm=${teamComponentService.inProgressGame} />
+                        </ul>
+                    </div>
+                ` : $h` `}
+
+
                 <${Roster} />
+
+
+                ${teamComponentService.completedGames?.length > 0 ? $h`
+
+                    <div class="block-title block-title-medium">Recent Games</div>
+                    <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                        <ul>
+            
+                            ${teamComponentService.completedGames?.map( game => $h`
+                                <${Result} game=${game} />                      
+                            `)}
+            
+                        </ul>
+            
+                    </div>
+
+                ` : $h` `}
+
 
                 <!-- And somewhere in DOM -->
                 <div class="popup front-office-popup">
@@ -221,6 +250,10 @@
   import Navbar from "../common/navbar.f7.html"
   import Roster from "./roster.f7.html"
 
+  import InProgress from "../home/in-progress.f7.html"
+  import Result from "../home/result.f7.html"
+
+
   import dayjs from "dayjs"
   import { ContainerService } from "../../../service/container-service.ts"
 
@@ -232,13 +265,12 @@
   import { StatService } from "../../../service/stat-service.ts"
   import { DiamondService } from "../../../service/diamond-service.ts"
   import { DiamondWebService } from "../../service/diamond-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
 
   import { Position } from "../../../service/enums.ts"
 
   import StartDate from "../common/start-date.f7.html"
-  import InProgress from "../game/in-progress.f7.html"
-  import Scheduled from "../game/scheduled.f7.html"
-  import Result from "../game/result.f7.html"
+
 
   import { ethers } from "ethers"
 
@@ -252,6 +284,7 @@
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let diamondService = ContainerService.getInstance(DiamondService)
     let diamondWebService = ContainerService.getInstance(DiamondWebService)
+    let gameWebService = ContainerService.getInstance(GameWebService)
 
     let statService = ContainerService.getInstance(StatService)
 
@@ -261,7 +294,6 @@
     
 
     let authInfo = props.authInfo
-    let games = props.games
 
     const saveClick = (e) => {
         $f7.emit('save-roster-click', e)
@@ -458,6 +490,20 @@
       
     }
 
+    const onGameUpdate = async (game) => {
+
+      teamComponentService.updateInProgressGame(game)
+
+      if (game.isComplete) {
+        gameWebService.unwatchGame(game._id)
+        $f7.views.main.router.refreshPage()
+      }
+
+      await $update()
+
+    }
+
+
     $on('pageInit', async (e) => {
     })
 
@@ -468,9 +514,13 @@
 
         $f7.off('roster-refresh-lineup')
         $f7.on('roster-refresh-lineup', () => {
-            console.log('roster-refresh-index')
             $update()
         })
+
+        //Start watching game if in progress
+        if (teamComponentService.inProgressGame?.game._id) {
+            gameWebService.watchGame(teamComponentService.inProgressGame?.game._id, onGameUpdate)
+        }
 
 
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
@@ -496,6 +546,12 @@
 
         await $update()
 
+    })
+
+    $on('pageBeforeOut', async () => {
+      if (teamComponentService.inProgressGame?.game?._id) {
+        gameWebService.unwatchGame(teamComponentService.inProgressGame?.game?._id, onGameUpdate)
+      }
     })
 
 

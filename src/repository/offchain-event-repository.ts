@@ -15,6 +15,7 @@ interface OffchainEventRepository {
     listAll(options?:any) : Promise<OffchainEvent[]>
     getDailyDiamondRewardByTeamIdForDate( teamId: string, forDate: string,  options?: any ): Promise<OffchainEvent | null>
     getMostRecentDailyDiamondRewardByTeamId( teamId: string, options?: any ): Promise<OffchainEvent | null>
+    listByPage(options?: any): Promise<OffchainEvent[]>
 }
 
 export {

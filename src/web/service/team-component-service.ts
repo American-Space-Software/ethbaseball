@@ -3,6 +3,7 @@ import { LoginWebService } from "./login-web-service.js";
 import { TeamWebService } from "./team-web-service.js";
 import { Position } from "../../service/enums.js";
 import { LineupService } from "../../service/lineup-service.js";
+import { GameWebService } from "./game-web-service.js";
 
 
 @injectable()
@@ -11,7 +12,8 @@ class TeamComponentService {
     constructor(
         private loginWebService:LoginWebService,
         private teamWebService:TeamWebService,
-        private lineupService:LineupService
+        private lineupService:LineupService,
+        private gameWebService:GameWebService
     ) {}
 
     loading = false
@@ -22,7 +24,8 @@ class TeamComponentService {
 
     team
     startDate
-    games = []
+    inProgressGame
+    completedGames = []
 
     rosterPlayers:any[] = []
 
@@ -86,6 +89,10 @@ class TeamComponentService {
         return p
     }
 
+    updateInProgressGame(inProgressGame) {
+        Object.assign(this.inProgressGame, this.gameWebService.getGameViewModel(inProgressGame))
+    }
+
     getRosterSize() {
         return this.rosterPlayers.length
     }
@@ -133,6 +140,16 @@ class TeamComponentService {
         this.rosterPlayers.length = 0
         this.rosterPlayers.push(...teamViewModel.players)
 
+        this.completedGames.length = 0
+        this.completedGames.push(...teamViewModel.completedGames)
+
+
+        delete this.inProgressGame
+
+        if (teamViewModel.inProgressGame) {
+            this.inProgressGame = this.gameWebService.getGameViewModel(teamViewModel.inProgressGame)
+        }
+        
 
         //Add placeholder positions for any missing lineup spots
         let order = this.team.lineups[0].order

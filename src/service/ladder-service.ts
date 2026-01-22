@@ -99,50 +99,29 @@ class LadderService {
 
                 if (shouldStartDay) {
 
-                    for(let league of leagues) {
+                    console.log(`Starting day`)
 
-                        const queued = await this.teamQueueService.listByLeague(league, 1000000, 0, options)
+                    await this.startDay(universe.currentDate, leagues, season, rng, options)
 
-                        if (queued.length > 0) {
+                    console.log(`Day started`)
 
-                            const queuedTeams: Team[] = await this.teamService.getByIds(queued.map(q => q.teamId), options)
+                } else {
 
-                            let teamBundles:TeamBundle[] = []
+                    //Play games
+                    gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
+                    
+                    //Check if we've moved past universe.currentDate AND that all games from that day have ended.
+                    if (this.isDateBeforeToday(universe.currentDate)) {
 
-                            for (let team of queuedTeams) {
-                                teamBundles.push(await this.getTeamBundle(team, season, options))
-                            }
+                        let inProgressGameIds = await this.gameService.getUnfinishedByDateIds(universe.currentDate, options) 
 
-                            // Catch-up phase (before scheduling today's games)
-                            await this.playMakeupGames(teamBundles, league, season, universe.currentDate, rng, options)
-
-                            if (queuedTeams.length > 0) {
-                                await this.createDayGames(universe.currentDate, league, season, teamBundles, options)
-                            }
-
+                        if (inProgressGameIds?.length == 0) {
+                            await this.finishDay(universe, leagues, season, options)
                         }
 
                     }
 
-                    await this.teamQueueService.clear(options)
-
                 }
-
-
-                //Play games
-                gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
-                
-                //Check if we've moved past universe.currentDate AND that all games from that day have ended.
-                if (this.isDateBeforeToday(universe.currentDate)) {
-
-                    let inProgressGameIds = await this.gameService.getUnfinishedByDateIds(universe.currentDate, options) 
-
-                    if (inProgressGameIds?.length == 0) {
-                        await this.finishDay(universe, leagues, season, options)
-                    }
-
-                }
-
 
             } 
 
@@ -152,6 +131,41 @@ class LadderService {
         })
 
         return gameIds
+
+    }
+
+    private async startDay(currentDate:Date, leagues:League[], season:Season, rng, options?:any) {
+
+        for(let league of leagues) {
+            await this.startLeagueDay(currentDate, league, season, rng, options)
+        }
+
+        await this.teamQueueService.clear(options)
+
+    }
+
+    private async startLeagueDay(currentDate:Date, league:League, season:Season, rng, options?:any) {
+
+        const queued = await this.teamQueueService.listByLeague(league, 1000000, 0, options)
+
+        if (queued.length > 0) {
+
+            const queuedTeams: Team[] = await this.teamService.getByIds(queued.map(q => q.teamId), options)
+
+            let teamBundles:TeamBundle[] = []
+
+            for (let team of queuedTeams) {
+                teamBundles.push(await this.getTeamBundle(team, season, options))
+            }
+
+            // Catch-up phase (before scheduling today's games)
+            await this.playMakeupGames(teamBundles, league, season, currentDate, rng, options)
+
+            if (queuedTeams.length > 0) {
+                await this.createDayGames(currentDate, league, season, teamBundles, options)
+            }
+
+        }
 
     }
 
@@ -203,10 +217,13 @@ class LadderService {
             // Create + play this day's makeup games 
             let games:Game[] = await this.createDayGames(makeupDate, league, season, needingToday, options)
 
+            console.log(`Creating ${games?.length || 0 } makeup games on ${dayjs(makeupDate).format("YYYY-MM-DD")}`)
+
             for (let game of games) {
                await this.processGame(game, rng, true, options)
             }
             
+            console.log(`Processed ${games?.length || 0 } makeup games on ${dayjs(makeupDate).format("YYYY-MM-DD")}`)
 
 
             // Refresh any bundles that played, in-place in the original array
@@ -245,7 +262,7 @@ class LadderService {
 
         const tlsPlain: TeamLeagueSeason = tls.get({ plain: true })
 
-        const plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(theTeam, options)
+        const plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(theTeam, season, options)
 
         const plssPlain = plss.map(pls => pls.get({ plain: true }))
 
@@ -413,7 +430,8 @@ class LadderService {
             let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY, teams)
 
              //Distribute team rewards
-            await this.distributeRewards(rewardsPerTeam, teams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, options)
+            let offChainEventTransactionId = uuidv4()
+            await this.distributeRewards(rewardsPerTeam, teams, tlss, season, { type: "reward", rewardType:"daily", fromDate: universe.currentDate }, offChainEventTransactionId, options)
             
             //save.
             for (let team of teams) {
@@ -488,7 +506,7 @@ class LadderService {
 
     }
 
-    private async distributeRewards(rewardsPerTeam:RewardPerTeam[], rewardTeams:Team[], rewardTlss:TeamLeagueSeason[], season:Season, source:OffChainEventSource, options?:any) {
+    private async distributeRewards(rewardsPerTeam:RewardPerTeam[], rewardTeams:Team[], rewardTlss:TeamLeagueSeason[], season:Season, source:OffChainEventSource, offChainEventTransactionId:string, options?:any) {
         
         //Distribute rewards and save.
         for (let team of rewardTeams) {
@@ -500,7 +518,7 @@ class LadderService {
                 let tls = rewardTlss.find( t => t.teamId == team._id)
                 let rewardTotal = ethers.parseUnits(reward.amount.toString(), 'ether')
 
-                await this.distributeReward(team, tls, season, rewardTotal, source, options )
+                await this.distributeReward(team, tls, season, rewardTotal, source, offChainEventTransactionId, options )
             
             }
 
@@ -508,9 +526,9 @@ class LadderService {
 
     }
 
-    private async distributeReward(team:Team, tls:TeamLeagueSeason, season:Season, rewardAmount:bigint, source:OffChainEventSource, options?:any) {
+    private async distributeReward(team:Team, tls:TeamLeagueSeason, season:Season, rewardAmount:bigint, source:OffChainEventSource, offChainEventTransactionId:string, options?:any) {
 
-        await this.offchainEventService.createTeamMintEvent(team._id, rewardAmount.toString(), source, options )
+        await this.offchainEventService.createTeamMintEvent(team._id, rewardAmount.toString(), source, offChainEventTransactionId, options )
 
         //Calculate my season rewards
         let seasonRewards = await this.offchainEventService.getRewardsForTeamSeason(ContractType.DIAMONDS, team, season, options)
@@ -845,7 +863,9 @@ class LadderService {
         let rewardTeams = await this.teamService.getByIds(teamIds, options)
         let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeams)
 
-        await this.distributeRewards(rewardsPerTeam, rewardTeams, tlss, season, { type: "reward", rewardType:"season", fromDate: season.endDate }, options)
+        let offChainEventTransactionId = uuidv4()
+
+        await this.distributeRewards(rewardsPerTeam, rewardTeams, tlss, season, { type: "reward", rewardType:"season", fromDate: season.endDate }, offChainEventTransactionId, options)
 
 
         //Create the next season. 

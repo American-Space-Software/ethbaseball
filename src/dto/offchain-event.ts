@@ -17,6 +17,10 @@ class OffchainEvent extends Model {
     @Column(DataType.STRING)
     declare _id?:string
 
+    @AllowNull(true)
+    @Column(DataType.STRING)
+    declare transactionId?:string
+
     @Column(DataType.STRING)
     declare contractType?:string
 

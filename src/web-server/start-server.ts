@@ -1,5 +1,6 @@
 
 import passport from 'passport'
+import { v4 as uuidv4 } from 'uuid';
 
 import { getContainer, setConfig, setDiamondsAddress, setUniverse, setUniverseAddress } from "./inversify.config.js"
 
@@ -1215,7 +1216,8 @@ let startWebServer = async () => {
             throw new Error(`Team does not have enough diamonds to sign this player.`)
           }
 
-          await teamService.signPlayer(pls, player, team, season, universe.currentDate, askingPrice, options)
+          let offChainEventTransactionId = uuidv4()
+          await teamService.signPlayer(pls, player, team, season, universe.currentDate, askingPrice, offChainEventTransactionId, options)
 
       })
 
@@ -1320,7 +1322,7 @@ let startWebServer = async () => {
 
       let season:Season = await seasonService.getMostRecent()
 
-      let events = await offchainEventService.listAll(options)
+      let events = await offchainEventService.listByPage(options)
 
       return res.json(await offchainEventService.getOffChainEventViewModels(events, season))
 
@@ -1660,7 +1662,8 @@ let startWebServer = async () => {
 
         mintPass = await diamondMintPassService.generateWithdrawPass(team.userId, team._id, BigInt(balance).toString(), options)
 
-        await offchainEventService.createTeamBurnEvent(team._id, balance , options)
+        let offChainEventTransactionId = uuidv4()
+        await offchainEventService.createTeamBurnEvent(team._id, balance, offChainEventTransactionId, options)
 
         //Refetch tls so it's part of this transaction
         let tls = await teamLeagueSeasonService.getByTeamSeason(team, season, options)

@@ -7,12 +7,9 @@ import { IPFSService } from "./ipfs-service.js";
 import { ImageService } from "./data/image-service.js";
 
 import { Image } from "../dto/image.js";
-import { Animation } from "../dto/animation.js";
 import { v4 as uuidv4 } from 'uuid';
 
-import { Jimp } from "jimp"
 import fs from "fs"
-import Hash from 'ipfs-only-hash'
 
 import { CID } from "@ipld/car/writer";
 import { faker } from '@faker-js/faker'
@@ -37,14 +34,8 @@ import { Season } from "../dto/season.js";
 import { LadderService } from "./ladder-service.js";
 import { TeamLeagueSeason } from "../dto/team-league-season.js";
 import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
-import { ContractType, SERIES_LENGTH } from "./enums.js";
 import dayjs from "dayjs";
-import { Owner } from "../dto/owner.js";
-import { TEAMS_PER_TIER } from "../service/enums.js"
-import { OwnerService } from "./data/owner-service.js";
-import { OffchainEventService } from "./data/offchain-event-service.js";
-import { AirdropService } from "./airdrop-service.js";
-import { PostService } from "./data/post-service.js";
+
 import { FinanceService } from "./finance-service.js";
 
 @injectable()

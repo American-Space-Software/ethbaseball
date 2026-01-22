@@ -236,7 +236,8 @@ n
 
                 }
             }),
-            games: games?.map( g => this.gameService.getGameSummaryViewModel(g))
+            completedGames: games?.filter(g => g.isFinished == true).map( g => this.gameService.getGameSummaryViewModel(g)),
+            inProgressGame: games.find( g => !g.isFinished)
         }
 
     }
@@ -773,16 +774,15 @@ n
         await this.teamLeagueSeasonService.put(currentTLS, options)
     }
 
-    async signAvailablePlayer(player:Player, pls:PlayerLeagueSeason, tls: TeamLeagueSeason, season: Season, date: Date, options?: any) {
+    async signAvailablePlayer(player:Player, pls:PlayerLeagueSeason, tls: TeamLeagueSeason, season: Season, date: Date, offChainEventTransactionId:string, options?: any) {
 
         // this.playerService.signContract(league, player, season, date)
 
         this.financeService.signContract(tls, pls, player, season, date)
-        this.offchainEventService.createFreeAgentTransferEvent(tls.teamId, player._id, options)
+        this.offchainEventService.createFreeAgentTransferEvent(tls.teamId, player._id, offChainEventTransactionId, options)
 
         pls.leagueId = tls.leagueId
         pls.teamId = tls.teamId
-
 
         await this.playerLeagueSeasonService.put(pls, options)
         await this.playerService.put(player, options)
@@ -845,6 +845,7 @@ n
         let fillCount=0
 
 
+        let offChainEventTransactionId = uuidv4()
         for (let position of shuffled) {
 
             //Find a player from the pool that fits via salary.
@@ -876,7 +877,7 @@ n
 
 
             //Sign a player from the player pool.
-            await this.signAvailablePlayer(player, pls, tls, season, date, options)
+            await this.signAvailablePlayer(player, pls, tls, season, date, offChainEventTransactionId, options)
 
             added.players.push(player)
             added.plss.push(pls)
@@ -1042,7 +1043,7 @@ n
         await this.playerLeagueSeasonService.put(nextPLS, options)
 
         //drop the player
-        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, options)
+        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, uuidv4(), options)
 
 
         await this.put(team, options)
@@ -1052,7 +1053,7 @@ n
     }
 
 
-    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, askingPrice:string, options?:any) {
+    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, askingPrice:string, offChainEventTransactionId:string, options?:any) {
 
         //Update team. Add to lineup/rotation.
         let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
@@ -1106,10 +1107,10 @@ n
 
 
         //sign the player
-        await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, options)
+        await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, offChainEventTransactionId, options)
 
         //transfer diamonds
-        await this.offchainEventService.createTeamBurnEvent(team._id, askingPrice, options)
+        await this.offchainEventService.createTeamBurnEvent(team._id, askingPrice, offChainEventTransactionId, options)
 
         await this.teamLeagueSeasonService.put(tls, options)
 
@@ -1174,7 +1175,8 @@ interface TeamViewModel {
     }
 
     players?: PlayerRowViewModel[]
-    games?
+    completedGames?
+    inProgressGame?
     // todaysGames?
 }
 

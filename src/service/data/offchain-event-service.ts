@@ -31,33 +31,33 @@ class OffchainEventService {
         private playerService:PlayerService
     ) {}
 
-    async createMintEvent(toAddress:string, amount:string, options?:any) {
+    // async createMintEvent(toAddress:string, amount:string, options?:any) {
 
-        let offChainEvent:OffchainEvent = new OffchainEvent()
-        offChainEvent._id = uuidv4() 
-        offChainEvent.contractType = ContractType.DIAMONDS
-        offChainEvent.event = "Transfer"
-        offChainEvent.fromAddress = "0x0000000000000000000000000000000000000000"
-        offChainEvent.toAddress = toAddress
-        offChainEvent.amount = amount
+    //     let offChainEvent:OffchainEvent = new OffchainEvent()
+    //     offChainEvent._id = uuidv4() 
+    //     offChainEvent.contractType = ContractType.DIAMONDS
+    //     offChainEvent.event = "Transfer"
+    //     offChainEvent.fromAddress = "0x0000000000000000000000000000000000000000"
+    //     offChainEvent.toAddress = toAddress
+    //     offChainEvent.amount = amount
 
-        await this.put(offChainEvent, options)
-    }
+    //     await this.put(offChainEvent, options)
+    // }
 
-    async createBurnEvent(fromAddress:string, amount:string, options?:any) {
+    // async createBurnEvent(fromAddress:string, amount:string, options?:any) {
 
-        let offChainEvent:OffchainEvent = new OffchainEvent()
-        offChainEvent._id = uuidv4() 
-        offChainEvent.contractType = ContractType.DIAMONDS
-        offChainEvent.event = "Transfer"
-        offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
-        offChainEvent.fromAddress = fromAddress
-        offChainEvent.amount = amount
+    //     let offChainEvent:OffchainEvent = new OffchainEvent()
+    //     offChainEvent._id = uuidv4() 
+    //     offChainEvent.contractType = ContractType.DIAMONDS
+    //     offChainEvent.event = "Transfer"
+    //     offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
+    //     offChainEvent.fromAddress = fromAddress
+    //     offChainEvent.amount = amount
 
-        await this.put(offChainEvent, options)
-    }
+    //     await this.put(offChainEvent, options)
+    // }
 
-    async createTeamMintEvent(toTeamId:string, amount:string, source:OffChainEventSource, options?:any) {
+    async createTeamMintEvent(toTeamId:string, amount:string, source:OffChainEventSource, transactionId:string, options?:any) {
 
         if (BigInt(amount) < 0) throw new Error("Mint amount can not be negative.")
 
@@ -68,6 +68,7 @@ class OffchainEventService {
         offChainEvent.fromAddress = "0x0000000000000000000000000000000000000000"
         offChainEvent.toTeamId = toTeamId
         offChainEvent.amount = amount
+        offChainEvent.transactionId = transactionId
         offChainEvent.source = JSON.parse(JSON.stringify(source))
 
         await this.put(offChainEvent, options)
@@ -75,7 +76,7 @@ class OffchainEventService {
         return offChainEvent
     }
 
-    async createTeamBurnEvent(fromTeamId:string, amount:string, options?:any) {
+    async createTeamBurnEvent(fromTeamId:string, amount:string, transactionId:string, options?:any) {
 
         if (BigInt(amount) <= 0) throw new Error("Burn amount can not be negative.")
 
@@ -86,6 +87,7 @@ class OffchainEventService {
         offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
         offChainEvent.fromTeamId = fromTeamId
         offChainEvent.amount = BigInt(amount).toString()
+        offChainEvent.transactionId = transactionId
 
         await this.put(offChainEvent, options)
 
@@ -93,7 +95,7 @@ class OffchainEventService {
 
     }
 
-    async createPlayerTransferEvent(fromTeamId:string, toTeamId:string, playerId:string, options?:any) {
+    async createPlayerTransferEvent(fromTeamId:string, toTeamId:string, playerId:string, transactionId:string, options?:any) {
 
         let offChainEvent:OffchainEvent = new OffchainEvent()
         offChainEvent._id = uuidv4() 
@@ -102,6 +104,7 @@ class OffchainEventService {
         offChainEvent.toTeamId = toTeamId
         offChainEvent.fromTeamId = fromTeamId
         offChainEvent.playerId = playerId
+        offChainEvent.transactionId = transactionId
 
         await this.put(offChainEvent, options)
 
@@ -110,7 +113,7 @@ class OffchainEventService {
     }
 
 
-    async createFreeAgentTransferEvent(toTeamId:string, playerId:string, options?:any) {
+    async createFreeAgentTransferEvent(toTeamId:string, playerId:string, transactionId:string, options?:any) {
 
         let offChainEvent:OffchainEvent = new OffchainEvent()
         offChainEvent._id = uuidv4() 
@@ -118,6 +121,7 @@ class OffchainEventService {
         offChainEvent.event = "Transfer"
         offChainEvent.toTeamId = toTeamId
         offChainEvent.playerId = playerId
+        offChainEvent.transactionId = transactionId
 
         await this.put(offChainEvent, options)
 
@@ -125,7 +129,7 @@ class OffchainEventService {
 
     }
 
-    async createPlayerDropTransferEvent(fromTeamId:string, playerId:string, options?:any) {
+    async createPlayerDropTransferEvent(fromTeamId:string, playerId:string, transactionId:string, options?:any) {
 
         let offChainEvent:OffchainEvent = new OffchainEvent()
         offChainEvent._id = uuidv4() 
@@ -133,6 +137,7 @@ class OffchainEventService {
         offChainEvent.event = "Transfer"
         offChainEvent.fromTeamId = fromTeamId
         offChainEvent.playerId = playerId
+        offChainEvent.transactionId = transactionId
 
         await this.put(offChainEvent, options)
 
@@ -242,6 +247,10 @@ class OffchainEventService {
         return this.offchainEventRepository.listAll(options)
     }
 
+    async listByPage(options?:any) : Promise<OffchainEvent[]> {
+        return this.offchainEventRepository.listByPage(options)
+    }
+
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {
 
         let teamIds = oce.flatMap( e => [e.fromTeamId, e.toTeamId])
@@ -264,8 +273,27 @@ class OffchainEventService {
         let players:Player[] = await this.playerService.getByIds(playerIds, options)
 
 
+        const transactions: OffchainTransactionViewModel[] = []
+        const txMap = new Map<string, OffchainTransactionViewModel>()
+
+        for (const e of oce) {
+
+            const transactionId = (e.transactionId ?? e._id) as string
+
+            let tx = txMap.get(transactionId)
+
+            if (!tx) {
+                tx = { transactionId, events: [] }
+                txMap.set(transactionId, tx)
+                transactions.push(tx) 
+            }
+
+            tx.events.push(e)
+        }
+
+
         return {
-            events:oce,
+            transactions:transactions,
             teams: tlssPlain?.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city?.name } }),
             players: players?.map( p => { return { _id: p._id, fullName: p.fullName } })
         }
@@ -281,7 +309,10 @@ class OffchainEventService {
 
 }
 
-
+interface OffchainTransactionViewModel {
+    transactionId: string
+    events: OffchainEvent[]
+}
 
 
 export {

@@ -93,6 +93,7 @@ class GameController {
         
         let gameViewModel = this.gameWebService.getGameViewModel(game)
 
+
         return new ModelView(async (routeTo) => {
             
             return {

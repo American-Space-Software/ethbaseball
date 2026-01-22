@@ -615,6 +615,7 @@ DROP TABLE IF EXISTS `offchain_event`;
 CREATE TABLE `offchain_event` (
 
   `_id` varchar(255) NOT NULL,
+  `transactionId` varchar(255) DEFAULT NULL,
 
   `playerId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `amount` varchar(255) DEFAULT NULL,

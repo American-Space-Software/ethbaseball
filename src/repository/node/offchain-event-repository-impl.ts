@@ -1,9 +1,9 @@
-import {  injectable } from "inversify"
+import {  inject, injectable } from "inversify"
 
 import { OffchainEventRepository } from "../offchain-event-repository.js"
 import { OffchainEvent } from "../../dto/offchain-event.js"
 import { Owner } from "../../dto/owner.js"
-import { Op } from "sequelize"
+import { Op, QueryTypes } from "sequelize"
 import { Season } from "../../dto/season.js"
 import { Team } from "../../dto/team.js"
 import { Sequelize } from "sequelize-typescript"
@@ -12,6 +12,9 @@ import dayjs from "dayjs"
 
 @injectable()
 class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
+
+    @inject("sequelize")
+    private sequelize: Function
 
     async get(id:string, options?:any): Promise<OffchainEvent> {
         return OffchainEvent.findByPk(id, options)
@@ -66,8 +69,6 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
         return OffchainEvent.findAll(query)
     }
-
-
 
     async getByTeamIdAndContractType(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]>  {
 
@@ -126,7 +127,6 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
     }
 
-
     async getMostRecentDailyDiamondRewardByTeamId( teamId: string, options?: any ): Promise<OffchainEvent | null> {
         return OffchainEvent.findOne(
             Object.assign(
@@ -145,7 +145,6 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
             )
         )
     }
-
 
     async list(contractType:string, options?:any) : Promise<OffchainEvent[]>  {
 
@@ -168,6 +167,43 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
     }
 
+    async listByPage(options?: any): Promise<OffchainEvent[]> {
+
+        let s = await this.sequelize()
+
+        const limit = options?.limit ?? 25
+        const offset = options?.offset ?? 0
+
+        let queryOptions = {
+            replacements: { limit, offset },
+            type: QueryTypes.SELECT,
+            model: OffchainEvent, 
+            mapToModel: true,
+        }
+
+        // Pages by "transaction groups" where:
+        // groupId = COALESCE(transactionId, _id)
+        // Returns ALL rows that belong to the 25 groupIds on this page.
+        const rows = await s.query(
+            `
+            SELECT oe.*
+            FROM offchain_event oe
+            JOIN (
+            SELECT
+                COALESCE(transactionId, _id) AS groupId,
+                MAX(dateCreated) AS maxDate
+            FROM offchain_event
+            GROUP BY groupId
+            ORDER BY maxDate DESC
+            LIMIT :limit OFFSET :offset
+            ) g
+            ON COALESCE(oe.transactionId, oe._id) = g.groupId
+            ORDER BY oe.dateCreated DESC
+            `, Object.assign(queryOptions, options)
+        )
+
+        return rows as unknown as OffchainEvent[]
+    }
 
 }
 

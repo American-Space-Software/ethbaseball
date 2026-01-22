@@ -16,7 +16,7 @@
                     </div>
 
 
-                    ${eventsViewModel.events?.length > 0 ? $h`
+                    ${eventsViewModel.transactions?.length > 0 ? $h`
                         <${OffChainEvents} model="${eventsViewModel}" />
                     ` : $h` `}
 
@@ -103,6 +103,7 @@
         let rank = props.rank
 
 
+
         $on('pageInit', async () => { })
 
 
@@ -117,10 +118,10 @@
 
 
             universeWebService.setMetadata(
-                     `Activity (Off-chain) - Ethereum Baseball League`, 
+                     `Rewards & Player Moves - Ethereum Baseball League`, 
                     window.location.href, 
                     `${env.WEB}/logo.png`,
-                   `Activity (Off-chain) in Ethereum Baseball League.`
+                   `Rewards & Player Moves in Ethereum Baseball League.`
             ) 
 
             $('.hide-on-pageinit').hide()

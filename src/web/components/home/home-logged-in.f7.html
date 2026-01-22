@@ -183,11 +183,11 @@
             ` : $h``}
 
             
-            ${vm?.teamInfo.games?.find( g => !g.isFinished )?._id ? $h`
+            ${teamComponentService.inProgressGame?.game?._id ? $h`
                 <div class="block-title block-title-medium">In Progress</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
-                      <${InProgress} vm=${vm?.teamInfo.games?.find( g => !g.isFinished )} />
+                      <${InProgress} vm=${teamComponentService.inProgressGame} />
                     </ul>
                 </div>
             ` : $h` `}
@@ -197,13 +197,13 @@
 
 
 
-            ${vm?.teamInfo.games?.filter( g => g.isFinished == true)?.length > 0 ? $h`
+            ${teamComponentService.completedGames?.length > 0 ? $h`
 
                 <div class="block-title block-title-medium">Recent Games</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
         
-                        ${vm?.teamInfo.games?.filter( g => g.isFinished == true)?.map( game => $h`
+                        ${teamComponentService.completedGames?.map( game => $h`
                             <${Result} game=${game} />                      
                         `)}
         
@@ -284,11 +284,7 @@
 
     let authInfo = props.authInfo
     let vm = props.vm
-    let contractBalance = props.contractBalance
     let discord = props.discord 
-    
-    let inProgressGame = props.inProgressGame
-
 
     const saveClick = (e) => {
         $f7.emit('save-roster-click', e)
@@ -478,111 +474,12 @@
         }
     }
 
-    // const createLineupPopup = (lineup, confirmLineup) => {
-
-    //       const rows = (lineup.lineup || []).map((p, index) => `
-    //     <tr>
-    //       <td>${index + 1}</td>
-    //       <td class="image">
-    //         <img src="/player/image/${p._id}" width="35" height="35" />
-    //       </td>
-    //       <td class="name">
-    //           <a href="${universeWebService.startDateLink(`/p/${p._id}`)}" class="popup-close">${p.fullName}</a><br />
-    //           <span class="position">${p.primaryPosition}</span>
-
-    //           ${p.stamina < 1 && p.primaryPosition == Position.PITCHER ? `
-    //           Pitcher is tired.
-    //           ` : ` `}
-
-    //       </td>
-    //       <td class="numeric-cell">
-
-    //         ${p.primaryPosition == Position.PITCHER ? `
-    //           <div class="stamina-bar ${p.stamina === 1 ? 'green' : p.stamina >= 0.5 ? 'yellow' : 'red'}"
-    //               data-pct="${(p.stamina * 100).toFixed(0)}">
-    //             <div class="gap">
-    //               <span class="label">${(p.stamina * 100).toFixed(0)}</span>
-    //             </div>
-    //             <div class="fill" style="height:${(p.stamina * 100).toFixed(0)}%;">
-    //               <span class="label">${(p.stamina * 100).toFixed(0)}</span>
-    //             </div>
-    //           </div>
-    //         ` : ` `}
-
-    //       </td>
-    //     </tr>
-    //   `).join("")
-
-    //       const popup = $f7.popup.create({
-    //         content: `
-    //       <div class="popup confirm-lineup-popup">
-    //         <div class="page">
-    //           <div class="navbar">
-    //             <div class="navbar-bg"></div>
-    //             <div class="navbar-inner">
-    //               <div class="title">Confirm Lineup</div>
-    //               <div class="right">
-    //                 <a class="link popup-close">Close</a>
-    //               </div>
-    //             </div>
-    //           </div>
-
-    //           <div class="page-content">
-    //             <div class="stat-table-wrapper">
-    //               <table class="data-table players confirm-lineup">
-    //                 <thead>
-    //                   <tr>
-    //                     <th>Order</th>
-    //                     <th class="image"></th>
-    //                     <th class="name">Name</th>
-    //                   </tr>
-    //                 </thead>
-    //                 <tbody>${rows}</tbody>
-    //               </table>
-    //             </div>
-
-    //             <div class="block split-row-both" style="margin-top: 5px;">
-    //               <div>
-    //                 <a class="button button-outline color-gray popup-close" href="/t/index/${vm.team._id}">Edit Lineup</a>
-    //               </div>
-    //               <div>
-    //                 <a class="button button-fill confirm-lineup-btn">Confirm</a>
-    //               </div>
-    //             </div>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     `,
-
-    //         on: {
-    //           opened(p) {
-    //             // p.el is the popup root element
-    //             const btn = p.el.querySelector(".confirm-lineup-btn")
-    //             if (!btn) return
-
-    //             // attach once
-    //             btn.addEventListener("click", (e) => {
-    //               e.preventDefault()
-    //               confirmLineup?.(lineup)
-    //               p.close()
-    //             }, { once: true })
-    //           },
-
-    //           closed(p) {
-    //             p.destroy()
-    //           }
-    //         }
-    //       })
-
-    //       popup.open()
-    //     }
-
     const onGameUpdate = async (game) => {
 
-      Object.assign(inProgressGame, gameWebService.getGameViewModel(game))
+      teamComponentService.updateInProgressGame(game)
 
       if (game.isComplete) {
-        gameWebService.unwatchGame(inProgressGame.game._id)
+        gameWebService.unwatchGame(game._id)
         $f7.views.main.router.refreshPage()
       }
 
@@ -598,15 +495,12 @@
 
         $f7.off('roster-refresh-lineup')
         $f7.on('roster-refresh-lineup', () => {
-            console.log('roster-refresh-home')
             $update()
         })
 
-
-
       //Start watching game if in progress
-      if (inProgressGame?.game?._id) {
-        gameWebService.watchGame(inProgressGame.game._id, onGameUpdate)
+      if (teamComponentService.inProgressGame?.game._id) {
+        gameWebService.watchGame(teamComponentService.inProgressGame?.game._id, onGameUpdate)
       }
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
@@ -630,8 +524,8 @@
     })
 
     $on('pageBeforeOut', async () => {
-      if (inProgressGame?.game?._id) {
-        gameWebService.unwatchGame(inProgressGame.game._id, onGameUpdate)
+      if (teamComponentService.inProgressGame?.game?._id) {
+        gameWebService.unwatchGame(teamComponentService.inProgressGame?.game?._id, onGameUpdate)
       }
     })
 

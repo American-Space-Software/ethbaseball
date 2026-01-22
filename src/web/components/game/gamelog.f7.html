@@ -3,66 +3,74 @@
 
   <div class="page page-with-subnavbar" data-name="gamelog">
     <div class="page-content ">
-      <div class="list cards-list">
-        <ul>
 
-            ${playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
-              <li class="card recap card-header-divider card-outline">
+      <div class="fixed-width-content center">
 
-                <div class="card-header">
-                  ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
-                
-                  <div class="diamond-wrapper">
-                    <div class="diamond">
-                      <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
-                      <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
-                      <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
-                    </div>
-                  </div>
-                
-                </div>
+        <div class="list cards-list">
+          <ul>
 
-                <div class="card-content card-content-padding play-description">
-            
-                  <div class="chip result">
-                    <div class="chip-label">${p.play.result}</div>
-                  </div>
-            
+              ${playByPlay?.filter(p => p?.play?.result != undefined).map( p => $h`
+                <li class="card recap card-header-divider card-outline">
 
-                  ${p.descriptions.map( (d, index) => $h`
-
-                    <div class="message message-received ${d.type == 'RESULT' ? 'main' : ''}">
-                      <div class="message-content">
-                        <!-- Bubble with text -->
-                        <div class="message-bubble">
-                          <div class="message-text">${d.text}</div>
-                        </div>
+                  <div class="card-header">
+                    ${p.play.inningTop ? 'Top of ' : 'Bottom of '} ${gameWebService.getNumberWithOrdinal(p.play.inningNum)} Inning
+                  
+                    <div class="diamond-wrapper">
+                      <div class="diamond">
+                        <div class="first base ${p.play.runner.result.end.first ? $h`runner` : $h` `}"></div>
+                        <div class="second base ${p.play.runner.result.end.second ? $h`runner` : $h` `}"></div>
+                        <div class="third base ${p.play.runner.result.end.third ? $h`runner` : $h` `}"></div>
                       </div>
                     </div>
-                    
-                  `)}
-
-                  <div class="info-wrapper">
-                    <span class="label">Outs</span>${gameWebService.getBalls(3, p.play.count.end.outs)}
+                  
                   </div>
 
-                  ${p.play.credits?.length > 0 ? $h`
-                    <div class="defense">
-                      <strong>Defense</strong>
-                      <ul>
-                        ${p.play.credits.map( c => $h`
-                          <li>${gamePlayers[c._id].currentPosition} ${gamePlayers[c._id].fullName} - ${c.type}</li>
-                        `)}                            
-                      </ul>
-                    </div>                          
-                  ` : $h` `}
+                  <div class="card-content card-content-padding play-description">
+              
+                    <div class="chip result">
+                      <div class="chip-label">${p.play.result}</div>
+                    </div>
+              
 
-                </div>
-                
-              </li>
-            `)}
-          </ul>
+                    ${p.descriptions.map( (d, index) => $h`
+
+                      <div class="message message-received ${d.type == 'RESULT' ? 'main' : ''}">
+                        <div class="message-content">
+                          <!-- Bubble with text -->
+                          <div class="message-bubble">
+                            <div class="message-text">${d.text}</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                    `)}
+
+                    <div class="info-wrapper">
+                      <span class="label">Outs</span>${gameWebService.getBalls(3, p.play.count.end.outs)}
+                    </div>
+
+                    ${p.play.credits?.length > 0 ? $h`
+                      <div class="defense">
+                        <strong>Defense</strong>
+                        <ul>
+                          ${p.play.credits.map( c => $h`
+                            <li>${gamePlayers[c._id].currentPosition} ${gamePlayers[c._id].fullName} - ${c.type}</li>
+                          `)}                            
+                        </ul>
+                      </div>                          
+                    ` : $h` `}
+
+                  </div>
+                  
+                </li>
+              `)}
+              
+            </ul>
+        </div>
+
       </div>
+
+
     </div>
   </div>
 

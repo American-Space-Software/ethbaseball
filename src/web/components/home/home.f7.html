@@ -232,24 +232,6 @@
 
     $on('pageBeforeIn', async (e) => {
 
-      let swiper = $f7.swiper.create('.swiper', {
-        slidesPerView: 2,
-        breakpoints: {
-          1024: {
-            slidesPerView: 6
-          }
-        },
-        pagination: {
-          el: ".swiper-pagination",
-          type: "progressbar",
-        },
-        navigation: {
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
-        }
-      })
-
-
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {
             visible: false,
@@ -269,8 +251,6 @@
       await $update()
 
 
-      // $('.hide-on-pageinit').hide()
-      // $('.hidden-on-load').show()
 
 
     })

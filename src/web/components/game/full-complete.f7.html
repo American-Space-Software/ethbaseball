@@ -7,104 +7,121 @@
 
         ${gameViewModel?.game ? $h`
 
-          <div class="game-state">
+            <div class="fixed-width-content center">
 
-            <div class="block-title">Final Score</div>
+              <div class="block-title">Final Score</div>
 
-            <div class="game-banner">
+              <div class="game-banner">
 
-                <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
+                  <div class="away ${gameViewModel?.game.isComplete && gameViewModel?.game.score.away > gameViewModel?.game.score.home ? $h`winner` : $h` `}">
 
-                  <div class="name">
+                    <div class="name">
 
-                    <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.away._id}`)}">
-                      <img src="/image/thumbnail/100/${gameViewModel?.game.away.logoId}" class="profilePic" />
-                      <span class="record">${gameViewModel?.game.away.overallRecord.after?.wins || gameViewModel?.game.away.overallRecord.before?.wins}-${gameViewModel?.game.away.overallRecord.after?.losses || gameViewModel?.game.away.overallRecord.before?.losses}<br /></span>
+                      <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.away._id}`)}">
+                        <img src="/image/thumbnail/100/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                        <span class="record">${gameViewModel?.game.away.overallRecord.after?.wins || gameViewModel?.game.away.overallRecord.before?.wins}-${gameViewModel?.game.away.overallRecord.after?.losses || gameViewModel?.game.away.overallRecord.before?.losses}<br /></span>
 
 
-                      ${teamWebService.getTeamName(gameViewModel?.game.away)}
+                        ${teamWebService.getTeamName(gameViewModel?.game.away)}
 
-                    </a>
+                      </a>
 
+                    </div>
+                    <div class="runs">${gameViewModel?.game.score.away}</div>
                   </div>
-                  <div class="runs">${gameViewModel?.game.score.away}</div>
-                </div>
 
-                <div class="home ${gameViewModel?.game.isComplete && gameViewModel?.game.score.home > gameViewModel?.game.score.away ? $h`winner` : $h` `}">
-                  
-                  <div class="runs">${gameViewModel?.game.score.home}</div>
-                  
-                  <div class="name">
+                  <div class="home ${gameViewModel?.game.isComplete && gameViewModel?.game.score.home > gameViewModel?.game.score.away ? $h`winner` : $h` `}">
+                    
+                    <div class="runs">${gameViewModel?.game.score.home}</div>
+                    
+                    <div class="name">
 
-                    <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.home._id}`)}">
-                      <img src="/image/thumbnail/100/${gameViewModel?.game.home.logoId}" class="profilePic" />
-                      <span class="record">${gameViewModel?.game.home.overallRecord.after?.wins || gameViewModel?.game.home.overallRecord.before?.wins}-${gameViewModel?.game.home.overallRecord.after?.losses || gameViewModel?.game.home.overallRecord.before?.losses}<br /></span>
-                      
-                      
-                      ${teamWebService.getTeamName(gameViewModel?.game.home)}
-                    </a>
+                      <a href="${universeWebService.startDateLink(`/t/index/${gameViewModel.game.home._id}`)}">
+                        <img src="/image/thumbnail/100/${gameViewModel?.game.home.logoId}" class="profilePic" />
+                        <span class="record">${gameViewModel?.game.home.overallRecord.after?.wins || gameViewModel?.game.home.overallRecord.before?.wins}-${gameViewModel?.game.home.overallRecord.after?.losses || gameViewModel?.game.home.overallRecord.before?.losses}<br /></span>
+                        
+                        
+                        ${teamWebService.getTeamName(gameViewModel?.game.home)}
+                      </a>
 
+                    </div>
+                    
                   </div>
+
+                  <div class="linescore-wrapper">
+                    <table class="linescore">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                            <th>${num}</th>                          
+                          `)}
                   
-                </div>
+                          <th>R</th>
+                          <th>H</th>
+                          <th>E</th>        
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
 
-                <div class="linescore-wrapper">
-                  <table class="linescore">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                          <th>${num}</th>                          
-                        `)}
-                
-                        <th>R</th>
-                        <th>H</th>
-                        <th>E</th>        
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
+                          <td class="abbrev">
+                            <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
+                          </td>
+                  
+                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                            <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
+                          `)}
+                  
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
+                        </tr>
+                        <tr>
+                      
+                          <td class="abbrev">
+                            <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
+                          </td>
+                      
+                          ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
+                            <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
+                          `)}
+                  
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
+                          <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
+                        </tr>
+                      </tbody>	
+                    </table>
+                  </div>
 
-                        <td class="abbrev">
-                          <img src="/image/thumbnail/${gameViewModel?.game.away.logoId}" class="profilePic" />
-                        </td>
-                
-                        ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                          <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.away[num]}</td>                        
-                        `)}
-                
-                        <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 3]}</td>
-                        <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 2]}</td>
-                        <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.away[gameViewModel.linescoreViewModel.linescore.away.length - 1]}</td>
-                      </tr>
-                      <tr>
-                    
-                        <td class="abbrev">
-                          <img src="/image/thumbnail/${gameViewModel?.game.home.logoId}" class="profilePic" /> ${gameViewModel.game.home.abbrev}
-                        </td>
-                    
-                        ${Array.from({length: Math.max(9, gameViewModel.game.currentInning)}, (_, i) => i + 1).map( num => $h`
-                          <td class="align-center ${!gameViewModel.game.isComplete && gameViewModel.game.currentInning == num && !gameViewModel.linescoreViewModel.isTopInning ? $h`current` : ` `}">${gameViewModel.linescoreViewModel.linescore.home[num]}</td>                        
-                        `)}
-                
-                        <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 3]}</td>
-                        <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 2]}</td>
-                        <td class="align-center ${gameViewModel?.game.isComplete ? $h`linescore-strong` : $h` `}">${gameViewModel.linescoreViewModel.linescore.home[gameViewModel.linescoreViewModel.linescore.home.length - 1]}</td>
-                      </tr>
-                    </tbody>	
-                  </table>
-                </div>
+              </div>
+
+              <div class="grid grid-cols-1 large-grid-cols-2">
+                  <${Boxscore} vm=${getAwayBoxscoreViewModel} />
+                  <${Boxscore} vm=${getHomeBoxscoreViewModel} />
+              </div> 
+              
+              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
+                      <li>
+                          <a href="/g/${gameViewModel.game._id}/gamelog" class="item-link item-content">
+                              <div class="item-media">🏟️</div>
+
+                              <div class="item-inner">
+                                  <div class="item-title-row">
+                                    <div class="item-title">
+                                        View Game Log
+                                    </div>
+                                  </div>
+                              </div>
+                          </a>
+                      </li>
+                  </ul>
+              </div>
+
 
             </div>
-
-
-            <div class="grid grid-cols-1 large-grid-cols-2">
-                <${Boxscore} vm=${getAwayBoxscoreViewModel} />
-                <${Boxscore} vm=${getHomeBoxscoreViewModel} />
-            </div> 
-            
-
-          </div>
 
 
 
@@ -331,6 +348,7 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let gameViewModel = props.gameViewModel
+
 
     let linescoreViewModel = gameViewModel.linescoreViewModel
     let awayBoxscoreViewModel = gameViewModel.awayBoxscoreViewModel

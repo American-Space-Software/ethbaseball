@@ -434,8 +434,8 @@ h1 {
 }
 
 .stat-table .profilePic, .data-table .profilePic {
-  height: 45px;
-  width: 45px;
+  height: 35px;
+  width: 35px;
   float: left;
 }
 
@@ -544,7 +544,7 @@ h1 {
 }
 
 .players td.name {
-  font-size: 1.3em;
+  font-size: 1.1em;
 }
 
 .players td.image img {

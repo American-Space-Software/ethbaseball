@@ -1,64 +1,83 @@
 <template>
 
     <div class="card card-outline card-header-divider">
-        <div class="card-header">Rewards & Player Moves</div>
-        <div class="card-content">
-            <div class="list media-list inset">
-                <ul>
-                    ${eventsViewModel.events.map(oce => $h`
-                    <li>
-                        <div class="item-content">
-                            <div class="item-inner">
-    
-                                <div class="item-title-row">
-                                    <div class="item-title">
-                                        ${getOffChainDescription(oce)}
-                                    </div>
-                                    <div class="item-after">
-                                        ${getOffChainAmount(oce)}
-                                    </div>
-                                </div>
-    
-                                <div class="item-subtitle">
-                                    ${dayjs(oce.dateCreated).format("ddd, MMM D, YYYY h:mm A")}
-                                </div>
-    
-                                <div class="item-text">
-                                    ${oce.fromTeamId ? $h`
-                                    <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">
-                                        ${teamWebService.getTeamName(getTeam(oce.fromTeamId))}
-                                    </a>
-                                    ` : $h``}
-    
-                                    ${oce.fromAddress ? $h`
-                                    <a href="/u/activity?address=${oce.fromAddress}">
-                                        ${walletService.truncateEthAddress(oce.fromAddress)}
-                                    </a>
-                                    ` : $h``}
-    
-                                    <span class="event-arrow"> ➡️ </span>
-    
-                                    ${oce.toTeamId ? $h`
-                                    <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">
-                                        ${teamWebService.getTeamName(getTeam(oce.toTeamId))}
-                                    </a>
-                                    ` : $h``}
-    
-                                    ${oce.toAddress ? $h`
-                                    <a href="/u/activity?address=${oce.toAddress}">
-                                        ${walletService.truncateEthAddress(oce.toAddress)}
-                                    </a>
-                                    ` : $h``}
-                                </div>
-    
+    <div class="card-header">Rewards & Player Moves</div>
+    <div class="card-content">
+        <div class="list media-list inset">
+        <ul>
+            ${eventsViewModel.transactions.map(tx => $h`
+            <li class="transaction-li">
+                <div class="item-content">
+                <div class="item-inner">
+
+                    <div class="item-title-row">
+                    <div class="item-title">
+                        Transaction
+                    </div>
+                    <div class="item-after">
+                        ${tx.events.length} event${tx.events.length === 1 ? '' : 's'}
+                    </div>
+                    </div>
+
+                    <div class="item-subtitle">
+                    ${dayjs(tx.events[0].dateCreated).format("ddd, MMM D, YYYY h:mm A")}
+                    </div>
+
+                    <div class="item-text transaction-events">
+                    ${tx.events.map(oce => $h`
+                        <div class="transaction-event-row">
+
+                        <div class="transaction-event-title-row">
+                            <div class="transaction-event-title">
+                            ${getOffChainDescription(oce)}
+                            </div>
+                            <div class="transaction-event-after">
+                            ${getOffChainAmount(oce)}
                             </div>
                         </div>
-                    </li>
+
+                        <div class="transaction-event-fromto">
+                            ${oce.fromTeamId ? $h`
+                            <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">
+                                ${teamWebService.getTeamName(getTeam(oce.fromTeamId))}
+                            </a>
+                            ` : $h``}
+
+                            ${oce.fromAddress ? $h`
+                            <a href="/u/activity?address=${oce.fromAddress}">
+                                ${walletService.truncateEthAddress(oce.fromAddress)}
+                            </a>
+                            ` : $h``}
+
+                            <span class="event-arrow"> ➡️ </span>
+
+                            ${oce.toTeamId ? $h`
+                            <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">
+                                ${teamWebService.getTeamName(getTeam(oce.toTeamId))}
+                            </a>
+                            ` : $h``}
+
+                            ${oce.toAddress ? $h`
+                            <a href="/u/activity?address=${oce.toAddress}">
+                                ${walletService.truncateEthAddress(oce.toAddress)}
+                            </a>
+                            ` : $h``}
+                        </div>
+
+                        </div>
                     `)}
-                </ul>
-            </div>
+                    </div>
+
+                </div>
+                </div>
+            </li>
+            `)}
+        </ul>
         </div>
     </div>
+    </div>
+
+
 
 
 

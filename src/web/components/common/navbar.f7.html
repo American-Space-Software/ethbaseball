@@ -375,24 +375,6 @@
                 `}
 
 
-                ${isAdmin ? $h`
-
-                  <div class="card card-outline card-header-divider">
-                    <div class="card-header">Contract Details</div>
-                    <div class="card-content card-content-padding">
-                      <strong>Current Balance:</strong> ${universeWebService.displayETH(contractBalance)}
-
-                      <div class="segmented">
-                        <a @click=${withdrawClick} class="button button-outline">Withdraw</a>
-                        <a @click=${updateMetadataClick} class="button button-outline">Update Metadata</a>
-                      </div>
-
-
-                    </div>
-                  </div>
-
-                ` : $h` `}
-
 
               ` : $h` ` }
 
@@ -439,7 +421,6 @@
     let showConnect = true
     let diamondBalance = 0
     let subnavVisible = false
-    let isAdmin = false
     let contractBalance
 
 
@@ -481,7 +462,6 @@
       window.location.reload()
 
     }
-
 
     const mintPassClick = async (e) => {
 
@@ -550,16 +530,7 @@
 
     
     const loadUser = async (force) => {
-    
       authInfo = await loginWebService.getAuthInfo(force)
-      isAdmin = universeWebService.isAdmin(authInfo?.address)
-
-      let walletAddresses = await walletService.getAddress()
-      
-      if (walletService.provider && walletAddresses) {
-        contractBalance = await universeWebService.getContractBalance()
-      }
-
     }
 
 
@@ -592,8 +563,6 @@
 
     eventTarget.addEventListener('auth-info-loaded', async (e) => {
       authInfo = e.detail.authInfo
-
-      isAdmin = universeWebService.isAdmin(authInfo?.address)
 
       await $update()
     })

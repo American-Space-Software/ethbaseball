@@ -23,7 +23,6 @@ class HomeController {
         @inject("discord") private discord:string,
         private universeWebService:UniverseWebService,
         private loginWebService:LoginWebService,
-        private gameWebService:GameWebService,
         private teamComponentService:TeamComponentService,
         @inject("WalletService") private walletService:WalletService
     ) {}
@@ -41,22 +40,9 @@ class HomeController {
 
                 let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
 
-                console.log(vm)
-
-                let contractBalance
-
-                let walletAddresses = await this.walletService.getAddress()
-                
-                if (this.walletService.provider && walletAddresses) {
-                    contractBalance = await this.universeWebService.getContractBalance()
-                }
-
-
                 await this.teamComponentService.setLoadedTeam(vm.teamInfo, authInfo, this.universeWebService.getStartDate())
-
-
+            
                 return {
-                    contractBalance: contractBalance,
                     authInfo: authInfo,
                     vm: vm,
                     discord: this.discord

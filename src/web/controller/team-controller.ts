@@ -58,7 +58,6 @@ class TeamController {
             this.universeWebService.setRank(team.leagueRank)
 
             return {
-                games: this.teamComponentService.games,
                 authInfo: authInfo,
                 discord: this.discord
             }
