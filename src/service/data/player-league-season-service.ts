@@ -36,11 +36,6 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.updateGameFields(plss, options)
     }
 
-    async getByPlayerSeason(player:Player,  season:Season, options?:any): Promise<PlayerLeagueSeason> {
-        let id = await this.playerLeagueSeasonRepository.getIdByPlayerSeason(player, season, options)
-        return this.playerLeagueSeasonRepository.getById(id, options)
-    }
-
 
     async getBySeason(season: Season, options?: any): Promise<PlayerLeagueSeason[]> {
 
@@ -50,19 +45,6 @@ class PlayerLeagueSeasonService {
 
     }
 
-
-    async listByPlayerSeason(player:Player,  season:Season, options?:any): Promise<PlayerLeagueSeason[]> {
-
-        let ids = await this.playerLeagueSeasonRepository.getIdsByPlayerSeason(player, season, options)
-
-        return this.playerLeagueSeasonRepository.getByIds(ids, options)
-
-    }
-
-
-    async list(player:Player, options?:any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.list(player, options)
-    }
 
     // async getMostRecentByLeague(league: League, options?: any): Promise<PlayerLeagueSeason[]> {
     //     return this.playerLeagueSeasonRepository.getMostRecentByLeague(league, options)
@@ -76,14 +58,9 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.put(pls, options)
     }
 
-    async listAll(options?:any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.listAll(options)
-    }
-
     async getMostRecentByPlayerSeason(player: Player, season:Season, options?: any): Promise<PlayerLeagueSeason> {
         return this.playerLeagueSeasonRepository.getMostRecentByPlayerSeason(player, season, options)
     }
-
 
     async getMostRecentByTeam(team: Team, options?: any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getMostRecentByTeam(team, options)
@@ -101,10 +78,6 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getByIds(ids, options)
     }
 
-    async getByTeamSeason(team: Team, season: Season, options?: any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.getByTeamSeason(team, season, options)
-    }
-
     async getByLeagueSeason(league: League, season: Season, positions:Position[], sortColumn:string, sortDirection:string, options?: any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getByLeagueSeason(league, season, positions, sortColumn, sortDirection, options)
     }
@@ -117,12 +90,12 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getMostRecentByLeagueSeason(league, season, options)
     }
 
-    async getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.getMostRecentBySeason(season, options)
+    async getMostRecentByPlayersSeason( players: Player[], season: Season, options?: any ): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getMostRecentByPlayersSeason(players, season, options)
     }
 
-    async listActive(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {
-        return this.playerLeagueSeasonRepository.listActive(player, options)
+    async getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getMostRecentBySeason(season, options)
     }
 
     async getFreeAgentsBySeason(season:Season,positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]> {

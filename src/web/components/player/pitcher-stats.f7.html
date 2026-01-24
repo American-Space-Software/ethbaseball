@@ -58,7 +58,14 @@
                             ` : $h` `}
 
                             <td class="image">
-                              ${p?._id ? $h`<img src="/player/image/${p._id}" />` : $h`<span />`}
+                              ${p?._id ? $h`
+                                <span class="icon">
+                                  <img src="/player/image/${p._id}" />
+                                  <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                                    ${p.displayRating.toFixed(0)}
+                                  </span>
+                                </span>
+                              ` : $h`<span />`}
                             </td>
 
                             <td class="name">
@@ -69,6 +76,7 @@
                                 ` : $h`
                                     <a href="${universeWebService.startDateLink(`/players/?position=P&rank=0`)}" style="font-weight: normal;">${p.fullName}</a><br />
                                 `}
+                                
                             </td>
 
 

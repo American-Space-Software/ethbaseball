@@ -207,13 +207,29 @@
                             <${Result} game=${game} />                      
                         `)}
         
+
+
                     </ul>
-        
                 </div>
 
             ` : $h` `}
             
-                
+            <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                <ul>
+                    <li>
+                      <a href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}" class="item-link item-content">
+                        <div class="item-media">📅</div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title item-title-wrap">All Results</div>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                </ul>
+            </div>
+
+
           </div>
 
           <${Footer} />          
@@ -459,20 +475,6 @@
       return nowUtc.isAfter(wrapUtc) && nowUtc.isBefore(endTimeUtc)
     }
 
-
-
-
-
-    const getOffChainDescription = (oce) => {
-        return offChainEventWebService.getOffChainDescription(oce, vm.offChainEvents.players, vm.offChainEvents.teams)
-    }
-
-    const getOffChainAmount = (oce) => {
-        if (oce.event == "Transfer") {
-            if (oce.toAddress == "0x0000000000000000000000000000000000000000") return `-${universeWebService.displayDiamonds(oce.amount)}`
-            if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return universeWebService.displayDiamonds(oce.amount)
-        }
-    }
 
     const onGameUpdate = async (game) => {
 

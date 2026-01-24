@@ -499,15 +499,47 @@ h1 {
   left: 0;
   z-index: 3;
   background-color: inherit; 
-  padding: 0px;
-  width: 25px;
   text-align: left;
+  width: 47px;
+  max-width: 47px;
 }
 
 .players .image img {
   border-radius: 50%;
   border: 1px solid #cccccc;
 }
+
+
+.players .badge {
+  top: 2px;
+  right: 0px;
+  left: unset;  
+}
+
+.players .badge.color-red, .players .badge.color-orange, .player-info .badge.color-red, .player-info .badge.color-orange {
+  color: #fff;
+}
+
+.dark .players .badge.color-red, .dark .players .badge.color-orange, .dark .player-info .badge.color-red, .dark .player-info .badge.color-orange {
+  color: #000;
+}
+
+
+.players .badge.color-yellow, .players .badge.color-green, .player-info .badge.color-yellow, .player-info .badge.color-green {
+  color: #000;
+}
+
+.players .badge.color-blue, .player-info .badge.color-blue {
+  color: #fff;
+}
+
+
+/* .dark .players .badge.color-red, .dark .players .badge.color-orange, .dark .player-info .badge.color-red, .dark .player-info .badge.color-orange  {
+  color: #fff;
+} */
+
+
+
 
 /* .dark .players .image {
   background-color: black;
@@ -549,6 +581,7 @@ h1 {
 
 .players td.image img {
   margin-top: 3px;
+  margin-right: 3px;
   height: 32px;
   width: 32px;
 }
@@ -2242,6 +2275,15 @@ h1 {
   margin-bottom: 3px;
 }
 
+.player-info .badge {
+  left: unset;
+  top: unset;
+  margin-left: -27px;
+  margin-top: 0px;  
+  font-size: 1.4em;
+  height: unset;
+}
+
 .profilePic {
   border-radius: 50%;
   object-fit: cover;
@@ -3100,7 +3142,7 @@ td.action, th.action {
   padding-right: 0px;
 }
 
-.block-lineup-table td:first-child {
+.block-lineup-table td:first-child, .players td:first-child {
   padding-left:5px;
   padding-right: 5px;
 }
@@ -3143,6 +3185,11 @@ td.action, th.action {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.landing-hero-actions .button {
+  height: 65px;
+  font-size: 1em;
 }
 
 .landing-note {
@@ -3240,4 +3287,40 @@ td.action, th.action {
 /* optional hover feedback */
 .data-table.players tbody td.name:hover {
   background: rgba(255, 255, 255, 0.04);
+}
+
+
+
+.transaction-li .transaction-events {
+  margin-top: 6px;
+}
+
+.transaction-event-row {
+  padding: 6px 0;
+}
+
+.transaction-event-row + .transaction-event-row {
+  border-top: 1px solid var(--f7-list-item-border-color, #e5e5e5);
+  margin-top: 6px;
+}
+
+.transaction-event-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.transaction-event-title {
+  font-size: 0.95em;
+}
+
+.transaction-event-after {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.transaction-event-fromto {
+  font-size: 0.8em;
+  opacity: 0.8;
+  margin-top: 2px;
 }

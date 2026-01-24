@@ -13,7 +13,10 @@
           <div class="block block-strong block-outline player-info">
 
             <div class="left">
-              <img style="border-radius: 50%; border: 1px solid #cccccc;" src="/player/image/${player._id}" width="100" height="100" />
+              <span class="icon">
+                <img style="border-radius: 50%; border: 1px solid #cccccc;" src="/player/image/${player._id}" width="100" height="100" />
+                <span class="badge ${playerWebService.getRatingBadgeColor(player.displayRating)}">${player.displayRating.toFixed(0)}</span>
+              </span>
             </div>
 
             <div class="right">

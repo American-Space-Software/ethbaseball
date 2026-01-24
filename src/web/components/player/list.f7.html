@@ -90,7 +90,7 @@
                     ` : $h` `}
 
                     ${selected == "ratings" ? $h`
-                        <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
                             <select @change="${statsChange}" class="stats-dropdown">
                                 <option value="stats">Season Stats</option>
                                 <option value="ratings" selected>Ratings</option>

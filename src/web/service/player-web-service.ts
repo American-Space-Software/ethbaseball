@@ -353,6 +353,20 @@ class PlayerWebService {
     }
 
 
+    getRatingBadgeColor(rating) {
+
+      if (rating == null) return 'color-gray'
+
+      if (rating <= 20) return 'color-red'
+      if (rating <= 40) return 'color-orange'
+      if (rating <= 60) return 'color-yellow'
+      if (rating <= 80) return 'color-blue'
+
+      return 'color-green'
+
+    }
+
+
 }
 
 

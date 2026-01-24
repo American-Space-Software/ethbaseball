@@ -97,34 +97,6 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
-    async getIdsByPlayerSeason(player: Player, season: Season, options?: any): Promise<string[]> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-            replacements: {
-                playerId: player._id,
-                seasonId: season._id
-            }
-        }
-
-        const [idQueryResults, metadata] = await s.query(`
-            SELECT 
-                pls.*
-            FROM player_league_season pls 
-            WHERE
-                pls.seasonId = :seasonId AND pls.playerId = :playerId
-            ORDER BY pls.startDate DESC, pls.seasonIndex DESC
-        `, Object.assign(queryOptions, options))
-
-
-        return idQueryResults.map(qr => qr._id)
-
-    }
-
     async getIdsByPlayersSeason(players: Player[], season: Season, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
@@ -389,6 +361,55 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
+    async getMostRecentByPlayersSeason( players: Player[], season: Season, options?: any ): Promise<PlayerLeagueSeason[]> {
+
+        if (!players?.length) return []
+
+        const s = await this.sequelize()
+
+        const playerIds = players.map(p => p._id)
+
+        let queryOptions = {
+            type: QueryTypes.SELECT,
+            plain: false,
+            mapToModel: false,
+            replacements: {
+                seasonId: season._id,
+                playerIds
+            }
+        }
+
+
+        // Grab the most-recent PLS _id per player (for this season) in ONE query
+        const idRows = await s.query(
+            `
+        WITH ranked_seasons AS (
+        SELECT
+            pls._id,
+            pls.playerId,
+            pls.seasonIndex,
+            pls.startDate,
+            ROW_NUMBER() OVER (
+            PARTITION BY pls.playerId
+            ORDER BY pls.seasonIndex DESC
+            ) AS row_num
+        FROM player_league_season pls
+        WHERE pls.seasonId = :seasonId
+            AND pls.playerId IN (:playerIds)
+        )
+        SELECT _id
+        FROM ranked_seasons
+        WHERE row_num = 1
+        ORDER BY startDate DESC, seasonIndex DESC;
+        `, Object.assign( queryOptions, options ) ) as { _id: string }[]
+
+        if (!idRows?.length) return []
+
+        return this.getByIds(idRows.map(r => r._id), options)
+    }
+
+
+
     async getByPlayer(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {
 
         let query = {
@@ -401,39 +422,6 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
 
             order: [['startDate', 'ASC'], ['seasonIndex', 'ASC']]
-        }
-
-        return PlayerLeagueSeason.findAll(Object.assign(query, options))
-
-    }
-
-    async getByPlayerSeason(player: Player, season: Season, options?: any): Promise<PlayerLeagueSeason[]> {
-
-        let query = {
-
-            where: {
-                playerId: player._id,
-                seasonId: season._id
-            },
-
-            include: [Season, Team, League, Player]
-
-        }
-
-        return PlayerLeagueSeason.findAll(Object.assign(query, options))
-
-    }
-
-    async getByTeamSeason(team: Team, season: Season, options?: any): Promise<PlayerLeagueSeason[]> {
-
-        let query = {
-
-            where: {
-                teamId: team._id,
-                seasonId: season._id
-            },
-            include: [Season, Team, League, Player]
-
         }
 
         return PlayerLeagueSeason.findAll(Object.assign(query, options))
@@ -592,60 +580,6 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
 
         return pls
-    }
-
-
-    async listAll(options?: any): Promise<PlayerLeagueSeason[]> {
-
-        let query = {
-            order: [
-                ['startDate', 'DESC']
-            ]
-        }
-
-        return PlayerLeagueSeason.findAll(Object.assign(query, options))
-
-    }
-
-    async list(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {
-
-        let query = {
-
-            where: {
-                playerId: player._id
-            },
-
-            include: [Season, Team, League, Player],
-
-            order: [
-                ['startDate', 'DESC']
-            ]
-        }
-
-        return PlayerLeagueSeason.findAll(Object.assign(query, options))
-
-    }
-
-    async listActive(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {
-
-        let query = {
-
-            where: {
-                playerId: player._id,
-                teamId: {
-                    [Op.ne]: null
-                  }
-            },
-
-            include: [Season, Team, League, Player],
-
-            order: [
-                ['startDate', 'ASC']
-            ]
-        }
-
-        return PlayerLeagueSeason.findAll(Object.assign(query, options))
-
     }
 
     async put(pls: PlayerLeagueSeason, options?: any): Promise<PlayerLeagueSeason> {

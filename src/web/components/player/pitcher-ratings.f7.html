@@ -69,18 +69,27 @@
                             ` : $h` `}
 
                             <td class="image">
-                                ${p?._id ? $h`<img src="/player/image/${p._id}" />` : $h`<span />`}
+                            ${p?._id ? $h`
+                                <span class="icon">
+                                <img src="/player/image/${p._id}" />
+                                <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                                    ${p.displayRating.toFixed(0)}
+                                </span>
+                                </span>
+                            ` : $h`<span />`}
                             </td>
 
                             
+
                             <td class="name">
 
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
-                                    ${p.team ? $h`<span" class="position">${teamWebService.getTeamName(p.team)}</span> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
+                                    ${p.team ? $h`<span class="position">${teamWebService.getTeamName(p.team)}</span> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
                                 ` : $h`
                                     <a href="${universeWebService.startDateLink(`/players/?position=P&rank=0`)}" style="font-weight: normal;">${p.fullName}</a><br />
                                 `}
+                                
                             </td>
 
 

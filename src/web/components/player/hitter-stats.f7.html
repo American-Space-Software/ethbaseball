@@ -62,8 +62,16 @@
                 ` : $h` `}
 
                 <td class="image">
-                  ${p?._id ? $h`<img src="/player/image/${p._id}" />` : $h`<span />`}
+                  ${p?._id ? $h`
+                    <span class="icon">
+                      <img src="/player/image/${p._id}" />
+                      <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                        ${p.displayRating.toFixed(0)}
+                      </span>
+                    </span>
+                  ` : $h`<span />`}
                 </td>
+
 
                 <td class="name">
                   ${p?._id || p?.primaryPosition ? $h`
@@ -150,6 +158,10 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let pagingService = ContainerService.getInstance(PagingService)
+
+
+
+
 
     let currentPage = 0
     const PAGE_SIZE = props.pagesize

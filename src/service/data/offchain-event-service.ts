@@ -294,7 +294,7 @@ class OffchainEventService {
 
         return {
             transactions:transactions,
-            teams: tlssPlain?.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city?.name } }),
+            teams: tlssPlain?.map( tls => { return { _id: tls.team._id, name: tls.team.name, cityName: tls.city?.name, owner: { _id: tls.team.userId } } }),
             players: players?.map( p => { return { _id: p._id, fullName: p.fullName } })
         }
     }

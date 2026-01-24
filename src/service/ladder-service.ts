@@ -466,7 +466,8 @@ class LadderService {
 
         //Update player ratings.
         let players:Player[] = await this.playerService.getByIds(playerIds, options)
-        let plss = await this.playerLeagueSeasonService.getByPlayersSeason(players, season, options)
+        let plss = await this.playerLeagueSeasonService.getMostRecentByPlayersSeason(players, season, options)
+
 
         for (let player of players) {
 
@@ -614,10 +615,8 @@ class LadderService {
         let awayTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(away, season, options)
         let homeTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
 
-        let players = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
-        let plssIds = await this.playerLeagueSeasonService.getIdsByPlayersSeason(players, season, options)
-
-        let plss = await this.playerLeagueSeasonService.getByIds(plssIds, options)
+        let players:Player[] = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
+        let plss = await this.playerLeagueSeasonService.getMostRecentByPlayersSeason(players, season, options)
 
         this.gameService.finishGame(game, players, plss)
 
@@ -880,65 +879,6 @@ class LadderService {
         //Handle relegation
         let updatedStructure:{ league:League, teamInfo:{ cityId:string, teamId:string}[]}[] = leagues.map( l => { return { league: l, teamInfo: [] } })
 
-        // season.promotionRelegationLog = []
-
-        // for (let league of leagues) {
-
-        //     let leagueTLS:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
-
-        //     let teamInfo = leagueTLS.map( tls =>  { return { teamId: tls.teamId, cityId: tls.cityId } })
-
-        //     let thisLeague = updatedStructure.find( r => r.league.rank == league.rank)
-        //     let higherLeague = updatedStructure.find( r => r.league.rank == league.rank - 1)
-        //     let lowerLeague = updatedStructure.find( r => r.league.rank == league.rank + 1)
-
-        //     if (higherLeague) {
-
-        //         let i =0
-        //         let toPromote = []
-
-        //         //If we're not doing the first league...the top 3 teams go up a level.
-        //         while (toPromote.length < 3) {
-
-        //             let current = teamInfo[i]
-
-        //             let currentCityCount = higherLeague.teamInfo.filter( ti2 => ti2.cityId == current.cityId).length + toPromote.filter(ti3 => ti3.cityId == current.cityId).length
-
-        //             if (currentCityCount < 2) {
-        //                 toPromote.push(current)
-        //             }
-
-        //             i++
-        //         }
-
-        //         for (let current of toPromote) {
-        //             //Remove from teamInfo
-        //             teamInfo = teamInfo.filter( ti => ti.teamId != current.teamId)
-        //             higherLeague.teamInfo.push(current)
-        //             season.promotionRelegationLog.push({ _id: current.teamId, rank: higherLeague.league.rank, previousRank: league.rank})
-
-        //         }
-
-        //     }
-
-        //     if (lowerLeague) {
-
-        //         //If we're not doing the lowest league...the bottom 3 teams go down a level.
-        //         //No city contraints on the way down.
-
-        //         while (lowerLeague.teamInfo.length < 3) {
-        //             let ti = teamInfo.pop()
-        //             lowerLeague.teamInfo.push(ti)
-        //             season.promotionRelegationLog.push({ _id: ti.teamId, rank: lowerLeague.league.rank, previousRank: league.rank})
-        //         }
-
-        //     }
-
-        //     //The rest stay here
-        //     thisLeague.teamInfo.push(...teamInfo)
-
-        // }
-        
         //Create next season's TLS
         for (let leagueInfo of updatedStructure) {
 
@@ -973,11 +913,6 @@ class LadderService {
 
         }
 
-        // for (let league of leagues) {
-        //     let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, nextSeason, options)
-        //     await this.scheduleGenerator(tlss, league, nextSeason, options)
-        // }
-
         //Create PLS for the next season or retire players
         let currentPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentBySeason(season, options)
         
@@ -987,40 +922,12 @@ class LadderService {
 
             player.age += 1
 
-
             if (player.age > PLAYER_RETIREMENT_AGE) {
+
                 player.isRetired = true
-            }
 
-            // let isFinalContractYear:boolean = false
+            } else {
 
-            // //Close out player contracts for current season.
-            // if (pls.contractYear) {
-
-            //     //Complete the current year of their contract.
-            //     let contractYear:ContractYear = player.contract.years.find(y => y.startDate == dayjs(season.startDate).format("YYYY-MM-DD") && y.endDate == dayjs(season.endDate).format("YYYY-MM-DD"))
-            //     contractYear.complete = true
-
-            //     pls.contractYear.complete = true
-            //     pls.changed("contractYear", true)
-
-            //     //Complete contracts. 
-            //     if (contractYear.startDate == player.contract.years[player.contract.years.length -1].startDate) {
-            //         isFinalContractYear = true
-            //         player.completeContracts.push(player.contract)
-            //         player.changed('completeContracts', true)
-
-            //     }
-
-            //     player.changed('contract', true)
-
-            //     await this.playerLeagueSeasonService.put(pls, options)
-
-            // }
-
-            
-            if (!player.isRetired) {
-                
                 let nextSeasonPLS = new PlayerLeagueSeason()
                 nextSeasonPLS.playerId = pls.playerId
                 nextSeasonPLS.seasonId = nextSeason._id
@@ -1040,75 +947,10 @@ class LadderService {
                     pitching: this.statService.mergePitchResultsToStatLine({}, {})
                 }
 
-
-
-                if (pls.teamId) {
-
-                    let team:Team = await this.teamService.get(pls.teamId, options)
-                    // let nextSeasonTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, nextSeason, options)
-
-
-                    // if (isFinalContractYear) {
-
-                    //     let leagueBundle = leagueBundles.find( l => l.league._id == pls.leagueId)
-
-
-                    //     await this.gameTransactionService.dropPlayer(leagueBundle.league, team, season, player, season.endDate, options)
-
-                    //     let years = this.playerService.getYearsContractAsk(player.age)
-    
-
-                    //     this.playerService.createFreeAgentContract(player, leagueBundle.laPlayerRating, leagueBundle.laSalary, years, 30)
-                    //     nextSeasonPLS.askingPrice = parseFloat(ethers.formatUnits(player.contract.years[0].salary, "ether")) 
-    
-                    //     //Remove from lineup and rotation.
-                    //     this.lineupService.lineupRemove(nextSeasonTLS.lineups[0], pls.playerId)
-                    //     this.lineupService.rotationRemove(nextSeasonTLS.lineups[0], pls.playerId)
-    
-                    //     nextSeasonTLS.changed("lineups", true)
-
-                    //     await this.teamLeagueSeasonService.put(nextSeasonTLS, options)
-    
-                    // } else {
-
-                    //     let leagueBundle = leagueBundles.find( l => l.league._id == nextSeasonTLS.leagueId)
-
-                    //     //Start contract year
-                    //     let contractYear:ContractYear = player.contract.years.find( p => !p.complete)
-                    //     contractYear.startDate = dayjs(nextSeason.startDate).format("YYYY-MM-DD")
-                    //     contractYear.endDate = dayjs(nextSeason.endDate).format("YYYY-MM-DD")
-        
-                    //     let rookieSalary = this.playerService.getRookieSalary(leagueBundle.league.rank)
-
-                    //     if (contractYear.isPreArbitration) {
-                    //         contractYear.salary = ethers.parseUnits(rookieSalary.toString(), 'ether').toString()
-                    //     } else if (contractYear.isArbitration) {
-                    //         let leagueBundle = leagueBundles.find( l => l.league._id == nextSeasonTLS.leagueId)
-                    //         contractYear.salary = ethers.parseUnits(this.playerService.getArbitrationSalary(player.overallRating, leagueBundle.laPlayerRating, leagueBundle.laSalary, rookieSalary).toString(), 'ether').toString()
-                    //     }
-
-                    //     player.changed('contract', true)
-
-    
-                    //     nextSeasonPLS.contractYear = contractYear
-    
-                    //     nextSeasonPLS.teamId = nextSeasonTLS.teamId
-                    //     nextSeasonPLS.leagueId = nextSeasonTLS.leagueId
-
-                    // }
-
-
-                } else {
-                    // nextSeasonPLS.askingPrice = pls.askingPrice
-
-                }
-
-
-
                 await this.playerLeagueSeasonService.put(nextSeasonPLS, options)
 
-            } 
-
+            }
+            
             await this.playerService.put(player, options)
   
         }
