@@ -98,27 +98,21 @@ class LadderService {
                 const shouldStartDay = await this.shouldStartDay(universe, options)
 
                 if (shouldStartDay) {
-
-                    console.log(`Starting day`)
-
+                    console.log(`Starting day ${dayjs(universe.currentDate).format("YYYY-MM-DD")}`)
                     await this.startDay(universe.currentDate, leagues, season, rng, options)
+                    console.log(`Finished starting day ${dayjs(universe.currentDate).format("YYYY-MM-DD")}`)
+                } 
 
-                    console.log(`Day started`)
+                //Play games
+                gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
+                
+                //Check if we've moved past universe.currentDate AND that all games from that day have ended.
+                if (this.isDateBeforeToday(universe.currentDate)) {
 
-                } else {
+                    let inProgressGameIds = await this.gameService.getUnfinishedByDateIds(universe.currentDate, options) 
 
-                    //Play games
-                    gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
-                    
-                    //Check if we've moved past universe.currentDate AND that all games from that day have ended.
-                    if (this.isDateBeforeToday(universe.currentDate)) {
-
-                        let inProgressGameIds = await this.gameService.getUnfinishedByDateIds(universe.currentDate, options) 
-
-                        if (inProgressGameIds?.length == 0) {
-                            await this.finishDay(universe, leagues, season, options)
-                        }
-
+                    if (inProgressGameIds?.length == 0) {
+                        await this.finishDay(universe, leagues, season, options)
                     }
 
                 }
@@ -217,14 +211,13 @@ class LadderService {
             // Create + play this day's makeup games 
             let games:Game[] = await this.createDayGames(makeupDate, league, season, needingToday, options)
 
-            console.log(`Creating ${games?.length || 0 } makeup games on ${dayjs(makeupDate).format("YYYY-MM-DD")}`)
+            console.log(`Playing ${games?.length} makeup games on ${dayjs(makeupDate).format("YYYY-MM-DD")}`)
 
             for (let game of games) {
                await this.processGame(game, rng, true, options)
             }
             
-            console.log(`Processed ${games?.length || 0 } makeup games on ${dayjs(makeupDate).format("YYYY-MM-DD")}`)
-
+            console.log(`Finished playing ${games?.length} makeup games on ${dayjs(makeupDate).format("YYYY-MM-DD")}`)
 
             // Refresh any bundles that played, in-place in the original array
             for (let i = 0; i < teamBundles.length; i++) {
@@ -282,8 +275,7 @@ class LadderService {
 
         const games:Game[] = []
 
-        const getRating = (t: Team): number =>
-            (t.longTermRating.rating + t.seasonRating.rating) / 2
+        const getRating = (t: Team): number => t.longTermRating.rating
 
         const isBundleEligible = (bundle: TeamBundle): boolean => {
             try {

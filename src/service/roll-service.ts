@@ -809,9 +809,32 @@ class RollService {
     }
 
     getRunnerEvents(gameRNG, runnerResult:RunnerResult, halfInningRunnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], leagueAverages: LeagueAverage, playResult: PlayResult, 
-                    contact: Contact, shallowDeep: ShallowDeep, hitter:GamePlayer, fielderPlayer: GamePlayer|undefined, 
+                    contact: Contact|undefined, shallowDeep: ShallowDeep|undefined, hitter:GamePlayer, fielderPlayer: GamePlayer|undefined, 
                     runner1B:GamePlayer|undefined, runner2B:GamePlayer|undefined, runner3B:GamePlayer|undefined, offense:TeamInfo, defense:TeamInfo, pitcher:GamePlayer, pitchIndex:number) : RunnerEvent[] {
         
+        const requiresFielder =
+            playResult === PlayResult.OUT ||
+            playResult === PlayResult.SINGLE ||
+            playResult === PlayResult.DOUBLE ||
+            playResult === PlayResult.TRIPLE ||
+            playResult === PlayResult.HR
+
+        if (requiresFielder && !fielderPlayer) {
+            throw new Error(`${playResult} requires fielderPlayer`)
+        }
+
+        const requiresContact =
+            playResult === PlayResult.OUT ||
+            playResult === PlayResult.SINGLE ||
+            playResult === PlayResult.DOUBLE ||
+            playResult === PlayResult.TRIPLE ||
+            playResult === PlayResult.HR
+
+        if (requiresContact && !contact) {
+            throw new Error(`${playResult} requires contact`)
+        }
+
+
         let events:RunnerEvent[] = this.initRunnerEvents(pitcher, hitter, runner1B, runner2B, runner3B, pitchIndex)
 
         let hitterRA = events.find( e => e.runner._id == hitter?._id)
@@ -835,6 +858,9 @@ class RollService {
     
                 case PlayResult.OUT:
     
+                    if (!contact) throw new Error("OUT requires contact")
+                    if (!fielderPlayer) throw new Error("OUT requires fielderPlayer")
+
                     //Fly balls. Tag up. 99% success
                     //Deep fly ball
                     if (this.isInAir(contact) && this.isToOF(fielderPlayer?.currentPosition) && (shallowDeep == ShallowDeep.DEEP)) {
@@ -2311,41 +2337,31 @@ class RollService {
         return Math.round(this._getAverage([powerQuality, locationQuality, movementQuality]))
     }
 
-    getHitQuality(gameRNG, pitchQualityChange:number, teamDefenseChange:number, fielderDefenseChange:number, contact:Contact, guessPitch:boolean) : number {
+    getHitQuality( gameRNG, pitchQualityChange: number, teamDefenseChange: number, fielderDefenseChange: number, contact: Contact, guessPitch: boolean ): number {
 
         const FULL_DEFENSE_BONUS = -200
         const FULL_PITCH_QUALITY_BONUS = -200
 
-        let roll 
         let bonusRoll = 0
 
-
-        //Pitch quality
         bonusRoll += FULL_PITCH_QUALITY_BONUS * pitchQualityChange
-
-        //Defense
         bonusRoll += (FULL_DEFENSE_BONUS / 2) * teamDefenseChange
         bonusRoll += FULL_DEFENSE_BONUS * fielderDefenseChange
 
-        //Contact
-        switch(contact) {
-            case Contact.FLY_BALL:
-                bonusRoll += 50
-                break
-            case Contact.LINE_DRIVE:
-                bonusRoll += 100
-                break
+        switch (contact) {
+            case Contact.FLY_BALL: bonusRoll += 50; break
+            case Contact.LINE_DRIVE: bonusRoll += 100; break
         }
 
         if (guessPitch) bonusRoll += 30
 
-        do {
-            roll =  this.getRoll(gameRNG, 0, 999) + bonusRoll 
-        } while(roll < 0 || roll > 999)
+        const base = this.getRoll(gameRNG, 0, 999)
+        const roll = base + bonusRoll
 
-        return Math.round(roll)    
-    
+        // Clamp to [0, 999] so it's always valid.
+        return Math.max(0, Math.min(999, Math.round(roll)))
     }
+
 
     //Source 
     // https://github.com/trekhleb/javascript-algorithms/blob/master/src/algorithms/statistics/weighted-random/weightedRandom.js

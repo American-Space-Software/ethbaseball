@@ -1053,7 +1053,7 @@ n
     }
 
 
-    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, askingPrice:string, offChainEventTransactionId:string, options?:any) {
+    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, league:League, date:Date, askingPrice:string, offChainEventTransactionId:string, options?:any) {
 
         //Update team. Add to lineup/rotation.
         let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
@@ -1075,7 +1075,8 @@ n
         //Create new PLS
         let nextPLS = new PlayerLeagueSeason()
         nextPLS.playerId = pls.playerId
-        nextPLS.seasonId = season._id
+        nextPLS.seasonId = season._id,
+        nextPLS.leagueId = league._id,
         nextPLS.teamId = team._id
         nextPLS.seasonIndex = pls.seasonIndex + 1
         nextPLS.primaryPosition = pls.primaryPosition

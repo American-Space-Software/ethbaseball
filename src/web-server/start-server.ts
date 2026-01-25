@@ -1184,7 +1184,8 @@ let startWebServer = async () => {
           
           
           let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season, options)
-          
+          let tlsPlain = tls.get({ plain: true })
+
           //Must be team owner
           if (user._id != team.userId) {
             throw new Error("Not authorized.")
@@ -1217,7 +1218,7 @@ let startWebServer = async () => {
           }
 
           let offChainEventTransactionId = uuidv4()
-          await teamService.signPlayer(pls, player, team, season, universe.currentDate, askingPrice, offChainEventTransactionId, options)
+          await teamService.signPlayer(pls, player, team, season, tlsPlain.league, universe.currentDate, askingPrice, offChainEventTransactionId, options)
 
       })
 

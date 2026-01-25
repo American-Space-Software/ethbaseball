@@ -34,7 +34,6 @@
   --f7-card-header-font-size: 23px;
 
   --f7-list-item-text-max-lines: 100;
-  --f7-badge-padding: 0 7px;
 
   --bottom-bar-h: clamp(220px, 40vh, 420px);
   --field-top-ui: 160px; 
@@ -514,7 +513,15 @@ h1 {
   top: 2px;
   right: 0px;
   left: unset;  
+  font-size: 1em;
 }
+
+.players .icon .badge {
+  padding: 10px 4px;
+}
+
+
+
 
 .players .badge.color-red, .players .badge.color-orange, .player-info .badge.color-red, .player-info .badge.color-orange {
   color: #fff;
