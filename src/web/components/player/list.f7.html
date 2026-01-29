@@ -5,8 +5,7 @@
 
     <div class="page-content">
 
-      <${StartDate} />
-
+        <${StartDate} />
 
         <div class="block small-only">
             <p class="segmented">
@@ -23,107 +22,85 @@
         </div>
 
 
-        <div class="block block-strong block-outline">
-            <div class="search">
-                <!-- <div class="searchbar searchbar-inline">
-                    <div class="searchbar-input-wrap">
-                        <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
-                        <i class="searchbar-icon"></i>
-                        <span class="input-clear-button"></span>
-                    </div>
-                </div> -->
-                <div class="position">
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=H" class="tab-link ${position=='H' ? 'active' : ''}" data-animate="false" >Batters</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=P" class="tab-link ${position=='P' ? 'active' : ''}" data-animate="false" >Pitchers</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=C" class="tab-link ${position=='C' ? 'active' : ''}" data-animate="false" >C</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=1B" class="tab-link ${position=='1B' ? 'active' : ''}" data-animate="false" >1B</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=2B" class="tab-link ${position=='2B' ? 'active' : ''}" data-animate="false" >2B</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=3B" class="tab-link ${position=='3B' ? 'active' : ''}" data-animate="false" >3B</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=SS" class="tab-link ${position=='SS' ? 'active' : ''}" data-animate="false" >SS</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=LF" class="tab-link ${position=='LF' ? 'active' : ''}" data-animate="false" >LF</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=CF" class="tab-link ${position=='CF' ? 'active' : ''}" data-animate="false" >CF</a>
-                    <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=RF" class="tab-link ${position=='RF' ? 'active' : ''}" data-animate="false" >RF</a>
+        <div class="search">
+            <!-- <div class="searchbar searchbar-inline">
+                <div class="searchbar-input-wrap">
+                    <input type="search" placeholder="Search" id="playerStatsSearch" @change="${searchChange}" />
+                    <i class="searchbar-icon"></i>
+                    <span class="input-clear-button"></span>
                 </div>
+            </div> -->
+            <div class="position">
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=H" class="tab-link ${position=='H' ? 'active' : ''}" data-animate="false" >Batters</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=P" class="tab-link ${position=='P' ? 'active' : ''}" data-animate="false" >Pitchers</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=C" class="tab-link ${position=='C' ? 'active' : ''}" data-animate="false" >C</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=1B" class="tab-link ${position=='1B' ? 'active' : ''}" data-animate="false" >1B</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=2B" class="tab-link ${position=='2B' ? 'active' : ''}" data-animate="false" >2B</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=3B" class="tab-link ${position=='3B' ? 'active' : ''}" data-animate="false" >3B</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=SS" class="tab-link ${position=='SS' ? 'active' : ''}" data-animate="false" >SS</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=LF" class="tab-link ${position=='LF' ? 'active' : ''}" data-animate="false" >LF</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=CF" class="tab-link ${position=='CF' ? 'active' : ''}" data-animate="false" >CF</a>
+                <a href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=RF" class="tab-link ${position=='RF' ? 'active' : ''}" data-animate="false" >RF</a>
             </div>
+        </div>
+
+        <div class="player-list">
 
             ${position == 'P' ? $h`
-                <div>
+                ${selected == "stats" ? $h`
+                    <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <select @change="${statsChange}" class="stats-dropdown">
+                            <option value="stats" selected>Season Stats</option>
+                            <option value="ratings">Ratings</option>
+                        </select>
+                    </pitcher-stats>
+                ` : $h` `}
 
-                    ${selected == "stats" ? $h`
-                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats" selected>Season Stats</option>
-                                <option value="ratings">Ratings</option>
-                            </select>
-                        </pitcher-stats>
-                    ` : $h` `}
+                ${selected == "ratings" ? $h`
+                    <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <select @change="${statsChange}" class="stats-dropdown">
+                            <option value="stats">Season Stats</option>
+                            <option value="ratings" selected>Ratings</option>
+                        </select>
+                    </pitcher-ratings>
+                ` : $h` `}
 
-                    ${selected == "ratings" ? $h`
-                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats">Season Stats</option>
-                                <option value="ratings" selected>Ratings</option>
-                            </select>
-                        </pitcher-ratings>
-                    ` : $h` `}
+        ` : $h` 
+                ${selected == "stats" ? $h`
+                    <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <select @change="${statsChange}" class="stats-dropdown">
+                            <option value="stats" selected>Season Stats</option>
+                            <option value="ratings">Ratings</option>
+                        </select>
+                    </hitter-stats>
+                ` : $h` `}
 
-                    ${selected == "contracts" ? $h`
-                        <pitcher-contracts pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats">Season Stats</option>
-                                <option value="ratings" >Ratings</option>
-                            </select>
-                        </pitcher-contracts>
-                    ` : $h` `}
+                ${selected == "ratings" ? $h`
+                    <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        <select @change="${statsChange}" class="stats-dropdown">
+                            <option value="stats">Season Stats</option>
+                            <option value="ratings" selected>Ratings</option>
+                        </select>
+                    </hitter-ratings>
+                ` : $h` `}
 
-                </div>
-            ` : $h` 
-                <div>
+        ` }
 
-                    ${selected == "stats" ? $h`
-                        <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats" selected>Season Stats</option>
-                                <option value="ratings">Ratings</option>
-                            </select>
-                        </hitter-stats>
-                    ` : $h` `}
+        </div>
 
-                    ${selected == "ratings" ? $h`
-                        <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats">Season Stats</option>
-                                <option value="ratings" selected>Ratings</option>
-                            </select>
-                        </hitter-ratings>
-                    ` : $h` `}
+        
 
-                    ${selected == "contracts" ? $h`
-                        <hitter-contracts hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${true}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                            <select @change="${statsChange}" class="stats-dropdown">
-                                <option value="stats">Season Stats</option>
-                                <option value="ratings">Ratings</option>
-                            </select>
-                        </hitter-contracts>
-                    ` : $h` `}
-
-                </div>
-            ` }
-
-            <div class="block split-row-both">
-              <div>
-                  ${previousPage ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=${previousPage}&sortColumn=${sortColumn}&sortDirection=${sortDirection}" class="button button-outline color-gray">Previous</a>
-                  ` : $h` `}
-              </div>
-              <div>
-                  ${nextPage ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=${nextPage}&sortColumn=${sortColumn}&sortDirection=${sortDirection}" class="button button-fill">Next</a>
-                  ` : $h` `}
-              </div>
+        <div class="block split-row-both">
+            <div>
+                ${previousPage ? $h`
+                <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=${previousPage}&sortColumn=${sortColumn}&sortDirection=${sortDirection}" class="button button-outline color-gray">Previous</a>
+                ` : $h` `}
             </div>
-
-
+            <div>
+                ${nextPage ? $h`
+                <a data-reload-current="true" data-force="true" data-browser-history="true" href="/players/?rank=${rank}&startDate=${universeWebService.getStartDate()}&position=${position}&page=${nextPage}&sortColumn=${sortColumn}&sortDirection=${sortDirection}" class="button button-fill">Next</a>
+                ` : $h` `}
+            </div>
         </div>
 
 

@@ -1,53 +1,61 @@
 import { registerRoute } from 'workbox-routing'
-import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies'
+import { StaleWhileRevalidate } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
 
-const DEBUG = false
+const DEBUG = true
+
+const baseURI = new URL(self.location.href).searchParams.get('baseURI')!
+if (!baseURI) throw new Error('[SW] Missing required baseURI param')
+if (DEBUG) console.log('[SW] baseURI=', baseURI)
 
 //@ts-ignore
 self.__WB_DISABLE_DEV_LOGS = true
 
-// When the service worker is first added to a computer.
-self.addEventListener('install', event => {
-
-  // Perform install steps.
-  if (DEBUG) {
-      console.log('[SW] Install event!!')
-  }
-
+self.addEventListener('install', (event) => {
   //@ts-ignore
-  event.waitUntil(self.skipWaiting())
-
+  event.waitUntil((async () => {
+    //@ts-ignore
+    await self.skipWaiting()
+    const cache = await caches.open('html-shell')
+    try { await cache.add(baseURI) } catch (e) { if (DEBUG) console.log('[SW] seed failed', e) }
+  })())
 })
 
-// After the install event.
-self.addEventListener('activate', event => {
-
-  if (DEBUG) {
-      console.log('[SW] Activate event')
-  }
-
+self.addEventListener('activate', (event) => {
+  if (DEBUG) console.log('[SW] Activate event')
   //@ts-ignore
   event.waitUntil(self.clients.claim())
-
 })
 
+registerRoute(
+  ({ request }) =>
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'font' ||
+    request.destination === 'manifest' ||
+    request.destination === 'image',
+  new StaleWhileRevalidate({
+    cacheName: 'static-resources',
+    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 })]
+  })
+)
 
+const isAuthPath = (pathname: string) => {
+  if (!pathname.startsWith(baseURI)) return false
+  const rel = pathname.slice(baseURI.length)
+  return rel === 'auth' || rel.startsWith('auth/')
+}
 
-//@ts-ignore
-// const baseURI = new URL(location).searchParams.get('baseURI')
-
-
-// registerRoute(/\.(?:js.*|css.*|webmanifest|eot|ttf|woff|woff2)$/, new StaleWhileRevalidate({ cacheName: 'static-resources' }))
-
-
-// //HTML and Large should serve stale but revalidate for next request
-// registerRoute( ({event}) => event.request.destination === 'image', new StaleWhileRevalidate() )
-// registerRoute( ({event}) => event.request.destination === 'document', new StaleWhileRevalidate() )
-
-// registerRoute( ({ url }) => url.pathname.endsWith(`.html`), new StaleWhileRevalidate() )
-
-
-
-
-
-
+registerRoute(
+  ({ request, url }) => request.mode === 'navigate' && !isAuthPath(url.pathname),
+  async ({ event }) => {
+    const cache = await caches.open('html-shell')
+    try {
+      const res = await fetch(event.request)
+      if (res.ok) cache.put(baseURI, res.clone()).catch(() => {})
+      return res
+    } catch {
+      return (await cache.match(baseURI)) || new Response('Offline', { status: 503 })
+    }
+  }
+)

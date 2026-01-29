@@ -74,7 +74,18 @@
                       ${vm.awayBoxscoreViewModel.teamInfo.lineupIds.map( id => vm.awayBoxscoreViewModel.teamInfo.players.find( p2 => p2._id == id) ).map( (p, index) => $h`
                       <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
                         <td class="num order">${index + 1}</td>
-                        <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
+                        <td class="image">
+
+                          <span class="icon">
+                            <img src="/player/image/${p._id}" />
+                            ${p.displayRating ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                                ${p.displayRating.toFixed(0) }
+                              </span>
+                            ` : $h` `}
+                          </span>
+                        
+                        </td>
                         <td class="name"><a href="/p/${p._id}">${p.displayName}</a></td>
                         <td>${p.hits}</td>
                         <td class="pos">${p.currentPosition}</td>
@@ -309,7 +320,19 @@
                     ${vm.homeBoxscoreViewModel.teamInfo.lineupIds.map( id => vm.homeBoxscoreViewModel.teamInfo.players.find( p2 => p2._id == id) ).map( (p, index) => $h`
                     <tr class="${vm.atBatBoxscoreViewModel.teamInfo.currentHitterIndex == index ? $h`at-bat` : $h` `}">
                       <td class="num order">${index + 1}</td>
-                      <td class="image"><img src="/player/image/${p._id}" width="20" height="20" /></td>
+                      <td class="image">
+                        
+                          <span class="icon">
+                            <img src="/player/image/${p._id}" />
+                            ${p.displayRating ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                                ${p.displayRating.toFixed(0) }
+                              </span>
+                            ` : $h` `}
+                          </span>
+                      
+                      
+                      </td>
                       <td class="name"><a href="/p/${p._id}">${p.displayName}</a></td>
                       <td>${p.hits}</td>
                       <td class="pos">${p.currentPosition}</td>
@@ -430,13 +453,16 @@
   import dayjs from "dayjs"
 
   import { ContainerService } from "../../../service/container-service.ts"
-  import { GameWebService, AtBatState } from "../../service/game-web-service.ts"
+  import { GameWebService } from "../../service/game-web-service.ts"
   import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
   import { PlayerWebService } from "../../service/player-web-service.ts"
   import { SocketWebService } from "../../service/socket-web-service.ts"
 
+  import { AtBatState } from "../../../service/enums.ts"
+
+  
 
   export default (props, { $on, $, $f7, $update, $onBeforeUnmount, $onMounted }) => {
 

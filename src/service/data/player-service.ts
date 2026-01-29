@@ -810,24 +810,29 @@ class PlayerService {
 
 
 
-    updateOverallRating(currentRating:number, hadGoodGame: boolean, age:number, isPitcher:boolean) : number {
+    updateOverallRating(currentRating: number, hadGoodGame: boolean, age: number, isPitcher: boolean): number {
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
 
-        let rating = currentRating
+    const ageMod = this.getAgeLearningModifier(age)
 
-        let ageModifier = this.getAgeLearningModifier(age)
+    // Design: a "good season" should be around +20 points at peak learning.
+    // Since you have no negative games, define "good season" as ~75% good games.
+    const targetGainPerSeasonAt75 = 20
+    const goodRate = 0.75
 
-        if (hadGoodGame) {
-            rating += ((.10 * ageModifier) * (isPitcher ? 1.3 : 1))
-        } else {
-            rating -= (.80 *  (1 - ageModifier) * (isPitcher ? 1.3 : 1) ) 
-        }
+    // Opportunities: hitters 162 games; pitchers ~162/5 games
+    const gamesPerSeason = 162
+    const pitcherGamesPerSeason = gamesPerSeason / 5
+    const N = isPitcher ? pitcherGamesPerSeason : gamesPerSeason
 
-        if (rating > 99) rating = 99
-        if (rating < 40) rating = 40
+    // Solve: N * goodRate * perGoodGameGain = targetGainPerSeasonAt75
+    const perGoodGameGainAtPeak = targetGainPerSeasonAt75 / (N * goodRate)
 
-        return rating
+    const delta = hadGoodGame ? (perGoodGameGainAtPeak * ageMod) : 0
 
+    return clamp(currentRating + delta, 40, 99)
     }
+
 
     async getPlayerReport(options?: any) {
         return this.playerRepository.getPlayerReport(options)

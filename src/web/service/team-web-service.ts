@@ -1,12 +1,15 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
 import dayjs from "dayjs";
+import { TeamSharedService } from "../../service/shared/team-shared-service.js";
 
 
 @injectable()
 class TeamWebService {
 
-    constructor() {}
+    constructor(
+        private teamSharedService:TeamSharedService
+    ) {}
 
     async getByDate(teamId:string, startDate:string) {
         //Download it.
@@ -76,16 +79,7 @@ class TeamWebService {
 
 
     getTeamName(tls) {
-
-        let isBot = tls.owner?._id == undefined
-
-        let cityName = tls.city?.name ? tls.city.name : tls.cityName
-
-        if (cityName) {
-            return `${cityName} ${tls.name}${isBot ? ' 🤖' : ''}`
-        }
-        
-        return `${tls.name}${isBot ? ' 🤖' : ''}`
+        return this.teamSharedService.getTeamName(tls)
     }
 
     getTeamNameStacked(tls) {

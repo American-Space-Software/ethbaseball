@@ -39,6 +39,8 @@
   --field-top-ui: 160px; 
   --runner-defender-width: 90px;
   --runner-defender-image-width: 30px;
+
+  --f7-table-cell-padding-horizontal: 5px;
 }
 
 .logo {
@@ -393,79 +395,19 @@ h1 {
 .stat-table-wrapper {
   overflow-x:auto;
   width: 100%;
+  background-color: var(--f7-card-bg-color);
 }
 
-.stat-table.small {
+.player-list .data-table {
   width: unset;
 }
 
-.stat-table.small th {
-  text-wrap: nowrap;
-}
-
-.stat-table {
-  border: 1px solid #cccccc;
-  border-spacing: 0;
-  margin-top: 5px;
-  width: 100%;
-
-  border-collapse: collapse;
-  /* table-layout: fixed; */
-
-}
-
-.stat-table.actions td {
-  height: 28px;
-}
-
-.stat-table th {
-  font-weight: bold;
-  color: #030e1c;
-  background: #cccccc;
-  text-align: center;
-}
-
-.stat-table .image {
-  width: 25px;
-  vertical-align: middle;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.stat-table .profilePic, .data-table .profilePic {
+.data-table .profilePic {
   height: 35px;
   width: 35px;
   float: left;
 }
 
-.stat-table th,
-.stat-table td {
-  border: 1px solid #ddd;
-  padding: 3px;
-  width: 40px;
-}
-
-.stat-table td {
-    padding: 2px;
-    border: 1px solid #ddd;
-    background: #ffffff;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.stat-table .player-pic {
-  width: 25px;
-}
-
-.stat-table .order {
-  width: 20px;
-  max-width: 20px;
-}
-
-.stat-table .game {
-  white-space: nowrap;
-  text-align: center;
-}
 
 .players {
   border-collapse: separate;
@@ -501,6 +443,7 @@ h1 {
   text-align: left;
   width: 47px;
   max-width: 47px;
+  padding: 0px;
 }
 
 .players .image img {
@@ -515,6 +458,8 @@ h1 {
   left: unset;  
   font-size: 1em;
 }
+
+
 
 .players .icon .badge {
   padding: 10px 4px;
@@ -586,6 +531,7 @@ h1 {
   font-size: 1.1em;
 }
 
+
 .players td.image img {
   margin-top: 3px;
   margin-right: 3px;
@@ -633,14 +579,21 @@ h1 {
 
 
 .game-table.data-table .image  {
-  width: 50px;
-  max-width: 50px;
-  position: sticky;
-  left: 0;
+  max-width: 40px;
+  width: 40px;
+  padding-top: 5px;
+  padding-left: 0px;
+  padding-right: 0px;
   z-index: 200;
 }
 
-.stat-table .name, .data-table .name {
+.game-table.data-table .image img  {
+  width: 35px;
+  max-width: 35px;
+}
+
+
+.data-table .name {
   /* position: sticky; */
   /* left: 0;
   z-index: 2;  */
@@ -667,15 +620,12 @@ h1 {
   color: darkslategray;
 }
 
-.stat-table .name .rest, .data-table .name .rest{
-  font-size: .75em;
-  color: darkslategray;
-}
 
 .dark .stat-table .name .position, .dark .stat-table .name .teamAbbrev, .dark .stat-table .name .small, .dark .data-table .name .position, .dark .data-table .name .teamAbbrev, .dark .data-table .name .small, .dark .stat-table .name .rest, .dark .data-table .name .rest{
   color: white;
-}
+} 
 
+/* 
 .stat-table .numeric-cell {
   text-align: right;
 }
@@ -718,7 +668,7 @@ h1 {
 .stat-table .drop-button {
   width: 57px;
   float: right;
-}
+} */
 
 
 
@@ -1011,11 +961,9 @@ h1 {
 
 .data-table tr.total td {
   font-weight: bold;
-}
+ }
 
-.stat-table tr.total td {
-  background: #f1f1f1;
-}
+
 
 .transaction-info .date {
   font-weight: bold;
@@ -1625,23 +1573,39 @@ h1 {
 }
 
 .game-state .lineup .name {
-  width: 80%;
+  width: 125px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
 .game-state .lineup .stats {
-  width: 10%;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
+.game-state .lineup .image {
+  position: relative;
+  width: 40px;
+}
+
 .game-state .lineup img {
   border-radius: 50%;
-
+  height: 25px;
+  width: 25px;
 }
+
+.game-state .lineup .badge {
+    top: 0;
+    height: unset;
+    position: absolute;
+    margin-left: -20px;
+}
+
+
+
+
 /* 
 .game-state .lineup.home {
   right:2%;
@@ -1813,10 +1777,10 @@ h1 {
   }
 
 }
-
+/* 
 .boxscores .stat-table {
   width: 100%;
-}
+} */
 
 .boxscores .batter-summary {
   font-size: 12px;
@@ -1964,7 +1928,7 @@ h1 {
 .search {
   background: var(--f7-block-strong-bg-color);
   white-space: nowrap;
-  padding: 3px;
+  padding: 10px;
   font-size: .65em;
   max-width: 100%;
 }
@@ -2478,9 +2442,9 @@ text-align: center;
   object-fit: cover;
   display: block; */
 }
-
+/* 
 .stat-table tr.promoted > td { background: greenyellow;}
-.stat-table tr.relegated > td { background: pink;}
+.stat-table tr.relegated > td { background: pink;} */
 
 td.handed-label {
   background-color: rgb(192, 192, 192);
@@ -2536,10 +2500,10 @@ td.diamonds {
 .game-transactions .description {
   white-space: wrap;
 }
-
+/* 
 .stat-table.game-transactions {
   margin-top: 0px;
-}
+} */
 
 .standings {
   font-size: .85em;
@@ -2596,6 +2560,8 @@ td.diamonds {
 td.action, th.action {
   width: 60px;
   min-width: 60px;
+  padding-right: 0px;
+  padding-left: 4px;
 }
 
 .button-move {
@@ -3149,11 +3115,11 @@ td.action, th.action {
   padding-right: 0px;
 }
 
-.block-lineup-table td:first-child, .players td:first-child {
+.block-lineup-table td.image, .players td.image {
   padding-left:5px;
   padding-right: 5px;
 }
-
+ 
 
 
 

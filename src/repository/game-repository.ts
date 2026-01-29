@@ -7,6 +7,7 @@ import { Team } from "../dto/team.js"
 interface GameRepository {
     get(id:string, options?:any): Promise<Game>
     put(game:Game, options?:any) : Promise<Game>
+    getIdsNoSummary(options?: any) : Promise<string[]>
     getInProgressIds(options?:any) : Promise<string[]>
     getInProgressIdsByTeam(team:Team, options?:any) : Promise<string[]>
     getByIds(ids: string[], options?: any): Promise<Game[]>

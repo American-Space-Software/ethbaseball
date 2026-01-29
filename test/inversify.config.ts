@@ -25,6 +25,7 @@ import { RollChartService } from "../src/service/roll-chart-service.js";
 import { SeedService } from "../src/service/data/seed-service.js";
 import { LineupService } from "../src/service/lineup-service.js";
 import { AirdropService } from "../src/service/airdrop-service.js";
+import { GameSharedService } from "../src/service/shared/game-shared-service.js";
 
 import { PlayerRepository } from "../src/repository/player-repository.js";
 import { PlayerRepositoryNodeImpl } from "../src/repository/node/player-repository-impl.js";
@@ -224,6 +225,7 @@ import { OpenAI } from 'openai'
 import { Post } from "../src/dto/post.js"
 import { Alchemy } from "alchemy-sdk";
 import { AbiPayloadService } from "../src/service/abi-payload-service.js"
+import { TeamSharedService } from "../src/service/shared/team-shared-service.js"
 
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
@@ -491,6 +493,8 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(PostService).toSelf().inSingletonScope()
   container.bind(AirdropService).toSelf().inSingletonScope()
   container.bind(TeamQueueService).toSelf().inSingletonScope()
+  container.bind(GameSharedService).toSelf().inSingletonScope()
+  container.bind(TeamSharedService).toSelf().inSingletonScope()
 
   //Override the RNG
   let seedService: SeedService = container.get(SeedService)

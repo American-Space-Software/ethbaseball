@@ -17,7 +17,7 @@
             ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
             <th @click=${sortHitters} class="numeric-cell" data-sort="displayRating">OVR</th>
-            <th @click=${sortHitters} data-sort="hits">Bats</th>
+            <th @click=${sortHitters} class="numeric-cell" data-sort="hits">Bats</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.defense">DEF</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.arm">ARM</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.speed">SPD</th>
@@ -93,7 +93,7 @@
 
 
                 <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
-                <td>${p?.hits}</td>
+                <td class="numeric-cell">${p?.hits}</td>
 
                 <td class="numeric-cell">${p?.hittingRatings?.defense}</td>
                 <td class="numeric-cell">${p?.hittingRatings?.arm}</td>

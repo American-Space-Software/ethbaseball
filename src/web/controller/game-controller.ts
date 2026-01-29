@@ -10,6 +10,7 @@ import { routeMap } from '../../util/route-map.js';
 import { UniverseWebService } from '../service/universe-web-service.js';
 import dayjs from 'dayjs';
 import { GameWebService } from '../service/game-web-service.js';
+import { QuillWebService } from '../service/quill-web-service.js';
 
 
 
@@ -19,6 +20,7 @@ class GameController {
     constructor(
         private gameWebService:GameWebService,
         private universeWebService:UniverseWebService,
+        private quillWebService:QuillWebService,
         @inject("env") private env,
         @inject("eventTarget") private eventTarget,
         @inject("discord") private discord:Function
@@ -93,11 +95,11 @@ class GameController {
         
         let gameViewModel = this.gameWebService.getGameViewModel(game)
 
-
         return new ModelView(async (routeTo) => {
             
             return {
                 gameViewModel: gameViewModel,
+                summary: await this.quillWebService.translateContent(gameViewModel.game.summary),
                 discord: this.discord
             }
 

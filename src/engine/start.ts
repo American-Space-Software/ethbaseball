@@ -20,6 +20,9 @@ import { SchemaService } from "../service/data/schema-service.js"
 import { PlayerService } from "../service/data/player-service.js"
 
 import { OwnerService } from "../service/data/owner-service.js"
+import { GameService } from "../service/data/game-service.js"
+import { Game } from "../dto/game.js"
+import { ChatGPTService } from "../service/chatgpt-service.js"
 
 
 
@@ -51,9 +54,9 @@ let startEngine = async () => {
   let universeContractService: UniverseContractService = container.get(UniverseContractService)
   // let huggingFaceService: HuggingFaceService = container.get(HuggingFaceService)
   let mintPassIndexerService: MintPassIndexerService = container.get(MintPassIndexerService)
-  let playerService:PlayerService = container.get(PlayerService)
+  let gameService:GameService = container.get(GameService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
-  let ladderService: LadderService = container.get(LadderService)
+  let chatGPTService: ChatGPTService = container.get(ChatGPTService)
   let ownerService:OwnerService = container.get(OwnerService)
 
   let ipfsService: IPFSService = container.get(IPFSService)
@@ -226,6 +229,71 @@ let startEngine = async () => {
     setTimeout(async () => { await indexerLoop() }, SECONDS_BETWEEN_INDEXES*1000)
   }
 
+
+  // const gameSummaryLoop = async () => {
+
+  //   //Generate game summaries 
+  //   let games:Game[]
+
+  //   do {
+
+  //     games = await gameService.getNoSummary({ limit: 25, offset: 0 })
+
+  //     for (let game of games) {
+
+  //         if (!game.isComplete) continue
+
+  //         let playByPlay = gameService.getPlayByPlay(game).filter( p => p.play?.result != undefined)
+        
+  //         //Add metadata
+  //         for (let play of playByPlay) {
+  //           let metadata = gameService.getPlayMetadata(game, play.play )
+  //           play.meta = metadata
+  //         }
+
+  //         let descriptions = JSON.parse(JSON.stringify(playByPlay)).reverse().map ( p => { return { description: p.descriptions.find( d => d.type == "RESULT")?.text, meta: p.meta}})
+
+  //         let linescore = gameService.getLineScore(game)
+
+  //         let linescoreVM = {
+  //           away: {
+  //             name: linescore.away.shift(),
+  //             errors: linescore.away.pop(),
+  //             hits: linescore.away.pop(),
+  //             runs: linescore.away.pop(),
+  //             innings: linescore.away
+  //           },
+
+  //           home: {
+  //             name: linescore.home.shift(),
+  //             errors: linescore.home.pop(),
+  //             hits: linescore.home.pop(),
+  //             runs: linescore.home.pop(),
+  //             innings: linescore.home
+  //           }
+  //         }
+
+
+  //         console.log(`Generating game summary for game ${game._id}`)
+  //         game.summary = await chatGPTService.generateGameRecapDelta(descriptions, linescoreVM, dayjs(game.gameDate).format("YYYY-MM-DD"))
+        
+  //         game.changed("summary", true)
+
+  //         await gameService.put(game)
+
+
+  //     }
+
+  //   } while(games.length < 1);
+
+
+  //   console.log(`Game summary loop complete...waiting...`)
+
+  //   setTimeout(async () => { await gameSummaryLoop() }, SECONDS_BETWEEN_INDEXES*1000)
+
+  // }
+
+
   const startupTasks = async () => {
 
     //Make sure that players have percentile ratings. 
@@ -240,7 +308,9 @@ let startEngine = async () => {
 
   }
 
+  
   await startupTasks()
+  // await gameSummaryLoop()
   await indexerLoop()
   await mintPassLoop()
 

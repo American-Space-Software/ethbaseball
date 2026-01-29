@@ -109,6 +109,9 @@ import { UserController } from "./controller/user-controller.js";
 import { OffChainEventWebService } from "./service/off-chain-event-web-service.js";
 import { ActivityController } from "./controller/activity-controller.js";
 import { SocketWebService } from "./service/socket-web-service.js";
+import { GameSharedService } from "../service/shared/game-shared-service.js";
+import { TeamSharedService } from "../service/shared/team-shared-service.js";
+import { QuillWebService } from "./service/quill-web-service.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -267,6 +270,7 @@ async function getContainer(env, footerRoutes) {
     container.bind(SocketWebService).toSelf().inSingletonScope()
 
     container.bind(GameWebService).toSelf().inSingletonScope()
+    container.bind(GameSharedService).toSelf().inSingletonScope()
     container.bind(FieldService).toSelf().inSingletonScope()
     container.bind(PagingService).toSelf().inSingletonScope()
     container.bind(LoginWebService).toSelf().inSingletonScope()
@@ -275,6 +279,7 @@ async function getContainer(env, footerRoutes) {
     container.bind(UniverseWebService).toSelf().inSingletonScope()
     container.bind(DiamondWebService).toSelf().inSingletonScope()
     container.bind(PostWebService).toSelf().inSingletonScope()
+    container.bind(TeamSharedService).toSelf().inSingletonScope()
 
     container.bind(GameTransactionWebService).toSelf().inSingletonScope()
 
@@ -283,6 +288,7 @@ async function getContainer(env, footerRoutes) {
 
     container.bind(LineupService).toSelf().inSingletonScope()
     container.bind(OffChainEventWebService).toSelf().inSingletonScope()
+    container.bind(QuillWebService).toSelf().inSingletonScope()
 
 
     return container

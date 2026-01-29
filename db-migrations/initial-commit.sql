@@ -206,6 +206,7 @@ CREATE TABLE `game` (
   `halfInnings` json DEFAULT NULL,
   `playIndex` int NOT NULL,
   `leagueAverages` json DEFAULT NULL,
+  `summary` json DEFAULT NULL,
   `currentInning` int DEFAULT NULL,
   `isStarted` tinyint(1) DEFAULT NULL,
   `isTopInning` tinyint(1) DEFAULT NULL,

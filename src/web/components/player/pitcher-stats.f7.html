@@ -20,8 +20,8 @@
                     ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('displayRating')}" data-sort="displayRating">OVR</th>
-                    <th @click=${sortRows} class="${getSortHeaderClass('throws')}" data-sort="throws">Throws</th>
-                    <th @click=${sortRows} class="${getSortHeaderClass('hits')}" data-sort="hits">Bats</th>
+                    <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('throws')}" data-sort="throws">Throws</th>
+                    <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('hits')}" data-sort="hits">Bats</th>
 
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('pitching.wins')}" data-sort="pitching.wins">W</th>
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('pitching.losses')}" data-sort="pitching.losses">L</th>
@@ -104,8 +104,8 @@
                             ` : $h` `}
 
                             <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
-                            <td>${p?.throws}</td>
-                            <td>${p?.hits}</td>
+                            <td class="numeric-cell">${p?.throws}</td>
+                            <td class="numeric-cell">${p?.hits}</td>
                             <td class="numeric-cell">${getStats(p)?.pitching?.wins}</td>
                             <td class="numeric-cell">${getStats(p)?.pitching?.losses}</td>
                             <td class="numeric-cell">${statService.formatRatio(getStats(p)?.pitching?.winPercent)}</td>

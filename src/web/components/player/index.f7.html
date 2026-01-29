@@ -459,7 +459,8 @@
                       <th>Age</th>
                       <th>Year</th>
                       <th>GS</th>
-                      <th>W-L</th>
+                      <th>W</th>
+                      <th>L</th>
                       <th>IP</th>
                       <th>H</th>
                       <th>R</th>
@@ -485,7 +486,8 @@
                         <td>${ dayjs(pitchResult.season.startDate).format("YYYY-MM") }</td>
 
                         <td>${ pitchResult.starts }</td>
-                        <td>${ pitchResult.wins }-${ pitchResult.losses }</td>
+                        <td>${ pitchResult.wins }</td>
+                        <td>${ pitchResult.losses }</td>
                         <td>${ statService.getIP(pitchResult.outs) }</td>
                         <td>${ pitchResult.hits }</td>
                         <td>${ pitchResult.runs }</td>
@@ -912,7 +914,6 @@
       
 
       $('.sign-popup').on('popup:opened', async (e) => {
-        console.log('here')
             // $f7.preloader.show()
             // await loadUser(true)
             // await $update()

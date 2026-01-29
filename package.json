@@ -113,6 +113,7 @@
     "webpack-node-externals": "3.0.0"
   },
   "dependencies": {
+    
     "socket.io-client": "4.8.1",
     "socket.io": "4.8.1",
     "express": "5.1.0",
@@ -196,9 +197,10 @@
     "url": "0.11.0",
     "util": "0.12.5",
     "uuid": "9.0.1",
-    "workbox-routing": "7.3.0",
-    "workbox-strategies": "7.3.0",
-    "workbox-window": "7.3.0",
+    "workbox-routing": "7.4.0",
+    "workbox-strategies": "7.4.0",
+    "workbox-window": "7.4.0",
+    "workbox-expiration": "7.4.0",
     "zodiac-signs": "1.5.0"
   }
 }

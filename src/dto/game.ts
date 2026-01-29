@@ -57,6 +57,10 @@ class Game extends Model {
     @Column(DataType.INTEGER)
     declare currentInning: number
 
+    @AllowNull(true)
+    @Column(DataType.JSON)
+    declare summary:any
+
     @Column(DataType.BOOLEAN)
     declare isStarted:boolean
 

@@ -19,6 +19,34 @@ class GameRepositoryNodeImpl implements GameRepository {
     private sequelize:Function
 
 
+    async getIdsNoSummary(options?: any) : Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                limit: options?.limit || 25,
+                offset: options?.offset || 0
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select 
+                g._id
+            from game g 
+            WHERE 
+                g.summary is null
+            ORDER BY g.lastUpdated DESC
+            LIMIT :limit OFFSET :offset
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+    }
+
     async getIdsUpdatedSince(lastUpdated:Date, options?: any) : Promise<string[]> {
 
         let s = await this.sequelize()

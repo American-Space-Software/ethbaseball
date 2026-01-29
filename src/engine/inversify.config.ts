@@ -164,6 +164,8 @@ import { TeamMintPassService } from "../service/data/team-mint-pass-service.js"
 import { TeamQueue } from "../dto/team-queue.js"
 import { TeamQueueRepositoryNodeImpl } from "../repository/node/team-queue-repository-impl.js"
 import { TeamQueueService } from "../service/data/team-queue-service.js"
+import { GameSharedService } from "../service/shared/game-shared-service.js"
+import { TeamSharedService } from "../service/shared/team-shared-service.js"
 
 
 const client = new Client({ intents: [
@@ -426,6 +428,8 @@ async function getContainer() {
     container.bind(AirdropService).toSelf().inSingletonScope()
     container.bind(TeamMintPassService).toSelf().inSingletonScope()
     container.bind(TeamQueueService).toSelf().inSingletonScope()
+    container.bind(GameSharedService).toSelf().inSingletonScope()
+    container.bind(TeamSharedService).toSelf().inSingletonScope()
 
     container.bind("TeamRepository").to(TeamRepositoryNodeImpl).inSingletonScope()
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()

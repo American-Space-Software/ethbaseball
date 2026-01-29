@@ -115,6 +115,7 @@
   import { GameWebService } from "../../service/game-web-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
 
   import { Position } from "../../../service/enums.ts"
 
@@ -133,6 +134,7 @@
 
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
 
     let vm = props.vm()
 
@@ -216,13 +218,24 @@
                     <th class="numeric-cell">RBI</th>
                     <th class="numeric-cell">BB</th>
                     <th class="numeric-cell">HBP</th>
-                    <th class="numeric-cell">SO</th>       
+                    <th class="numeric-cell">SO</th> 
                     </tr>                
                 </thead>
                 <tbody>
                     ${batters.map( (p, index) => $h`
                     <tr class="${vm.teamInfo.lineupIds[vm.teamInfo.currentHitterIndex] == p._id && !vm.isComplete ? $h`${vm.isTopInning && vm.homeaway=='AWAY' || !vm.isTopInning && vm.homeaway=='HOME' ? $h`at-bat` : $h`at-bat-next`}` : $h``}">
-                        <td class="image"><img src="/player/image/${p._id}" width="25" height="25" /></td>
+                        <td class="image">
+
+                          <span class="icon">
+                            <img src="/player/image/${p._id}" />
+                            ${p.displayRating ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                                ${p.displayRating.toFixed(0) }
+                              </span>
+                            ` : $h` `}
+                          </span>
+
+                        </td>
                         <td class="name"> ${p.hits} <a href="${universeWebService.startDateLink(`/p/${p._id}`)}" class="link popup-close">${p.fullName}</a></td>
                         <td class="pos">${p.currentPosition}</td>
                         <td class="numeric-cell">${p.hitResult.atBats}</td>
@@ -235,6 +248,7 @@
                         <td class="numeric-cell">${p.hitResult.bb}</td>
                         <td class="numeric-cell">${p.hitResult.hbp}</td>
                         <td class="numeric-cell">${p.hitResult.so}</td>
+
                     </tr>
                     `)}
                 </tbody>                            
@@ -260,13 +274,25 @@
                     <th class="numeric-cell">HBP</th>
                     <th class="numeric-cell">BF</th>     
                     <th class="numeric-cell">PIT</th>                  
-                    <th class="numeric-cell">STR</th>                  
+                    <th class="numeric-cell">STR</th>  
                     </tr>
                 </thead>
                 <tbody>
                     ${pitchers.map( (p, index) => $h`
                     <tr class="${vm.teamInfo.currentPitcherId == p._id && (vm.isTopInning && vm.homeaway=='HOME' || !vm.isTopInning && vm.homeaway=='AWAY') && !vm.isComplete ? $h`pitching` : $h``}">
-                        <td class="image"><img src="/player/image/${p._id}" width="25" height="25" /></td>
+                        <td class="image">
+
+                          <span class="icon">
+                            <img src="/player/image/${p._id}" />
+                            ${p.displayRating ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
+                                ${p.displayRating.toFixed(0) }
+                              </span>
+                            ` : $h` `}
+                          </span>
+                          
+                          
+                        </td>
                         <td class="name">${p.throws} <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a></td>
                         <td class="pos">${p.currentPosition}</td>
                         <td class="numeric-cell">${p.pitchResult.wins}</td>
@@ -311,6 +337,7 @@
     let gameWebService = ContainerService.getInstance(GameWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
 
     let gameViewModel = props.gameViewModel
 
