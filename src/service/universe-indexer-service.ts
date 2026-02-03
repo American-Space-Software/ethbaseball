@@ -40,7 +40,7 @@ class UniverseIndexerService {
 
     private isIndexing:boolean = false
 
-    private universeIndexResult:ERCIndexResult
+    
 
     constructor(
         private playerService:PlayerService,
@@ -85,10 +85,14 @@ class UniverseIndexerService {
     
 
 
-    async runUniverseIndexer() {
+    async runUniverseIndexer() : Promise<ERCIndexResult> {
   
         //Don't allow this to run if if it's already running
         if (this.isIndexing) return 
+
+        let indexResult:ERCIndexResult = this.clearIndexResult()
+
+        let s = await this.sequelize()
 
         this.isIndexing = true
 
@@ -96,51 +100,22 @@ class UniverseIndexerService {
 
         try {
   
-            let s = await this.sequelize()
-            
-            
-
             await s.transaction(async (t1) => {
     
                 let options = { transaction: t1 }
-    
-                if (!this.universeIndexResult) {
-                    this.universeIndexResult = this.clearIndexResult()
-                }
 
-
-                // if (this.contractState.lastIndexedBlock == undefined || this.blockNumber - this.contractState.lastIndexedBlock > 500) {
-
-                //     //We're too far back. Re-index
-                //     console.time(`Indexing full universe...`)
-                //     await this.fullIndexUniverse(this.universeIndexResult, options)
-                //     console.timeEnd(`Indexing full universe...`)
-
-                // } else {
-
-                //Index universe contract
-
-                await this.indexUniverse(this.universeIndexResult, options)
+                await this.indexUniverse(indexResult, options)
                     
-                // }
+                await this.saveResult(indexResult, options)
 
-                await this.saveResult(this.universeIndexResult, options)
-
-                await this.processDeposits(this.universeIndexResult, options)
+                await this.processDeposits(indexResult, options)
 
 
             })
     
-            //If we're current then wait. If not then just do it again.
-            if (this.universeIndexResult) {
 
-                //Clear results
-                this.universeIndexResult = this.clearIndexResult()
-
-                //Save contract state
-                await this.contractStateService.put(this.contractState)
-
-            } 
+            //Save contract state
+            await this.contractStateService.put(this.contractState)
 
 
         } catch (ex) {
@@ -150,35 +125,16 @@ class UniverseIndexerService {
         console.timeEnd(`Indexing universe...`)
 
         this.isIndexing = false
+
+        return indexResult
   
     }
 
-    // async fullIndexUniverse(result:ERCIndexResult, options?:any) {
-
-    //     result.startBlock = 0
-    //     result.endBlock = this.blockNumber
-    //     result.blockNumber = this.blockNumber
-    //     // result.isCurrent = true
-
-    //     //Remove transactions/events between start/end block numbers then re-insert
-    //     await this.processedTransactionService.deleteERCBetweenBlocks(result, options)
-
-    //     let allLogEvents = await this.logEventService.getAllEvents()
-
-    //     await this.processUniverseEvents(allLogEvents, result)
-        
-
-    //     this.contractState.lastIndexedBlock = result.endBlock 
-
-    //     return result
-    // }
-
     async indexUniverse(result: ERCIndexResult, options?:any): Promise<ERCIndexResult> {
 
-        let blockNumber = await this.walletService.provider.getBlockNumber()
-
+        result.blockNumber = await this.walletService.provider.getBlockNumber()
         result.startBlock = this.getStartBlock(this.contractState)
-        result.endBlock = this.getEndBlock(result.startBlock, blockNumber)  
+        result.endBlock = this.getEndBlock(result.startBlock, result.blockNumber)  
 
         console.log(`Indexing events in blocks ${result.startBlock}-${result.endBlock}`)
 
@@ -264,7 +220,6 @@ class UniverseIndexerService {
 
     }
 
-
     private async processUniverseEvents( events:any [], result:ERCIndexResult, options?:any) {
 
         let processedCount =0
@@ -330,7 +285,7 @@ class UniverseIndexerService {
                     //Diamonds
                     if( ercEvent.contractAddress == this.diamondContractAddress) {
 
-                        if (ercEvent.event == "MintReward" || ercEvent.event == "WithdrawFromTeam") {
+                        if (ercEvent.event == "MintReward") {
 
                             let mintPass:DiamondMintPass = await this._getDiamondMintPass(ercEvent.namedArgs.mintPassId, result, options)
 
@@ -410,8 +365,6 @@ class UniverseIndexerService {
 
     }
     
-
-
     private async getTransactionAndBlock(transactionKey:string, options?:any) {
 
         let block: Block
@@ -513,7 +466,6 @@ class UniverseIndexerService {
 
     }
 
-
     private async saveDiamondMintPasses(result: ERCIndexResult, options?:any) {
         
         console.log(`Saving ${Object.keys(result.diamondMintPassesToUpdate).length} mint passes `)
@@ -523,8 +475,6 @@ class UniverseIndexerService {
         }
 
     }
-
-
 
     // translateEventToERCEvent(event: any) : ERCEvent {
 
@@ -814,6 +764,7 @@ interface ERCIndexResult {
     mostRecentTransaction?:TransactionViewModel
     startBlock?:number
     endBlock?:number
+    blockNumber?:number
 }
 
 

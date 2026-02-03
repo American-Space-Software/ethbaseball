@@ -72,18 +72,11 @@ class UserService {
         }
     
         if (user.address) {
-
-          let owner:Owner = await this.ownerService.get(user.address)
-          authInfo.diamondBalance = owner?.diamondBalance || "0"
-
-          if (owner) {
-            authInfo.offChainDiamondBalance = await this.offchainEventService.getBalanceForOwner(ContractType.DIAMONDS, owner)
-            authInfo.diamondMintPasses = await this.diamondMintPassService.getUnmintedByAddress(owner._id)
-          }
+            authInfo.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
         }
         
         if (team) {
-            authInfo.teamDiamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+            authInfo.offChainDiamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         }
 
 
@@ -100,7 +93,7 @@ class UserService {
         vm.teamInfo = await this.teamService.getTeamViewModel(team, season, user)
 
         vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
-        vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByTeamId(team._id)
+        vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
 
 
     

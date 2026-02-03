@@ -208,123 +208,112 @@
 
                 ` : $h` `}
 
-                ${authInfo?.address ? $h`
 
-                  <!-- <div class="card card-outline card-header-divider">
-                    <div class="card-header">Wallet</div>
-                    <div class="card-content card-content-padding">
+                <div class="card card-outline card-header-divider">
+                  <div class="card-header">Diamonds</div>
+                  <div class="card-content card-content-padding">
 
-                      <div class="list links-list list-outline">
-                        <ul>
-
-                          <li>
-                            <div class="item-content">
-
-                                <div class="item-inner">
-                                  <div class="item-title-row">
-                                    <div class="item-title">Address</div>
-                                  </div>
-                                  <div class="item-text">
-                                    <a class="popup-close" href="/u/activity?address=${authInfo.address}">${walletService.truncateEthAddress(authInfo.address)}</a>
-                                  </div>
-                                </div>
-
+                    <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                      <ul>
+                        <li>
+                          <div class="item-content">
+                            <div class="item-inner">
+                                <div class="item-title">Balance</div>
+                                <div class="item-after">${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance || 0)}</div>
                             </div>
-                          </li>
-
-                          <li>
-                            <div class="item-content">
-                                <div class="item-inner">
-                                    <div class="item-title">
-                                      Diamond Balance
-                                    </div>
-                                    <div class="item-after">
-                                        ${universeWebService.displayDiamonds(authInfo.diamondBalance)}
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                          </li>
-
-                        </ul>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <div class="card card-outline card-header-divider">
-                    <div class="card-header">Rewards</div>
-                    <div class="card-content card-content-padding">
-
-                      <div class="list links-list list-outline">
-                        <ul>
-
-                          <li>
-                            <div class="item-content">
-                                <div class="item-inner">
-                                    <div class="item-title">
-                                      Available Rewards
-                                    </div>
-                                    <div class="item-after">
-
-                                      ${authInfo.offChainDiamondBalance && BigInt(authInfo.offChainDiamondBalance) > 0 ? $h`
-                                        <a class="button button-fill text-color-white" @click="${mintDiamondsClick}">Mint ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance)}</a>
-                                      ` : $h`
-                                        ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance || 0)}
-                                      `}
-
-                                    </div>
-                                </div>
-                            </div>
-                          </li>
-
-                        </ul>
-                      </div>
-
-                      ${authInfo.diamondMintPasses?.length > 0 ? $h`
-
-                        <br />
-                        <hr/>
-
-                        <div class="block-title block-title-small">Reward Mint Passes</div>
-
-                        <div class="block">
-                          <div class="list media-list">
-                            <ul>
-
-                              ${authInfo.diamondMintPasses.map( mp => $h`
-                                <li>
-                                  <div class="item-content">
-                                      <div class="item-inner">
-                                        <div class="item-title-row">
-                                          <div class="item-title">${universeWebService.displayDiamonds(mp.amount)}</div>
-                                          <div class="item-after">
-
-                                            ${mp.r && mp.s && mp.v ? $h`
-                                              <a class="button button-outline" @click="${mintPassClick}" data-id="${mp._id}">Redeem</a>
-                                            ` : $h`
-                                              Processing...
-                                            `}
-                                            
-                                          </div>
-                                        </div>
-                                        <div class="item-text">Expires ${dayjs(mp.expires * 1000 ).fromNow()}</div>
-                                      </div>
-
-                                  </div>
-                                </li>
-                              `)}
-
-                            </ul>
                           </div>
-                        </div>
-
-                      
-                      ` : $h` `}
+                        </li>
 
 
+                        ${authInfo?.address ? $h`
+
+                          ${authInfo.offChainDiamondBalance && BigInt(authInfo.offChainDiamondBalance) > 0 ? $h`
+
+                            <li>
+                              <a class="item-link item-content" @click="${createMintPassClick}">
+                                <div class="item-inner">
+                                  <div class="item-title">Withdraw ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance)}</div>
+                                </div>
+                              </a>
+                            </li>
+
+
+                          ` : $h` `}
+                          
+                          <li>
+                            <a class="item-link item-content" @click="${depositClick}">
+                              <div class="item-inner">
+                                <div class="item-title">Start Deposit</div>
+                              </div>
+                            </a>
+                          </li>
+
+
+                        ` : $h`
+
+
+                        <li>
+                            <div class="item-content">
+                              <div class="item-inner">
+                                <div class="item-title">Link wallet to withdraw or deposit diamonds.</div>
+                              </div>
+                            </div>
+                        </li>
+
+
+                          
+                        `}
+
+                        
+                      </ul>
                     </div>
-                  </div> -->
+
+                    ${authInfo.diamondMintPasses?.length > 0 ? $h`
+
+                      <br />
+                      <hr/>
+
+                      <div class="block-title block-title-small">Mint Passes</div>
+
+                      <div class="block">
+                        <div class="list media-list">
+                          <ul>
+
+                            ${authInfo.diamondMintPasses.map( mp => $h`
+                              <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                      <div class="item-title-row">
+                                        <div class="item-title">${universeWebService.displayDiamonds(mp.amount)}</div>
+                                        <div class="item-after">
+
+                                          ${mp.r && mp.s && mp.v ? $h`
+                                            <a class="button button-outline" @click="${mintPassClick}" data-id="${mp._id}">Mint</a>
+                                          ` : $h`
+                                            Processing...
+                                          `}
+                                          
+                                        </div>
+                                      </div>
+                                      <div class="item-text">Expires ${dayjs(mp.expires * 1000 ).fromNow()}</div>
+                                    </div>
+
+                                </div>
+                              </li>
+                            `)}
+
+                          </ul>
+                        </div>
+                      </div>
+
+                    
+                    ` : $h` `}
+
+
+                  </div>
+                </div> 
+
+                ${authInfo?.address ? $h`
 
                   <div class="card card-outline card-header-divider">
                     <div class="card-header">Account</div>
@@ -398,6 +387,7 @@
   import { LoginWebService } from "../../service/login-web-service"
   import { DiamondWebService } from "../../service/diamond-web-service"
   import { UniverseWebService } from "../../service/universe-web-service"
+  import { DiamondService } from "../../../service/diamond-service"
 
   import logo from "../../html/images/logo.png"
   import { ethers } from "ethers"
@@ -410,6 +400,8 @@
     let loginWebService = ContainerService.getInstance(LoginWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let diamondWebService = ContainerService.getInstance(DiamondWebService)
+    let diamondService = ContainerService.getInstance(DiamondService)
+
     let env = ContainerService.getInstance("env")()
     let discord = ContainerService.getInstance("discord")
 
@@ -451,15 +443,37 @@
 
     const linkUserClicked = async (e) => {
 
-      let result = await loginWebService.confirmOwnership(authInfo)
+      try {
 
-      if (result.status == 500) {
-        $f7.dialog.alert(undefined, "There was an error")
-      } else {
-        $f7.dialog.alert(undefined, "Success!")
+        if (!walletService.provider) {
+            await walletService.initProvider()
+        }
+
+        if (!walletService.provider) throw new Error("No wallet connection detected. Install Metamask or another Ethereum compatible wallet.")
+
+        if (!walletService.wallet) {
+          await walletService.connect()
+        }
+    
+        let wallet = await walletService.getWallet()
+
+        if (!wallet) throw new Error("Unable to connect to wallet.")
+
+        let result = await loginWebService.confirmOwnership(wallet)
+
+        if (result.status == 500) {
+          throw new Error("Error processing request")
+        } else {
+          $f7.dialog.alert(undefined, "Success!")
+        }
+
+        window.location.reload()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message, "There was an error")
       }
 
-      window.location.reload()
+
 
     }
 
@@ -470,11 +484,7 @@
         //Get signed mint pass
         let mintPass = authInfo.diamondMintPasses.find( mp => mp._id == $(e.target).data('id') )
 
-        if (mintPass.tokenId) {
-          await diamondWebService.withdraw(mintPass)
-        } else {
-          await diamondWebService.mint(mintPass)
-        }
+        await diamondWebService.mint(mintPass)
 
         await loadUser()
         await $update()
@@ -486,7 +496,7 @@
 
     }
 
-    const mintDiamondsClick = async (e) => {
+    const createMintPassClick = async (e) => {
       
       try {
 
@@ -525,21 +535,52 @@
 
 
     }
-
-
-
     
+    const depositClick = async (e) => {
+
+        const dialog = $f7.dialog.prompt(`<span style="text-align: left;">Click ok to begin a deposit<br /><br /> 
+
+        Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.
+
+        `, "Deposit", async (value) => {
+
+            try {
+                
+                let v = ethers.parseUnits( value.toString()  , 'ether')
+
+                console.log(v)
+
+                // let diamondBalance = ethers.formatUnits(authInfo.diamondBalance)
+
+                // if (value < 0 ) throw new Error("Value must be positive")
+                // if (value > diamondBalance) throw new Error("🔷 exceeds balance")
+
+
+                let result = await diamondService.deposit(authInfo.address,  v)
+
+                if (result.hash) {
+                    $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+                }
+                
+            } catch(ex) {
+                console.log(ex)
+                $f7.dialog.alert(ex.message, "Invalid value")
+            }
+            
+        }, ()=>{}, 0)
+
+        dialog.$el.find('input').attr('type', 'number')
+
+
+    }
+
+
     const loadUser = async (force) => {
       authInfo = await loginWebService.getAuthInfo(force)
     }
 
-
     const withdrawClick = async (e) => {
       await universeWebService.withdraw()
-    }
-
-    const updateMetadataClick = async (e) => {
-      await universeWebService.updateMetadata()
     }
 
     const loginWithWallet = async (e) => {
@@ -634,10 +675,18 @@
 
       $('.logged-in-popup').on('popup:opened', async (e) => {
             $f7.preloader.show()
-            await loadUser(true)
+            checkForMintPassProcessing()
             await $update()
             $f7.preloader.hide()
       })
+
+
+      $('.logged-in-popup').on('popup:closed', async (e) => {
+
+        console.log('closed')
+
+      })
+
 
 
     })

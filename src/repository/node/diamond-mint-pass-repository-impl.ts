@@ -2,6 +2,7 @@ import {  injectable } from "inversify"
 import { DiamondMintPassRepository } from "../diamond-mint-pass-repository.js"
 import { DiamondMintPass } from "../../dto/diamond-mint-pass.js"
 import { Op } from "sequelize"
+import { User } from "../../dto/user.js"
 
 
 @injectable()
@@ -12,12 +13,12 @@ class DiamondMintPassRepositoryNodeImpl implements DiamondMintPassRepository {
         return DiamondMintPass.findByPk(id, options)
     }
 
-    async getUnmintedByAddress(address:string, options?:any): Promise<DiamondMintPass[]> {
+    async getUnmintedByUser(user:User, options?:any): Promise<DiamondMintPass[]> {
 
         let queryOptions = {
             where: {
                 [Op.and]: {
-                    to: address,
+                    toUserId: user._id,
                     processedTransactionId: null
                 }
             },
@@ -28,11 +29,11 @@ class DiamondMintPassRepositoryNodeImpl implements DiamondMintPassRepository {
 
     }
 
-    async getByAddress(address:string, options?:any): Promise<DiamondMintPass[]> {
+    async getByUser(user:User, options?:any): Promise<DiamondMintPass[]> {
 
         let queryOptions = {
             where: {
-                to: address
+                toUserId: user._id
             },
             order: [['_id', 'DESC']]
         }
@@ -41,32 +42,7 @@ class DiamondMintPassRepositoryNodeImpl implements DiamondMintPassRepository {
 
     }
 
-    async getUnmintedByTeamId(teamId:string, options?:any): Promise<DiamondMintPass[]> {
 
-        let queryOptions = {
-            where: {
-                teamId: teamId,
-                processedTransactionId: null
-            },
-            order: [['dateCreated', 'DESC']]
-        }
-
-        return DiamondMintPass.findAll(Object.assign(queryOptions, options))
-
-    }
-
-    async getByTokenId(tokenId:number, options?:any): Promise<DiamondMintPass[]> {
-
-        let queryOptions = {
-            where: {
-                tokenId: tokenId
-            },
-            order: [['dateCreated', 'DESC']]
-        }
-
-        return DiamondMintPass.findAll(Object.assign(queryOptions, options))
-
-    }
 
     async put(dmp:DiamondMintPass, options?:any): Promise<DiamondMintPass> {
         return dmp.save(options)

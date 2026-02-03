@@ -1504,84 +1504,6 @@ let startWebServer = async () => {
 
   })
 
-  // app.get('/api/team/lineup/:teamId', async function (req, res) {
-
-  //   try {
-
-  //     let teamId = req.params.teamId
-  //     let team: Team = await teamService.get(teamId)
-
-  //     const getTeamBundle = async (theTeam) => {
-        
-  //       let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(theTeam, season)
-  //       let tlsPlain:TeamLeagueSeason = tls.get( { plain: true })
-
-  //       let pls: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeam(theTeam)
-  //       let plsPlain = pls.map( pls => pls.get({ plain: true}))
-
-  //       let startingPitcher: RotationPitcher = teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plsPlain)
-
-  //       return {
-  //         tls: tls,
-  //         tlsPlain: tlsPlain,
-  //         plss: pls,
-  //         plssPlain: plsPlain,
-  //         startingPitcher: startingPitcher,
-  //         team: theTeam
-  //       }
-
-  //     }
-
-  //     let season:Season = await seasonService.getMostRecent()
-
-  //     let teamBundle = await getTeamBundle(team)
-
-      
-  //     teamService.validateLineup(team, teamBundle.tls.lineups[0], teamBundle.plssPlain, teamBundle.startingPitcher)
-
-  //     const lineup = teamBundle.tls.lineups[0].order
-  //       .map(p => {
-
-  //         let pls 
-
-  //         if (p.position == Position.PITCHER) {
-  //           pls = teamBundle.plss.find(x => x.playerId === teamBundle.startingPitcher._id)!
-  //         } else {
-  //           pls = teamBundle.plss.find(x => x.playerId === p._id)!
-  //         }
-          
-  //         const pl = pls.get({ plain: true })
-  //         return {
-  //           _id: pl.playerId,
-  //           displayRating: pl.player.displayRating,
-  //           fullName: `${pl.player.firstName} ${pl.player.lastName}`,
-  //           firstName: pl.player.firstName,
-  //           lastName: pl.player.lastName,
-  //           primaryPosition: pl.primaryPosition,
-  //           throws: pl.player.throws,
-  //           hits: pl.player.hits,
-  //           lastGamePlayed: pl.player.lastGamePlayed,
-  //           lastGamePitched: pl.player.lastGamePitched,
-  //           stamina: pl.player.stamina
-  //         }
-  //       })
-
-
-  //     res.json({
-  //       lineup: lineup,
-  //       startingPitcher: teamBundle.startingPitcher
-  //     })
-
-  //     return 
-      
-
-  //   } catch (ex) {
-  //       res.status(500)
-  //       res.send(ex.message)
-  //   }
-
-  // })
-
   app.post('/api/team/roster/:teamId', async function (req, res) {
 
     try {
@@ -1628,7 +1550,7 @@ let startWebServer = async () => {
 
   })
 
-  app.get('/api/team/withdraw/:teamId', async function (req, res) {
+  app.get('/api/team/mint', async function (req, res) {
 
     try {
 
@@ -1640,8 +1562,13 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(loggedInUser)
-      // let owner: Owner = await ownerService.get(user.address)
-      let team: Team = await teamService.get(req.params.teamId)
+      let teams: Team[] = await teamService.getByUser(user)
+      let team = teams[0]
+
+      if (!user.address) {
+        return res.sendStatus(401)
+      }
+
       let season:Season = await seasonService.getMostRecent()
 
       if (team == undefined || user._id != team.userId) {
@@ -1661,7 +1588,7 @@ let startWebServer = async () => {
         
         let options = { transaction: t1 }
 
-        mintPass = await diamondMintPassService.generateWithdrawPass(team.userId, team._id, BigInt(balance).toString(), options)
+        mintPass = await diamondMintPassService.generateMintPass(team.userId, user.address, BigInt(balance).toString(), options)
 
         let offChainEventTransactionId = uuidv4()
         await offchainEventService.createTeamBurnEvent(team._id, balance, offChainEventTransactionId, options)
@@ -1679,43 +1606,6 @@ let startWebServer = async () => {
       })
 
       return res.json(mintPass)
-
-    } catch (ex) {
-      console.log(ex)
-      res.sendStatus(404)
-    }
-
-  })
-
-  app.get('/api/team/team-mint-pass/:teamId', async function (req, res) {
-
-    try {
-
-      //@ts-ignore
-      let loggedInUser = req.session?.passport?.user
-
-      if (!loggedInUser) {
-        return res.sendStatus(401)
-      }
-
-      let teamId = req.params.teamId
-
-      let user: User = await userService.get(loggedInUser)
-
-      if (!user.address) {
-        return res.sendStatus(401)
-      }
-
-      let teamMintPasses = await teamMintPassService.getByAddressAndTeamId(user.address, teamId)
-
-      let diamondPass = teamMintPasses.find( mp => mp.totalDiamonds != undefined)
-      let ethPass = teamMintPasses.find( mp => mp.ethCost != undefined)
-
-      return res.json({
-        eth: ethPass,
-        diamond: diamondPass
-      })
-
 
     } catch (ex) {
       console.log(ex)

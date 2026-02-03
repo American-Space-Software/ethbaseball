@@ -39,13 +39,13 @@ class TeamWebService {
 
     // }
 
-    async getTeamMintPass(tokenId:number) {
+    // async getTeamMintPass(tokenId:number) {
         
-        //Download it.
-        let result = await axios.get(`/api/team/team-mint-pass/${tokenId}`)
-        return result.data
+    //     //Download it.
+    //     let result = await axios.get(`/api/team/team-mint-pass/${tokenId}`)
+    //     return result.data
 
-    }
+    // }
 
 
     async getGameLog(teamId:string, date:Date) {

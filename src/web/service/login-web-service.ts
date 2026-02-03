@@ -57,12 +57,8 @@ class LoginWebService {
 
     }
 
-    async confirmOwnership() {
+    async confirmOwnership(wallet) {
 
-        await this.walletService.connect()
-    
-        let wallet = await this.walletService.getWallet()
-    
         let sResult:any = await axios.get(`/auth/token/${wallet.address}`)
         let signatureToken:any = sResult.data
 

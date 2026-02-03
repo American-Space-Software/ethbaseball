@@ -227,7 +227,7 @@ interface DiamondsContract {
   balanceOf(address:string) : Promise<bigint>
   grantRole(role:string, address:string): Promise<any>
   hasRole(role:string, address:string): Promise<boolean>
-  withdraw(to:string, mintPassId:number, amount:string, tokenId:number, expires:number, v:number, r:string, s:string) : Promise<any>
+  mint(to:string, mintPassId:number, amount:string, expires:number, v:number, r:string, s:string) : Promise<any>
   deposit(from:string, amount:bigint, teamId:number) : Promise<any>
 }
 

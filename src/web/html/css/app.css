@@ -126,20 +126,25 @@ html {
   text-align: right;
 }
 
-.matchup img {
+.matchup .icon {
   grid-row: 1 / span 3;
+  width: 50px;
+  height: 50px;
+  position: relative;
+}
+
+.matchup img {
   width: 50px;
   height: 50px;
   background: white;
   border-radius: 50%;
-
 }
 
 .dark .matchup img {
   background: black;
 }
 
-.matchup .matchup-detail.away img {
+.matchup .matchup-detail.away .icon {
   grid-column: 2;
 }
 
@@ -468,20 +473,20 @@ h1 {
 
 
 
-.players .badge.color-red, .players .badge.color-orange, .player-info .badge.color-red, .player-info .badge.color-orange {
+.badge.color-red,  .badge.color-orange  {
   color: #fff;
 }
 
-.dark .players .badge.color-red, .dark .players .badge.color-orange, .dark .player-info .badge.color-red, .dark .player-info .badge.color-orange {
+.dark .badge.color-red, .dark  .badge.color-orange {
   color: #000;
 }
 
 
-.players .badge.color-yellow, .players .badge.color-green, .player-info .badge.color-yellow, .player-info .badge.color-green {
+.badge.color-yellow, .badge.color-green {
   color: #000;
 }
 
-.players .badge.color-blue, .player-info .badge.color-blue {
+.badge.color-blue, .badge.color-blue {
   color: #fff;
 }
 

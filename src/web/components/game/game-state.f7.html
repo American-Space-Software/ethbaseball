@@ -78,9 +78,9 @@
 
                           <span class="icon">
                             <img src="/player/image/${p._id}" />
-                            ${p.displayRating ? $h`
-                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
-                                ${p.displayRating.toFixed(0) }
+                            ${p.displayRating?.before ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating.before)}">
+                                ${p.displayRating.before.toFixed(0) }
                               </span>
                             ` : $h` `}
                           </span>
@@ -324,9 +324,9 @@
                         
                           <span class="icon">
                             <img src="/player/image/${p._id}" />
-                            ${p.displayRating ? $h`
-                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
-                                ${p.displayRating.toFixed(0) }
+                            ${p.displayRating?.before ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating.before)}">
+                                ${p.displayRating.before.toFixed(0) }
                               </span>
                             ` : $h` `}
                           </span>
@@ -360,8 +360,16 @@
             <div class="matchup-detail away" style="background-color: ${vm.game.away.color1}; color: ${getFontColor(vm.game.away.color1)};">
 
               ${vm.awayPlayer ? $h`
+                
+                  <span class="icon">
+                    <img src="/player/image/${vm.awayPlayer._id}" />
+                    ${vm.awayPlayer.displayRating?.before ? $h`
+                      <span class="badge ${playerWebService.getRatingBadgeColor(vm.awayPlayer.displayRating.before)}">
+                        ${vm.awayPlayer.displayRating.before.toFixed(0) }
+                      </span>
+                    ` : $h` `}
+                  </span>
 
-                  <img src="/player/image/${vm.awayPlayer._id}" /> 
                   
                   <div class="label">${vm.awayPlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
                   <a href="/p/${vm.awayPlayer._id}" class="player" style="color: ${getFontColor(vm.awayPlayer.color1)};">${vm.awayPlayer.fullName}</a>
@@ -385,8 +393,16 @@
             <div class="matchup-detail" style="background-color: ${vm.game.home.color1}; color: ${getFontColor(vm.game.home.color1)};">
 
               ${vm.homePlayer ? $h`
-              
-                <img src="/player/image/${vm.homePlayer._id}" /> 
+
+                <span class="icon">
+                  <img src="/player/image/${vm.homePlayer._id}" />
+                  ${vm.homePlayer.displayRating?.before ? $h`
+                    <span class="badge ${playerWebService.getRatingBadgeColor(vm.homePlayer.displayRating.before)}">
+                      ${vm.homePlayer.displayRating.before.toFixed(0) }
+                    </span>
+                  ` : $h` `}
+                </span>
+
                   
                 <div class="label">${vm.homePlayer._id == vm.pitcher?._id ? "Pitching" : "At Bat"}</div>
                 <a href="/p/${vm.homePlayer._id}" class="player" style="color: ${getFontColor(vm.homePlayer.color1)};">${vm.homePlayer.fullName}</a>

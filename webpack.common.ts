@@ -173,12 +173,6 @@ let browserConfig = {
             "background_color": "#0a3161",
             "icons": [
               {
-                "src": "ebl-app-icon.svg",
-                "sizes": "any",
-                "type": "image/svg+xml",
-                "purpose": "any"
-              },
-              {
                 "src": "ebl-192.png",
                 "sizes": "192x192",
                 "type": "image/png",
@@ -189,7 +183,8 @@ let browserConfig = {
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "any"
-              },
+              }
+
             ],
     
             "start_url": "/",

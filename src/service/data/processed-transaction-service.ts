@@ -576,17 +576,9 @@ class ProcessedTransactionService {
                 processedEvent.namedArgs.amount = processedEvent.args[2]
                 break
 
-            case "WithdrawFromTeam":
-                processedEvent.namedArgs.toAddress = processedEvent.args[0]
-                processedEvent.namedArgs.mintPassId = processedEvent.args[1]
-                processedEvent.namedArgs.amount = processedEvent.args[2]
-                processedEvent.namedArgs.tokenId = processedEvent.args[3]
-                break
-
             case "DepositToTeam":
                 processedEvent.namedArgs.fromAddress = processedEvent.args[0]
-                processedEvent.namedArgs.tokenId = processedEvent.args[1]
-                processedEvent.namedArgs.amount = processedEvent.args[2]
+                processedEvent.namedArgs.amount = processedEvent.args[1]
                 break
         }
 
@@ -646,8 +638,7 @@ class ProcessedTransactionService {
         let approval = ethers.id("Approval(address,address,uint256)")
         let approvalForAll = ethers.id("ApprovalForAll(address,address,bool)")
 
-        let withdrawFromTeam  = ethers.id("WithdrawFromTeam(address,uint256,uint256,uint256)")
-        let depositToTeam = ethers.id("DepositToTeam(address,uint256,uint256)")
+        let depositToTeam = ethers.id("DepositToTeam(address,uint256)")
         let mintReward = ethers.id("MintReward(address,uint256,uint256)")
 
         let roleGranted = ethers.id("RoleGranted(bytes32,address,address)")
@@ -664,7 +655,6 @@ class ProcessedTransactionService {
         if (hash === approvalForAll) return "ApprovalForAll";
 
         // Custom Diamonds contract events
-        if (hash === withdrawFromTeam) return "WithdrawFromTeam";
         if (hash === depositToTeam) return "DepositToTeam";
         if (hash === mintReward) return "MintReward";
     }

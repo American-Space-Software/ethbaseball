@@ -18,25 +18,25 @@ class DiamondWebService {
         this.rank = 1
     }
 
-    async getWithdrawPass(tokenId:string) {
+    async getMintPass() {
     
         //Download it.
-        let result = await axios.get(`/api/team/withdraw/${tokenId}`)
+        let result = await axios.get(`/api/team/mint`)
         return result.data
     }
 
-    async withdraw(mintPass:MintPass) {
-        return this.diamondService.withdraw(mintPass.to, mintPass._id, mintPass.amount, mintPass.tokenId, mintPass.expires, mintPass.v, mintPass.r, mintPass.s)
+    async mint(mintPass:MintPass) {
+        return this.diamondService.mint(mintPass.toAddress, mintPass._id, mintPass.amount, mintPass.expires, mintPass.v, mintPass.r, mintPass.s)
     }
 
 }
 
 interface MintPass {
-    to: string
+    toAddress: string
+    toUserId:string
     _id: number
     amount: string
     expires: number
-    tokenId:number
     v: number
     r: string 
     s: string

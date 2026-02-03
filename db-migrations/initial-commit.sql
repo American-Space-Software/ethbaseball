@@ -920,7 +920,7 @@ DROP TABLE IF EXISTS `diamond_mint_pass`;
 CREATE TABLE `diamond_mint_pass` (
   `_id` varchar(255) NOT NULL,
   `toUserId` varchar(255) NOT NULL,
-  `teamId` int DEFAULT NULL,
+  `toAddress` varchar(255) NOT NULL,
   `amount` varchar(255) NOT NULL,
   `expires` int DEFAULT NULL,
   `r` varchar(255) DEFAULT NULL,

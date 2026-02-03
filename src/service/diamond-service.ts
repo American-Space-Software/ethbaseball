@@ -34,12 +34,8 @@ class DiamondService {
     }
 
 
-    async withdraw(to: string, mintPassId: number, amount: string, tokenId: number, expires: number, v: number, r: string, s: string) {
-        return this.diamondsContract.withdraw(to, mintPassId, amount, tokenId, expires, v, r, s)
-    }
-
-    async deposit(from: string, amount: string, tokenId: number) {
-        return this.diamondsContract.deposit(from, amount, tokenId)
+    async deposit(from: string, amount: string) {
+        return this.diamondsContract.deposit(from, amount)
     }
 
     async mint(to: string, mintPassId: number, amount: string, expires: number, v: number, r: string, s: string) {

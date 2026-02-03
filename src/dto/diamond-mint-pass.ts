@@ -15,9 +15,9 @@ class DiamondMintPass extends Model {
     
     @Column(DataType.STRING)
     declare toUserId:string
-    
+
     @Column(DataType.STRING)
-    declare teamId:string 
+    declare toAddress:string
     
     @Column(DataType.STRING)
     declare amount:string 

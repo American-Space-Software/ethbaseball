@@ -4,6 +4,7 @@ import { DiamondMintPassRepository } from "../../repository/diamond-mint-pass-re
 import { DiamondMintPass } from "../../dto/diamond-mint-pass.js";
 import random from 'crypto-random-bigint';
 import dayjs from "dayjs";
+import { User } from "../../dto/user.js";
 
 
 @injectable()
@@ -15,34 +16,11 @@ class DiamondMintPassService {
     constructor(
     ) {}
 
-    async getUnmintedByAddress(address:string, options?:any): Promise<DiamondMintPass[]> {
-        return this.diamondMintPassRepository.getUnmintedByAddress(address, options)
+    async getUnmintedByUser(user:User, options?:any): Promise<DiamondMintPass[]> {
+        return this.diamondMintPassRepository.getUnmintedByUser(user, options)
     }
 
-    async getUnmintedByTeamId(teamId:string, options?:any): Promise<DiamondMintPass[]> {
-        return this.diamondMintPassRepository.getUnmintedByTeamId(teamId, options)
-    }
-
-    async generateWithdrawPass(toUserId:string, teamId:string, amount:string, options?:any): Promise<DiamondMintPass> {
-
-        let expires = dayjs(new Date(new Date().toUTCString())).add(1, 'year').toDate().getTime() / 1000
-
-        let mintPass = new DiamondMintPass()
-
-        Object.assign(mintPass, {
-            _id: random(256).toString(),
-            to:toUserId,
-            teamId: teamId,
-            amount: amount,
-            expires: expires
-        })
-
-        await this.diamondMintPassRepository.put(mintPass, options)
-
-        return mintPass
-    }
-
-    async generateMintPass(toUserId:string, amount:string, options?:any): Promise<DiamondMintPass> {
+    async generateMintPass(toUserId:string, toAddress:string, amount:string, options?:any): Promise<DiamondMintPass> {
 
         let expires = dayjs(new Date(new Date().toUTCString())).add(1, 'year').toDate().getTime() / 1000
 
@@ -51,6 +29,7 @@ class DiamondMintPassService {
         Object.assign(mintPass, {
             _id: random(256).toString(),
             toUserId:toUserId,
+            toAddress: toAddress,
             amount: amount,
             expires: expires
         })
@@ -68,12 +47,8 @@ class DiamondMintPassService {
         return this.diamondMintPassRepository.put(dmp, options)
     }
 
-    async getByTokenId(tokenId:number, options?:any): Promise<DiamondMintPass[]> {
-        return this.diamondMintPassRepository.getByTokenId(tokenId, options)
-    }
-
-    async getByAddress(address:string, options?:any): Promise<DiamondMintPass[]> {
-        return this.diamondMintPassRepository.getByAddress(address, options)
+    async getByUser(user:User, options?:any): Promise<DiamondMintPass[]> {
+        return this.diamondMintPassRepository.getByUser(user, options)
     }
 
 

@@ -28,17 +28,25 @@ self.addEventListener('activate', (event) => {
 })
 
 registerRoute(
-  ({ request }) =>
-    request.destination === 'script' ||
-    request.destination === 'style' ||
-    request.destination === 'font' ||
-    request.destination === 'manifest' ||
-    request.destination === 'image',
+  ({ request, url }) =>
+    url.origin === self.location.origin && (
+      request.destination === 'script' ||
+      request.destination === 'style' ||
+      request.destination === 'font' ||
+      request.destination === 'manifest' ||
+      request.destination === 'image'
+    ),
   new StaleWhileRevalidate({
     cacheName: 'static-resources',
-    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 })]
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 200,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
   })
 )
+
 
 const isAuthPath = (pathname: string) => {
   if (!pathname.startsWith(baseURI)) return false

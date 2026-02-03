@@ -10,7 +10,7 @@ import { IPFSService } from "../service/ipfs-service.js"
 import { Universe } from "../dto/universe.js"
 import { LadderService } from "../service/ladder-service.js"
 import dayjs from "dayjs"
-import { UniverseIndexerService } from "../service/universe-indexer-service.js"
+import { ERCIndexResult, UniverseIndexerService } from "../service/universe-indexer-service.js"
 import { UniverseContractService } from "../service/universe-contract-service.js"
 import { ContractState } from "../dto/contract-state.js"
 import { ProcessedEvent, ProcessedTransaction, ProcessedTransactionToken, ProcessedTransactionTrader } from "../dto/processed-transaction.js"
@@ -221,8 +221,12 @@ let startEngine = async () => {
   
   const indexerLoop = async () => {
 
-    //Process on-chain transactions
-    await universeIndexerService.runUniverseIndexer()
+    let indexResult:ERCIndexResult
+
+    do {
+      indexResult = await universeIndexerService.runUniverseIndexer()
+    } while(indexResult.blockNumber && indexResult.blockNumber != indexResult.endBlock);
+
 
     console.log(`Indexer loop complete...waiting...`)
 

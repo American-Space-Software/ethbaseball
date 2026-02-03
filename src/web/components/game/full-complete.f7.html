@@ -267,9 +267,9 @@
 
                           <span class="icon">
                             <img src="/player/image/${p._id}" />
-                            ${p.displayRating ? $h`
-                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
-                                ${p.displayRating.toFixed(0) }
+                            ${p.displayRating?.before ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating.before)}">
+                                ${p.displayRating.before.toFixed(0) }
                               </span>
                             ` : $h` `}
                           </span>
@@ -326,9 +326,9 @@
                         <td class="image">
                           <span class="icon">
                             <img src="/player/image/${p._id}" />
-                            ${p.displayRating ? $h`
-                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
-                                ${p.displayRating.toFixed(0) }
+                            ${p.displayRating?.before ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating?.before)}">
+                                ${p.displayRating?.before.toFixed(0) }
                               </span>
                             ` : $h` `}
                           </span>

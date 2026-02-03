@@ -304,161 +304,93 @@
       return (mp?.r && mp.s && mp.v)
     }
 
-    const mintPassClick = async (e) => {
+    // const mintPassClick = async (e) => {
 
-        try {
+    //     try {
 
-            //Get signed mint pass
-            let mintPass = teamComponentService.team.diamondMintPasses.find(mp => mp._id == $(e.target).data('id'))
+    //         //Get signed mint pass
+    //         let mintPass = teamComponentService.team.diamondMintPasses.find(mp => mp._id == $(e.target).data('id'))
 
-            let result = await diamondWebService.withdraw(mintPass)
+    //         let result = await diamondWebService.withdraw(mintPass)
 
-            if (result.hash) {
-                $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
-            }
+    //         if (result.hash) {
+    //             $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+    //         }
 
-        } catch (ex) {
-            $f7.dialog.alert(ex.reason, "There was an error")
-            console.log(ex)
-        }
+    //     } catch (ex) {
+    //         $f7.dialog.alert(ex.reason, "There was an error")
+    //         console.log(ex)
+    //     }
 
 
-    }
+    // }
 
-    const withdrawClick = async (e) => {
+    // const withdrawClick = async (e) => {
 
-        try {
+    //     try {
 
-                let confirmMessage = `
+    //             let confirmMessage = `
 
-        <div style="text-align: left;">
+    //     <div style="text-align: left;">
 
-        <p>Creates a mint pass for ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} and clears the team's diamond balance.</p>
+    //     <p>Creates a mint pass for ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} and clears the team's diamond balance.</p>
 
-        <ul style="padding-left: 15px;">
-            <li>Redeemable on-chain only</li>
-            <li>Expires in 1 year</li>
-            <li>Non-reversible</li>
-        </ul>
+    //     <ul style="padding-left: 15px;">
+    //         <li>Redeemable on-chain only</li>
+    //         <li>Expires in 1 year</li>
+    //         <li>Non-reversible</li>
+    //     </ul>
 
-        Continue?
+    //     Continue?
 
-        </div>
+    //     </div>
 
-                `
+    //             `
 
-                $f7.dialog.confirm(confirmMessage, "Withdraw", async () => {
+    //             $f7.dialog.confirm(confirmMessage, "Withdraw", async () => {
                 
-                //Get signed mint pass
-                let mintPass = await diamondWebService.getWithdrawPass(tokenId)
+    //             //Get signed mint pass
+    //             let mintPass = await diamondWebService.getWithdrawPass(tokenId)
 
-                await checkForMintPassProcessing()
+    //             await checkForMintPassProcessing()
 
-                })
-
-
-            } catch(ex) {
-                $f7.dialog.alert(ex.reason, "There was an error")
-                console.log(ex)
-            }
+    //             })
 
 
+    //         } catch(ex) {
+    //             $f7.dialog.alert(ex.reason, "There was an error")
+    //             console.log(ex)
+    //         }
 
 
 
-        try {
-
-            // let mintInfo = await teamWebService.withdraw(teamComponentService.team.tokenId)
 
 
+    //     try {
 
-            // let result = await diamondService.withdraw(mintInfo.to, mintInfo._id, mintInfo.amount, mintInfo.tokenId, mintInfo.expires, mintInfo.v, mintInfo.r, mintInfo.s)
+    //         // let mintInfo = await teamWebService.withdraw(teamComponentService.team.tokenId)
 
-            // if (result.hash) {
-            //     $f7.popup.close('.front-office-popup')
-            //     $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
-            // }
 
-        } catch (ex) {
-            $f7.dialog.alert(ex.reason, "There was an error")
-            console.log(ex)
-        }
 
-    }
+    //         // let result = await diamondService.withdraw(mintInfo.to, mintInfo._id, mintInfo.amount, mintInfo.tokenId, mintInfo.expires, mintInfo.v, mintInfo.r, mintInfo.s)
+
+    //         // if (result.hash) {
+    //         //     $f7.popup.close('.front-office-popup')
+    //         //     $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+    //         // }
+
+    //     } catch (ex) {
+    //         $f7.dialog.alert(ex.reason, "There was an error")
+    //         console.log(ex)
+    //     }
+
+    // }
 
     const parseFloatWithException = (theStr) => {
 
         let result = parseFloat(theStr)
         if (isNaN(result)) throw new Error("Error parsing number.")
         return result
-
-    }
-
-    const depositClick = async (e) => {
-
-
-        // const dialog = $f7.dialog.create({
-        //     title: 'Deposit',
-        //     text: `Click ok to begin a deposit<br /><br />Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.`,
-        //     content: `<div class="dialog-input-field item-input">
-        //                 <div class="item-input-wrap">
-        //                     <input class="dialog-input" type="tel" placeholder="Enter number" required validate pattern="[0-9]*" data-error-message="Only numbers please!">
-        //                 </div>
-        //             </div>`,
-        //     buttons: [
-        //         { 
-        //             text: 'Cancel',
-        //             onClick: () => {}
-        //         },
-        //                         { 
-        //         text: 'Continue',
-        //             onClick: () => {
-        //                 console.log(dialog.$el.find('.dialog-input').val())
-        //                 throw new Error("Bla")
-        //             }
-        //         }
-        //     ],
-        //     on: {
-        //         open: function () {
-
-        //         }
-        //     }
-        // }).open()
-
-
-        const dialog = $f7.dialog.prompt(`<span style="text-align: left;">Click ok to begin a deposit<br /><br /> 
-
-        Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.
-
-        `, "Deposit", async (value) => {
-
-            try {
-                
-                let v = ethers.parseUnits( value.toString()  , 'ether')
-
-                console.log(v)
-
-                // let diamondBalance = ethers.formatUnits(authInfo.diamondBalance)
-
-                // if (value < 0 ) throw new Error("Value must be positive")
-                // if (value > diamondBalance) throw new Error("🔷 exceeds balance")
-
-                let result = await diamondService.deposit(authInfo.address, v, tokenId)
-
-                if (result.hash) {
-                    $f7.popup.close('.front-office-popup')
-                    $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
-                }
-                
-            } catch(ex) {
-                console.log(ex)
-                $f7.dialog.alert(ex.message, "Invalid value")
-            }
-            
-        }, ()=>{}, 0)
-
-        dialog.$el.find('input').attr('type', 'number')
-
 
     }
 
