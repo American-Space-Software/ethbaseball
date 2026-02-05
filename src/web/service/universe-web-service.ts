@@ -112,18 +112,45 @@ class UniverseWebService {
     }
 
     displayDiamonds(value) {
-        if (!value) return
-        let diamonds = ethers.formatUnits(value)
 
-        return `${new Intl.NumberFormat( 'en-US', { maximumFractionDigits: 0 }).format(parseFloat(diamonds))} 🔷`
+        if (value == null) return
+
+        const diamonds = ethers.formatUnits(value) 
+
+        const num = Number(diamonds)
+        if (!Number.isFinite(num)) return `${diamonds} 🔷`
+
+        const decimalPlaces = this.countDecimalPlaces(diamonds)
+
+        return `${new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: Math.min(decimalPlaces, 18)
+        }).format(num)} 🔷`
     }
+
 
     displayDiamondsNoSymbol(value) {
-        if (!value) return
-        let diamonds = ethers.formatUnits(value)
+        if (value == null) return
 
-        return `${new Intl.NumberFormat( 'en-US', { maximumFractionDigits: 0 }).format(parseFloat(diamonds))}`
+        const diamonds = ethers.formatUnits(value)
+
+        const num = Number(diamonds)
+        if (!Number.isFinite(num)) return `${diamonds}`
+
+        const decimalPlaces = this.countDecimalPlaces(diamonds)
+
+        return `${new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: Math.min(decimalPlaces, 18)
+        }).format(num)}`
     }
+
+    private countDecimalPlaces(diamonds:string) {
+        const [, decimals = ""] = diamonds.split(".")
+        const trimmedDecimals = decimals.replace(/0+$/, "")
+        return trimmedDecimals.length
+    }
+
 
     displayETH(value) {
         if (!value) return "0 ETH"

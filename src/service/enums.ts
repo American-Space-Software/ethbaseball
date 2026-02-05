@@ -1352,8 +1352,8 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
 
 interface OffChainEventSource {
     type:string
-    rewardType:string
-    fromDate:Date
+    rewardType?:string
+    fromDate?:Date
 }
 
 interface RewardPerTeam {

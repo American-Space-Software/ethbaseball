@@ -2853,22 +2853,7 @@ td.action, th.action {
   margin-left: 25px;
 }
 
-.event-list li {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  list-style-type: disc;
-  white-space: wrap;
-  font-size: .85em;
-}
 
-.event-list .transaction-info {
-  font-size: .75em;
-}
-
-.event-list .label {
-  width: 75px;
-  font-weight: bold;
-}
 
 .owner-info {
   font-size: .85em;
@@ -2886,9 +2871,6 @@ td.action, th.action {
   text-align: right;
 }
 
-.onchain-events a {
-  font-weight: bold;
-}
 
 .main-banner {
   display: flex;
@@ -3278,7 +3260,6 @@ td.action, th.action {
 }
 
 .transaction-event-row + .transaction-event-row {
-  border-top: 1px solid var(--f7-list-item-border-color, #e5e5e5);
   margin-top: 6px;
 }
 
@@ -3302,3 +3283,4 @@ td.action, th.action {
   opacity: 0.8;
   margin-top: 2px;
 }
+

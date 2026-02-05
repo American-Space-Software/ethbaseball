@@ -17,12 +17,7 @@
 
                 ${onChainEvents?.transactions?.length > 0 ? $h`
 
-                    <div class="card card-outline card-header-divider">
-                        <div class="card-header">On-chain Events</div>
-                        <div class="card-content">
-                            <${OnChainEvents} events="${onChainEvents}" />
-                        </div>
-                    </div>
+                    <${OnChainEvents} events="${onChainEvents}" />
 
                     
                 ` : $h` 

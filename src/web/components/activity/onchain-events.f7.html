@@ -1,135 +1,231 @@
 <template>
 
+      <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios inset">
+        <ul>
+          ${onChainEvents.transactions?.map(tx => $h`
+            <li class="transaction-li">
+              <a class="item-link item-content" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${tx.transaction._id}" target="_blank" rel="noopener">
+                <div class="item-inner">
 
-    <div class="list list-dividers-ios onchain-events" style="margin-top: 0px;">
-      <ul>
+                  <div class="item-title-row">
+                    <div class="item-title">
+                      ${summarizeTransaction(tx)}
+                    </div>
 
-        ${onChainEvents.transactions?.map( t => $h`
+                  </div>
 
-            <li>
-                <a class="item-link item-content" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${t.transaction._id}">
-                    <div class="item-inner">
-                        <div class="item-title">
-                            <!-- Item header, must be first child of item-title -->
-                            <div class="item-header">
-                                Transaction hash ${ walletService.truncateEthAddress(t.transaction._id) }
+                  <div class="item-subtitle">
+                    ${dayjs.unix(tx.transaction.timestamp).format("ddd, MMM D, YYYY h:mm A")}
+                  </div>
+
+
+                  ${tx.rows?.length ? $h`
+                    <div class="item-text transaction-events">
+                      ${tx.rows.map(row => $h`
+                        <div class="transaction-event-row">
+
+                          <div class="transaction-event-title-row">
+                            <div class="transaction-event-title">
+                              ${row.title}
+                              ${row.teamTokenId ? $h`
+                                <span>
+                                  ${' '}<span class="muted">of</span>
+                                  <a href="/t/${row.teamTokenId}">${getTeamName(row.teamTokenId)}</a>
+                                  <span class="muted">(#${row.teamTokenId})</span>
+                                </span>
+                              ` : $h``}
                             </div>
 
-                            ${t.events?.length > 0 && hasEventName(t.events) ? $h` 
-                                <ul class="event-list">
-                                    ${t.events?.map( oce => $h`
-                                        <li>
-                                            ${getOnChainDescription(oce)} 
-                                            
-                                            ${oce.amount ? $h`${getOnChainTransferAmount(oce)}` : $h` `} 
-                                            ${oce.tokenId ? $h` ${!oce.amount ? 'of ' : ''}  <a href="/t/${oce.tokenId}">${getTeamName(oce.tokenId)}</a> (#${oce.tokenId})` : $h` `}        
-                                            
-                                            ${oce.fromAddress ? $h`
-                                                <div class="transaction-info">
-                                                    <span class="label">From: </span><a href="/u/activity?address=${oce.fromAddress}">${walletService.truncateEthAddress(oce.fromAddress)}</a>
-                                                </div>
-                                            ` : $h` `}
+                            <div class="transaction-event-after">
+                              ${row.amountText ? $h`${row.amountText}` : $h``}
+                            </div>
+                          </div>
 
-                                            ${oce.toAddress ? $h`
-                                                <div class="transaction-info">
-                                                    <span class="label">To: </span><a href="/u/activity?address=${oce.toAddress}">${walletService.truncateEthAddress(oce.toAddress)}</a>
-                                                </div>
-                                            ` : $h` `}
+                          ${(row.fromAddress || row.toAddress || row.note) ? $h`
+                            <div class="transaction-event-fromto">
+                              ${row.fromAddress ? $h`
+                                <a href="/u/activity?address=${row.fromAddress}">
+                                  ${walletService.truncateEthAddress(row.fromAddress)}
+                                </a>
+                              ` : $h``}
 
-                                            ${oce.isMint ? $h`<span class="badge">Mint</span>` : $h` `}
-                                            ${oce.isTransfer ? $h`<span class="badge">Transfer</span>` : $h` `}
-                                        </li>
-                                    `)}
-                                </ul>
-                            ` : $h` `}
+                              ${(row.fromAddress && row.toAddress) ? $h`<span class="event-arrow">→</span>` : $h``}
 
-                            <div class="item-footer">Block # ${t.transaction.blockNumber}</div>
+                              ${row.toAddress ? $h`
+                                <a href="/u/activity?address=${row.toAddress}">
+                                  ${walletService.truncateEthAddress(row.toAddress)}
+                                </a>
+                              ` : $h``}
+
+                              ${row.note ? $h`<span class="badge">${row.note}</span>` : $h``}
+                            </div>
+                          ` : $h``}
+
                         </div>
-                        <div class="item-after small-gray">${dayjs.unix(t.transaction.timestamp).format('ddd, MM/DD h:mm')}</div>
+                      `)}
                     </div>
-                </a>
+                  ` : $h``}
+
+                </div>
+              </a>
             </li>
-
-        `)}
-
-
-      </ul>
-    </div>
-
-
+          `)}
+        </ul>
+      </div>
 
 </template>
 
-
 <script>
+  import { ContainerService } from "../../../service/container-service"
+  import { UniverseWebService } from "../../service/universe-web-service"
+  import dayjs from "dayjs"
 
-    import { ContainerService } from "../../../service/container-service"
-    import { WalletService } from "../../../service/wallet-service"
-    import { LoginWebService } from "../../service/login-web-service"
-    import { UniverseWebService } from "../../service/universe-web-service"
-    import { GameWebService } from "../../service/game-web-service"
+  export default (props, { $on, $f7, $update, $h }) => {
 
-    import logo from "../../html/images/logo.png"
-    import { ethers } from "ethers"
-    import dayjs from "dayjs"
-    import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
+    const env = ContainerService.getInstance("env")()
+    const walletService = ContainerService.getInstance("WalletService")
+    const universeWebService = ContainerService.getInstance(UniverseWebService)
 
-    export default (props, { $on, $f7, $update }) => {
+    const ZERO = "0x0000000000000000000000000000000000000000"
+    const onChainEvents = props.events
 
-        let env = ContainerService.getInstance("env")()
-        let walletService = ContainerService.getInstance("WalletService")
-        let eventTarget = ContainerService.getInstance("eventTarget")
-        let loginWebService = ContainerService.getInstance(LoginWebService)
-        let universeWebService = ContainerService.getInstance(UniverseWebService)
-        let gameWebService = ContainerService.getInstance(GameWebService)
-        let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
-
-        const getOnChainTransferAmount = (oce) => {
-
-            if (oce.event == "DepositToTeam") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
-
-            if (oce.event == "WithdrawFromTeam") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
-
-            if (oce.event == "Transfer") {
-                if (oce.toAddress == "0x0000000000000000000000000000000000000000") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
-                if (oce.fromAddress == "0x0000000000000000000000000000000000000000") return ` of ${universeWebService.displayDiamonds(oce.amount)}`
-            }
-        }
-
-
-        const getOnChainDescription = (oce) => {
-
-            if (oce.event == "DepositToTeam") {
-                if (!oce.offChainEventId) return "Deposit to team (Pending)"
-                return "Deposit to team"
-            }
-
-
-
-            if (oce.event == "WithdrawFromTeam") return "Withdraw from team"
-
-            // if (oce.isMint) {
-            //     if (oce.contractAddress == env.UNIVERSE_ADDRESS) return "Team Minted"
-            //     return "Mint"
-            // }
-            if (oce.isTransfer) return "Transfer"
-            return oce.event
-        }
-
-        const hasEventName = ( events) => {
-            if (events.find( e => e.event != undefined)) return true
-            return false
-        }
-
-
-        let onChainEvents = props.events
-
-
-        const getTeamName = (tokenId) => {
-            let team = onChainEvents.teams?.find( t => t.tokenId == tokenId )
-            if (team) return `${team.cityName} ${team.name}`
-        }
-
-        return $render
+    const getTeamName = (tokenId) => {
+      const team = onChainEvents.teams?.find(t => t.tokenId == tokenId)
+      return team ? `${team.cityName} ${team.name}` : `Team #${tokenId}`
     }
+
+    const isTransfer = (e) => (e?.event === "Transfer" || e?.isTransfer) && (e?.contractType === "DIAMONDS" || e?.contractType == null)
+    const isDeposit = (e) => e?.event === "DepositToTeam"
+    const isReward = (e) => e?.event === "MintReward" || e?.event === "WithdrawFromTeam"
+
+    const sameAmount = (a, b) => a != null && b != null && String(a) === String(b)
+
+    const formatDiamonds = (amount) => universeWebService.displayDiamonds(amount)
+
+    const transferSign = (tr) => {
+      if (!tr?.amount) return ""
+      if (tr.toAddress === ZERO) return "-"
+      return ""
+    }
+
+    // Build tx.rows once per tx 
+    const buildRowsForTx = (tx) => {
+      const events = (tx?.events || []).filter(e => e?.event)
+      const transfers = events.filter(isTransfer)
+      const deposits = events.filter(isDeposit)
+      const rewards = events.filter(isReward)
+
+      const usedTransferIdx = new Set()
+
+      const takeMatchingTransfer = (amount) => {
+        for (let i = 0; i < transfers.length; i++) {
+          if (usedTransferIdx.has(i)) continue
+          if (sameAmount(transfers[i]?.amount, amount)) {
+            usedTransferIdx.add(i)
+            return transfers[i]
+          }
+        }
+        return null
+      }
+
+      const rows = []
+
+      for (const d of deposits) {
+        const tr = takeMatchingTransfer(d.amount)
+        rows.push({
+          title: "Deposit",
+          teamTokenId: d.tokenId,
+          amountText: d.amount ? formatDiamonds(d.amount) : "",
+          fromAddress: tr?.fromAddress || d.fromAddress,
+          toAddress: tr?.toAddress || d.toAddress,
+          note: d.offChainEventId ? "" : "Pending"
+        })
+      }
+
+      for (const r of rewards) {
+        const tr = takeMatchingTransfer(r.amount)
+        rows.push({
+          title: (r.event === "MintReward") ? "Reward" : "Withdraw",
+          teamTokenId: r.tokenId,
+          amountText: r.amount ? formatDiamonds(r.amount) : "",
+          fromAddress: tr?.fromAddress || r.fromAddress,
+          toAddress: tr?.toAddress || r.toAddress,
+          note: ""
+        })
+      }
+
+      for (let i = 0; i < transfers.length; i++) {
+        if (usedTransferIdx.has(i)) continue
+        const tr = transfers[i]
+        rows.push({
+          title: "Diamonds transfer",
+          teamTokenId: null,
+          amountText: tr.amount ? `${transferSign(tr)}${formatDiamonds(tr.amount)}` : "",
+          fromAddress: tr.fromAddress,
+          toAddress: tr.toAddress,
+          note: ""
+        })
+      }
+
+      const leftovers = events.filter(e => !isTransfer(e) && !isDeposit(e) && !isReward(e))
+      for (const e of leftovers) {
+        rows.push({
+          title: e.event,
+          teamTokenId: e.tokenId,
+          amountText: e.amount ? formatDiamonds(e.amount) : "",
+          fromAddress: e.fromAddress,
+          toAddress: e.toAddress,
+          note: ""
+        })
+      }
+
+      return rows
+    }
+
+
+    if (onChainEvents?.transactions?.length) {
+      onChainEvents.transactions.forEach(tx => {
+        tx.rows = buildRowsForTx(tx)
+      })
+    }
+
+    const summarizeTransaction = (tx) => {
+
+        const rows = tx?.rows || []
+        if (!rows.length) return "On-chain transaction"
+
+        const deposits = rows.filter(r => r.title === "Deposit").length
+        const rewards = rows.filter(r => r.title === "Reward").length
+        const withdraws = rows.filter(r => r.title === "Withdraw").length
+        const transfers = rows.filter(r => r.title === "Diamonds transfer").length
+
+        const primaryCount = deposits + rewards + withdraws
+
+        // Friendly single-action labels
+        if (primaryCount === 1) {
+            if (deposits === 1) return "Diamond deposit"
+            if (rewards === 1) return "Minted rewards"
+            if (withdraws === 1) return "Diamond withdrawal"
+        }
+
+        // If it's only transfers (no deposit/reward/withdraw)
+        if (primaryCount === 0 && transfers > 0) {
+            return transfers === 1 ? "Diamonds transfer" : "Diamonds transfers"
+        }
+
+        // Otherwise fall back to counts
+        const parts = []
+        if (deposits) parts.push(`${deposits} deposit${deposits === 1 ? "" : "s"}`)
+        if (rewards) parts.push(`${rewards} reward${rewards === 1 ? "" : "s"}`)
+        if (withdraws) parts.push(`${withdraws} withdrawal${withdraws === 1 ? "" : "s"}`)
+
+        // (Optional) include extra transfers only when there are transfers beyond the matched ones
+        if (primaryCount > 0 && transfers) parts.push(`${transfers} transfer${transfers === 1 ? "" : "s"}`)
+
+        return parts.length ? parts.join(", ") : "On-chain activity"
+    }
+
+
+    return $render
+  }
 </script>

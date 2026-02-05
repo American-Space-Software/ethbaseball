@@ -548,14 +548,6 @@
                 
                 let v = ethers.parseUnits( value.toString()  , 'ether')
 
-                console.log(v)
-
-                // let diamondBalance = ethers.formatUnits(authInfo.diamondBalance)
-
-                // if (value < 0 ) throw new Error("Value must be positive")
-                // if (value > diamondBalance) throw new Error("🔷 exceeds balance")
-
-
                 let result = await diamondService.deposit(authInfo.address,  v)
 
                 if (result.hash) {

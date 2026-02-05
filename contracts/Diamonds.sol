@@ -22,7 +22,7 @@ contract Diamonds is ERC20, AccessControl,ERC20Burnable, ERC20Permit {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(address universeAddress, address defaultAdmin, address minter) ERC20("Diamonds", "DIAMOND") ERC20Permit("Diamonds") {
+    constructor(address universeAddress, address defaultAdmin, address minter) ERC20("Ethereum Baseball League Diamonds", "EBLD") ERC20Permit("Ethereum Baseball League Diamonds") {
 
         _universe = Universe(universeAddress);
 

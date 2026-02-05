@@ -19,6 +19,13 @@ import { DiamondMintPassService } from "./data/diamond-mint-pass-service.js";
 import { LogEventService } from "./log-event-service.js";
 import { Player } from "../dto/player.js";
 import { PlayerService } from "./data/player-service.js";
+import { OffchainEventService } from "./data/offchain-event-service.js";
+import { UserService } from "./data/user-service.js";
+import { User } from "../dto/user.js";
+import { v4 as uuidv4 } from 'uuid';
+import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
+import { TeamLeagueSeason } from "../dto/team-league-season.js";
+import { ContractType } from "./enums.js";
 
 const MAX_BLOCKS_TO_INDEX = 10000
 
@@ -40,10 +47,11 @@ class UniverseIndexerService {
 
     private isIndexing:boolean = false
 
-    
 
     constructor(
         private playerService:PlayerService,
+        private userService:UserService,
+        private teamService:TeamService,
         @inject("WalletService") private walletService: WalletService,
         private blockService: BlockService,
         private processedTransactionService: ProcessedTransactionService,
@@ -51,7 +59,9 @@ class UniverseIndexerService {
         private contractStateService: ContractStateService,
         private ownerService: OwnerService,
         private diamondMintPassService:DiamondMintPassService,
+        private offChainEventService:OffchainEventService,
         private logEventService:LogEventService,
+        private teamLeagueSeasonService:TeamLeagueSeasonService
     ) { }
 
     BLOCK_CONFIRMATIONS = 35
@@ -182,41 +192,53 @@ class UniverseIndexerService {
         //Check for deposits that are more than BLOCK_CONFIRMATIONS blocks old and don't have an associated off-chain event 
         let unprocessedDeposits:ProcessedEvent[] = await this.processedTransactionService.getUnprocessedDepositEvents(this.diamondContractAddress, options)
 
-        console.log(`Deposits: ${unprocessedDeposits.length} pending`)
+        let readyToProcess = unprocessedDeposits.filter( d => d.blockNumber < result.startBlock)
 
-        for (let unprocessedDeposit of unprocessedDeposits) {
-            if (unprocessedDeposit.blockNumber < result.startBlock ) {
-                await this.processDeposit(unprocessedDeposit, options)
-            }
+        console.log(`Deposits: ${unprocessedDeposits.length} pending ( ${readyToProcess?.length } ready to process )`)
+
+        for (let unprocessedDeposit of readyToProcess) {
+            await this.processDeposit(unprocessedDeposit, options)
         }
 
     }
 
     private async processDeposit(unprocessedDeposit:ProcessedEvent, options?:any) {
 
-        // //Process the deposit
-        // let offChainEvent = await this.offChainEventService.createTeamMintEvent(unprocessedDeposit.tokenId, unprocessedDeposit.amount, undefined, options)
-        
+        //Get the user at this address and get their team
+        let user:User = await this.userService.getByAddress(unprocessedDeposit.fromAddress, options)
+        let teams:Team[] = await this.teamService.getByUser(user, options)
 
-        // //Make note of the offchain event associated with this event.
-        // unprocessedDeposit.offChainEventId = offChainEvent._id
-        
-        // //make the offchain event aware of the processed event it was based on
-        // offChainEvent.processedEventId = unprocessedDeposit._id
+        if (teams?.length > 0) {
 
-        // await this.processedTransactionService.putEvent(unprocessedDeposit, options)
-        // await this.offChainEventService.put(offChainEvent, options)
+            let team:Team = teams[0]
 
+            //Process the deposit
+            let offChainEventTransactionId = uuidv4()
+            let offChainEvent = await this.offChainEventService.createTeamMintEvent(team._id, unprocessedDeposit.amount, { type: "deposit" }, offChainEventTransactionId, options)
 
-        // //Update team's balance.
-        // let team:Team = await this.teamService.getByTokenId(unprocessedDeposit.tokenId, options)
-        // let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
+            //Make note of the offchain event associated with this event.
+            unprocessedDeposit.offChainEventId = offChainEvent._id
 
-        // tls.financeSeason.diamondBalance = await this.offChainEventService.getBalanceForTokenId(ContractType.DIAMONDS, unprocessedDeposit.tokenId, options)
+            //Resave
+            await this.processedTransactionService.putEvent(unprocessedDeposit, options)
 
-        // tls.changed("financeSeason", true)
+            //make the offchain event aware of the processed event it was based on
+            offChainEvent.processedEventId = unprocessedDeposit._id
 
-        // await this.teamLeagueSeasonService.put(tls, options)
+            //Resave
+            await this.offChainEventService.put(offChainEvent, options)
+
+                    
+            //Update team's balance.
+            let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
+
+            tls.financeSeason.diamondBalance = await this.offChainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
+
+            tls.changed("financeSeason", true)
+
+            await this.teamLeagueSeasonService.put(tls, options)
+
+        }
 
     }
 

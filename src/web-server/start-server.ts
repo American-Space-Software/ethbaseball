@@ -1343,7 +1343,21 @@ let startWebServer = async () => {
       let options = { limit: perPage, offset: (page - 1) * perPage }
       let teamId = req.params.teamId
 
-      return res.json(/**await processedTransactionService.listWithEventsByToken(teamId, options)**/)
+      let team:Team = await teamService.get(teamId)
+      let user:User = await userService.get(team.userId)
+
+      let result
+
+      if (user.address) {
+        result = await processedTransactionService.listWithEventsByAddress(user.address, options)
+      } else {
+        result = {
+            transactions: [],
+            teams: []
+        }
+      }
+
+      return res.json(result)
 
     } catch (ex) {
       console.log(ex)

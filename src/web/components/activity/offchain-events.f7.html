@@ -1,9 +1,6 @@
 <template>
 
-  <div class="card card-outline card-header-divider">
-    <div class="card-header">Rewards & Player Moves</div>
-    <div class="card-content">
-      <div class="list media-list inset">
+      <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios inset">
         <ul>
           ${eventsViewModel.transactions.map(tx => $h`
             <li class="transaction-li">
@@ -15,9 +12,6 @@
                       ${summarizeTransaction(tx)}
                     </div>
 
-                    <div class="item-after">
-                      ${tx.events.length} event${tx.events.length === 1 ? '' : 's'}
-                    </div>
                   </div>
 
                   <div class="item-subtitle">
@@ -77,8 +71,6 @@
           `)}
         </ul>
       </div>
-    </div>
-  </div>
 
 </template>
 
