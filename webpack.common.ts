@@ -130,15 +130,10 @@ let browserConfig = {
 
         compiler.hooks.environment.tap('BuildManifest', async (params) => {
           
-          if (fs.existsSync(`public/ebl-app-icon.svg`)) {
-            fs.rmSync(`public/ebl-app-icon.svg`)
-          }
-
           if (fs.existsSync(`public/apple-touch-icon.png`)) {
             fs.rmSync(`public/apple-touch-icon.png`)
           }
 
-          fs.copyFileSync(`src/web/ebl-app-icon.svg`, `public/ebl-app-icon.svg`)
           fs.copyFileSync(`src/web/ebl-192.png`, `public/ebl-192.png`)
           fs.copyFileSync(`src/web/ebl-512.png`, `public/ebl-512.png`)
           fs.copyFileSync(`src/web/apple-touch-icon.png`, `public/apple-touch-icon.png`)

@@ -1,78 +1,78 @@
 <template>
 
-      <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios inset">
-        <ul>
-          ${eventsViewModel.transactions.map(tx => $h`
-            <li class="transaction-li">
-              <div class="item-content">
-                <div class="item-inner">
+  <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios inset">
+    <ul>
+      ${eventsViewModel.transactions.map(tx => $h`
+        <li class="transaction-li">
+          <div class="item-content">
+            <div class="item-inner">
 
-                  <div class="item-title-row">
-                    <div class="item-title">
-                      ${summarizeTransaction(tx)}
+              <div class="item-title-row">
+                <div class="item-title">
+                  ${summarizeTransaction(tx)}
+                </div>
+              </div>
+
+              <div class="item-subtitle">
+                ${dayjs(tx.events[0].dateCreated).format("ddd, MMM D, YYYY h:mm A")}
+              </div>
+
+              <div class="item-text transaction-events">
+                ${tx.events.map(oce => $h`
+                  <div class="transaction-event-row">
+
+                    <div class="transaction-event-title-row">
+                      <div class="transaction-event-title">
+                        ${renderDescription(oce)}
+                      </div>
+                      <div class="transaction-event-after">
+                        ${getOffChainAmount(oce)}
+                      </div>
+                    </div>
+
+                    <div class="transaction-event-fromto">
+                      ${oce.fromTeamId ? $h`
+                        <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">
+                          ${teamWebService.getTeamName(getTeam(oce.fromTeamId))}
+                        </a>
+                      ` : $h``}
+
+                      ${oce.fromAddress ? $h`
+                        <a href="/u/activity?address=${oce.fromAddress}">
+                          ${walletService.truncateEthAddress(oce.fromAddress)}
+                        </a>
+                      ` : $h``}
+
+                      ${((oce.fromTeamId || oce.fromAddress) && (oce.toTeamId || oce.toAddress)) ? $h`
+                        <span class="event-arrow"> ➡️ </span>
+                      ` : $h``}
+
+                      ${oce.toTeamId ? $h`
+                        <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">
+                          ${teamWebService.getTeamName(getTeam(oce.toTeamId))}
+                        </a>
+                      ` : $h``}
+
+                      ${oce.toAddress ? $h`
+                        <a href="/u/activity?address=${oce.toAddress}">
+                          ${walletService.truncateEthAddress(oce.toAddress)}
+                        </a>
+                      ` : $h``}
                     </div>
 
                   </div>
-
-                  <div class="item-subtitle">
-                    ${dayjs(tx.events[0].dateCreated).format("ddd, MMM D, YYYY h:mm A")}
-                  </div>
-
-                  <div class="item-text transaction-events">
-                    ${tx.events.map(oce => $h`
-                      <div class="transaction-event-row">
-
-                        <div class="transaction-event-title-row">
-                          <div class="transaction-event-title">
-                            ${renderDescription(oce)}
-                          </div>
-                          <div class="transaction-event-after">
-                            ${getOffChainAmount(oce)}
-                          </div>
-                        </div>
-
-                        <div class="transaction-event-fromto">
-                          ${oce.fromTeamId ? $h`
-                            <a href="${universeWebService.startDateLink(`/t/index/${oce.fromTeamId}`)}">
-                              ${teamWebService.getTeamName(getTeam(oce.fromTeamId))}
-                            </a>
-                          ` : $h``}
-
-                          ${oce.fromAddress ? $h`
-                            <a href="/u/activity?address=${oce.fromAddress}">
-                              ${walletService.truncateEthAddress(oce.fromAddress)}
-                            </a>
-                          ` : $h``}
-
-                          ${((oce.fromTeamId || oce.fromAddress) && (oce.toTeamId || oce.toAddress)) ? $h`
-                            <span class="event-arrow"> ➡️ </span>
-                          ` : $h``}
-
-                          ${oce.toTeamId ? $h`
-                            <a href="${universeWebService.startDateLink(`/t/index/${oce.toTeamId}`)}">
-                              ${teamWebService.getTeamName(getTeam(oce.toTeamId))}
-                            </a>
-                          ` : $h``}
-
-                          ${oce.toAddress ? $h`
-                            <a href="/u/activity?address=${oce.toAddress}">
-                              ${walletService.truncateEthAddress(oce.toAddress)}
-                            </a>
-                          ` : $h``}
-                        </div>
-
-                      </div>
-                    `)}
-                  </div>
-
-                </div>
+                `)}
               </div>
-            </li>
-          `)}
-        </ul>
-      </div>
+
+            </div>
+          </div>
+        </li>
+      `)}
+    </ul>
+  </div>
 
 </template>
+
 
 
 <script>
@@ -102,13 +102,6 @@
 
     const ZERO = "0x0000000000000000000000000000000000000000"
 
-    const getOffChainAmount = (oce) => {
-      if (oce.event == "Transfer") {
-        if (oce.toAddress == ZERO) return `-${universeWebService.displayDiamonds(oce.amount)}`
-        if (oce.fromAddress == ZERO) return universeWebService.displayDiamonds(oce.amount)
-      }
-    }
-
     const getTeam = (teamId) => eventsViewModel.teams?.find(t => t._id == teamId)
     const getPlayer = (playerId) => eventsViewModel.players?.find(p => p._id == playerId)
 
@@ -124,6 +117,31 @@
       const name = team?.name || "Team"
       const href = universeWebService.startDateLink(`/t/index/${teamId}`)
       return $h`<a href="${href}">${name}</a>`
+    }
+
+    const isRewardMint = (oce) =>
+      oce?.fromAddress === ZERO &&
+      oce?.source?.type === "reward" &&
+      (oce?.source?.rewardType === "daily" || oce?.source?.rewardType === "season")
+
+    const getRewardLabel = (oce) => {
+      if (!isRewardMint(oce)) return null
+      if (oce.source.rewardType === "daily") return "Daily reward"
+      if (oce.source.rewardType === "season") return "Season reward"
+      return "Reward"
+    }
+
+    const formatDiamondsSigned = (oce) => {
+      if (!oce?.amount) return ""
+      const amt = universeWebService.displayDiamonds(oce.amount)
+      if (oce.toAddress === ZERO) return `-${amt}`
+      return `${amt}`
+    }
+
+    const getOffChainAmount = (oce) => {
+      if (oce?.contractType === "DIAMONDS" && oce?.event === "Transfer") {
+        return formatDiamondsSigned(oce)
+      }
     }
 
     const renderDescription = (oce) => {
@@ -149,18 +167,15 @@
 
       if (oce?.contractType == "DIAMONDS" && oce?.event == "Transfer") {
 
-        if (oce.toAddress == ZERO) {
-          if (oce.fromTeamId) return $h`Expenses`
-          return $h`Created Mint Pass`
-        }
+        // Burn / deposit (to ZERO)
+        if (oce.toAddress === ZERO) return $h`Diamond deposit`
 
-        if (oce.fromAddress == ZERO) {
-          if (oce.toTeamId && oce.source?.type == "reward") {
-            if (oce.source?.rewardType == "daily") return $h`Daily reward`
-            if (oce.source?.rewardType == "season") return $h`Season reward`
-          }
-          return $h`Reward`
-        }
+        // Reward mint (from ZERO + source.type=reward)
+        const rewardLabel = getRewardLabel(oce)
+        if (rewardLabel) return $h`${rewardLabel}`
+
+        // Other mints (from ZERO but not a reward)
+        if (oce.fromAddress === ZERO) return $h`Diamond withdrawal`
 
         return $h`Diamonds transfer`
       }
@@ -176,25 +191,37 @@
       const playerTransfers = events.filter(e => e?.contractType === "PLAYERS" && e?.event === "Transfer")
       const diamondTransfers = events.filter(e => e?.contractType === "DIAMONDS" && e?.event === "Transfer")
 
-      const isDailyReward = diamondTransfers.some(e =>
-        e?.fromAddress === ZERO &&
-        e?.source?.type === "reward" &&
-        e?.source?.rewardType === "daily"
-      )
+      const dailyRewards = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "daily").length
+      const seasonRewards = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "season").length
 
-      const isSeasonReward = diamondTransfers.some(e =>
-        e?.fromAddress === ZERO &&
-        e?.source?.type === "reward" &&
-        e?.source?.rewardType === "season"
-      )
+      const depositCount = diamondTransfers.filter(e => e?.toAddress === ZERO).length
 
-      if (isDailyReward && playerTransfers.length === 0) return "Daily rewards"
-      if (isSeasonReward && playerTransfers.length === 0) return "Season rewards"
+      const otherMints = diamondTransfers.filter(e =>
+        e?.fromAddress === ZERO && !isRewardMint(e)
+      ).length
 
-      // If there's exactly one player transfer, just use that exact sentence (no period)
+      const otherDiamondTransfers = diamondTransfers.length - dailyRewards - seasonRewards - depositCount - otherMints
+
+      const isPureDiamond = diamondTransfers.length > 0 && playerTransfers.length === 0
+
+      if (isPureDiamond) {
+        if (dailyRewards > 0 && seasonRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Daily rewards"
+        if (seasonRewards > 0 && dailyRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Season rewards"
+        if (depositCount > 0 && dailyRewards === 0 && seasonRewards === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Diamond deposit"
+        if (otherMints > 0 && dailyRewards === 0 && seasonRewards === 0 && depositCount === 0 && otherDiamondTransfers === 0) return "Diamond withdrawal"
+        if (otherDiamondTransfers > 0 && dailyRewards === 0 && seasonRewards === 0 && depositCount === 0 && otherMints === 0) return "Diamonds transfer"
+
+        const parts = []
+        if (dailyRewards) parts.push(`${dailyRewards} daily reward${dailyRewards === 1 ? "" : "s"}`)
+        if (seasonRewards) parts.push(`${seasonRewards} season reward${seasonRewards === 1 ? "" : "s"}`)
+        if (depositCount) parts.push(`${depositCount} deposit${depositCount === 1 ? "" : "s"}`)
+        if (otherMints) parts.push(`${otherMints} mint${otherMints === 1 ? "" : "s"}`)
+        if (otherDiamondTransfers) parts.push(`${otherDiamondTransfers} transfer${otherDiamondTransfers === 1 ? "" : "s"}`)
+        return parts.length ? parts.join(", ") : "Diamonds"
+      }
+
       if (playerTransfers.length === 1) {
         const oce = playerTransfers[0]
-        // description returns markup + a trailing period; keep it consistent by stripping trailing period in header
         const playerNode = renderPlayerNode(oce)
 
         if (oce.fromTeamId && !oce.toTeamId) return $h`${playerNode} dropped by ${renderTeamNode(oce.fromTeamId)}`
@@ -203,20 +230,6 @@
         return $h`${playerNode} moved`
       }
 
-
-      // If it's a single roster action with an attached diamond movement, label it as a signing cost
-      if (playerTransfers.length === 1 && diamondTransfers.length >= 1) {
-        const oce = playerTransfers[0]
-        if (!oce.fromTeamId && oce.toTeamId) {
-          const costEvent = diamondTransfers.find(e => e?.toAddress === ZERO || e?.fromTeamId || e?.toTeamId)
-          const cost = costEvent ? getOffChainAmount(costEvent) : ''
-          const playerNode = renderPlayerNode(oce)
-          const teamNode = renderTeamNode(oce.toTeamId)
-          return $h`${playerNode} signed by ${teamNode}${cost ? $h` (${cost})` : $h``}`
-        }
-      }
-
-      // Multiple roster moves in one tx
       if (playerTransfers.length > 1) {
         const drops = playerTransfers.filter(e => e?.fromTeamId && !e?.toTeamId).length
         const signs = playerTransfers.filter(e => !e?.fromTeamId && e?.toTeamId).length
@@ -229,7 +242,13 @@
         return parts.length ? parts.join(", ") : "Player moves"
       }
 
-      if (diamondTransfers.length > 0 && playerTransfers.length === 0) return "Diamonds"
+      if (diamondTransfers.length > 0 && playerTransfers.length === 0) {
+        if (dailyRewards > 0 && seasonRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Daily rewards"
+        if (seasonRewards > 0 && dailyRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Season rewards"
+        if (depositCount > 0 && dailyRewards === 0 && seasonRewards === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Diamond deposit"
+        if (otherMints > 0 && dailyRewards === 0 && seasonRewards === 0 && depositCount === 0 && otherDiamondTransfers === 0) return "Diamond withdrawal"
+        return "Diamonds"
+      }
 
       return "Transaction"
     }
@@ -237,3 +256,5 @@
     return $render
   }
 </script>
+
+
