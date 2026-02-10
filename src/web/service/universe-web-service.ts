@@ -1,7 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
 import { ethers } from "ethers";
-import { UniverseContractService } from "../../service/universe-contract-service.js";
 
 
 @injectable()
@@ -13,7 +12,6 @@ class UniverseWebService {
     constructor(
         @inject('env') private env,
         @inject('eventTarget') private eventTarget,
-        private universeContractService:UniverseContractService
     ) {
         this.rank = 1
     }
@@ -99,18 +97,7 @@ class UniverseWebService {
         return result.data
     }
 
-    async withdraw() {
-        return this.universeContractService.withdraw()
-    }
-
-    async updateMetadata() {
-        return this.universeContractService.update(this.env().IPFS_CID)
-    }
-
-    async getContractBalance() {
-        return this.universeContractService.getContractBalance()
-    }
-
+  
     displayDiamonds(value) {
 
         if (value == null) return
@@ -124,7 +111,7 @@ class UniverseWebService {
 
         return `${new Intl.NumberFormat("en-US", {
             minimumFractionDigits: 0,
-            maximumFractionDigits: Math.min(decimalPlaces, 18)
+            maximumFractionDigits: Math.min(decimalPlaces, 7) //maybe increase if we need
         }).format(num)} 🔷`
     }
 

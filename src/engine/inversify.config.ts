@@ -105,7 +105,6 @@ dayjs.extend(timezone)
 
 import { Fees } from "../dto/fees.js"
 import { NodeWalletServiceImpl } from "../service/node-wallet-service.js"
-import { UniverseContractService } from "../service/universe-contract-service.js";
 import { LeagueRepositoryNodeImpl } from "../repository/node/league-repository-impl.js";
 import { League } from "../dto/league.js";
 import { LeagueService } from "../service/data/league-service.js";
@@ -184,7 +183,6 @@ let rlp
 
 let _config:any
 let _diamondsAddress:string
-let _universeAddress:string
 let _fees:Fees
 let _universe:Universe
 
@@ -357,10 +355,6 @@ async function getContainer() {
         return _diamondsAddress
     })
 
-    container.bind("getUniverseAddress").toConstantValue(() => {
-        return _universeAddress
-    })
-
     container.bind("universe").toConstantValue(() => {
         return _universe
     })
@@ -410,7 +404,6 @@ async function getContainer() {
     container.bind(HuggingFaceService).toSelf().inSingletonScope()
 
     container.bind(TransactionService).toSelf().inSingletonScope()
-    container.bind(UniverseContractService).toSelf().inSingletonScope()
     container.bind(LeagueService).toSelf().inSingletonScope()
     container.bind(UserService).toSelf().inSingletonScope()
     container.bind(LadderService).toSelf().inSingletonScope()
@@ -526,10 +519,6 @@ const setDiamondsAddress = (diamonds) => {
     _diamondsAddress = diamonds
 }
 
-const setUniverseAddress = (universeAddress) => {
-    _universeAddress = universeAddress
-}
-
 const setUniverse = (universe) => {
     _universe = universe
 }
@@ -547,5 +536,5 @@ const setConfig = (config:any) => {
 
 
 export {
-    getContainer, container, setDiamondsAddress, setUniverseAddress, setFees, setUniverse, setConfig
+    getContainer, container, setDiamondsAddress, setFees, setUniverse, setConfig
 }

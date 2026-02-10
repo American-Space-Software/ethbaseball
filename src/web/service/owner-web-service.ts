@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { UniverseContractService } from "../../service/universe-contract-service.js";
 import { OwnerSorts } from "../../service/enums.js";
 
 
@@ -9,7 +8,6 @@ import { OwnerSorts } from "../../service/enums.js";
 class OwnerWebService {
 
     constructor(
-        private universeContractService:UniverseContractService
     ) {}
 
     // async get(_id:string) {
@@ -24,9 +22,9 @@ class OwnerWebService {
 
     // }
 
-    async getBalance(address:string) {
-        return this.universeContractService.getBalance(address)
-    }
+    // async getBalance(address:string) {
+    //     return this.universeContractService.getBalance(address)
+    // }
 
     // async totals() {
         

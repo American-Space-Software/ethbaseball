@@ -86,6 +86,14 @@ class UniverseService {
         return this.universeRepository.get(id, options)
     }
 
+    async getByDiamondAddress(diamondAddress:string, options?:any): Promise<Universe> {
+        return this.universeRepository.getByDiamondAddress(diamondAddress, options)
+    }
+
+    async getActive(options?:any): Promise<Universe> {
+        return this.universeRepository.getActive(options)
+    }
+
     async list(limit:number, offset:number, options?: any): Promise<Universe[]> {
         return this.universeRepository.list(limit, offset, options)
     }

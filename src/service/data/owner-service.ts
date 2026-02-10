@@ -72,46 +72,46 @@ class OwnerService {
         return this.ownerRepository.removeUserId(owner, options)
     }
 
-    async syncOffChainBalances(options?:any) {
+    // async syncOffChainBalances(options?:any) {
 
-        let owners = await this.listByOffChainDiamonds(options)
+    //     let owners = await this.listByOffChainDiamonds(options)
 
-        console.time(`Syncing offchain balance of ${owners.length} owners`)
+    //     console.time(`Syncing offchain balance of ${owners.length} owners`)
 
-        let events = await this.offchainEventService.list(ContractType.DIAMONDS, options)
+    //     let events = await this.offchainEventService.list(ContractType.DIAMONDS, options)
 
-        let ownerEvents = {}
+    //     let ownerEvents = {}
 
-        for (let e of events) {
+    //     for (let e of events) {
 
-            let ownerAddresses = [e.fromAddress, e.toAddress].filter( a => a != undefined && a != null)
+    //         let ownerAddresses = [e.fromAddress, e.toAddress].filter( a => a != undefined && a != null)
 
-            for (let a of ownerAddresses) {
-                let existing = ownerEvents[a]
-                if (!existing) ownerEvents[a] = []
-                ownerEvents[a].push(e)
-            }
+    //         for (let a of ownerAddresses) {
+    //             let existing = ownerEvents[a]
+    //             if (!existing) ownerEvents[a] = []
+    //             ownerEvents[a].push(e)
+    //         }
 
-        }
-
-
-        let i=1
-        for (let owner of owners) {
-
-            let offchainBalance = this.offchainEventService.getBalanceForOwnerFromEvents(owner, ownerEvents[owner._id] || [])
-
-            if (offchainBalance != owner.offChainDiamondBalance) {
-                this.setOfflineDiamondBalance(owner, offchainBalance)
-                await this.put(owner, options)
-            }
-
-            i++
-        }
-
-        console.timeEnd(`Syncing offchain balance of ${owners.length} owners`)
+    //     }
 
 
-    }
+    //     let i=1
+    //     for (let owner of owners) {
+
+    //         let offchainBalance = this.offchainEventService.getBalanceForOwnerFromEvents(owner, ownerEvents[owner._id] || [])
+
+    //         if (offchainBalance != owner.offChainDiamondBalance) {
+    //             this.setOfflineDiamondBalance(owner, offchainBalance)
+    //             await this.put(owner, options)
+    //         }
+
+    //         i++
+    //     }
+
+    //     console.timeEnd(`Syncing offchain balance of ${owners.length} owners`)
+
+
+    // }
 
     setTokenIds(owner:Owner, processedEvents:ProcessedEvent[]) {
 

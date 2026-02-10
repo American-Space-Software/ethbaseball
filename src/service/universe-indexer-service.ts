@@ -42,7 +42,7 @@ class UniverseIndexerService {
     universeContract: Contract
     diamondContract:Contract
 
-    universeContractAddress:string
+    // universeContractAddress:string
     diamondContractAddress:string
 
     private isIndexing:boolean = false
@@ -67,20 +67,20 @@ class UniverseIndexerService {
     BLOCK_CONFIRMATIONS = 35
 
 
-    async init(universeContract: Contract, diamondContract: Contract, options?:any) {
+    async init(diamondContract: Contract, options?:any) {
 
         let s = await this.sequelize()
 
-        this.universeContractAddress = await universeContract.getAddress()
+        // this.universeContractAddress = await universeContract.getAddress()
         this.diamondContractAddress = await diamondContract.getAddress()
 
 
-        console.log(`Starting transaction indexer for universe: ${this.universeContractAddress}`)
+        console.log(`Starting transaction indexer for diamonds: ${this.diamondContractAddress}`)
 
         //Look up contract state
-        this.contractState = await this._getContractState(ethers.getAddress(this.universeContractAddress), options)
+        this.contractState = await this._getContractState(ethers.getAddress(this.diamondContractAddress), options)
         
-        this.universeContract = universeContract
+        // this.universeContract = universeContract
         this.diamondContract = diamondContract
 
         this.logEventService.init(this.universeContract, this.diamondContract)
@@ -154,7 +154,7 @@ class UniverseIndexerService {
         await this.processedTransactionService.deleteERCBetweenBlocks(result, options)
 
         //Set most recent.
-        result.mostRecentTransaction = await this.processedTransactionService.getLatestViewModel(this.universeContractAddress, result.startBlock, options)
+        // result.mostRecentTransaction = await this.processedTransactionService.getLatestViewModel(this.diamondContractAddress, result.startBlock, options)
 
         let allLogEvents = await this.logEventService.getRecentEvents(result.startBlock, result.endBlock)
 
@@ -175,7 +175,7 @@ class UniverseIndexerService {
 
 
         //Save tokens
-        await this.saveTokens(result, options)
+        // await this.saveTokens(result, options)
 
         //Save token owners
         await this.saveTokenOwners(result,options)
@@ -285,7 +285,7 @@ class UniverseIndexerService {
                     let address = ethers.getAddress(te.address)
 
                     if (address == this.diamondContractAddress) return this.processedTransactionService.createProcessedEventDiamond(processedTransaction, te)
-                    if (address == this.universeContractAddress) return this.processedTransactionService.createProcessedEventUniverse(processedTransaction, te)
+                    // if (address == this.universeContractAddress) return this.processedTransactionService.createProcessedEventUniverse(processedTransaction, te)
                     
                 })
 
@@ -303,7 +303,7 @@ class UniverseIndexerService {
                     transactionUser.lastActive = new Date(processedTransaction.timestamp * 1000)
 
 
-                    //First handle withdraw/deposit events
+                    //First handle withdraw events
                     //Diamonds
                     if( ercEvent.contractAddress == this.diamondContractAddress) {
 
@@ -335,27 +335,27 @@ class UniverseIndexerService {
 
                     }
 
-                    if( ercEvent.contractAddress == this.universeContractAddress) {
+                    // if( ercEvent.contractAddress == this.universeContractAddress) {
 
-                        //Tokens
-                        if (ercEvent.namedArgs?.tokenId) {
+                    //     //Tokens
+                    //     if (ercEvent.namedArgs?.tokenId) {
 
-                            let tokenId = parseInt(ercEvent.namedArgs.tokenId)
+                    //         let tokenId = parseInt(ercEvent.namedArgs.tokenId)
 
-                            //Look up/create the from address
-                            fromOwner = await this._getTokenOwner(ercEvent.namedArgs.fromAddress, result, options)
-                            toOwner = await this._getTokenOwner(ercEvent.namedArgs.toAddress, result, options)
+                    //         //Look up/create the from address
+                    //         fromOwner = await this._getTokenOwner(ercEvent.namedArgs.fromAddress, result, options)
+                    //         toOwner = await this._getTokenOwner(ercEvent.namedArgs.toAddress, result, options)
 
-                            //Grab token info
-                            let token:Team = await this._getToken(tokenId, result, options)
+                    //         //Grab token info
+                    //         let token:Team = await this._getToken(tokenId, result, options)
 
-                            if (ercEvent.isTransfer) {
-                                // token.ownerId = toOwner._id
-                            }
+                    //         if (ercEvent.isTransfer) {
+                    //             // token.ownerId = toOwner._id
+                    //         }
 
-                        }
+                    //     }
 
-                    }
+                    // }
 
 
                 }
@@ -374,7 +374,7 @@ class UniverseIndexerService {
                 }
 
 
-                result.mostRecentTransaction = result.processedTransactionViewModels[processedTransaction._id]
+                // result.mostRecentTransaction = result.processedTransactionViewModels[processedTransaction._id]
 
                 console.timeEnd(`Processesing / ${key} / (${processedCount + 1} of ${groupedEvents.size})`)
 
@@ -411,22 +411,22 @@ class UniverseIndexerService {
         return { block: block, transaction: transaction }
     }
 
-    private async saveTokens(result: ERCIndexResult, options?:any) {
+    // private async saveTokens(result: ERCIndexResult, options?:any) {
         
-        console.log(`Saving ${Object.keys(result.tokensToUpdate).length} tokens `)
+    //     console.log(`Saving ${Object.keys(result.tokensToUpdate).length} tokens `)
 
-        for (let tokenId of Object.keys(result.tokensToUpdate)) {
+    //     for (let tokenId of Object.keys(result.tokensToUpdate)) {
 
-            let lastTransfer = await this.processedTransactionService.getLastTransferByToken(this.universeContractAddress, parseInt(tokenId), options)
+    //         let lastTransfer = await this.processedTransactionService.getLastTransferByToken(this.universeContractAddress, parseInt(tokenId), options)
 
-            if (lastTransfer) {
-                result.tokensToUpdate[tokenId].ownerId = lastTransfer.toAddress
-            }
+    //         if (lastTransfer) {
+    //             result.tokensToUpdate[tokenId].ownerId = lastTransfer.toAddress
+    //         }
 
-            await this.playerService.put(result.tokensToUpdate[tokenId], options)
-        }
+    //         await this.playerService.put(result.tokensToUpdate[tokenId], options)
+    //     }
 
-    }
+    // }
 
     private async saveProcessedTransactions(result: ERCIndexResult, options?:any) {
 
@@ -458,11 +458,11 @@ class UniverseIndexerService {
 
             let tokenOwner = result.ownersToUpdate[owner]
 
-            //Set tokenIds
-            let tokenEvents = await this.processedTransactionService.getEventsByOwner(this.universeContractAddress, tokenOwner._id, options)
+            // //Set tokenIds
+            // let tokenEvents = await this.processedTransactionService.getEventsByOwner(this.universeContractAddress, tokenOwner._id, options)
 
-            //Figure out which tokens they own 
-            this.ownerService.setTokenIds(tokenOwner, tokenEvents)
+            // //Figure out which tokens they own 
+            // this.ownerService.setTokenIds(tokenOwner, tokenEvents)
 
 
             //Set diamond balance
@@ -783,7 +783,7 @@ interface ERCIndexResult {
     processedTransactionViewModels: {}
     tokensToUpdate: {}
     diamondMintPassesToUpdate: {}
-    mostRecentTransaction?:TransactionViewModel
+    // mostRecentTransaction?:TransactionViewModel
     startBlock?:number
     endBlock?:number
     blockNumber?:number
@@ -792,10 +792,10 @@ interface ERCIndexResult {
 
 
 
-interface EventsResult {
-    events:any[]
-    endBlock:number
-}
+// interface EventsResult {
+//     events:any[]
+//     endBlock:number
+// }
 
 export {
     UniverseIndexerService, ERCIndexResult

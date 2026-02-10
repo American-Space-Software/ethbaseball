@@ -12,11 +12,7 @@ class Universe extends Model {
     @Column(DataType.STRING)
     declare _id:string
 
-    @AllowNull(false)
-    @Column(DataType.STRING)
-    declare contractAddress:string
-
-    @AllowNull(false)
+    @AllowNull(true)
     @Column(DataType.STRING)
     declare diamondAddress:string
 

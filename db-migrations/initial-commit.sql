@@ -881,8 +881,7 @@ DROP TABLE IF EXISTS `universe`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `universe` (
   `_id` varchar(255) NOT NULL,
-  `contractAddress` varchar(255) NOT NULL,
-  `diamondAddress` varchar(255) NOT NULL,
+  `diamondAddress` varchar(255) DEFAULT NULL,
   `adminAddress` varchar(255) NOT NULL,
   `minterAddress` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,

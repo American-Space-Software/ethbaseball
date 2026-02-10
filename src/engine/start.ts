@@ -1,4 +1,4 @@
-import { getContainer, setConfig, setDiamondsAddress, setFees, setUniverse, setUniverseAddress } from "./inversify.config.js"
+import { getContainer, setConfig, setDiamondsAddress, setFees, setUniverse } from "./inversify.config.js"
 // import { DiscordService } from "../service/discord-service.js"
 
 import { ProcessConfig } from "../process-config.js"
@@ -8,21 +8,16 @@ import { DiamondService } from "../service/diamond-service.js"
 import { UniverseService } from "../service/universe-service.js"
 import { IPFSService } from "../service/ipfs-service.js"
 import { Universe } from "../dto/universe.js"
-import { LadderService } from "../service/ladder-service.js"
 import dayjs from "dayjs"
 import { ERCIndexResult, UniverseIndexerService } from "../service/universe-indexer-service.js"
-import { UniverseContractService } from "../service/universe-contract-service.js"
 import { ContractState } from "../dto/contract-state.js"
 import { ProcessedEvent, ProcessedTransaction, ProcessedTransactionToken, ProcessedTransactionTrader } from "../dto/processed-transaction.js"
 import { Owner } from "../dto/owner.js"
 import { MintPassIndexerService } from "../service/mint-pass-indexer-service.js"
 import { SchemaService } from "../service/data/schema-service.js"
-import { PlayerService } from "../service/data/player-service.js"
 
-import { OwnerService } from "../service/data/owner-service.js"
-import { GameService } from "../service/data/game-service.js"
-import { Game } from "../dto/game.js"
-import { ChatGPTService } from "../service/chatgpt-service.js"
+
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -51,19 +46,13 @@ let startEngine = async () => {
   let deployService: DeployService = container.get(DeployService)
   let diamondService: DiamondService = container.get(DiamondService)
   let universeService: UniverseService = container.get(UniverseService)
-  let universeContractService: UniverseContractService = container.get(UniverseContractService)
-  // let huggingFaceService: HuggingFaceService = container.get(HuggingFaceService)
   let mintPassIndexerService: MintPassIndexerService = container.get(MintPassIndexerService)
-  let gameService:GameService = container.get(GameService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
-  let chatGPTService: ChatGPTService = container.get(ChatGPTService)
-  let ownerService:OwnerService = container.get(OwnerService)
-
-  let ipfsService: IPFSService = container.get(IPFSService)
-
   let minterWalletAddress: string = container.get("minterWalletAddress")
   let adminWalletAddress:string = container.get("adminWalletAddress")
   let sequelize = container.get("sequelize")
+
+  let s = await sequelize()
 
   // //Start and load schema
   // let discordService = container.get(DiscordService)
@@ -92,96 +81,62 @@ let startEngine = async () => {
 
   }
 
-  const setupUniverse = async (configuredUniverse?:string) => {
 
-    let universe: Universe
+  //First load the universe.
+  let universe: Universe
 
-    let s = await container.get("sequelize")()
-    await s.transaction(async (t1) => {
-    
-        let options = { transaction: t1 }
+  await s.transaction(async (t1) => {
+  
+      let options = { transaction: t1 }
 
-        await ipfsService.init()
-    
-        universe = new Universe()
-        universe.currentDate = SIM_DATE
+        universe = await universeService.getActive(options)
 
-    
-        //Make sure we have leagues/teams, etc.
-        await universeService.setup(universe, config, options)
-    
+        if (!universe) {
 
-        if (configuredUniverse) {
+          universe = new Universe()
 
-          setUniverseAddress(config.universe)
+          universe._id = uuidv4()
+          universe.name = "Ethereum Baseball League"
+          universe.symbol = "EBLD"
 
-          //We're connecting to a pre-existing universe so grab the IPFS cid from the contract.
-          universe.ipfsCid = await universeContractService.getIpfsCid()
+          universe.currentDate = SIM_DATE
+          universe.adminAddress = adminWalletAddress
+          universe.minterAddress = minterWalletAddress
 
-        } else {
-          
-          let cid = await universeService.syncMetadata(universe, config, options)
-    
-          universe.ipfsCid = cid.toString()
-    
-          config.universe = await deployService.deployUniverse(adminWalletAddress, minterWalletAddress, universe.ipfsCid)
-          
-          setUniverseAddress(config.universe)
-          console.log(`Universe deployed: ${config.universe}`)
-      
-          config.diamonds = await universeContractService.getDiamondAddress()
-          console.log(`Diamonds deployed: ${config.diamonds}`)
+          //Make sure we have leagues/teams, etc.
+          await universeService.setup(universe, config, options)
+
+          await universeService.put(universe, options)
 
         }
-    
-        
-    
-        config.diamonds = await universeContractService.getDiamondAddress()
-        setDiamondsAddress(config.diamonds)
-            
-        //Save universe to database
-        universe._id = config.universe
-        universe.name = "Ethereum Baseball League"
-        universe.symbol = "EBL"
-        universe.contractAddress = config.universe
-        universe.diamondAddress = config.diamonds
-        universe.adminAddress = adminWalletAddress
-        universe.minterAddress = minterWalletAddress
-    
-        await universeService.put(universe, options)
-
-    })
-
-    return universe
-    
-  }
-
-  if (!config.universe) {
-
-    try {
-      await setupUniverse()
-    } catch (ex) {
-      console.log(ex)
-    }
-
-  }
-
-  let universe: Universe = await universeService.get(config.universe)
-
-  if (!universe) {
-    //Not deploying contract. Just insert universe info.
-    universe = await setupUniverse(config.universe)
-  }
 
 
-  console.log(`Connecting to Diamonds: ${universe.diamondAddress}`)
-  setDiamondsAddress(universe.diamondAddress)
+  })
+
+  if (!universe) throw new Error("Unable to load or create universe.")
 
   console.log(`Universe loaded: ${universe._id}`)
 
 
-  console.log(`Connecting to Universe: ${config.universe}`)
-  setUniverseAddress(config.universe)
+  //If config.diamonds is passed in always use that. Also for now we assume it exists.
+  if (config.diamonds) {
+    universe.diamondAddress = config.diamonds
+  }
+
+  //If we still don't have an address then deploy a new contract.
+  if (!universe.diamondAddress) {
+    universe.diamondAddress = await deployService.deployDiamonds(adminWalletAddress, minterWalletAddress)
+  }
+
+  console.log(`Connecting to Diamonds: ${universe.diamondAddress}`)
+  setDiamondsAddress(universe.diamondAddress)
+
+  //Make sure the universe row has the latest for all these
+  universe.adminAddress = adminWalletAddress
+  universe.minterAddress = minterWalletAddress
+
+  await universeService.put(universe)
+
 
   setConfig(config)
 
@@ -194,18 +149,12 @@ let startEngine = async () => {
   }
 
 
-  // huggingFaceService.init(HUGGING_FACE_API_KEY)
-
-
-
-
-
   //Start discord bot
   // discordService.start()
 
 
   //Start a sync process. 
-  await universeIndexerService.init(universeContractService.universeContract, diamondService.diamondsContract)
+  await universeIndexerService.init(diamondService.diamondsContract)
   
 
   const mintPassLoop = async () => {
@@ -306,9 +255,9 @@ let startEngine = async () => {
     // console.log(`Updated player percentile ratings`)
 
     //Make sure owner off-chain balances are up to date
-    await ownerService.syncOffChainBalances()
+    // await ownerService.syncOffChainBalances()
 
-    console.log(`Sync offchain diamond balances`)
+    // console.log(`Sync offchain diamond balances`)
 
   }
 

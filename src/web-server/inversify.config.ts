@@ -111,7 +111,6 @@ import { City } from "../dto/city.js";
 import { CityService } from "../service/data/city-service.js";
 import { TeamService } from "../service/data/team-service.js";
 import { TeamRepositoryNodeImpl } from "../repository/node/team-repository-impl.js";
-import { UniverseContractService } from "../service/universe-contract-service.js";
 import { LadderChallenge } from "../dto/ladder-challenge.js";
 import { GameTeamRepositoryNodeImpl } from "../repository/node/game-team-repository-impl.js";
 import { CacheService } from "../service/cache-service.js";
@@ -164,7 +163,6 @@ import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 
 let _diamondsAddress:string
-let _universeAddress:string
 let _universe:Universe
 let _config:any
 let _scheduleHour:number
@@ -177,10 +175,6 @@ let container
 
 const setDiamondsAddress = (diamonds) => {
     _diamondsAddress = diamonds
-}
-
-const setUniverseAddress = (universeAddress) => {
-    _universeAddress = universeAddress
 }
 
 const setConfig = (config) => {
@@ -336,9 +330,6 @@ async function getContainer(command?:GetContainerCommand) {
         return _diamondsAddress
     })
 
-    container.bind("getUniverseAddress").toConstantValue(() => {
-        return _universeAddress
-    })
 
     container.bind("universe").toConstantValue(() => {
         return _universe
@@ -381,7 +372,6 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(UserService).toSelf().inSingletonScope()
     container.bind(CityService).toSelf().inSingletonScope()
     container.bind(TeamService).toSelf().inSingletonScope()
-    container.bind(UniverseContractService).toSelf().inSingletonScope()
     container.bind(CacheService).toSelf().inSingletonScope()
     container.bind(SignatureTokenService).toSelf().inSingletonScope()
     container.bind(StadiumService).toSelf().inSingletonScope()
@@ -604,5 +594,5 @@ interface GetContainerCommand {
 
 
 export {
-    getContainer, container, GetContainerCommand, setDiamondsAddress, setUniverseAddress, setConfig, setUniverse, setScheduleHour, setFees
+    getContainer, container, GetContainerCommand, setDiamondsAddress, setConfig, setUniverse, setScheduleHour, setFees
 }

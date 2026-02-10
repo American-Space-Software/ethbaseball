@@ -11,6 +11,21 @@ class UniverseRepositoryNodeImpl implements UniverseRepository {
         return Universe.findByPk(id, options)
     }
 
+    async getActive(options?:any): Promise<Universe> {
+        return Universe.findOne(options)
+    }
+
+    async getByDiamondAddress(diamondAddress:string, options?:any): Promise<Universe> {
+
+        let query = {
+            where: {
+                diamondAddres: diamondAddress
+            }
+        }
+        return Universe.findOne(Object.assign(query, options))
+    }
+
+
     async put(universe:Universe, options?:any): Promise<Universe> {
 
         await universe.save(options)

@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.21;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "hardhat/console.sol";
-import "./Universe.sol";
+// import "hardhat/console.sol";
+
 
 contract Diamonds is ERC20, AccessControl,ERC20Burnable, ERC20Permit {
 
-    uint constant public MINT_TYPE_WITHDRAW = 3;//3 is just continuing the MintType enum from Universe   
-    uint constant public MINT_TYPE_DIAMONDS = 4; 
-
-    Universe private _universe;
+    uint constant public MINT_TYPE_DIAMONDS = 1;
 
     event DepositToTeam(address from, uint256 amount);
     event MintReward(address to, uint256 mintPassId, uint256 amount);
@@ -22,9 +19,7 @@ contract Diamonds is ERC20, AccessControl,ERC20Burnable, ERC20Permit {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(address universeAddress, address defaultAdmin, address minter) ERC20("Ethereum Baseball League Diamonds", "EBLD") ERC20Permit("Ethereum Baseball League Diamonds") {
-
-        _universe = Universe(universeAddress);
+    constructor(address defaultAdmin, address minter) ERC20("Ethereum Baseball League Diamonds", "EBLD") ERC20Permit("Ethereum Baseball League Diamonds") {
 
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);

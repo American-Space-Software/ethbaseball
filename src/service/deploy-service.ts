@@ -1,9 +1,7 @@
 import { Wallet, ethers } from "ethers"
 import { inject, injectable } from "inversify"
 import { Universe } from "../dto/universe.js"
-import { UniverseService } from "./universe-service.js"
 import { WalletService } from "./wallet-service.js"
-import { UniverseContractService } from "./universe-contract-service.js"
 
 
 @injectable()
@@ -11,23 +9,22 @@ class DeployService {
 
     constructor(
         @inject("WalletService") private walletService: WalletService,
-        private universeContractService:UniverseContractService,
         @inject("contracts") private contracts,
     ) { }
 
-    async deployUniverse(defaultAdminAddress:string, minterAddress:string, ipfsCid:string) {
+    // async deployUniverse(defaultAdminAddress:string, minterAddress:string, ipfsCid:string) {
 
-        let receipt = await this._deployUniverse(defaultAdminAddress, minterAddress, ipfsCid)
+    //     let receipt = await this._deployUniverse(defaultAdminAddress, minterAddress, ipfsCid)
 
-        //Update address locally
-        return receipt.contractAddress
+    //     //Update address locally
+    //     return receipt.contractAddress
         
-    }
+    // }
 
-    async deployDiamonds(universeAddress:string, defaultAdminAddress:string, minterAddress:string) {
+    async deployDiamonds(defaultAdminAddress:string, minterAddress:string) {
 
         //Deploy contract
-        let receipt = await this._deployDiamonds(universeAddress, defaultAdminAddress, minterAddress)
+        let receipt = await this._deployDiamonds(defaultAdminAddress, minterAddress)
 
         //Update address locally
         return receipt.contractAddress
@@ -35,35 +32,35 @@ class DeployService {
     }
 
 
-    async updateContract(universe:Universe) {
+    // async updateContract(universe:Universe) {
 
-        if (!universe.ipfsCid) {
-            throw new Error("Not published to IPFS")
-        }
+    //     if (!universe.ipfsCid) {
+    //         throw new Error("Not published to IPFS")
+    //     }
     
-        //Deploy contract        
-        await this.update(universe.ipfsCid)
+    //     //Deploy contract        
+    //     await this.update(universe.ipfsCid)
 
 
-    }
+    // }
 
 
 
-    private async _deployUniverse(defaultAdminAddress:string, minterAddress:string, ipfsCid:string) {
+    // private async _deployUniverse(defaultAdminAddress:string, minterAddress:string, ipfsCid:string) {
 
-        let wallet = this.walletService.wallet
-        if (!wallet) throw new Error("No wallet!")
+    //     let wallet = this.walletService.wallet
+    //     if (!wallet) throw new Error("No wallet!")
 
-        const c = this.contracts['Universe']
+    //     const c = this.contracts['Universe']
 
-        const factory = new ethers.ContractFactory(c.abi, c.bytecode, wallet)
+    //     const factory = new ethers.ContractFactory(c.abi, c.bytecode, wallet)
         
-        let contract = await factory.deploy( defaultAdminAddress, minterAddress, ipfsCid )
+    //     let contract = await factory.deploy( defaultAdminAddress, minterAddress, ipfsCid )
         
-        return contract.deploymentTransaction().wait()
-    }
+    //     return contract.deploymentTransaction().wait()
+    // }
     
-    private async _deployDiamonds(universeAddress:string, defaultAdminAddress: string, minterAddress:string) {
+    private async _deployDiamonds( defaultAdminAddress: string, minterAddress:string) {
 
         if (!defaultAdminAddress ) throw new Error("Missing inputs to deploy")
 
@@ -74,7 +71,7 @@ class DeployService {
 
         const factory = new ethers.ContractFactory(c.abi, c.bytecode, wallet)
         
-        let contract = await factory.deploy( universeAddress, defaultAdminAddress, minterAddress )
+        let contract = await factory.deploy( defaultAdminAddress, minterAddress )
         
         return contract.deploymentTransaction().wait()
     }
@@ -82,19 +79,19 @@ class DeployService {
 
 
 
-    private async update(ipfsCid: string) {
+    // private async update(ipfsCid: string) {
 
-        if (!ipfsCid) throw new Error("Missing inputs to deploy")
+    //     if (!ipfsCid) throw new Error("Missing inputs to deploy")
 
-        let wallet = this.walletService.wallet
-        if (!wallet) throw new Error("No wallet!")
+    //     let wallet = this.walletService.wallet
+    //     if (!wallet) throw new Error("No wallet!")
 
-        let contract = await this.universeContractService.universeContract
+    //     let contract = await this.universeContractService.universeContract
 
-        await contract.update(ipfsCid)
+    //     await contract.update(ipfsCid)
 
 
-    }
+    // }
 
 
 

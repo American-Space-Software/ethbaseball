@@ -97,7 +97,6 @@ import { TeamController } from "./controller/team-controller.js";
 import { TeamWebService } from "./service/team-web-service.js";
 import { CityWebService } from "./service/city-web-service.js";
 import { TeamComponentService } from "./service/team-component-service.js";
-import { UniverseContractService } from "../service/universe-contract-service.js";
 import { UniverseWebService } from "./service/universe-web-service.js";
 import { LineupService } from "../service/lineup-service.js";
 import { GameTransactionWebService } from "./service/game-transaction-web-service.js";
@@ -144,7 +143,6 @@ async function getContainer(env, footerRoutes) {
 
     setEnv(env)
     setDiamondsAddress(env.DIAMONDS_ADDRESS)
-    setUniverseAddress(env.UNIVERSE_ADDRESS)
 
     container  = new Container()
     
@@ -224,9 +222,7 @@ async function getContainer(env, footerRoutes) {
         return _diamondsAddress
     })
 
-    container.bind("getUniverseAddress").toConstantValue(() => {
-        return _universeAddress
-    })
+
 
 
 
@@ -262,7 +258,6 @@ async function getContainer(env, footerRoutes) {
     container.bind(UiService).toSelf().inSingletonScope()
     container.bind(SeedService).toSelf().inSingletonScope()
     container.bind(StatService).toSelf().inSingletonScope()
-    container.bind(UniverseContractService).toSelf().inSingletonScope()
     container.bind(OwnerWebService).toSelf().inSingletonScope()
     container.bind(PlayerWebService).toSelf().inSingletonScope()
     container.bind(TransactionWebService).toSelf().inSingletonScope()

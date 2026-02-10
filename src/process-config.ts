@@ -15,7 +15,7 @@ class ProcessConfig {
         config.runDir = process.env.INIT_CWD ? process.env.INIT_CWD : "./"
         config.publicPath = process.env.INIT_CWD ? `${process.env.INIT_CWD}/public` : "./public" 
         config.VERSION = packageConfig.version
-        config.universe = process.env.UNIVERSE_ADDRESS
+        config.diamonds = process.env.DIAMONDS_ADDRESS
         config.clear = theArgs.clear
         config.generate = theArgs.generate
         config.skipSim = theArgs.skipSim

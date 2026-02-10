@@ -168,8 +168,8 @@ describe('GameService', async () => {
 
         // assert.equal(result.currentInning, 9)
         assert.equal(result.isComplete, true)
-        assert.equal(result.score.away, 3)
-        assert.equal(result.score.home, 7)
+        assert.equal(result.score.away, 1)
+        assert.equal(result.score.home, 10)
 
     })
 

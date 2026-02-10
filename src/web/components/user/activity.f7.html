@@ -151,12 +151,6 @@
                 if (oce.isBurn) return "Burned 🔷"
             }
 
-            if (oce.contractAddress == env.UNIVERSE_ADDRESS) {
-                if (oce.isMint) return "Minted Team"
-                if (oce.isBurn) return "Burned Team"
-            }
-
-
 
             if (oce.isTransfer) return "Transfer"
             return oce.event

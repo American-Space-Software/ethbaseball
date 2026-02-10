@@ -2,7 +2,7 @@
 import passport from 'passport'
 import { v4 as uuidv4 } from 'uuid';
 
-import { getContainer, setConfig, setDiamondsAddress, setUniverse, setUniverseAddress } from "./inversify.config.js"
+import { getContainer, setConfig, setDiamondsAddress, setUniverse } from "./inversify.config.js"
 
 import { ProcessConfig } from "../process-config.js"
 
@@ -52,7 +52,6 @@ import { TeamMintPassService } from '../service/data/team-mint-pass-service.js'
 
 import { Eta } from "eta"
 import { CityService } from '../service/data/city-service.js'
-import { Game, GamePlayer } from '../dto/game.js'
 
 import http from 'http'
 import { SocketService } from '../service/socket-service.js'
@@ -126,7 +125,6 @@ let startWebServer = async () => {
   let teamLeagueSeasonService:TeamLeagueSeasonService = container.get(TeamLeagueSeasonService)
   let playerLeagueSeasonService:PlayerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
   let diamondMintPassService:DiamondMintPassService = container.get(DiamondMintPassService)
-  let teamMintPassService:TeamMintPassService = container.get(TeamMintPassService)
   let socketService:SocketService = container.get(SocketService)
   let ladderService:LadderService = container.get(LadderService)
   let teamQueueService:TeamQueueService = container.get(TeamQueueService)
@@ -143,22 +141,18 @@ let startWebServer = async () => {
 
   while (!universe) {
 
-    let universeList = await universeService.list(1, 0)
+    let universe = await universeService.getActive()
 
-    if (universeList.length > 0) {
-
-      universe = universeList[0]
-
-    } else {
+    if (!universe) {
 
       console.log("Universe is not configured. Retrying...")
 
       //Sleep and try again
       await new Promise(r => setTimeout(r, 3000))
 
-    }
-
+    } 
   }
+
 
 
 
@@ -192,8 +186,6 @@ let startWebServer = async () => {
 
   console.log(`Universe loaded: ${universe._id}`)
 
-  console.log(`Connecting to Universe: ${universe.contractAddress}`)
-  setUniverseAddress(universe.contractAddress)
 
   setConfig(config)
 
@@ -239,7 +231,6 @@ let startWebServer = async () => {
       'PROVIDER_CHAIN_RPC_URL': PROVIDER_CHAIN_RPC_URL,
       'PROVIDER_CHAIN_BLOCK_EXPLORER': PROVIDER_CHAIN_BLOCK_EXPLORER,
       'DIAMONDS_ADDRESS': universe.diamondAddress,
-      'UNIVERSE_ADDRESS': universe.contractAddress,
       'ADMIN_ADDRESS': universe.adminAddress,
       'IPFS_CID': universe.ipfsCid,
       'OPENSEA_COLLECTION_URL': OPENSEA_COLLECTION_URL

@@ -73,8 +73,6 @@
 
 </template>
 
-
-
 <script>
   import { ContainerService } from "../../../service/container-service"
   import { WalletService } from "../../../service/wallet-service"
@@ -120,6 +118,8 @@
     }
 
     const isRewardMint = (oce) =>
+      oce?.contractType === "DIAMONDS" &&
+      oce?.event === "Transfer" &&
       oce?.fromAddress === ZERO &&
       oce?.source?.type === "reward" &&
       (oce?.source?.rewardType === "daily" || oce?.source?.rewardType === "season")
@@ -131,17 +131,14 @@
       return "Reward"
     }
 
-    const formatDiamondsSigned = (oce) => {
-      if (!oce?.amount) return ""
-      const amt = universeWebService.displayDiamonds(oce.amount)
-      if (oce.toAddress === ZERO) return `-${amt}`
-      return `${amt}`
-    }
-
     const getOffChainAmount = (oce) => {
-      if (oce?.contractType === "DIAMONDS" && oce?.event === "Transfer") {
-        return formatDiamondsSigned(oce)
-      }
+      if (oce?.contractType !== "DIAMONDS" || oce?.event !== "Transfer") return
+
+      const amt = universeWebService.displayDiamonds(oce.amount)
+      if (!amt) return
+
+      // if (oce.toAddress === ZERO) return `-${amt}`
+      return `${amt}`
     }
 
     const renderDescription = (oce) => {
@@ -166,18 +163,9 @@
       }
 
       if (oce?.contractType == "DIAMONDS" && oce?.event == "Transfer") {
-
-        // Burn / deposit (to ZERO)
-        if (oce.toAddress === ZERO) return $h`Diamond deposit`
-
-        // Reward mint (from ZERO + source.type=reward)
         const rewardLabel = getRewardLabel(oce)
         if (rewardLabel) return $h`${rewardLabel}`
-
-        // Other mints (from ZERO but not a reward)
-        if (oce.fromAddress === ZERO) return $h`Diamond withdrawal`
-
-        return $h`Diamonds transfer`
+        return $h`Diamond transfer`
       }
 
       if (oce?.contractType && oce?.event) return $h`${oce.contractType} ${oce.event}`
@@ -191,32 +179,26 @@
       const playerTransfers = events.filter(e => e?.contractType === "PLAYERS" && e?.event === "Transfer")
       const diamondTransfers = events.filter(e => e?.contractType === "DIAMONDS" && e?.event === "Transfer")
 
-      const dailyRewards = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "daily").length
-      const seasonRewards = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "season").length
+      // If it’s only diamonds, summarize rewards nicely, otherwise “Diamond transfer”.
+      const onlyDiamonds = diamondTransfers.length > 0 && playerTransfers.length === 0 && events.length === diamondTransfers.length
 
-      const depositCount = diamondTransfers.filter(e => e?.toAddress === ZERO).length
+      if (onlyDiamonds) {
+        const daily = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "daily").length
+        const season = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "season").length
+        const other = diamondTransfers.length - daily - season
 
-      const otherMints = diamondTransfers.filter(e =>
-        e?.fromAddress === ZERO && !isRewardMint(e)
-      ).length
+        // Single-event friendly headers
+        if (diamondTransfers.length === 1) {
+          if (daily === 1) return "Daily rewards"
+          if (season === 1) return "Season rewards"
+          return "Diamond transfer"
+        }
 
-      const otherDiamondTransfers = diamondTransfers.length - dailyRewards - seasonRewards - depositCount - otherMints
-
-      const isPureDiamond = diamondTransfers.length > 0 && playerTransfers.length === 0
-
-      if (isPureDiamond) {
-        if (dailyRewards > 0 && seasonRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Daily rewards"
-        if (seasonRewards > 0 && dailyRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Season rewards"
-        if (depositCount > 0 && dailyRewards === 0 && seasonRewards === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Diamond deposit"
-        if (otherMints > 0 && dailyRewards === 0 && seasonRewards === 0 && depositCount === 0 && otherDiamondTransfers === 0) return "Diamond withdrawal"
-        if (otherDiamondTransfers > 0 && dailyRewards === 0 && seasonRewards === 0 && depositCount === 0 && otherMints === 0) return "Diamonds transfer"
-
+        // Multi-event headers
         const parts = []
-        if (dailyRewards) parts.push(`${dailyRewards} daily reward${dailyRewards === 1 ? "" : "s"}`)
-        if (seasonRewards) parts.push(`${seasonRewards} season reward${seasonRewards === 1 ? "" : "s"}`)
-        if (depositCount) parts.push(`${depositCount} deposit${depositCount === 1 ? "" : "s"}`)
-        if (otherMints) parts.push(`${otherMints} mint${otherMints === 1 ? "" : "s"}`)
-        if (otherDiamondTransfers) parts.push(`${otherDiamondTransfers} transfer${otherDiamondTransfers === 1 ? "" : "s"}`)
+        if (daily) parts.push(`${daily} daily reward${daily === 1 ? "" : "s"}`)
+        if (season) parts.push(`${season} season reward${season === 1 ? "" : "s"}`)
+        if (other) parts.push(`${other} transfer${other === 1 ? "" : "s"}`)
         return parts.length ? parts.join(", ") : "Diamonds"
       }
 
@@ -242,12 +224,14 @@
         return parts.length ? parts.join(", ") : "Player moves"
       }
 
+      // Mixed tx (players + diamonds, etc.)
       if (diamondTransfers.length > 0 && playerTransfers.length === 0) {
-        if (dailyRewards > 0 && seasonRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Daily rewards"
-        if (seasonRewards > 0 && dailyRewards === 0 && depositCount === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Season rewards"
-        if (depositCount > 0 && dailyRewards === 0 && seasonRewards === 0 && otherMints === 0 && otherDiamondTransfers === 0) return "Diamond deposit"
-        if (otherMints > 0 && dailyRewards === 0 && seasonRewards === 0 && depositCount === 0 && otherDiamondTransfers === 0) return "Diamond withdrawal"
-        return "Diamonds"
+        // If it’s diamonds + other non-player stuff, keep it simple.
+        const daily = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "daily").length
+        const season = diamondTransfers.filter(e => isRewardMint(e) && e.source.rewardType === "season").length
+        if (diamondTransfers.length === 1 && daily === 1) return "Daily rewards"
+        if (diamondTransfers.length === 1 && season === 1) return "Season rewards"
+        return "Diamond transfer"
       }
 
       return "Transaction"
@@ -256,5 +240,3 @@
     return $render
   }
 </script>
-
-

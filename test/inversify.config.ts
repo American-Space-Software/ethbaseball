@@ -345,8 +345,6 @@ function getContainer(command?: GetContainerCommand) {
   container.bind("getDiamondsAddress").toConstantValue(() => {
   })
 
-  container.bind("getUniverseAddress").toConstantValue(() => {
-  })
 
   container.bind("getFees").toConstantValue(() => {
   })

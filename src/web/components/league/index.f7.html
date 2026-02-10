@@ -106,7 +106,6 @@
   import { TeamComponentService } from "../../service/team-component-service.ts"
   import { LeagueWebService } from "../../service/league-web-service.ts"
 
-  import { UniverseContractService } from "../../../service/universe-contract-service.ts"
   import { StatService } from "../../../service/stat-service.ts"
 
   import { Position } from "../../../service/enums.ts"
@@ -131,7 +130,6 @@
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
     let transactionWebService = ContainerService.getInstance(TransactionWebService)
-    let universeContractService = ContainerService.getInstance(UniverseContractService)
     
     let statService = ContainerService.getInstance(StatService)
 

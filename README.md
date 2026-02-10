@@ -119,7 +119,7 @@ This keeps the **minter private key off the web server** entirely (nice for secu
 ## Development Environment Example
 
 > **Notes**
-> - If `UNIVERSE_ADDRESS` is **not set**, the engine will **deploy a new Universe contract** to the configured network on first run. After it deploys, **copy the Universe address from the logs** and paste it into this file.
+> - If `DIAMOND_ADDRESS` is **not set**, the engine will **deploy a new Diamonds contract** to the configured network on first run. After it deploys, **copy the Diamonds address from the logs** and paste it into this file.
 > - If `MINTER_WALLET_KEY` is not provided:
 >   - The engine will generate a new wallet and print it to the console, **or**
 >   - In `:dev` mode it defaults to the standard Hardhat test wallet `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`.
@@ -146,8 +146,8 @@ MYSQL_ALLOW_EMPTY_PASSWORD=true
 # Only set ALCHEMY_API_KEY in sepolia/production; leave blank in dev.
 ALCHEMY_API_KEY=
 
-# If blank, engine will deploy a new Universe and print the address in logs.
-UNIVERSE_ADDRESS=
+# If blank, engine will deploy a new Diamonds contract and print the address in logs.
+DIAMONDS_ADDRESS=
 
 DEFAULT_AIRDROP=true
 
