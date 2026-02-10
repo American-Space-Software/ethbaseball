@@ -101,3 +101,5 @@ cache
 .docker/*
 .deploy/*
 server-cache
+
+types/
