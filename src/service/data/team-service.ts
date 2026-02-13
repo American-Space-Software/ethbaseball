@@ -157,7 +157,7 @@ n
         })
     }
 
-    async getTeamViewModel(team: Team, season: Season, userOwner:User, options?: any): Promise<TeamViewModel> {
+    async getTeamViewModel(currentDate:Date, team: Team, season: Season, userOwner:User, options?: any): Promise<TeamViewModel> {
 
         let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
         let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
@@ -172,10 +172,31 @@ n
         let games:Game[] = await this.gameService.getRecentByTeam(team, { limit: 5 } )
 
 
+        let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
+
+
+        const ev = await this.offchainEventService.getMostRecentDailyDiamondRewardByTeamId(team._id)
+
+        let yesterdaysRewards
+
+        if (ev?.source?.fromDate) {
+
+            const from = ev?.source?.fromDate
+            const isYesterday = dayjs(from).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, "day").format("YYYY-MM-DD")
+
+            yesterdaysRewards = isYesterday ? (ev?.amount ?? "0") : "0"
+
+        } else {
+
+            yesterdaysRewards = "0"
+        }
+
+
         return {
             team: {
                 _id: team._id,
                 diamondBalance: diamondBalance,
+                minimumPlayerSalary: minimumPlayerSalary,
                 logoId: tls.logoId,
                 name: team.name,
                 colors: team.colors,
@@ -194,12 +215,13 @@ n
                 financeSeason: t.financeSeason,
                 isQueued: isQueued,
 
-
                 owner: {
                     _id: team.userId,
                     discordId: userOwner?.discordId,
                     discordUsername: userOwner?.discordProfile?.username
-                }
+                },
+
+                yesterdaysRewards: yesterdaysRewards
             },
             players: plss.map(pls => {
 
@@ -1173,6 +1195,8 @@ interface TeamViewModel {
         }
 
         isQueued:boolean
+        minimumPlayerSalary:string
+        yesterdaysRewards:string
     }
 
     players?: PlayerRowViewModel[]

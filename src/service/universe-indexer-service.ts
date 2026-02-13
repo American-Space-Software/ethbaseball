@@ -46,6 +46,7 @@ class UniverseIndexerService {
     diamondContractAddress:string
 
     private isIndexing:boolean = false
+    private BLOCK_CONFIRMATIONS:number
 
 
     constructor(
@@ -64,10 +65,12 @@ class UniverseIndexerService {
         private teamLeagueSeasonService:TeamLeagueSeasonService
     ) { }
 
-    BLOCK_CONFIRMATIONS = 35
+    
 
 
-    async init(diamondContract: Contract, options?:any) {
+    async init(diamondContract: Contract, BLOCK_CONFIRMATIONS:number,  options?:any) {
+
+        this.BLOCK_CONFIRMATIONS = BLOCK_CONFIRMATIONS
 
         let s = await this.sequelize()
 

@@ -90,13 +90,11 @@ class UserService {
         let teams:Team[] = await this.teamService.getByUser(user)
         let team = teams[0]
 
-        vm.teamInfo = await this.teamService.getTeamViewModel(team, season, user)
+        vm.teamInfo = await this.teamService.getTeamViewModel(currentDate, team, season, user)
 
         vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
 
-
-    
         const ev = await this.offchainEventService.getMostRecentDailyDiamondRewardByTeamId(team._id)
 
         if (ev?.source?.fromDate) {
@@ -107,8 +105,6 @@ class UserService {
         } else {
             vm.teamInfo.team.yesterdaysRewards = "0"
         }
-
-
 
         
         if (season) {

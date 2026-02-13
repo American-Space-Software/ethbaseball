@@ -2,73 +2,112 @@
 
     <div>
 
-        <div class="block-title block-title-medium">Starting Lineup ${teamComponentService.team?.hasValidLineup ? $h`🟢 <span
-                class="block-title-detail">The pitcher always bats 9th.</span>` : $h`🔴 <span
-                class="block-title-detail">Lineup is invalid. Fix before queueing.</span>`}</div>
 
-        <div
-            class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
+
+        <div class="block-title block-title-medium lineup-title-row">
+            <span class="lineup-title-text">Starting Lineup</span>
+
+            <div class="tx-toolbar">
+
+                ${teamComponentService.isTeamOwner() && !teamComponentService.team.isQueued ? $h`
+                    
+                    <div class="tx-toolbar-left">
+                        <a class="button button-small button-outline" href="${universeWebService.startDateLink(`/players/?rank=0`)}">➕ Add Players</a>
+                        <a class="button button-small button-outline" @click="${dropPlayersClick}">${showDropButtons ? 'Cancel Drop' : '⛔ Drop Players'}</a>
+                    </div>
+
+                ` : $h` ` }
+
+
+
+
+                <div class="tx-toolbar-right">
+                    <select @change="${statsChange}" class="tx-toolbar-select button button-outline">
+                        <option value="stats" selected>Stats</option>
+                        <option value="ratings">Ratings</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+        <div class=" block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
+        
             ${teamComponentService.selected == "stats" ? $h`
-            <hitter-stats hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                movefilter="${moveFilter}" actions="${getActions('hitters', true)}" statprop="seasonStats">
-                <select @change="${statsChange}" class="stats-dropdown">
-                    <option value="stats" selected>Season Stats</option>
-                    <option value="ratings">Ratings</option>
-                </select>
-            </hitter-stats>
+                <hitter-stats hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
+                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}" statprop="seasonStats">
+                </hitter-stats>
             ` : $h` `}
 
             ${teamComponentService.selected == "ratings" ? $h`
-            <hitter-ratings hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
-                <select @change="${statsChange}" class="stats-dropdown">
-                    <option value="stats">Season Stats</option>
-                    <option value="ratings" selected>Ratings</option>
-                </select>
-            </hitter-ratings>
+                <hitter-ratings hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
+                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
+                </hitter-ratings>
             ` : $h` `}
 
-            ${teamComponentService.selected == "contracts" ? $h`
-            <hitter-contracts hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
-                <select @change="${statsChange}" class="stats-dropdown">
-                    <option value="stats">Season Stats</option>
-                    <option value="ratings">Ratings</option>
-                </select>
-            </hitter-contracts>
-            ` : $h` `}
         </div>
 
         <div class="block-title block-title-medium ">
-            Pitching Rotation <span class="block-title-detail">Set pitcher priority. The next starter has the highest
-                stamina with rotation priority the tiebreaker.</span>
+            Pitching Rotation <span class="block-title-detail">Set pitcher priority. The next starter has the highest stamina with rotation priority the tiebreaker.</span>
         </div>
 
-        <div
-            class="block block-outline block-strong block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `}">
-
+        <div class="block block-outline block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
             ${teamComponentService.selected == "stats" ? $h`
-            <pitcher-stats pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" statprop="seasonStats">
-                <span />
-            </pitcher-stats>
+                <pitcher-stats pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
+                    movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" statprop="seasonStats">
+                    <span />
+                </pitcher-stats>
             ` : $h` `}
 
             ${teamComponentService.selected == "ratings" ? $h`
-            <pitcher-ratings pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
-                <span />
-            </pitcher-ratings>
+                <pitcher-ratings pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
+                    <span />
+                </pitcher-ratings>
             ` : $h` `}
-
-            ${teamComponentService.selected == "contracts" ? $h`
-            <pitcher-contracts pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
-                <span />
-            </pitcher-contracts>
-            ` : $h` `}
-
         </div>
+
+        <div class="popup drop-popup">
+            <div class="view">
+            <div class="page">
+                <div class="navbar">
+                <div class="navbar-bg"></div>
+                <div class="navbar-inner">
+                    <div class="title">Drop Player</div>
+                    <div class="right">
+                    <!-- Link to close popup -->
+                    <a class="link popup-close">Close</a>
+                    </div>
+                </div>
+                </div>
+                <div class="page-content">
+
+                    <div class="block">
+
+                        ${canAffordDrop ? $h`
+
+                            <p>
+                            Are you sure you want to drop ${dropPlayer?.fullName}? They will become a free agent that can be signed by any team.
+                            </p>
+                            
+                            <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
+                            
+                        ` : $h`                         
+                            You need a balance of at least ${universeWebService.displayDiamonds(teamComponentService.team?.minimumPlayerSalary)} to drop a player.
+                        `}
+
+
+                    </div>
+
+                </div>
+            </div>
+            </div>
+        </div>
+
+
     </div>
 
 </template>
@@ -80,6 +119,7 @@
   import { ContainerService } from "../../../service/container-service"
   import { UniverseWebService } from "../../service/universe-web-service"
   import { TeamComponentService } from "../../service/team-component-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
 
 
   export default (props, { $, $on, $f7, $update, $f7route, $onMounted }) => {
@@ -87,11 +127,53 @@
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let env = ContainerService.getInstance("env")()
     let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
 
     let PAGE_SIZE = 25
 
     let displayHitters = teamComponentService.getDisplayHitters()
     let displayPitchers = teamComponentService.getDisplayPitchers()
+
+    let dropPlayer
+    let canAffordDrop = teamComponentService.canAffordDrop()
+
+
+    let showDropButtons = false
+
+    const dropPlayersClick = async (e) => {
+        showDropButtons = !showDropButtons
+        await $update()
+    }
+
+    const dropButtonClick = async (e) => {
+
+      try {
+
+        if (teamComponentService.hasChanges) {
+            await teamComponentService.save()
+        }
+
+        await playerWebService.dropPlayer(dropPlayer)
+        $f7.popup.close('.drop-popup')
+        $f7.views.main.router.refreshPage()
+
+        const toast = $f7.toast.create({
+            text: 'Player dropped successfully.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
+
+        toast.open()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
+    }
+
 
     const refreshLineup = () => {
 
@@ -278,34 +360,49 @@
 
     }
 
-    const drop = (e) => {
+    const drop = async (e) => {
 
-        let moveTarget = $(e.srcElement).data('move-target')
-        let actionRow = $(e.srcElement).data('action-row')
+        let dropId = $(e.srcElement).data('id')
 
-        let dropId = moveActive[moveTarget]
+        dropPlayer = teamComponentService.rosterPlayers.find(p => p._id == dropId)
+
+        await $update()
+
+        $f7.popup.open('.drop-popup')
+
+        console.log(dropPlayer)
 
         //   teamComponentService.dropPlayer(dropId)
 
-        // console.log(teamComponentService.rosterPlayers.map(p => p._id))
 
 
-        moveActive[moveTarget] = undefined
+        // moveActive[moveTarget] = undefined
 
-        // updateDisplayRoster()
+        // // updateDisplayRoster()
 
-        $(`.action-row.${actionRow}`).hide()
-        resetMoves()
+        // $(`.action-row.${actionRow}`).hide()
+        // resetMoves()
 
 
-        refreshLineup()
+        // refreshLineup()
 
-        $update()
+        // $update()
 
     }
 
+    const showDropRoster = (p) => {
+
+        if (!showDropButtons) return false
+        if (p?._id) return true
+
+        return false
+    }
+
+
+
     const showMoveRoster = (p, moveTarget) => {
 
+        if (showDropButtons) return false
         if (moveFilter.hidePitcherSlot == true && p.fullName == "Pitcher Slot") return false
         if (moveFilter.moveTarget && moveFilter.moveTarget != moveTarget) return false
         if (moveFilter.showEmpty && p?._id == undefined) return true
@@ -338,9 +435,9 @@
 
                 switch (type) {
                     case "hitters":
-                        return isRostered ? rosterHittersActions : unrosteredHittersActions
+                        return rosterHittersActions
                     case "pitchers":
-                        return isRostered ? rosterPitchersActions : unrosteredPitchersActions
+                        return rosterPitchersActions
                 }
 
             } else {
@@ -353,10 +450,17 @@
     }
 
     let rosterHittersActions = {
+
         drop: drop,
-        move: moveRoster,
+
+        showDrop: (p) => {
+            return showDropRoster(p)
+        },
+
         moveTarget: "roster-hitters",
         isMoveTarget: "true",
+
+        move: moveRoster,
         showMove: (p) => {
             return showMoveRoster(p, "roster-hitters")
         },
@@ -366,39 +470,21 @@
     }
 
     let rosterPitchersActions = {
+
         drop: drop,
-        move: moveRoster,
+
+        showDrop: (p) => {
+            return showDropRoster(p)
+        },
+
         moveTarget: "roster-pitchers",
         isMoveTarget: "true",
+        move: moveRoster,
         showMove: (p) => {
             return showMoveRoster(p, "roster-pitchers")
         },
         moveText: (p) => {
             return showMoveRosterText(p, "roster-pitchers")
-        }
-    }
-
-    let unrosteredHittersActions = {
-        move: moveUnrostered,
-        moveTarget: "roster-hitters",
-        isMoveTarget: "false",
-        showMove: (p) => {
-            return showMoveUnrostered(p, "roster-hitters")
-        },
-        moveText: (p) => {
-            return "Move"
-        }
-    }
-
-    let unrosteredPitchersActions = {
-        move: moveUnrostered,
-        moveTarget: "roster-pitchers",
-        isMoveTarget: "false",
-        showMove: (p) => {
-            return showMoveUnrostered(p, "roster-pitchers")
-        },
-        moveText: (p) => {
-            return "Move"
         }
     }
 
@@ -442,9 +528,9 @@
         element.addClass("button-fill")
     }
 
+
     $f7.off('save-roster-click')
     $f7.on('save-roster-click', (e) => {
-        console.log('save click')
         saveClick(e)
     })
 

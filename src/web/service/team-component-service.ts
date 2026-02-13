@@ -115,7 +115,7 @@ class TeamComponentService {
 
             let authInfo = await this.loginWebService.getAuthInfo()
             let teamViewModel = await this.teamWebService.getByDate(teamId, startDate)
-  
+
             this.setLoadedTeam(teamViewModel, authInfo, startDate)
 
 
@@ -181,26 +181,6 @@ class TeamComponentService {
         this.hasChanges = true
     }
 
-
-    combineStatsAndRatings(statsResult, ratingsResult) {
-
-        for (let hitterStat of statsResult.hitters) {
-            let ratingsPlayer = ratingsResult.hitters.find(p => p._id == hitterStat._id)
-            hitterStat.ratings = {}
-            hitterStat.ratings.hitting = ratingsPlayer.ratings.hitting
-        }
-
-        for (let pitcherStat of statsResult.pitchers) {
-            let ratingsPlayer = ratingsResult.pitchers.find(p => p._id == pitcherStat._id)
-            pitcherStat.ratings = {}
-
-            pitcherStat.ratings.pitching = ratingsPlayer.ratings.pitching
-            pitcherStat.ratings.pitchRating = ratingsPlayer.ratings.pitchRating
-        }
-    }
-
-
-    
 
     moveToRoster(selectedId, currentPlayerId, spot, lineupIndex) {
         this.hasChanges = true
@@ -379,6 +359,16 @@ class TeamComponentService {
 
     }
 
+    canAffordDrop() {
+
+      if (!this.authInfo?.offChainDiamondBalance) return false
+      if (!this.team?.minimumPlayerSalary) return false
+
+      if (BigInt(this.authInfo.offChainDiamondBalance) < BigInt(this.team.minimumPlayerSalary)) return false
+
+      return true
+
+    }
 
 
 }

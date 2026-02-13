@@ -32,35 +32,31 @@
                 <span><strong>Cost:</strong> ${universeWebService.displayDiamonds(player.askingPrice)}</span><br />    
               ` : $h` `}
 
-              ${authInfo?._id != undefined && authInfo._id == player.team?.userId && !player.team.isQueued && canAffordDrop() ? $h`
-                <a data-popup=".drop-popup" class="button button-fill color-red drop-button popup-open">Drop</a> 
+
+              ${showInsufficientDiamonds ? $h`
+                <p>
+                  Your team does not have enough diamonds to sign this player.
+                </p>
               ` : $h` `}
-                  
-              ${player.askingPrice ? $h`
 
-                ${authInfo?._id ? $h`
-                  
-                  ${BigInt(authInfo.teamDiamondBalance >= BigInt(player.askingPrice)) ? $h`
-                    <a data-popup=".sign-popup" class="button button-fill color-orange sign-button popup-open">Sign Player</a> 
-                  ` : $h` 
-                    
-                    <p>
-                      Your team does not have enough diamonds to sign this player.
-                    </p>
-                  `}
-
-                ` : $h` `}
-
-                
+              ${showInsufficientDiamondsToDrop ? $h`
+                <p>
+                  You need a balance of at least ${universeWebService.displayDiamonds(player.minimumPlayerSalary)} to drop a player.
+                </p>
               ` : $h` `}
 
             </div>
 
           </div>
 
-          ${authInfo?._id != undefined && authInfo._id == player.team?.userId && player.team.isQueued ? $h`
+
+          ${showActions ? $h`
+              <div class="block-header">Team Actions</div>
               <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
+
+                    ${player.team?.isQueued ? $h`
+
                       <li>
                           <a class="item-link item-content">
                               <div class="item-media">🏟️</div>
@@ -79,9 +75,52 @@
                               </div>
                           </a>
                       </li>
+
+                    ` : $h` 
+                    
+                      ${showDrop ? $h`
+
+                        <li>
+                          <a class="item-link item-content popup-open" data-popup=".drop-popup">
+                            <div class="item-media">⛔</div>
+                            <div class="item-inner">
+                              <div class="item-title-row">
+                                <div class="item-title">
+                                  Drop Player
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </li>
+
+                      ` : $h` `}
+
+                      ${showSign ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".sign-popup">
+                              <div class="item-media">➕</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    Add Player
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+              
+                    
+                    `}
+
                   </ul>
               </div>
+
+
           ` : $h` `}
+
 
 
 
@@ -674,7 +713,7 @@
                   <div class="navbar">
                     <div class="navbar-bg"></div>
                     <div class="navbar-inner">
-                      <div class="title">Sign Player</div>
+                      <div class="title">Add Player</div>
                       <div class="right">
                         <!-- Link to close popup -->
                         <a class="link popup-close">Close</a>
@@ -683,7 +722,7 @@
                   </div>
                   <div class="page-content">
 
-                        ${authInfo?.teamDiamondBalance ? $h` 
+                        ${authInfo?.offChainDiamondBalance ? $h` 
                           
                           <div class="block">
 
@@ -694,7 +733,7 @@
 
                             <p>
                               <strong>Balance:</strong><br />
-                              ${universeWebService.displayDiamonds(authInfo.teamDiamondBalance)}
+                              ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance)}
                             </p>
 
                             <p>
@@ -749,6 +788,7 @@
 
   import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { LoginWebService } from "../../service/login-web-service.ts"
 
   import { Position } from "../../../service/enums.ts"
   import StartDate from "../common/start-date.f7.html"
@@ -761,16 +801,17 @@
 
     let statService = ContainerService.getInstance(StatService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
+    let loginWebService = ContainerService.getInstance(LoginWebService)
 
     let authInfo = props.authInfo
     let player = props.player
     
     const canAffordDrop = () => {
 
-      if (!authInfo?.teamDiamondBalance) return false
+      if (!authInfo?.offChainDiamondBalance) return false
       if (!player?.minimumPlayerSalary) return false
 
-      if (BigInt(authInfo.teamDiamondBalance) < BigInt(player.minimumPlayerSalary)) return false
+      if (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary)) return false
 
       return true
 
@@ -864,14 +905,24 @@
 
     }
 
+    let isLoggedIn = authInfo?._id != undefined
+    let isOwner = isLoggedIn && authInfo._id == player.team?.userId
 
+    let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop()) == true
+    let showSign = ( isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
+
+    let showInsufficientDiamonds = isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.askingPrice))
+    let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary))
+
+    let showActions = player.team?.isQueued || showDrop || showSign
+
+    
     $on('pageInit', async (e) => {
 
     })
 
 
     $on('pageBeforeIn', async (e) => {
-
 
       let breadcrumbs = [
           { text: "Home", path: "/"},

@@ -904,8 +904,7 @@ class GameService {
         if (allPlays?.length > 0) {
             const lastPlay = allPlays[allPlays.length - 1]
 
-            // A play is only "in progress" if it has no official result yet
-            if (!lastPlay.officialPlayResult) {
+            if (!lastPlay.count?.end) {
                 play = lastPlay
             }
         }

@@ -30,7 +30,7 @@ class HomeController {
     @routeMap("/")
     async showIndex(): Promise<ModelView> {
         
-        let authInfo = await this.loginWebService.getAuthInfo()
+        let authInfo = await this.loginWebService.getAuthInfo(true)
 
         if (authInfo?._id) {
 

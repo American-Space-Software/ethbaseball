@@ -46,45 +46,43 @@
 
         <div class="player-list">
 
+
+            <select @change="${statsChange}" class="stats-dropdown">
+                <option value="stats" selected>Season Stats</option>
+                <option value="ratings">Ratings</option>
+            </select>
+
             ${position == 'P' ? $h`
-                ${selected == "stats" ? $h`
-                    <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                        <select @change="${statsChange}" class="stats-dropdown">
-                            <option value="stats" selected>Season Stats</option>
-                            <option value="ratings">Ratings</option>
-                        </select>
-                    </pitcher-stats>
-                ` : $h` `}
 
-                ${selected == "ratings" ? $h`
-                    <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                        <select @change="${statsChange}" class="stats-dropdown">
-                            <option value="stats">Season Stats</option>
-                            <option value="ratings" selected>Ratings</option>
-                        </select>
-                    </pitcher-ratings>
-                ` : $h` `}
+                <div class="stat-table-wrapper">
+                    ${selected == "stats" ? $h`
+                        <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        </pitcher-stats>
+                    ` : $h` `}
 
-        ` : $h` 
-                ${selected == "stats" ? $h`
-                    <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                        <select @change="${statsChange}" class="stats-dropdown">
-                            <option value="stats" selected>Season Stats</option>
-                            <option value="ratings">Ratings</option>
-                        </select>
-                    </hitter-stats>
-                ` : $h` `}
+                    ${selected == "ratings" ? $h`
+                        <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                        </pitcher-ratings>
+                    ` : $h` `}
+                </div>
+                        
+            ` : $h` 
 
-                ${selected == "ratings" ? $h`
-                    <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
-                        <select @change="${statsChange}" class="stats-dropdown">
-                            <option value="stats">Season Stats</option>
-                            <option value="ratings" selected>Ratings</option>
-                        </select>
-                    </hitter-ratings>
-                ` : $h` `}
+                    <div class="stat-table-wrapper">
 
-        ` }
+                        ${selected == "stats" ? $h`
+                            <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            </hitter-stats>
+                        ` : $h` `}
+
+                        ${selected == "ratings" ? $h`
+                            <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            </hitter-ratings>
+                        ` : $h` `}
+
+                    </div>
+
+            ` }
 
         </div>
 

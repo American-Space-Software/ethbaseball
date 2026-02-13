@@ -1064,73 +1064,6 @@ class PlayerService {
     }
 
 
-    // /**
-    //  * Announces drafted player in discord. Should probably be in discord-service.ts but was dealing with a dependency injection circular loop. FIX.
-    //  * @param player 
-    //  * @param animation 
-    //  */
-    // async announceDraftedPlayer(owner: string, player: Player, animation: Animation) {
-
-    //     try {
-
-    //         let channel: TextChannel = await this.discord.channels.fetch(process.env.PLAY_CHANNEL_ID) as TextChannel
-
-    //         const file = new AttachmentBuilder(`${this._config().publicPath}/animations/${animation.cid}.png`)
-
-    //         const playerEmbed = new EmbedBuilder()
-    //             .setColor(0x0099FF)
-    //             .setURL(`${process.env.WEB}/?p=${player._id}`)
-    //             .setTitle(`${player.fullName} drafted by ${owner}.`)
-
-    //         await channel.send({ content: '', embeds: [playerEmbed], components: [], files: [file] })
-
-    //     } catch (ex) {
-
-    //         console.log(ex)
-
-    //     }
-
-
-
-    // }
-
-    // async generatePNGFromHTML(html: string, outputPath: string, height: number, width: number) {
-
-    //     let page = parser.parseFromString(html, 'text/html')
-
-    //     let body = page.getElementsByTagName('body')[0]
-
-    //     let contentHTML = he.unescape(new XMLSerializer().serializeToString(body))
-
-    //     //Swap body tag to a div
-    //     contentHTML = "<div xmlns='http://www.w3.org/1999/xhtml'" + contentHTML.slice(5)
-    //     contentHTML = contentHTML.substring(0, contentHTML.length - 7) + "</div>"
-
-
-
-    //     let svg = `<svg viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' version='1.1'>
-    //         <g>
-    //             <foreignObject x='0' y='0' width='${width}' height='${height}'>
-    //                 <div style="background: #ebf4ff; width:100%; height:100%;">
-    //                     ${contentHTML}
-    //                 </div>
-                    
-    //             </foreignObject>
-    //         </g>
-    //     </svg>`
-
-    //     let png = await this.convert(svg, {
-    //         height: height,
-    //         width: width,
-    //         puppeteer: {
-    //             args: ['--no-sandbox', '--disable-setuid-sandbox']
-    //         }
-    //     })
-
-    //     fs.writeFileSync(outputPath, png)
-
-    // }
-
 
 
     async getPlayerViewModels(startDate:Date, rankOneLeague:League, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
@@ -1279,41 +1212,6 @@ class PlayerService {
             .toString()
     }
 
-
-
-
-    // getArbitrationSalary(playerRating:number, laOverallRating:number, laSalary:number, rookieSalary:number) {
-
-    //     let overallRatingChange = this.rollService.getChange(laOverallRating, playerRating)
-
-    //     overallRatingChange *= 5
-
-    //     let salary = this.rollService.applyChange(laSalary, overallRatingChange)
-
-    //     if (salary < rookieSalary) return rookieSalary
-    //     if (salary > MAX_AAV_CONTRACT) return MAX_AAV_CONTRACT
-
-    //     return salary
-    // }
-
-    // getSalaryModifier(leagueRank:number) {
-
-    //     let salaryModifier = 1
-
-    //     Array.from({ length: leagueRank - 1 }, () => {
-    //         salaryModifier *= .5
-    //     })    
-
-    //     return salaryModifier
-    // }
-
-    // getRookieSalary(leagueRank:number) {
-
-    //     let salaryModifier = this.getSalaryModifier(leagueRank)
-    //     return MIN_AAV_CONTRACT * salaryModifier
-    // }
-
-
     getYearsContractAsk(yearsOld: number): number {
 
         switch (yearsOld) {
@@ -1396,15 +1294,6 @@ class PlayerService {
         return this.playerRepository.getFreeAgentIdsByPositionAndSalary(position, salary, date, limit, offset, options)
     }
 
-    // getAllContractYears(player:Player) {
-
-    //     let allYears = player.completeContracts.flatMap( c => c.years).concat(player.contract.years)
-
-    //     return allYears.map( y => Object.assign({
-    //         salaryDecimal: y.salary ? parseInt(ethers.formatUnits(y.salary, 'ether')) : undefined
-    //     }, y))
-        
-    // }
 
     randomPersonalityType(rng) : PersonalityType {
 

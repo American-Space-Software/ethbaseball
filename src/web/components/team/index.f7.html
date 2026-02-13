@@ -21,7 +21,7 @@
 
             ${teamComponentService.team ? $h`
 
-                <div class="list media-list list-outline-ios list-strong">
+                <div class="list media-list links-list list-outline-ios list-strong">
                     <ul>
                         <li>
                             <div class="item-content">
@@ -39,27 +39,42 @@
                                     <div class="item-subtitle">
                                         ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)}
                                     </div>
-
-                                    <div class="item-text">
-                                        Cash: ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}
-                                    </div>
                                     
                                 </div>
                             </div>
                         </li>
+
+                        <li>
+
+                            <table class="data-table">
+                                <tbody>
+                                <tr>
+                                    <td ><strong>Cash</strong></td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</td>
+                                </tr>
+
+                                <tr>
+                                    <td ><strong>Season Rewards</strong></td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
+                                </tr>
+                                <tr>
+                                    <td ><strong>Yesterday's Rewards</strong></td>
+                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.yesterdaysRewards)}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </li>
+
                     </ul>
                 </div>
 
-
-                <div class="list links-list list-inset list-outline-ios list-dividers-ios list-strong">
+                <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
                         <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">🔷 Rewards & Player Moves</a></li>
-                        <!-- <li><a data-popup=".front-office-popup" class="link popup-open" href="#">🏢 Front Office</a> </li>    -->
-
-                        <a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> 
-
+                        <li><a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> </li>
                     </ul>
                 </div>
+
 
                 ${teamComponentService.isTeamOwner() && teamComponentService.team.isQueued ? $h`
                     <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
@@ -299,92 +314,9 @@
         $f7.emit('save-roster-click', e)
     }
 
-
     const isSigned = (mp) => {
       return (mp?.r && mp.s && mp.v)
     }
-
-    // const mintPassClick = async (e) => {
-
-    //     try {
-
-    //         //Get signed mint pass
-    //         let mintPass = teamComponentService.team.diamondMintPasses.find(mp => mp._id == $(e.target).data('id'))
-
-    //         let result = await diamondWebService.withdraw(mintPass)
-
-    //         if (result.hash) {
-    //             $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
-    //         }
-
-    //     } catch (ex) {
-    //         $f7.dialog.alert(ex.reason, "There was an error")
-    //         console.log(ex)
-    //     }
-
-
-    // }
-
-    // const withdrawClick = async (e) => {
-
-    //     try {
-
-    //             let confirmMessage = `
-
-    //     <div style="text-align: left;">
-
-    //     <p>Creates a mint pass for ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)} and clears the team's diamond balance.</p>
-
-    //     <ul style="padding-left: 15px;">
-    //         <li>Redeemable on-chain only</li>
-    //         <li>Expires in 1 year</li>
-    //         <li>Non-reversible</li>
-    //     </ul>
-
-    //     Continue?
-
-    //     </div>
-
-    //             `
-
-    //             $f7.dialog.confirm(confirmMessage, "Withdraw", async () => {
-                
-    //             //Get signed mint pass
-    //             let mintPass = await diamondWebService.getWithdrawPass(tokenId)
-
-    //             await checkForMintPassProcessing()
-
-    //             })
-
-
-    //         } catch(ex) {
-    //             $f7.dialog.alert(ex.reason, "There was an error")
-    //             console.log(ex)
-    //         }
-
-
-
-
-
-    //     try {
-
-    //         // let mintInfo = await teamWebService.withdraw(teamComponentService.team.tokenId)
-
-
-
-    //         // let result = await diamondService.withdraw(mintInfo.to, mintInfo._id, mintInfo.amount, mintInfo.tokenId, mintInfo.expires, mintInfo.v, mintInfo.r, mintInfo.s)
-
-    //         // if (result.hash) {
-    //         //     $f7.popup.close('.front-office-popup')
-    //         //     $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
-    //         // }
-
-    //     } catch (ex) {
-    //         $f7.dialog.alert(ex.reason, "There was an error")
-    //         console.log(ex)
-    //     }
-
-    // }
 
     const parseFloatWithException = (theStr) => {
 
@@ -397,8 +329,6 @@
     const getAsPercent = (value) => {
         return Math.floor(value * 100)
     }
-
-
     
     const load = async () => {
 
@@ -408,18 +338,6 @@
 
       $f7.preloader.hide()
 
-    }
-
-    const checkForMintPassProcessing = async () => {
-
-      await load()
-      
-      if (teamComponentService.team.diamondMintPasses?.length > 0 && teamComponentService.team.diamondMintPasses.find( mp => !mp.r && !mp.s && !mp.v)) {
-        setTimeout(async () => { await checkForMintPassProcessing() }, 5*1000)
-      }
-
-      await $update()
-      
     }
 
     const onGameUpdate = async (game) => {

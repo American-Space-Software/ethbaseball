@@ -18,7 +18,6 @@
                     ${dayjs.unix(tx.transaction.timestamp).format("ddd, MMM D, YYYY h:mm A")}
                   </div>
 
-
                   ${tx.rows?.length ? $h`
                     <div class="item-text transaction-events">
                       ${tx.rows.map(row => $h`
@@ -26,14 +25,7 @@
 
                           <div class="transaction-event-title-row">
                             <div class="transaction-event-title">
-                              ${row.title}
-                              ${row.teamTokenId ? $h`
-                                <span>
-                                  ${' '}<span class="muted">of</span>
-                                  <a href="/t/${row.teamTokenId}">${getTeamName(row.teamTokenId)}</a>
-                                  <span class="muted">(#${row.teamTokenId})</span>
-                                </span>
-                              ` : $h``}
+                              ${row.title} ${row.note ? $h`<span class="badge">${row.note}</span>` : $h``}
                             </div>
 
                             <div class="transaction-event-after">
@@ -57,7 +49,7 @@
                                 </a>
                               ` : $h``}
 
-                              ${row.note ? $h`<span class="badge">${row.note}</span>` : $h``}
+                              
                             </div>
                           ` : $h``}
 
@@ -89,10 +81,7 @@
     const ZERO = "0x0000000000000000000000000000000000000000"
     const onChainEvents = props.events
 
-    const getTeamName = (tokenId) => {
-      const team = onChainEvents.teams?.find(t => t.tokenId == tokenId)
-      return team ? `${team.cityName} ${team.name}` : `Team #${tokenId}`
-    }
+
 
     const isTransfer = (e) => (e?.event === "Transfer" || e?.isTransfer) && (e?.contractType === "DIAMONDS" || e?.contractType == null)
     const isDeposit = (e) => e?.event === "DepositToTeam"
@@ -134,7 +123,6 @@
         const tr = takeMatchingTransfer(d.amount)
         rows.push({
           title: "Deposit",
-          teamTokenId: d.tokenId,
           amountText: d.amount ? formatDiamonds(d.amount) : "",
           fromAddress: tr?.fromAddress || d.fromAddress,
           toAddress: tr?.toAddress || d.toAddress,
@@ -146,7 +134,6 @@
         const tr = takeMatchingTransfer(r.amount)
         rows.push({
           title: (r.event === "MintReward") ? "Reward" : "Withdraw",
-          teamTokenId: r.tokenId,
           amountText: r.amount ? formatDiamonds(r.amount) : "",
           fromAddress: tr?.fromAddress || r.fromAddress,
           toAddress: tr?.toAddress || r.toAddress,
@@ -159,7 +146,6 @@
         const tr = transfers[i]
         rows.push({
           title: "Diamonds transfer",
-          teamTokenId: null,
           amountText: tr.amount ? `${transferSign(tr)}${formatDiamonds(tr.amount)}` : "",
           fromAddress: tr.fromAddress,
           toAddress: tr.toAddress,
@@ -171,7 +157,6 @@
       for (const e of leftovers) {
         rows.push({
           title: e.event,
-          teamTokenId: e.tokenId,
           amountText: e.amount ? formatDiamonds(e.amount) : "",
           fromAddress: e.fromAddress,
           toAddress: e.toAddress,
@@ -182,6 +167,7 @@
       return rows
     }
 
+    console.log(onChainEvents)
 
     if (onChainEvents?.transactions?.length) {
       onChainEvents.transactions.forEach(tx => {

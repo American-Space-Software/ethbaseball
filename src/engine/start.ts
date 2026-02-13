@@ -26,6 +26,7 @@ let startEngine = async () => {
   const SIM_DATE = process.env.SIM_DATE ? dayjs(process.env.SIM_DATE).toDate() : new Date(new Date().toUTCString())
   const SECONDS_BETWEEN_INDEXES = process.env.SECONDS_BETWEEN_INDEXES ?  parseInt(process.env.SECONDS_BETWEEN_INDEXES) : 30
   const SECONDS_BETWEEN_MINT_PASS_SIGNINGS = process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS  ? parseInt(process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS) : 5
+  const BLOCK_CONFIRMATIONS = process.env.BLOCK_CONFIRMATIONS  ? parseInt(process.env.BLOCK_CONFIRMATIONS) : 35
 
   // const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY
   
@@ -126,6 +127,8 @@ let startEngine = async () => {
   //If we still don't have an address then deploy a new contract.
   if (!universe.diamondAddress) {
     universe.diamondAddress = await deployService.deployDiamonds(adminWalletAddress, minterWalletAddress)
+    console.log(`Diamonds deployed at ${universe.diamondAddress}`)
+
   }
 
   console.log(`Connecting to Diamonds: ${universe.diamondAddress}`)
@@ -154,7 +157,7 @@ let startEngine = async () => {
 
 
   //Start a sync process. 
-  await universeIndexerService.init(diamondService.diamondsContract)
+  await universeIndexerService.init(diamondService.diamondsContract, BLOCK_CONFIRMATIONS)
   
 
   const mintPassLoop = async () => {

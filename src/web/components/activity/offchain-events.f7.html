@@ -74,6 +74,7 @@
 </template>
 
 <script>
+  
   import { ContainerService } from "../../../service/container-service"
   import { WalletService } from "../../../service/wallet-service"
   import { LoginWebService } from "../../service/login-web-service"
@@ -95,8 +96,6 @@
     let teamWebService = ContainerService.getInstance(TeamWebService)
 
     let eventsViewModel = props.model
-
-    console.log(eventsViewModel)
 
     const ZERO = "0x0000000000000000000000000000000000000000"
 
@@ -148,19 +147,21 @@
         const playerNode = renderPlayerNode(oce)
 
         if (oce.fromTeamId && !oce.toTeamId) {
-          return $h`${playerNode} dropped by ${renderTeamNode(oce.fromTeamId)}.`
+          return $h`${playerNode} dropped to free agent pool from ${renderTeamNode(oce.fromTeamId)}.`
         }
 
         if (!oce.fromTeamId && oce.toTeamId) {
-          return $h`${playerNode} signed by ${renderTeamNode(oce.toTeamId)}.`
+          return $h`${playerNode} transferred from free agent pool to ${renderTeamNode(oce.toTeamId)}.`
         }
 
         if (oce.fromTeamId && oce.toTeamId) {
-          return $h`${playerNode} traded from ${renderTeamNode(oce.fromTeamId)} to ${renderTeamNode(oce.toTeamId)}.`
+          return $h`${playerNode} transferred from ${renderTeamNode(oce.fromTeamId)} to ${renderTeamNode(oce.toTeamId)}.`
         }
 
-        return $h`${playerNode} moved.`
+        return $h`${playerNode} transferred.`
       }
+
+
 
       if (oce?.contractType == "DIAMONDS" && oce?.event == "Transfer") {
         const rewardLabel = getRewardLabel(oce)

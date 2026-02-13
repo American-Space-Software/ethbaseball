@@ -228,6 +228,10 @@ class RollService {
         let runner2B = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
         let runner3B = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
 
+        if (command.play.runner.result.end.first && !runner1B ) throw new Error(`Runner on 1B not found in offense`)
+        if (command.play.runner.result.end.second && !runner2B ) throw new Error(`Runner on 2B not found in offense`)
+        if (command.play.runner.result.end.third && !runner3B ) throw new Error(`Runner on 3B not found in offense`)
+
 
         let pitchEvents:RunnerEvent[] = this.initRunnerEvents(command.pitcher, 
             undefined,

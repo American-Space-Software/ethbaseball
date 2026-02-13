@@ -1,13 +1,4 @@
 <template>
-
-  <div>
-
-    <div class="paging">
-      Showing ${pagingService.startIndex(PAGE_SIZE, currentPage) + 1}-${Math.min(pagingService.endIndex(PAGE_SIZE, currentPage) + 1, displayHitters.length)}.
-      <slot></slot>
-    </div>
-
-    <div class="stat-table-wrapper">
       <table class="data-table players ${actions ? $h`actions`: $h` `}">
         <thead>
           <tr>
@@ -55,9 +46,15 @@
 
                 ${actions ? $h`
                   <td class="action">
+
                     ${actions.showMove(p) ? $h`
                       <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-stats" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>
                     ` : $h` `}
+
+                    ${actions.showDrop(p) ? $h`
+                      <a @click="${actions.drop}" class="button button-outline button-drop color-red" data-id="${p._id}">Drop</a>
+                    ` : $h` `}
+
                   </td>
                 ` : $h` `}
 
@@ -125,6 +122,7 @@
               </tr>
             `)}
 
+
           ` : $h`
             <tr>
               <td colspan="30">No hitters on roster.</td>
@@ -132,9 +130,6 @@
           `}
         </tbody>
       </table>
-    </div>
-
-  </div>
 
 </template>
 

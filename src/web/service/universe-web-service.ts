@@ -97,40 +97,60 @@ class UniverseWebService {
         return result.data
     }
 
-  
-    displayDiamonds(value) {
+    formatDiamondValue(value) {
 
-        if (value == null) return
-
-        const diamonds = ethers.formatUnits(value) 
-
-        const num = Number(diamonds)
-        if (!Number.isFinite(num)) return `${diamonds} 🔷`
-
-        const decimalPlaces = this.countDecimalPlaces(diamonds)
-
-        return `${new Intl.NumberFormat("en-US", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: Math.min(decimalPlaces, 7) //maybe increase if we need
-        }).format(num)} 🔷`
-    }
-
-
-    displayDiamondsNoSymbol(value) {
         if (value == null) return
 
         const diamonds = ethers.formatUnits(value)
-
         const num = Number(diamonds)
-        if (!Number.isFinite(num)) return `${diamonds}`
+        if (!Number.isFinite(num)) return diamonds
 
-        const decimalPlaces = this.countDecimalPlaces(diamonds)
+        if (num === 0) return "0"
 
-        return `${new Intl.NumberFormat("en-US", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: Math.min(decimalPlaces, 18)
-        }).format(num)}`
+        const abs = Math.abs(num)
+
+        const fitPlain = (n) => {
+            const intLen = Math.floor(Math.abs(n)).toString().length
+            const remaining = 7 - intLen - 1
+            let decimals = 1
+            if (remaining > 0) decimals = Math.min(remaining, 6)
+            let s = n.toFixed(decimals)
+            if (s.length > 7 && decimals > 1) s = n.toFixed(decimals - 1)
+            if (s.length > 7) s = n.toFixed(1)
+            return s.length <= 7 ? s : null
+        }
+
+        const plain = fitPlain(num)
+        if (plain) return plain
+
+        const formatAbbrev = (n, suffix, div) => {
+            const v = n / div
+            const intLen = Math.floor(v).toString().length
+            const remaining = 7 - intLen - 1
+            let decimals = 1
+            if (remaining > 0) decimals = Math.min(remaining, 6)
+            let s = v.toFixed(decimals)
+            if (s.length > 7 && decimals > 1) s = v.toFixed(decimals - 1)
+            if (s.length > 7) s = v.toFixed(1)
+            if (s.length > 7) s = v.toFixed(0)
+            return `${s}${suffix}`
+        }
+
+        if (abs >= 1e9) return formatAbbrev(abs, 'B', 1e9)
+        if (abs >= 1e6) return formatAbbrev(abs, 'M', 1e6)
+        return formatAbbrev(abs, 'K', 1e3)
     }
+
+    displayDiamonds(value) {
+        const formatted = this.formatDiamondValue(value)
+        if (formatted == null) return
+        return `${formatted} 🔷`
+    }
+
+    displayDiamondsNoSymbol(value) {
+        return this.formatDiamondValue(value)
+    }
+
 
     private countDecimalPlaces(diamonds:string) {
         const [, decimals = ""] = diamonds.split(".")

@@ -816,8 +816,9 @@ h1 {
   color: white;
 }
 
-.paging .stats-dropdown {
+.stats-dropdown {
   float: right;
+  margin: 10px;
   font-size: 13px;
   border: 1px solid #cccccc;
   appearance: auto;
@@ -2565,12 +2566,14 @@ td.diamonds {
 td.action, th.action {
   width: 60px;
   min-width: 60px;
+  max-width: 60px;
   padding-right: 0px;
   padding-left: 4px;
 }
 
-.button-move {
-  font-size: .75em;
+.button-move, .button-drop {
+  width: 50px;
+  font-size: 1em;
   margin-left: 2px;
 }
 
@@ -3284,3 +3287,92 @@ td.action, th.action {
   margin-top: 2px;
 }
 
+.reward-table {
+  padding: 0px;
+  margin: 0px;
+}
+
+.reward-table td {
+  padding: 0px;
+}
+
+.reward-table td.numeric-cell {
+  text-align: right;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.tx-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px;
+}
+
+.tx-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-toolbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tx-toolbar-select {
+  height: 28px;
+  line-height: 24px;
+}
+
+
+.lineup-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lineup-title-text {
+  flex: 0 0 auto;
+}
+
+.lineup-title-row .tx-toolbar {
+  flex: 1 1 auto;
+  width: auto;
+  padding: 0;
+  justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+  .lineup-title-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lineup-title-row .tx-toolbar {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+
+
+
+@media (min-width: 1024px) {
+  .lineup-grid {
+    grid-template-columns: 3fr 7fr;
+  }
+}

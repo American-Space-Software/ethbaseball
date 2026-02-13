@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify"
-import { getAddress, Contract, ethers } from "ethers"
-import { UniverseWebService } from "../web/service/universe-web-service.js"
+import { ethers } from "ethers"
 
 
 @injectable()

@@ -141,7 +141,7 @@ let startWebServer = async () => {
 
   while (!universe) {
 
-    let universe = await universeService.getActive()
+    universe = await universeService.getActive()
 
     if (!universe) {
 
@@ -269,8 +269,8 @@ let startWebServer = async () => {
     return res.status(200).send('ok')
   })
 
-  app.get('/env', cacheService.cacheResponse({ tag: ENV_TAG }), async function (req, res) {
-    return res.json(getEnv())
+  app.get('/env', async function (req, res) {
+    return res.json(await getEnv())
 
   })
 
@@ -1480,7 +1480,7 @@ let startWebServer = async () => {
           user = await userService.get(team.userId)
       }
 
-      return res.json(await teamService.getTeamViewModel(team, season, user))
+      return res.json(await teamService.getTeamViewModel(universe.currentDate, team, season, user))
 
     } catch (ex) {
       console.log(ex)

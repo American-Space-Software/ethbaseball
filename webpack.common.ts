@@ -343,23 +343,7 @@ let engineConfig = {
       apply: (compiler) => {
 
         compiler.hooks.environment.tap('BuildContractsPlugin', (params) => {
-          
-          let contractJSON = {}
-
-          let contracts = ['Universe', 'Diamonds']
-
-          for (let contract of contracts) {
-
-            //Get Truffle contracts and put them in a format we can inject into our services
-            let truffleJson = require(`./artifacts/contracts/${contract}.sol/${contract}.json`)
-
-            contractJSON[contract] = createContractFromTruffle(truffleJson)
-
-          }
-
-          fs.writeFileSync('./contracts.json', JSON.stringify(contractJSON));
-
-
+          createContractsJSON()
         })
       
       }
@@ -520,20 +504,7 @@ let indexConfig = {
 
         compiler.hooks.environment.tap('BuildContractsPlugin', (params) => {
           
-          let contractJSON = {}
-
-          let contracts = ['Universe', 'Diamonds']
-
-          for (let contract of contracts) {
-
-            //Get Truffle contracts and put them in a format we can inject into our services
-            let truffleJson = require(`./artifacts/contracts/${contract}.sol/${contract}.json`)
-
-            contractJSON[contract] = createContractFromTruffle(truffleJson)
-
-          }
-
-          fs.writeFileSync('./contracts.json', JSON.stringify(contractJSON));
+          createContractsJSON()
 
 
         })
@@ -603,20 +574,31 @@ let deployCommandsConfig = {
 }
 
 
+function createContractsJSON() {
+
+  let contractJSON:any = {}
+
+  let contracts = ['Diamonds']
+
+  for (let contract of contracts) {
+
+    //Get contracts and put them in a format we can inject into our services
+    let theJSON = require(`./artifacts/hardhat/contracts/${contract}.sol/${contract}.json`)
+
+    contractJSON[contract] = {
+        abi: theJSON.abi,
+        name: theJSON.contractName,
+        bytecode: theJSON.bytecode,
+        deployedBytecode: theJSON.deployedBytecode
+    }
 
 
-
-
-function createContractFromTruffle(truffleJson)  {
-
-  return {
-      abi: truffleJson.abi,
-      name: truffleJson.contractName,
-      bytecode: truffleJson.bytecode,
-      deployedBytecode: truffleJson.deployedBytecode
   }
 
+  fs.writeFileSync('./contracts.json', JSON.stringify(contractJSON))
 }
+
+
 
 
 let web = () => { return [browserConfig, webServerConfig, serviceWorkerConfig] }

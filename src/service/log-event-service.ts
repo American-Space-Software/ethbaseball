@@ -5,7 +5,6 @@ import { inject, injectable } from "inversify"
 @injectable()
 class LogEventService {
     
-    universeContract: Contract
     diamondContract:Contract
 
 
@@ -14,13 +13,12 @@ class LogEventService {
     ) {}
 
     async init(universeContract: Contract, diamondContract: Contract) {
-        this.universeContract = universeContract
         this.diamondContract = diamondContract
     }
 
     private tryParseLog(log: any) {
 
-        for (const iface of [this.universeContract.interface, this.diamondContract.interface]) {
+        for (const iface of [ this.diamondContract.interface]) {
             try {
                 const parsed = iface.parseLog(log);
                 return {
@@ -41,7 +39,7 @@ class LogEventService {
     async getAllEvents() {
 
         let allEventsFilterId = await this.provider.send('eth_newFilter', [{
-            address: [await this.universeContract.getAddress(), await this.diamondContract.getAddress()],
+            address: [await this.diamondContract.getAddress()],
             fromBlock: `earliest`,
             toBlock: `latest`,
             topics:[]
@@ -59,7 +57,7 @@ class LogEventService {
     async getRecentEvents(startBlock: number, endBlock: number) {
 
         let recentFilterId = await this.provider.send('eth_newFilter', [{
-            address: [await this.universeContract.getAddress(), await this.diamondContract.getAddress()],
+            address: [await this.diamondContract.getAddress()],
             fromBlock: `0x${startBlock.toString(16)}`,
             toBlock: `0x${endBlock.toString(16)}`,
             topics:[]

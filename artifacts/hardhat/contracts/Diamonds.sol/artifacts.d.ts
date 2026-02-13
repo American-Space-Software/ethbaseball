@@ -15,7 +15,7 @@ export interface Diamonds$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {"3658":[{"length":32,"start":3999}],"3660":[{"length":32,"start":3957}],"3662":[{"length":32,"start":3915}],"3664":[{"length":32,"start":4080}],"3666":[{"length":32,"start":4120}],"3669":[{"length":32,"start":4620}],"3672":[{"length":32,"start":4665}]};
   readonly inputSourceName: "project/contracts/Diamonds.sol";
-  readonly buildInfoId: "solc-0_8_21-fa66edbcf0ad3b134aa0d96f0c2b2b1a67a08b14";
+  readonly buildInfoId: "solc-0_8_21-01635e889ba6c40c9ebf98ff78fc54a4075ec8af";
 };
 
 import "hardhat/types/artifacts";

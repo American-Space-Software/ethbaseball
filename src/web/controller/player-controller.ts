@@ -39,7 +39,7 @@ class PlayerController {
 
             if (playerId) {
                 player = await this.playerWebService.get(playerId, this.universeWebService.getStartDate())
-                authInfo = await this.loginWebService.getAuthInfo()
+                authInfo = await this.loginWebService.getAuthInfo(true)
             }
 
 
