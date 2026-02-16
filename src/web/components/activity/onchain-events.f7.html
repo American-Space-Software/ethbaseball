@@ -4,7 +4,7 @@
         <ul>
           ${onChainEvents.transactions?.map(tx => $h`
             <li class="transaction-li">
-              <a class="item-link item-content" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${tx.transaction._id}" target="_blank" rel="noopener">
+              <a class="item-link item-content external" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}/tx/${tx.transaction._id}" target="_blank" rel="noopener">
                 <div class="item-inner">
 
                   <div class="item-title-row">

@@ -482,33 +482,6 @@ let startWebServer = async () => {
 
   })
 
-  // app.get("/t/mint/:tokenId", async function (req, res) {
-
-  //     try {
-
-  //       let team: Team = await teamService.getByTokenId(parseIntWithException(req.params.tokenId))
-  //       let season:Season = await seasonService.getMostRecent()
-  //       let tls: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-  //       let tlsPlain = tls.get({ plain: true })
-
-  //       await renderIndex(res,{ 
-  //         twitter: TWITTER,
-  //         title: `Mint ${tlsPlain.city.name} ${tlsPlain.team.name} - Ethereum Baseball League`,
-  //         description: `Mint the ${tlsPlain.city.name} ${tlsPlain.team.name} in Ethereum Baseball League.`,
-  //         VERSION: version,
-  //         image: `${process.env.WEB}/image/thumbnail/1024/${tlsPlain.logoId}`,
-  //         url: req.originalUrl
-
-  //       })
-
-  //     } catch (ex) {
-  //       res.sendStatus(500)
-  //     }
-
-  // })
-
-
   app.get("/l/list/:leagueRank", async function (req, res) {
 
       try {

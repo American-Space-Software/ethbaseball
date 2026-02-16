@@ -286,69 +286,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
             SELECT 
                 COUNT(*) games,
                 COUNT(DISTINCT gameId) uniqueGames,
-                SUM(atBats) atBats,
-                SUM(hits) hits,
-                SUM(battersFaced) battersFaced,
-                SUM(bb) bb,
-                SUM(bs) bs,
-                SUM(cg) cg,
-                SUM(doubles) doubles,
-                SUM(er) er,
-                
-                SUM(flyBalls) flyBalls,
-                SUM(flyOuts) flyOuts,
-                
-                SUM(groundBalls) groundBalls,
-                SUM(groundOuts) groundOuts,
-                SUM(hbp) hbp,
-                SUM(hits) hits,
-                SUM(homeRuns) homeRuns,
-                SUM(lineDrives) lineDrives,
-                SUM(lineOuts) lineOuts,
-
-                SUM(losses) losses,
-                SUM(outs) outs,
-                SUM(runs) runs,
-                SUM(saves) saves,
-                SUM(sho) sho,
-                
-                SUM(singles) singles,
-                SUM(so) so,
-                SUM(starts) starts,
-
-                SUM(triples) triples,
-                SUM(wins) wins,
-                SUM(wpa) wpa,
-                SUM(experience) experience,
-                SUM(teamWins) teamWins,
-                SUM(teamLosses) teamLosses,
-
-                SUM(balls) balls,
-                SUM(strikes) strikes,
-                SUM(fouls) fouls,
-                SUM(pitches) pitches,
-
-                SUM(wildPitches) wildPitches,
-
-                SUM(swings) swings,
-                SUM(swingAtBalls) swingAtBalls,
-                SUM(swingAtStrikes) swingAtStrikes,
-
-                SUM(inZone) inZone,
-
-                SUM(inZoneContact) inZoneContact,
-                SUM(outZoneContact) outZoneContact,
-                SUM(ballsInPlay) ballsInPlay,
-
-
-                SUM(sacFlys) sacFlys,
-
-                SUM(totalPitchQuality) totalPitchQuality,
-                SUM(totalPitchPowerQuality) totalPitchPowerQuality,
-                SUM(totalPitchLocationQuality) totalPitchLocationQuality,
-                SUM(totalPitchMovementQuality) totalPitchMovementQuality
-
-
+                ${SUM_QUERY_FIELDS}
             FROM game_pitch_result
     
         `, Object.assign(queryOptions, options))
