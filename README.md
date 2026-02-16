@@ -119,7 +119,7 @@ This keeps the **minter private key off the web server** entirely (nice for secu
 ## Development Environment Example
 
 > **Notes**
-> - If `DIAMOND_ADDRESS` is **not set**, the engine will **deploy a new Diamonds contract** to the configured network on first run. After it deploys, **copy the Diamonds address from the logs** and paste it into this file.
+> - If `DIAMONDS_ADDRESS` is **set** the engine will update the database to match. If not configured here or in the database the engine will **deploy a new Diamonds contract** to the configured network on first run. 
 > - If `MINTER_WALLET_KEY` is not provided:
 >   - The engine will generate a new wallet and print it to the console, **or**
 >   - In `:dev` mode it defaults to the standard Hardhat test wallet `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`.
