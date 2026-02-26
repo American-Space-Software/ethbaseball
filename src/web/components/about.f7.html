@@ -392,7 +392,7 @@
             <li><strong>Login:</strong> Sign in with Discord.</li>
             <li><strong>Get Your Team:</strong> On your first login, you are given a team with generated players.</li>
             <li><strong>Set Lineup and Rotation:</strong> Choose batting order, fielding positions, and plan pitcher usage.</li>
-            <li><strong>Play Games:</strong> Join the PvP queue or play a bot whenever you want. Pitcher stamina affects who is available.</li>
+            <li><strong>Play Games:</strong> Join the PvP queue every day to earn rewards.</li>
             <li><strong>Optional Wallet:</strong> Link a wallet only if you want to withdraw Diamonds to Ethereum or deposit from Ethereum.</li>
           </ol>
           <p><em>You do not need a wallet to play. Results post immediately after each game.</em></p>
@@ -664,9 +664,11 @@
               </a>
               <div class="accordion-item-content">
 
+                <div class="block-title block-title-medium">Official Contract Addresses</div>
+
                 <div class="block block-strong block-outline">
-                  <strong>Diamonds (ERC-20)</strong><br />
-                  Diamonds are tracked off-chain by default. When you withdraw, Diamonds are created on-chain and sent to your wallet. If a wallet is linked, on-chain Diamonds can be deposited back into your team balance. Negative balances cause a roster lock until the balance is positive again.
+                  <p><strong>Diamond Contract (ERC-20):</strong> <a class="external link" href="${env.PROVIDER_CHAIN_BLOCK_EXPLORER}address/${env.DIAMONDS_ADDRESS}">${walletService.truncateEthAddress(env.DIAMONDS_ADDRESS)}</a></p>
+                  Diamonds are tracked off-chain by default. When you withdraw, Diamonds are created on-chain and sent to your wallet. If a wallet is linked, on-chain Diamonds can be deposited back into your team balance.
                 </div>
 
                 <a name="deposits"></a>

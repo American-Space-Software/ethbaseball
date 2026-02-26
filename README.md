@@ -3,7 +3,7 @@
 ## Technical Overview
 
 Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator.  
-Players and in-game currency (Diamonds) are represented as Ethereum assets, while all simulation and gameplay run off-chain for performance.
+The in-game currency (Diamonds) is represented as an Ethereum asset, while all simulation and gameplay run off-chain for performance.
 
 This document provides a technical overview of the stack plus quick-start steps and environment file examples.
 
@@ -13,18 +13,17 @@ This document provides a technical overview of the stack plus quick-start steps 
 
 - **Runtime:** Node.js (TypeScript, ESM modules)
 - **Frameworks:** Express (API/web server), Framework7 (frontend mobile/web UI)
-- **Bundling:** Webpack (multiple configs: production, web, engine, dev)
+- **Bundling:** Webpack 
 - **Database:** MySQL 8
 - **ORM:** Sequelize + sequelize-typescript
 - **Smart Contracts:** Solidity (Hardhat + OpenZeppelin)
-- **Testing:** Mocha, Chai, ts-mockito, Hardhat test suite
+- **Testing:** Mocha, Hardhat
 
 ---
 
 ## Authentication
 
 - **Discord OAuth2** (via `passport-discord-auth`) with refresh support (`passport-oauth2-refresh`)
-- **Ethereum wallet signature verification** (custom Passport strategy using EIP-191 `personal_sign`-style messages)
 
 ---
 
@@ -36,20 +35,10 @@ This document provides a technical overview of the stack plus quick-start steps 
 
 ---
 
-## Game Engine
 
-- **Simulation runtime:** Node.js service (`engine.js`)
-- **Responsibilities:**
-  - Simulate games.
-  - Update player stats & progression.
-  - Manage team finances and rewards.
-  - Write results/state to MySQL for the web app to render.
-
----
 
 ## Contracts & Blockchain
 
-- **Universe (ERC-721):** Team ownership NFTs
 - **Diamonds (ERC-20):** In-game currency for payroll, signings, etc.
 - **Tooling:** Hardhat, OpenZeppelin
 - **Indexing:** Custom services listen for on-chain events; primary game state lives off-chain in MySQL for performance
@@ -58,10 +47,9 @@ This document provides a technical overview of the stack plus quick-start steps 
 
 ## Testing & Tooling
 
-- **Contracts:** Hardhat tests (ethers + chai matchers)
-- **Services:** Mocha test suite (+ ts-mockito for mocking)
+- **Contracts:** Hardhat tests
+- **Services:** Mocha test suite
 - **Builds:** Multiple webpack targets (engine, web, dev)
-- **TypeScript:** Strict mode enabled
 
 ---
 
@@ -192,8 +180,7 @@ OPENSEA_COLLECTION_URL=
 - **Team Management:** Set lineups and rotations, then play games on demand. Box scores and pitch-by-pitch post right after each game.
 - **Anyone Can Play:** Sign in with Discord and you are instantly given a team with generated players.
 - **Diamonds 🔷:** Earned in-game from play and performance. Withdrawal to Ethereum is optional.
-- **Open Source:** MIT licensed. Fork and run your own universe.
-- **Season Length:** Seasons last 162 days.
+- **Open Source:** MIT licensed. Run your own universe.
 
 ---
 
@@ -202,7 +189,7 @@ OPENSEA_COLLECTION_URL=
 1. **Login:** Sign in with Discord.
 2. **Get Your Team:** On your first login, you are given a team with generated players.
 3. **Set Lineup and Rotation:** Choose batting order, fielding positions, and plan pitcher usage.
-4. **Play Games:** Join the PvP queue or play a bot whenever you want. Pitcher stamina affects who is available.
+4. **Play Games:** Join the PvP queue every day to earn rewards.
 5. **Optional Wallet:** Link a wallet only if you want to withdraw Diamonds to Ethereum or deposit from Ethereum.
 
 *You do not need a wallet to play. Results post immediately after each game.*
@@ -321,11 +308,6 @@ Your team is tied to your Discord account for day-to-day play. Linking a wallet 
 
 ---
 
-### Dropping Players and Prospects
-
-Dropping a player creates a new 17 to 21 year old prospect on a rookie deal to fill the open roster spot.
-
----
 
 ### Ratings, Stats, and Progression
 

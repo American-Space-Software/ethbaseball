@@ -157,8 +157,7 @@ import { SocketService } from "../service/socket-service.js";
 import { TeamQueue } from "../dto/team-queue.js";
 import { TeamQueueRepositoryNodeImpl } from "../repository/node/team-queue-repository-impl.js";
 import { TeamQueueService } from "../service/data/team-queue-service.js";
-import { ChatGPTAPI } from 'chatgpt'
-import { OpenAI } from 'openai'
+
 import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 
@@ -210,20 +209,14 @@ async function getContainer(command?:GetContainerCommand) {
         eta = new Eta({ autoEscape: false })
     }
 
-    const chatGPTAPI = new ChatGPTAPI({
-        apiKey: process.env.OPENAI_API_KEY
-    })
 
-    const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
-    })
 
 
 
     container.bind("eta").toConstantValue(eta)
     
-    container.bind("chatGPTAPI").toConstantValue(chatGPTAPI)
-    container.bind("openai").toConstantValue(openai)
+    container.bind("chatGPTAPI").toConstantValue({})
+    container.bind("openai").toConstantValue({})
 
 
     let sequelize

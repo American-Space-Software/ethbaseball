@@ -21,7 +21,6 @@ import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { RollChart } from "../../dto/roll-chart.js"
-import { NumberDataType } from "sequelize"
 import { GameSharedService } from "../shared/game-shared-service.js"
 
 

@@ -6,7 +6,9 @@
       <div class="item-content">
         <div class="item-inner">
 
-          <table class="game-result">
+          ${game ? $h`
+            
+            <table class="game-result">
             <tr>
               <td colspan="2" class="inning">
                 ${game.isTopInning ? $h`
@@ -23,7 +25,7 @@
                 <img src="/image/thumbnail/${game.away.logoId}" class="profilePic" alt="${teamWebService.getTeamName(game.away)} Logo"/>
                 <span innerHTML="${teamWebService.getTeamNameStacked(game.away)}"></span>
               </td>
-              <td class="runs">${game.score.away}</td>
+              <td class="runs">${game.score?.away}</td>
             </tr>
 
             <tr class="${game.isTopInning ? ' ' : 'at-bat'}">
@@ -31,7 +33,7 @@
                 <img src="/image/thumbnail/${game.home.logoId}" class="profilePic" alt="${teamWebService.getTeamName(game.home)} Logo"/>
                 <span innerHTML="${teamWebService.getTeamNameStacked(game.home)}"></span>
               </td>
-              <td class="runs">${game.score.home}</td>
+              <td class="runs">${game.score?.home}</td>
             </tr>
 
             <tr>
@@ -48,7 +50,9 @@
               </td>
             </tr>
 
-          </table>
+            </table>
+            
+          ` : $h` ` }
 
         </div>
       </div>

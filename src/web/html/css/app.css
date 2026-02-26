@@ -3315,7 +3315,6 @@ td.action, th.action {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
   padding: 5px;
 }
@@ -3330,49 +3329,20 @@ td.action, th.action {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-left: auto;
 }
+
 
 .tx-toolbar-select {
   height: 28px;
   line-height: 24px;
+  margin-right: 10px;
 }
 
-
-.lineup-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.lineup-title-text {
-  flex: 0 0 auto;
-}
-
-.lineup-title-row .tx-toolbar {
-  flex: 1 1 auto;
-  width: auto;
-  padding: 0;
-  justify-content: flex-end;
-}
-
-@media (max-width: 767px) {
-  .lineup-title-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .lineup-title-row .tx-toolbar {
-    width: 100%;
-    justify-content: space-between;
-  }
+.dark .tx-toolbar-select {
+  color: #ffffff;
 }
 
 
 
 
-@media (min-width: 1024px) {
-  .lineup-grid {
-    grid-template-columns: 3fr 7fr;
-  }
-}
