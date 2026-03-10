@@ -359,6 +359,7 @@ CREATE TABLE `league` (
   `rank` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `averageRating` json DEFAULT NULL,
+  `baseDiamondReward` varchar(100) DEFAULT NULL,
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
   PRIMARY KEY (`_id`),
@@ -1125,7 +1126,8 @@ CREATE TABLE `team_queue` (
   `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `teamId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `leagueId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-
+  `teamRating` decimal(10,2) NOT NULL,
+  `maxRatingDiff` INT NOT NULL,
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
 

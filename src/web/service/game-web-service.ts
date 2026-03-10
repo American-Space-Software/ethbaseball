@@ -79,8 +79,8 @@ class GameWebService {
         return result.data
     }
 
-    async queue() {
-        let result = await axios.post(`/api/game/queue`)
+    async queue(maxRatingDiff:number) {
+        let result = await axios.post(`/api/game/queue?maxRatingDiff=${maxRatingDiff}`)
         return result.data
     }
 

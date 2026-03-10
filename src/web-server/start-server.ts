@@ -44,7 +44,7 @@ import { PlayerLeagueSeasonService } from '../service/data/player-league-season-
 import { TeamLeagueSeasonService } from '../service/data/team-league-season-service.js'
 
 import { OffchainEventService } from '../service/data/offchain-event-service.js'
-import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, TeamCost } from '../service/enums.js'
+import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, SeasonInfo, TeamCost } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { ProcessedTransactionService } from '../service/data/processed-transaction-service.js'
 import { DiamondMintPassService } from '../service/data/diamond-mint-pass-service.js'
@@ -252,6 +252,7 @@ let startWebServer = async () => {
         image: props.image ? props.image : '',
         url: `${process.env.WEB}${props.url}`,
         twitter: TWITTER,
+        leagues: leagues,
         VERSION: version,
         BUILD_ID: buildId,
         FOOTER_ROUTES: FOOTER_ROUTES,
@@ -1704,6 +1705,7 @@ let startWebServer = async () => {
 
     try {
 
+      
         //@ts-ignore
         let userId = req.session?.passport?.user
 
@@ -1712,11 +1714,30 @@ let startWebServer = async () => {
           return res.send("Not authorized.")
         }
 
+        const maxRatingDiff = req.query.maxRatingDiff != undefined ? parseIntWithException(String(req.query.maxRatingDiff)) : 25
+
+        if (maxRatingDiff < 25 || maxRatingDiff > 250) {
+          throw new Error("Invalid maxRatingDiff.")
+        }
+
+
+        await refreshUniverse()
+
         let user:User = await userService.get(userId)
         let season:Season = await seasonService.getMostRecent()
 
+        if (!season) {
+          throw new Error("No active season.")
+        }
+
+
         let teams:Team[] = await teamService.getByUser(user)
         let team = teams[0]
+
+        if (!team) {
+          throw new Error("Team not found.")
+        }
+
 
         let isQueued = await teamQueueService.isTeamQueued(team)
 
@@ -1725,6 +1746,26 @@ let startWebServer = async () => {
         }
 
         let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        if (!tls) {
+          throw new Error("Team season not found.")
+        }
+
+
+        let seasonInfo:SeasonInfo = seasonService.getSeasonInfo(season, universe.currentDate)
+        let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses 
+
+        const inProgressGames = await gameService.getInProgressByTeam(team)
+
+        if (inProgressGames?.length > 0) {
+          throw new Error("Can not join queue while team has a game in progress.")
+        }
+
+        if (gamesPlayed > seasonInfo.dayNumber) {
+          throw new Error("Team is too far ahead to join the queue.")
+        }
+
+
         let league:League = await leagueService.get(tls.leagueId)
 
         let plss: PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeamSeason(team, season)
@@ -1733,7 +1774,10 @@ let startWebServer = async () => {
         teamService.validateLineup(team, tls.lineups[0], plss.map( pls => pls.get({ plain: true})), startingPitcher)
 
 
-        await teamQueueService.queueTeam(team, league)
+        let teamRating = (team.longTermRating.rating + team.seasonRating.rating) / 2
+
+
+        await teamQueueService.queueTeam(team, league, teamRating, maxRatingDiff)
 
         return res.send("success")
 

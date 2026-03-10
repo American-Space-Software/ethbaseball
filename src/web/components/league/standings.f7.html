@@ -9,7 +9,9 @@
                 <${StartDate} />
             </div>
 
-            <div class="block-title block-title-large">${viewModel?.leagueVm?.league?.name} Standings</div>
+
+
+
             <div class="block block-outline block-strong">
                 <div class="stat-table-wrapper">
                     <table class="data-table standings">
@@ -24,8 +26,6 @@
                                     <th data-sort="overallRecord.wins" class="numeric-cell" style="width: 30px;">Wins</th>
                                     <th data-sort="overallRecord.losses" class="numeric-cell" style="width: 30px;">Losses</th>
                                     <th data-sort="overallRecord.winPercent" class="numeric-cell" style="width: 30px;">Win%</th>
-                                    <!-- <th data-sort="overallRecord.gamesBack" class="numeric-cell" style="width: 30px;">GB</th> -->
-                                    <th data-sort="financeSeasonDecimal.diamondBalance" class="numeric-cell" style="width: 30px;">Season Rewards</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -51,10 +51,7 @@
                                         <td class="numeric-cell">${t.overallRecord.wins}</td>
                                         <td class="numeric-cell">${t.overallRecord.losses}</td>
                                         <td class="numeric-cell">${statService.formatRatio(t.overallRecord.winPercent)}</td>
-                                        <!-- <td class="numeric-cell">${t.overallRecord.gamesBack}</td> -->
 
-                                        <td class="numeric-cell">
-                                            ${universeWebService.displayDiamonds(t.financeSeason?.revenue?.seasonToDate?.total)}</td>
                                         <td></td>
                                     </tr>
                                 `)}
@@ -146,15 +143,7 @@
         }
 
 
-        const leagueChange = (e) => {
 
-            universeWebService.rank = $(e.target).val()
-
-            let url = `/l/standings/${universeWebService.rank}?startDate=${universeWebService.getStartDate()}`
-
-            $f7.views.main.router.navigate(url, { reloadCurrent: true })
-
-        }
 
 
         const startDateChange = (e) => {

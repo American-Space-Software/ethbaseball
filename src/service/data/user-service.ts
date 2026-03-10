@@ -94,18 +94,6 @@ class UserService {
 
         vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
-
-        const ev = await this.offchainEventService.getMostRecentDailyDiamondRewardByTeamId(team._id)
-
-        if (ev?.source?.fromDate) {
-            const from = ev?.source?.fromDate
-            const isYesterday = dayjs(from).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, "day").format("YYYY-MM-DD")
-
-            vm.teamInfo.team.yesterdaysRewards = isYesterday ? (ev?.amount ?? "0") : "0"
-        } else {
-            vm.teamInfo.team.yesterdaysRewards = "0"
-        }
-
         
         if (season) {
 
@@ -125,12 +113,10 @@ class UserService {
                 daysRemaining: seasonInfo.daysRemaining,
                 totalDays: seasonInfo.totalDays,
                 universeDate: dayjs(currentDate).format("YYYY-MM-DD"),
-                nextQueueDate: this.ladderService.getQueueForDate(currentDate),
+
                 team: {
-                    gamesPlayed: gamesPlayed,
-                    teamCurrentDate: dayjs(vm.teamInfo.games?.length > 0 ? vm.teamInfo.games[0].gameDate : currentDate).format("YYYY-MM-DD"),
-                },
-                queuedTeams: await this.teamQueueService.count()
+                    gamesPlayed: gamesPlayed
+                }
             }
             
 

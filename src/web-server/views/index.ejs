@@ -51,8 +51,9 @@
 
     let footerRoutes = JSON.parse(`<%~ JSON.stringify(it.FOOTER_ROUTES) %>`)
     let env = JSON.parse(`<%~ JSON.stringify(it.ENV) %>`)
+    let leagues = JSON.parse(`<%~ JSON.stringify(it.leagues) %>`)
 
-    ebl.default(env, footerRoutes)
+    ebl.default(env, footerRoutes, leagues)
   </script>
 
   <% if (it.FOOTER_SCRIPT) { %>

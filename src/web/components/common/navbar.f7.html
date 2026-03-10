@@ -11,57 +11,22 @@
 
         <div class="small-only-flex">
 
-            <a href="#" class="first popover-open link color-white" data-popover=".popover-menu">
+            <a href="#" class="first panel-open link color-white" >
               <i class="f7-icons">menu</i>
             </a>
             
         </div>
 
-        <div class="popover popover-menu">
-          <div class="popover-angle"></div>
-          <div class="popover-inner">
-            <div class="list inset list-strong list-dividers-ios">
-              <ul>
-                <li><a href="/" class="list-button popover-close">🏠 Home</a></li>
-                <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}">📊 Standings</a></li>
-                <li><a href="${universeWebService.fullLink(`/games`)}" class="list-button popover-close ${tabLink == '/games' ? 'active' : ''}">🏟️ Scores</a></li>
-                <li><a href="${universeWebService.fullLink(`/players/`)}"  class="list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">🧢 Players</a></li>
-                <!-- <li><a href="/u/owners" class="list-button popover-close ${tabLink == '/u/owners' ? 'active' : ''}">👥 Owners</a></li> -->
-                <li><a href="/activity" class="list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">⚡ Activity</a></li>
-                <li><a href="/about" class="list-button popover-close ${tabLink == '/about' ? 'active' : ''}">📖 About</a></li>
-                <li><a class="list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
-              </ul>
-            </div>
-          </div>
+        <div class="small-only-flex">
+            <a href="/" class="logo" aria-label="Home">
+              <img src="${logo}" alt="Logo" class="logo" />
+            </a>
         </div>
-
-
-        <a href="/" class="logo" aria-label="Home">
-          <img src="${logo}" alt="Logo" class="logo" />
-        </a>
 
 
       </div>
 
       <div class="title" style="display: flex;">
-
-        <div class="large-only-flex">
-
-          <a href="/" class="link first ${tabLink == `/` ? 'active' : ''}" >Home</a>
-          <a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="link first ${tabLink == `/l/standings` ? 'active' : ''}" >Standings</a>
-          <a href="${universeWebService.fullLink(`/games`)}" class="link ${tabLink == '/games' ? 'active' : ''}">Scores</a>
-          <a href="${universeWebService.fullLink(`/players/`)}"  class="link  ${tabLink == '/players/' ? 'active' : ''}">Players</a>
-          <!-- <a href="/u/owners" class="link ${tabLink == '/u/owners' ? 'active' : ''}">Owners</a> -->
-          <a href="/activity"  class="link  ${tabLink == '/activity' ? 'active' : ''}">Activity</a>
-          <a href="/about"  class="link ${tabLink == '/about' ? 'active' : ''}">About</a>
-          <!-- <a class="link external " href="https://app.uniswap.org/swap?outputCurrency=${env.DIAMONDS_ADDRESS}" target="_blank">Uniswap</a> -->
-
-          <!-- ${env.OPENSEA_COLLECTION_URL ? $h`
-            <a class="link external" href="${env.OPENSEA_COLLECTION_URL}" target="_blank">OpenSea</a>
-            ` : $h` `} -->
-          <a class="link external " href="${discord}" target="_blank">💬 Discord</a>
-
-        </div>
 
       </div>
 
@@ -83,43 +48,40 @@
 
 
       ${subnavVisible ? $h`
+
         <div class="subnavbar">
-          <div class="subnavbar-inner">
 
+            <div class="subnavbar-inner">
+                ${breadcrumbs?.length > 0 ? $h`
+                  <div class="breadcrumbs ">
 
-          ${breadcrumbs?.length > 0 ? $h`
+                    ${breadcrumbs?.length == 1 ? $h`
+                      <div class="breadcrumbs-item">${breadcrumbs[0].text}</div>
+                    ` : $h`
 
-              <div class="breadcrumbs ">
+                        ${breadcrumbs.map( b => $h`
+                          
+                          <div class="breadcrumbs-item">
+                            ${b.path ? $h`
+                              <a href="${b.path}" class="link">
+                                ${b.text}
+                              </a>
+                            ` : $h`${b.text}`}
+                          </div>  
 
-                ${breadcrumbs?.length == 1 ? $h`
-                  <div class="breadcrumbs-item">${breadcrumbs[0].text}</div>
-                ` : $h`
+                          ${b.path ? $h`
+                            <div class="breadcrumbs-separator"></div>
+                          ` : $h`<span />`}
 
-                    ${breadcrumbs.map( b => $h`
-                      
-                      <div class="breadcrumbs-item">
-                        ${b.path ? $h`
-                          <a href="${b.path}" class="link">
-                            ${b.text}
-                          </a>
-                        ` : $h`${b.text}`}
-                      </div>  
+                        `)}
 
-                      ${b.path ? $h`
-                        <div class="breadcrumbs-separator"></div>
-                      ` : $h`<span />`}
+                    `}
 
-                    `)}
+                  </div>
+              ` : $h` `} 
 
-                `}
+            </div>
 
-              </div>
-
-          ` : $h` `} 
-
-
-
-          </div>
         </div>
       ` : $h` `}
 
@@ -406,7 +368,6 @@
     let discord = ContainerService.getInstance("discord")
 
     let showBack
-    let tabLink 
     let authInfo
     let breadcrumbs
     let walletAddress
@@ -603,14 +564,7 @@
     eventTarget.addEventListener('main-nav', async (e) => {
 
       subnavVisible = e.detail.visible == false ? false : true
-      tabLink = e.detail.tabLink
       breadcrumbs = e.detail.breadcrumbs
-
-      showBack = $f7.views.main.router.history?.length > 1 
-
-      let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-      if (vw > 1024) showBack = false
-
 
       await $update()
 

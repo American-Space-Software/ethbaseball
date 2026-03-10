@@ -26,6 +26,7 @@ class TeamComponentService {
     startDate
     inProgressGame
     completedGames = []
+    eventsViewModel
 
     rosterPlayers:any[] = []
 
@@ -142,6 +143,8 @@ class TeamComponentService {
 
         this.completedGames.length = 0
         this.completedGames.push(...teamViewModel.completedGames)
+
+        this.eventsViewModel = teamViewModel.eventsViewModel
 
 
         delete this.inProgressGame

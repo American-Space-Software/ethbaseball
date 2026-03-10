@@ -14,16 +14,16 @@
 
                 <div class="card-content">
 
-                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                    <ul>
-        
-                        ${gameLogs?.map( game => $h`
-                            <${Result} game=${game} />                        
-                        `)}
-        
-                    </ul>
-        
-                </div>
+                    <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                        <ul>
+            
+                            ${gameLogs?.map( game => $h`
+                                <${Result} game=${game} />                        
+                            `)}
+            
+                        </ul>
+            
+                    </div>
 
                 </div>
 
@@ -181,10 +181,6 @@
             detail: {
             tabLink: "/l/standings", breadcrumbs: [
                 { text: "Home", path: "/"},
-                {
-                text: "Standings",
-                path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}/1`)
-                }, 
                 { 
                     text: teamWebService.getTeamName(teamComponentService.team), 
                     path: universeWebService.startDateLink(`/t/index/${teamComponentService.team._id}`) 

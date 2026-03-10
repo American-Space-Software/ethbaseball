@@ -2122,8 +2122,6 @@ class RollService {
 
     }
 
-
-
     isInZone(gameRNG, locationQuality:number, inZoneRate:number) {
 
         //90% of the chance should be a coin-flip (better location doesn't necessarily mean a strike)

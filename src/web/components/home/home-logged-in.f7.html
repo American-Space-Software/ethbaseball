@@ -2,23 +2,18 @@
 
   <div class="page" data-name="home" >
 
-
     ${teamComponentService.isTeamOwner() && teamComponentService.hasChanges ? $h`
-
         <div class="fab fab-extended fab-right-bottom color-orange">
             <a href="#" @click="${saveClick}">
                 <div class="fab-text">Save Lineup</div>
             </a>
         </div>
-
     ` : $h` `}
-
 
     <div class="page-content ptr-content" @ptr:refresh=${refreshPage}>
 
         ${vm ? $h`
         
-
           <div class="fixed-width-content center">
 
             <div class="list media-list list-outline-ios list-strong">
@@ -39,75 +34,22 @@
                         ${vm.teamInfo.team.overallRecord.wins}-${vm.teamInfo.team.overallRecord.losses}
                         <span class="separator">|</span>
                         ${statService.formatRatio(vm.teamInfo.team.overallRecord.winPercent)}
+                        <span class="separator">|</span>
+                        ${universeWebService.displayDiamonds(vm.teamInfo.team.diamondBalance)}
                       </div>
 
                     </div>
                   </div>
                 </li>
-
-                <li>
-
-                  <table class="data-table">
-                    <tbody>
-                      <tr>
-                        <td ><strong>Cash</strong></td>
-                        <td class="numeric-cell">${universeWebService.displayDiamonds(vm.teamInfo.team.diamondBalance)}</td>
-                      </tr>
-
-                      <tr>
-                        <td ><strong>Season Rewards</strong></td>
-                        <td class="numeric-cell">${universeWebService.displayDiamonds(vm.teamInfo.team.financeSeason.revenue.seasonToDate.total)}</td>
-                      </tr>
-                      <tr>
-                        <td ><strong>Yesterday's Rewards</strong></td>
-                        <td class="numeric-cell">${universeWebService.displayDiamonds(vm.teamInfo.team.yesterdaysRewards)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </li>
-
-
-
-
               </ul>
             </div>
-
-
-            <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios">
-              <ul>
-
-                <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${vm.teamInfo.team._id}`)}">🔷 Rewards & Player Moves</a></li>
-                <li><a class="link" href="${universeWebService.startDateLink(`/t/results/${vm.teamInfo.team._id}`)}">📅 Results</a> </li>
-
-              </ul>
-            </div>
-
 
             <div class="block-title block-title-medium">
               Play
-            </div>            
+            </div>
 
             <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
               <ul>
-
-                ${!isSeasonComplete(vm.season) ? $h`
-                  <li>
-                    <div class="item-content">
-                      <div class="item-media">⏱️</div>
-                      <div class="item-inner">
-                        <div class="item-title-row">
-                          <div class="item-title item-title-wrap">Now queueing</div>
-                        </div>
-                        <div class="item-text">
-                          ${dayjs(vm.season.nextQueueDate).format('MMM D, YYYY')}
-                          <span class="separator">|</span>
-                          ${vm.season.queuedTeams} team${vm.season.queuedTeams === 1 ? '' : 's'} ${vm.teamInfo.team.isQueued == "true" ? $h` <span class="separator">|</span> ✅ You’re queued` : $h` `}
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ` : $h``}
-
 
                 ${isAhead(vm.season) ? $h`
                   <li>
@@ -141,59 +83,72 @@
                     </div>
                   </li>
                 ` : $h`
-                
-                  ${vm.teamInfo.team.isQueued ? $h`
-                    <li>
-                      <a class="item-link item-content" @click="${clickLeaveQueue}">
-                        <div class="item-media">✅</div>
-                        <div class="item-inner">
-                          <div class="item-title-row">
-                            <div class="item-title">You’re in the queue</div>
+
+                  <li class="game-mode-primary">
+                    <a class="item-link item-content ${vm.teamInfo.team.isQueued ? '' : 'bg-color-green text-color-black'}"
+                       @click="${vm.teamInfo.team.isQueued ? clickLeaveQueue : openJoinRankedQueuePopup}">
+                      
+                      <div class="item-media">
+                        ${vm.teamInfo.team.isQueued ? '✅' : '🏟️'}
+                      </div>
+
+                      <div class="item-inner">
+
+                        <div class="item-title-row">
+                          <div class="item-title">
+                            ${vm.teamInfo.team.isQueued ? 'You’re in the ranked queue' : 'Join Ranked Queue'}
+                          </div>
+
+                          ${vm.teamInfo.team.isQueued ? $h`
                             <div class="item-after">Leave</div>
-                          </div>
-                          <div class="item-text">
-                            Queued for <b>${dayjs(vm.season.nextQueueDate).format('MMM D')}</b>. ${isBehind(vm.season)
-                              ? $h`You’ll also play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'}.`
-                              : $h` `}
-                            <div style="opacity:.6; margin-top:4px;">Tap to leave the queue</div>
-                          </div>
+                          ` : $h`<div class="item-after">Ranked</div>`}
                         </div>
-                      </a>
-                    </li>
-                  ` : $h`
-                    <li>
-                      <a class="item-link item-content bg-color-green text-color-black" @click="${clickJoinQueue}">
-                        <div class="item-media">🏟️</div>
-                        <div class="item-inner">
-                          <div class="item-title-row">
-                            <div class="item-title">
-                              ${isNextQueueTodayLocal(vm.season)
-                                ? 'Join Queue for Today'
-                                : isNextQueueTomorrowLocal(vm.season)
-                                  ? 'Join Queue for Tomorrow'
-                                  : `Join Queue for ${formatQueueDateLocal(vm.season)}`}
-                            </div>
-                          </div>
-                          <div class="item-text  text-color-black">
-                            ${isBehind(vm.season) ? $h`
-                              You’ll play <b>${getDaysBehind(vm.season)}</b> makeup game${getDaysBehind(vm.season) === 1 ? '' : 's'},
-                              in addition to your game for <b>${isNextQueueTodayLocal(vm.season) ? 'today' : isNextQueueTomorrowLocal(vm.season) ? 'tomorrow' : formatQueueDateLocal(vm.season)}</b>.
-                            ` : $h`${getQueueSubtitle(vm.season)}`}
-                          </div>
+
+                        <div class="item-text text-color-black">
+                          ${vm.teamInfo.team.isQueued
+                            ? $h`${getQueuedSubtitle(vm.season)}`
+                            : $h`Match against another team near your rating. Ranked games earn rewards and player progression.`}
                         </div>
-                      </a>
-                    </li>
-                  `}                
-                                
+
+                      </div>
+
+                    </a>
+                  </li>
+
+                  <li>
+                    <a class="item-link item-content" @click="${clickPlayBot}">
+                      <div class="item-media">🤖</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title">Play Bot</div>
+                          <div class="item-after">Practice</div>
+                        </div>
+                        <div class="item-text">
+                          Practice against a computer opponent. No rewards or player progression.
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+<!-- 
+                  <li>
+                    <a class="item-link item-content" @click="${clickChallengeFriend}">
+                      <div class="item-media">🤝</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title">Play a Friend</div>
+                          <div class="item-after">Unranked</div>
+                        </div>
+                        <div class="item-text">
+                          Friendly match that does not affect rating. No rewards or player progression.
+                        </div>
+                      </div>
+                    </a>
+                  </li> -->
+
                 `}
-
-
-
-
 
               </ul>
             </div>
-
 
 
             ${teamComponentService.inProgressGame?.game?._id ? $h`
@@ -214,22 +169,18 @@
                 <div class="block-title block-title-medium">Recent Games</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
-        
-                        ${teamComponentService.completedGames?.map( game => $h`
-                            <${Result} game=${game} />                      
+                        ${teamComponentService.completedGames?.map(game => $h`
+                            <${Result} game=${game} />
                         `)}
-        
-
-
                     </ul>
                 </div>
 
             ` : $h` `}
-            
+
             <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                 <ul>
                     <li>
-                      <a href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}" class="item-link item-content">
+                      <a href="${universeWebService.startDateLink(`/t/results/${vm.teamInfo.team._id}`)}" class="item-link item-content">
                         <div class="item-media">📅</div>
                         <div class="item-inner">
                           <div class="item-title-row">
@@ -241,16 +192,113 @@
                 </ul>
             </div>
 
+            ${vm.teamInfo.eventsViewModel?.transactions?.length > 0 ? $h`
+
+                <div class="block-title block-title-medium">Activity</div>
+                <${OffChainEvents} model="${vm.teamInfo.eventsViewModel}" />
+
+            ` : $h` `}
+
+
+            <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                <ul>
+                    <li>
+                      <a href="${universeWebService.startDateLink(`/t/activity/index/${vm.teamInfo.team._id}`)}" class="item-link item-content">
+                        <div class="item-media">🔷</div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title item-title-wrap">Rewards & Player Moves</div>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                </ul>
+            </div>
 
           </div>
 
-          <${Footer} />          
-        
+          <${Footer} />
+
         ` : $h` `}
 
-
-
     </div>
+
+    <div class="popup play-ranked-popup">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="title">
+                Play Ranked Game
+              </div>
+              <div class="right">
+                <a class="link popup-close">Close</a>
+              </div>
+            </div>
+          </div>
+          <div class="page-content">
+
+            <div class="block block-strong block-outline">
+              Choose the maximum rating difference you want to allow when looking for a ranked opponent.
+            </div>
+
+            <div class="list list-strong-ios list-outline-ios list-dividers-ios">
+              <ul>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">Max Rating Difference</div>
+                      <div class="item-after">${selectedMaxRatingDiff}</div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-input-wrap">
+                        <div class="range-slider range-slider-init"
+                            data-label="true"
+                            data-min="25"
+                            data-max="250"
+                            data-step="1"
+                            data-value="${selectedMaxRatingDiff}">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">Projected Reward</div>
+                      <div class="item-after">${projectedReward}</div>
+                    </div>
+                  </div>
+                </li>
+
+              </ul>
+            </div>
+
+            <div class="block block-strong block-outline">
+              Lower values favor closer matchups and higher rewards. Higher values widen the pool of possible opponents.
+            </div>
+
+            <div class="block">
+              <a class="button button-fill button-large"
+                @click="${confirmRankedQueueClick}">
+                Join Ranked Queue
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
 
   </div>
 
@@ -262,66 +310,37 @@
 
 <script>
 
-  import main from "../../html/images/main.png"
-
-  import Navbar from "../common/navbar.f7.html"
-  import Breadcrumbs from "../common/breadcrumbs.f7.html"
-  import Footer from "../common/footer.f7.html"
-  import Toolbar from "../common/toolbar.f7.html"
-
-  import Roster from "../team/roster.f7.html"
-
-
-  import GameTransactions from "../activity/game-transaction-events.f7.html"
-  import OnChainEvents from "../activity/onchain-events.f7.html"
-  import OffChainEvents from "../activity/offchain-events.f7.html"
-
-
   import { ContainerService } from "../../../service/container-service"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
   import { GameWebService } from "../../service/game-web-service.ts"
   import { TeamComponentService } from "../../service/team-component-service.ts"
-
   import { StatService } from "../../../service/stat-service.ts"
-  import { Position } from "../../../service/enums.ts"
-  import { OffChainEventWebService } from "../../service/off-chain-event-web-service.ts"
-
-  import dayjs from "dayjs"
-
 
   import InProgress from "./in-progress.f7.html"
-  import Scheduled from "./scheduled.f7.html"
   import Result from "./result.f7.html"
-
-  import gameShot from "../../html/images/screenshots/game.png"
-  import logo from "../../html/images/logo.png"
-
+  import Roster from "../team/roster.f7.html"
+  import Footer from "../common/footer.f7.html"
+  import OffChainEvents from "../activity/offchain-events.f7.html"
 
   export default (props, { $, $h, $on, $f7, $update }) => {
 
-    let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
     let universeWebService = ContainerService.getInstance(UniverseWebService)
-    let walletService = ContainerService.getInstance("WalletService")
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let statService = ContainerService.getInstance(StatService)
     let gameWebService = ContainerService.getInstance(GameWebService)
-    let offChainEventWebService = ContainerService.getInstance(OffChainEventWebService)
     let teamComponentService = ContainerService.getInstance(TeamComponentService)
 
-    let authInfo = props.authInfo
     let vm = props.vm
-    let discord = props.discord 
 
     const saveClick = (e) => {
-        $f7.emit('save-roster-click', e)
+      $f7.emit('save-roster-click', e)
     }
 
     const clickLeaveQueue = async (e) => {
 
       e.preventDefault()
-
 
       $f7.dialog.confirm("Are you sure you want to leave the queue?", async () => {
 
@@ -330,17 +349,30 @@
         try {
           await gameWebService.dequeue()
           $f7.views.main.router.refreshPage()
-        } catch(ex) { 
+        } catch (ex) {
           $f7.dialog.alert(ex.message, "There was an error")
         }
 
         $f7.preloader.hide()
 
-      }, () => {})
+      })
 
     }
 
-    const clickJoinQueue = async (e) => {
+
+    const openJoinRankedQueuePopup = async (e) => {
+
+      e.preventDefault()
+
+      $f7.popup.open('.play-ranked-popup')
+
+
+    }
+
+
+
+
+    const confirmRankedQueueClick = async (e) => {
 
       e.preventDefault()
 
@@ -349,7 +381,7 @@
       try {
         await gameWebService.queue()
         $f7.views.main.router.refreshPage()
-      } catch(ex) { 
+      } catch (ex) {
         $f7.dialog.alert(ex?.response?.data)
       }
 
@@ -357,136 +389,41 @@
 
     }
 
+    const clickPlayBot = async (e) => {
+      e.preventDefault()
+      $f7.dialog.alert("Not implemented yet.")
+    }
+
+    const clickChallengeFriend = async (e) => {
+      e.preventDefault()
+      $f7.dialog.alert("Not implemented yet.")
+    }
 
     const clamp = (n, min, max) => Math.min(Math.max(n, min), max)
 
-    const asDay = (d) => String(d).slice(0, 10) // YYYY-MM-DD
-    const sameDay = (a, b) => asDay(a) === asDay(b)
-
-    const getSeasonPercent = (season) =>
-      clamp(Math.round((season.dayNumber / season.totalDays) * 100), 0, 100)
-
-    // IMPORTANT: when you're "up to date", you must have finished the league's current day.
-    // That means gamesPlayed should be >= season.dayNumber (not +1).
     const getTeamDayNumber = (season) =>
       clamp(season.team.gamesPlayed + 1, 1, season.totalDays)
-
-    const getDaysBehind = (season) =>
-      Math.max(season.dayNumber - getTeamDayNumber(season), 0)
 
     const getDaysAhead = (season) =>
       Math.max(getTeamDayNumber(season) - season.dayNumber, 0)
 
+    const getAvailableQueueCount = (season) =>
+      Math.max(season.dayNumber - season.team.gamesPlayed, 0)
+
     const isSeasonComplete = (season) => season.dayNumber >= season.totalDays
+    const isAhead = (season) => getDaysAhead(season) > 0
 
-    const isBehind = (season) => getDaysBehind(season) > 0
-    const isAhead  = (season) => getDaysAhead(season) > 0
+    const isCaughtUp = (season) =>
+      getAvailableQueueCount(season) <= 0
 
-    const isYouAtStart = (season) => getTeamDayNumber(season) <= 1
-    const isYouAtEnd   = (season) => getTeamDayNumber(season) >= season.totalDays
+    const getQueuedSubtitle = (season) => {
 
-    const getYouLeftPercent = (season) =>
-      clamp(((getTeamDayNumber(season) - 1) / (season.totalDays - 1)) * 100, 0, 100)
-
-    // ============================================
-    // USER-LOCAL "TODAY/TOMORROW" (NOT universeDate)
-    // ============================================
-
-    const QUEUE_SOURCE_TZ = 'America/New_York' // what nextQueueDate "means" in your system (1PM ET cutoff day)
-    const USER_TZ = dayjs.tz.guess()
-
-    const localTodayStr = () => dayjs().tz(USER_TZ).format('YYYY-MM-DD')
-    const localTomorrowStr = () => dayjs().tz(USER_TZ).add(1, 'day').format('YYYY-MM-DD')
-
-    // Map nextQueueDate (a date-only string) into the user's local calendar day.
-    // Use noon to avoid midnight/DST edge cases.
-    const queueDateAsLocalDayStr = (season) =>
-      dayjs.tz(`${season.nextQueueDate} 12:00`, QUEUE_SOURCE_TZ)
-        .tz(USER_TZ)
-        .format('YYYY-MM-DD')
-
-    const isNextQueueTodayLocal = (season) =>
-      queueDateAsLocalDayStr(season) === localTodayStr()
-
-    const isNextQueueTomorrowLocal = (season) =>
-      queueDateAsLocalDayStr(season) === localTomorrowStr()
-
-    const formatQueueDateLocal = (season) =>
-      dayjs.tz(`${season.nextQueueDate} 12:00`, QUEUE_SOURCE_TZ)
-        .tz(USER_TZ)
-        .format('MMM D')
-
-    // For UI messaging: "today" means the user's local day
-    const isQueueClosedForUserDay = (season) =>
-      !isNextQueueTodayLocal(season)
-
-
-    const needsCatchUpToQueue = (season) =>
-      season.team.gamesPlayed < (season.dayNumber - 1)
-
-    const shouldShowCatchUp = (season) =>
-      !isSeasonComplete(season) &&
-      !isAhead(season) &&
-      (isBehind(season) || needsCatchUpToQueue(season))
-
-    const shouldShowJoinQueue = (season) =>
-      !isSeasonComplete(season) &&
-      !isAhead(season) &&
-      !shouldShowCatchUp(season)
-
-    // =====================================================
-    // QUEUE DEADLINE + SUBTITLE
-    // =====================================================
-
-    const getQueueDeadlineEt = (season) =>
-      dayjs.tz(`${season.nextQueueDate} 13:00`, 'America/New_York')
-
-    const getTimeLeftToQueue = (season) =>
-      dayjs().to(getQueueDeadlineEt(season))
-
-    // Show "games in progress" only shortly after the cutoff (1–3PM ET)
-    const isEarlyGamesWindowEt = () => {
-      const nowEt = dayjs().tz('America/New_York')
-      const start = nowEt.clone().hour(13).minute(0).second(0)
-      const end = nowEt.clone().hour(15).minute(0).second(0)
-      return nowEt.isAfter(start) && nowEt.isBefore(end)
-    }
-
-    // subtitle under the join link
-    const getQueueSubtitle = (season) => {
-      // Pre-cutoff: urgency
-      if (!isQueueClosedForUserDay(season)) {
-        return `⏰ Queue closes at 1:00 PM ET (${getTimeLeftToQueue(season)})`
+      if (isCaughtUp(season)) {
+        return `You’re queued for your next game.`
       }
 
-      // Post-cutoff: brief explanation window only
-      if (isEarlyGamesWindowEt()) {
-        return `🎮 Today’s games are in progress`
-      }
-
-      // Otherwise: no subtitle
-      return ``
+      return `You’re queued for ranked matchmaking.`
     }
-
-
-    const isGamesUnderway = (season) => {
-      // after 1PM ET, before midnight UTC
-      const nowUtc = dayjs.utc()
-      const startDay = dayjs(season.universeDate).format('YYYY-MM-DD')
-      const startTimeUtc = dayjs.tz(`${startDay} 13:00`, 'America/New_York').utc()
-      const endTimeUtc = dayjs.utc(`${startDay} 00:00`).add(1, 'day') // midnight UTC of next day
-      return nowUtc.isAfter(startTimeUtc) && nowUtc.isBefore(endTimeUtc)
-    }
-
-    const isGamesWrappingUp = (season) => {
-      // last ~2 hours of the UTC day
-      const nowUtc = dayjs.utc()
-      const startDay = dayjs(season.universeDate).format('YYYY-MM-DD')
-      const endTimeUtc = dayjs.utc(`${startDay} 00:00`).add(1, 'day')
-      const wrapUtc = endTimeUtc.subtract(2, 'hour')
-      return nowUtc.isAfter(wrapUtc) && nowUtc.isBefore(endTimeUtc)
-    }
-
 
     const onGameUpdate = async (game) => {
 
@@ -501,37 +438,27 @@
 
     }
 
-    const refreshPage = (e, done) => {
+    const refreshPage = () => {
       $f7.views.main.router.refreshPage()
     }
 
-    $on('pageBeforeIn', async (e) => {
+    $on('pageBeforeIn', async () => {
 
-        $f7.off('roster-refresh-lineup')
-        $f7.on('roster-refresh-lineup', () => {
-            $update()
-        })
+      $f7.off('roster-refresh-lineup')
+      $f7.on('roster-refresh-lineup', () => {
+        $update()
+      })
 
-      //Start watching game if in progress
       if (teamComponentService.inProgressGame?.game._id) {
         gameWebService.watchGame(teamComponentService.inProgressGame?.game._id, onGameUpdate)
       }
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-          detail: {
-            visible: false,
-            tabLink: "/",
-            breadcrumbs: [{ text: "Home", path: "/" }, { text: walletService.truncateEthAddress(vm?.authInfo?.address)}]
-          }
+        detail: {
+          visible: false,
+          tabLink: "/"
+        }
       }))
-
-      universeWebService.setMetadata(
-              `Ethereum Baseball League - Step Into the Owner’s Box. The League Awaits.`, 
-              window.location.href, 
-              `${env.WEB}/logo.png`, 
-              "Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. "
-      ) 
-
 
       await $update()
 

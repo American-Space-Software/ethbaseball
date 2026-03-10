@@ -38,6 +38,8 @@ import dayjs from "dayjs";
 
 import { FinanceService } from "./finance-service.js";
 
+const BASE_DIAMOND_REWARD = "100000000000000000000" //100 EBLD
+
 @injectable()
 class UniverseService {
 
@@ -470,6 +472,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
         league._id = uuidv4()
         league.rank = rank
         league.name = name
+        league.baseDiamondReward = BASE_DIAMOND_REWARD
 
         await this.leagueService.put(league, options)
 
@@ -509,6 +512,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
             league._id = uuidv4()
             league.rank = leagueInfo.league.rank
             league.name = leagueInfo.league.name
+            league.baseDiamondReward =  BASE_DIAMOND_REWARD
 
             await this.leagueService.put(league, options)
 
@@ -656,6 +660,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
     }
 
+    
 }
 
 interface TeamWithLocation {

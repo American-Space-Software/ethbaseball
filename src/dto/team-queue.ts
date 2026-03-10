@@ -2,8 +2,6 @@ import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryK
 import { Team } from './team.js'
 import { League } from './league.js'
 
-
-
 @Table({
     tableName: 'team_queue',
     createdAt: 'dateCreated',
@@ -36,6 +34,14 @@ class TeamQueue extends Model {
     league: League
 
 
+    @AllowNull(false)
+    @Column(DataType.DECIMAL(10,2))
+    declare teamRating:number 
+
+    @AllowNull(false)
+    @Column(DataType.INTEGER)
+    declare maxRatingDiff:number 
+
     @Column(DataType.DATE)
     declare lastUpdated?:Date 
     
@@ -44,9 +50,13 @@ class TeamQueue extends Model {
 
 }
 
-
+interface TeamQueueMatchup { 
+    team1: TeamQueue, 
+    team2: TeamQueue, 
+    ratingDiff: number 
+}
 
 export {
-    TeamQueue
+    TeamQueue, TeamQueueMatchup
 }
 

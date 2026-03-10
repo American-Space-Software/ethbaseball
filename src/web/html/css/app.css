@@ -9,7 +9,7 @@
 
   /* --f7-glass-shadow: unset;
   --f7-glass-bg-color:#0A3161; */
-  --f7-navbar-bg-color: #0A3161; 
+  /* --f7-navbar-bg-color: #0A3161;  */
   /* --f7-navbar-link-color: #FFFFFF; */
   /* --f7-navbar-font-size: 15px; */
   /* --f7-navbar-height: 75px; */
@@ -270,10 +270,44 @@ html {
   width: 100%;
 }
 
+
+
+
+
+
 .ios .subnavbar {
   background: #ffffff;
-  margin-top: 5px;
+  margin-top: 15px;
+  width: 1140px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
 }
+
+.ios .subnavbar .subnavbar-inner {
+  margin: 0px;
+  padding: 0px;
+}
+
+@media only screen and (max-width: 1024px) {
+  .ios .subnavbar {
+    width: inherit;
+    width: calc(100% - 32px);
+    max-width: calc(100% - 32px);
+    left: 0;
+    right: 0;
+    box-sizing: border-box;    
+  }
+
+}
+
+
+
+
+
+
+
 
 .dark.ios .subnavbar {
   background: #000000;
@@ -383,17 +417,13 @@ h1 {
   max-width: 100%;
 }
 
-.connect {
-  width: 200px;
-}
+
 
 @media only screen and (max-width: 1024px) {
   .fixed-width-content {
     width: 100%;
     max-width: 100%;
   }
-
-  .connect { width: 100%;}
 
 }
 
@@ -2697,7 +2727,7 @@ td.action, th.action {
   margin-left: 50px;
 }
 
-.navbar a.link.active {
+.panel-left .active {
   font-weight: bold;
 }
 
@@ -3345,4 +3375,7 @@ td.action, th.action {
 
 
 
+.dark .panel-left  {
+  background: var(--f7-navbar-bg-color);
+}
 

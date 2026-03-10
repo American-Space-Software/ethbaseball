@@ -4,15 +4,13 @@
 
     <div class="page-content">
 
-        <div class="hidden-on-load">
+        <div class="fixed-width-content center">
 
-            <div class="fixed-width-content center">
+            <div class="block">
 
-                <div class="block">
-                    <p class="segmented">
-                        <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link ">Rewards & Player Moves</a>
-                        <a href="${universeWebService.fullLink(`/t/activity/on/${teamId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
-                    </p>
+                <div class="segmented segmented-tabs">
+                    <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link ">Rewards & Player Moves</a>
+                    <a href="${universeWebService.fullLink(`/t/activity/on/${teamId}`)}" class="button button-outline tab-link tab-link-active" >On-chain</a>
                 </div>
 
                 ${onChainEvents?.transactions?.length > 0 ? $h`
@@ -21,46 +19,28 @@
 
                     
                 ` : $h` 
-                <div class="block">No activity</div>            
+                    <div class="block">No activity</div>            
                 `}
 
+            </div>
 
-                <div class="block split-row-both">
-                    <div>
-                        ${previousPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/t/activity/on/${tokenId}?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
-                        ` : $h` `}
-                    </div>
-                    <div>
-                        ${nextPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/t/activity/on/${tokenId}?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
-                        ` : $h` `}
-                    </div>
+
+            <div class="block split-row-both">
+                <div>
+                    ${previousPage ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/t/activity/on/${tokenId}?page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
+                    ` : $h` `}
                 </div>
-
+                <div>
+                    ${nextPage ? $h`
+                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="/t/activity/on/${tokenId}?page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
+                    ` : $h` `}
+                </div>
             </div>
-
-
-            
 
         </div>
 
-        <div class="hide-on-pageinit">
-
-          <div class="card skeleton-text">
-            <div class="card-header">Home</div>
-            <div class="card-content card-content-padding data-table">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-              lobortis et massa ac interdum. Cras consequat felis at consequat hendrerit.
-            </div>
-
-          </div>
-
-        </div>
-
-
-        
-     
+    
     </div>
 
   </div>
@@ -110,7 +90,6 @@
     let nextPage = props.nextPage
     let teamId = props.teamId
 
-
     $on('pageInit', async (e) => {
         await $update()
     })
@@ -129,10 +108,6 @@
               breadcrumbs: [
                   { text: "Home", path: "/"},
 
-                  {
-                      text: "Standings",
-                      path: universeWebService.startDateLink(`/l/standings/${teamComponentService.team.leagueRank}`)
-                  }, 
                   { 
                       text: teamWebService.getTeamName(teamComponentService.team), 
                       path: universeWebService.startDateLink(`/t/index/${teamComponentService.team._id}`) 
@@ -153,8 +128,6 @@
 
       await $update()
 
-      $('.hide-on-pageinit').hide()
-      $('.hidden-on-load').show()
 
 
     })

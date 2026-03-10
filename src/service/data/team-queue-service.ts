@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 import { TeamQueueRepository } from "../../repository/team-queue-repository.js";
-import { TeamQueue } from "../../dto/team-queue.js";
+import { TeamQueue, TeamQueueMatchup } from "../../dto/team-queue.js";
 import { Team } from "../../dto/team.js";
 import { League } from "../../dto/league.js";
 
@@ -37,12 +37,14 @@ class TeamQueueService {
         return this.teamQueueRepository.clear(options)
     }
 
-    async queueTeam(team:Team, league:League, options?: any): Promise<TeamQueue> {
+    async queueTeam(team:Team, league:League, teamRating:number, maxRatingDiff:number, options?: any): Promise<TeamQueue> {
 
         const tq = Object.assign(new TeamQueue(), {
             _id: uuidv4(),
             teamId: team._id,
             leagueId: league._id,
+            maxRatingDiff: maxRatingDiff,
+            teamRating: teamRating,
             dateCreated: null,
             lastUpdated: null
         })
@@ -67,6 +69,62 @@ class TeamQueueService {
 
     async count(options?: any): Promise<number> {
         return this.teamQueueRepository.count(options)
+    }
+
+    async processQueuePairs( league: League, options?: any ): Promise<TeamQueueMatchup[]> {
+
+        const pairs:{ team1:TeamQueue, team2:TeamQueue, ratingDiff:number }[] = []
+        const queue = await this.teamQueueRepository.listByLeague(league, 10000, 0, options)
+
+        const used = new Set<string>()
+
+        const isUsed = (tq:TeamQueue) => used.has(tq._id)
+
+        const ratingDiff = (a:TeamQueue, b:TeamQueue) =>
+            Math.abs(a.teamRating - b.teamRating)
+
+        const isCompatible = (a:TeamQueue, b:TeamQueue) => {
+            const diff = ratingDiff(a, b)
+            return diff <= a.maxRatingDiff && diff <= b.maxRatingDiff
+        }
+
+        for (let i = 0; i < queue.length; i++) {
+
+            const team1 = queue[i]
+            if (isUsed(team1)) continue
+
+            let best:TeamQueue = null
+            let bestDiff = Infinity
+
+            for (let j = i + 1; j < queue.length; j++) {
+
+                const team2 = queue[j]
+                if (isUsed(team2)) continue
+
+                const diff = ratingDiff(team1, team2)
+
+                // Because queue is sorted by rating, gaps only increase
+                if (diff > bestDiff) break
+
+                if (!isCompatible(team1, team2)) continue
+
+                best = team2
+                bestDiff = diff
+            }
+
+            if (!best) continue
+
+            pairs.push({
+                team1,
+                team2: best,
+                ratingDiff: bestDiff
+            })
+
+            used.add(team1._id)
+            used.add(best._id)
+        }
+
+        return pairs
     }
 
 

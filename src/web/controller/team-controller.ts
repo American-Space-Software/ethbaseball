@@ -122,20 +122,20 @@ class TeamController {
 
             this.universeWebService.setRank(team.leagueRank)
 
-
-
             let onChainEvents = await this.gameTransactionWebService.getOnChainByTeam(teamId, page)
 
             let previousPage
             let nextPage
 
             if (page > 1) {
-                previousPage = page - 1
+                nextPage = page - 1
             }
 
             if (onChainEvents?.transactions?.length == 25 ) {
-                nextPage = page + 1
+                previousPage = page + 1
             }
+
+
 
             return {
                 onChainEvents: onChainEvents,
@@ -169,13 +169,15 @@ class TeamController {
             let previousPage
             let nextPage
 
+
             if (page > 1) {
-                previousPage = page - 1
+                nextPage = page - 1
             }
 
-            if (eventsViewModel?.events?.length == 25 ) {
-                nextPage = page + 1
+            if (eventsViewModel?.transactions?.length == 25 ) {
+                previousPage = page + 1
             }
+
 
 
             return {
@@ -183,7 +185,7 @@ class TeamController {
                 eventsViewModel: eventsViewModel,
                 page: page,
                 previousPage: previousPage,
-                nextpage: nextPage,
+                nextPage: nextPage,
                 discord: this.discord
             }
         }, TeamOffChainActivityComponent)

@@ -134,7 +134,7 @@ class GlobalEventTarget extends EventTarget {}
 
 const eventTarget:GlobalEventTarget = new GlobalEventTarget()
 
-async function getContainer(env, footerRoutes) {
+async function getContainer(env, footerRoutes, leagues) {
 
     if (container) return container 
 
@@ -147,6 +147,7 @@ async function getContainer(env, footerRoutes) {
     container  = new Container()
     
     container.bind("footerRoutes").toConstantValue(footerRoutes)
+    container.bind("leagues").toConstantValue(leagues)
 
 
 

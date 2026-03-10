@@ -18,9 +18,9 @@ import {Workbox} from 'workbox-window'
 
 export class GlobalEventTarget extends EventTarget {}
 
-export default async (env, footerRoutes) => {
+export default async (env, footerRoutes, leagues) => {
 
-    let container = await getContainer(env, footerRoutes)
+    let container = await getContainer(env, footerRoutes, leagues)
 
     let baseURI = '/'
 

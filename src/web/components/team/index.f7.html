@@ -26,7 +26,7 @@
                         <li>
                             <div class="item-content">
                                 <div class="item-media">
-                                    <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" width="100" height="100" class="profilePic" />
+                                    <img src="/image/thumbnail/100/${teamComponentService.team.logoId}" width="56" height="56" class="profilePic" />
                                 </div>
 
                                 <div class="item-inner">
@@ -37,41 +37,13 @@
                                     </div>
 
                                     <div class="item-subtitle">
-                                        ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)}
+                                        ${teamComponentService.team.overallRecord.wins}-${teamComponentService.team.overallRecord.losses} <span class="separator">|</span> ${statService.formatRatio(teamComponentService.team.overallRecord.winPercent)} <span class="separator">|</span> ${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}
                                     </div>
                                     
                                 </div>
                             </div>
                         </li>
 
-                        <li>
-
-                            <table class="data-table">
-                                <tbody>
-                                <tr>
-                                    <td ><strong>Cash</strong></td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.diamondBalance)}</td>
-                                </tr>
-
-                                <tr>
-                                    <td ><strong>Season Rewards</strong></td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.financeSeason.revenue.seasonToDate.total)}</td>
-                                </tr>
-                                <tr>
-                                    <td ><strong>Yesterday's Rewards</strong></td>
-                                    <td class="numeric-cell">${universeWebService.displayDiamonds(teamComponentService.team.yesterdaysRewards)}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </li>
-
-                    </ul>
-                </div>
-
-                <div class="list links-list list-outline-ios list-strong-ios list-dividers-ios">
-                    <ul>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}">🔷 Rewards & Player Moves</a></li>
-                        <li><a class="link" href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}">📅 Results</a> </li>
                     </ul>
                 </div>
 
@@ -130,6 +102,45 @@
                     </div>
 
                 ` : $h` `}
+
+                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
+                        <li>
+                        <a href="${universeWebService.startDateLink(`/t/results/${teamComponentService.team._id}`)}" class="item-link item-content">
+                            <div class="item-media">📅</div>
+                            <div class="item-inner">
+                            <div class="item-title-row">
+                                <div class="item-title item-title-wrap">All Results</div>
+                            </div>
+                            </div>
+                        </a>
+                        </li>
+                    </ul>
+                </div>
+
+                
+                ${teamComponentService.eventsViewModel?.transactions?.length > 0 ? $h`
+
+                    <div class="block-title block-title-medium">Activity</div>
+                    <${OffChainEvents} model="${teamComponentService.eventsViewModel}" />
+
+                ` : $h` `}
+
+
+                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
+                        <li>
+                        <a href="${universeWebService.startDateLink(`/t/activity/index/${teamComponentService.team._id}`)}" class="item-link item-content">
+                            <div class="item-media">🔷</div>
+                            <div class="item-inner">
+                            <div class="item-title-row">
+                                <div class="item-title item-title-wrap">Rewards & Player Moves</div>
+                            </div>
+                            </div>
+                        </a>
+                        </li>
+                    </ul>
+                </div>
 
 
                 <!-- And somewhere in DOM -->
@@ -240,12 +251,13 @@
                     </div>
                 </div>
 
-            ` : $h` `}
+            ` : $h` `}  
 
 
         </div>
 
-            
+
+                  
 
 
     </div>
@@ -267,6 +279,7 @@
 
   import InProgress from "../home/in-progress.f7.html"
   import Result from "../home/result.f7.html"
+  import OffChainEvents from "../activity/offchain-events.f7.html"
 
 
   import dayjs from "dayjs"
@@ -303,11 +316,9 @@
 
     let statService = ContainerService.getInstance(StatService)
 
-
     let loading
     let startDate
     
-
     let authInfo = props.authInfo
 
     const saveClick = (e) => {

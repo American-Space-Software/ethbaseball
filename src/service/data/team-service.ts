@@ -164,33 +164,19 @@ n
 
         let t = tls.get({ plain: true })
 
-        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
         let nextStarter:RotationPitcher = this.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
 
         let isQueued = await this.teamQueueService.isTeamQueued(team, options)
 
-        let games:Game[] = await this.gameService.getRecentByTeam(team, { limit: 5 } )
+        let games:Game[] = await this.gameService.getRecentByTeam(team, Object.assign({ limit: 5 }, options) )
 
 
         let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
 
 
-        const ev = await this.offchainEventService.getMostRecentDailyDiamondRewardByTeamId(team._id)
-
-        let yesterdaysRewards
-
-        if (ev?.source?.fromDate) {
-
-            const from = ev?.source?.fromDate
-            const isYesterday = dayjs(from).format("YYYY-MM-DD") == dayjs(currentDate).subtract(1, "day").format("YYYY-MM-DD")
-
-            yesterdaysRewards = isYesterday ? (ev?.amount ?? "0") : "0"
-
-        } else {
-
-            yesterdaysRewards = "0"
-        }
-
+        let events = await this.offchainEventService.getByTeamId(team._id, Object.assign({ limit: 5, offset: 0 }, options) )
+        let eventsViewModel = await this.offchainEventService.getOffChainEventViewModels(events, season, options)
 
         return {
             team: {
@@ -219,9 +205,7 @@ n
                     _id: team.userId,
                     discordId: userOwner?.discordId,
                     discordUsername: userOwner?.discordProfile?.username
-                },
-
-                yesterdaysRewards: yesterdaysRewards
+                }
             },
             players: plss.map(pls => {
 
@@ -259,7 +243,8 @@ n
                 }
             }),
             completedGames: games?.filter(g => g.isFinished == true).map( g => this.gameService.getGameSummaryViewModel(g)),
-            inProgressGame: games.find( g => !g.isFinished)
+            inProgressGame: games.find( g => !g.isFinished),
+            eventsViewModel: eventsViewModel
         }
 
     }
@@ -1196,12 +1181,12 @@ interface TeamViewModel {
 
         isQueued:boolean
         minimumPlayerSalary:string
-        yesterdaysRewards:string
     }
 
     players?: PlayerRowViewModel[]
     completedGames?
     inProgressGame?
+    eventsViewModel?
     // todaysGames?
 }
 

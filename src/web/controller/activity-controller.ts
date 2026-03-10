@@ -82,7 +82,7 @@ class ActivityController {
                 nextPage = page - 1
             }
 
-            if (offChainEvents?.events?.length == 25 ) {
+            if (offChainEvents?.transactions?.length == 25 ) {
                 previousPage = page + 1
             }
             
