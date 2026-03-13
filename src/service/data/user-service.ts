@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { SeasonService } from "./season-service.js";
 import { LadderService } from "../ladder-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
+import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 
 
 
@@ -58,17 +59,21 @@ class UserService {
         return this.userRepository.getByDiscordId(discordId, options)
     }
 
-    async getAuthInfo(user:User) {
+    async getAuthInfo(user:User, season:Season) {
 
         let teams:Team[]  = await this.teamService.getByUser(user)
         let team = teams[0]
+
+        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
+
 
         let authInfo:any = { 
           _id: user._id, 
           discordUsername: user.discordProfile?.username, 
           discordId: user.discordId,
           address: user.address, 
-          teamId: team?._id
+          teamId: team?._id,
+          leagueId: tls?.leagueId,
         }
     
         if (user.address) {

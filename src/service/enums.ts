@@ -155,10 +155,6 @@ interface GamePlayer {
         before:number
     }
 
-    displayRating: {
-        before:number
-    }
-
     ownerId:string 
     color1:string
     color2:string
@@ -637,11 +633,7 @@ interface GamePlayerBio {
 }
 
 interface GameTeamFinance {
-    // totalAttendance?: number
     totalRevenue?: string
-
-    // payroll?:string
-    // stadiumLease?:string
 }
 
 
@@ -1238,8 +1230,8 @@ enum PlayerTransactionType {
 
 enum ContractType {
     DIAMONDS = "DIAMONDS",
-    PLAYERS = "PLAYERS"
-
+    PLAYERS = "PLAYERS",
+    EXPERIENCE = "EXPERIENCE"
 }
 
 interface TeamSeasonId { 
@@ -1299,7 +1291,7 @@ interface TeamCost {
 
 const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
   // scalar / joined columns
-  'displayRating': 'pls.displayRating',
+  'overallRating': 'pls.overallRating',
   'age': 'pls.age',
   'throws': 'p.throws',
   'hits': 'p.hits',
@@ -1351,7 +1343,7 @@ const PLAYER_STATS_SORT_EXPRESSION: Record<string, string> = {
 }
 
 interface OffChainEventSource {
-    type:string
+    type?:string
     rewardType?:string
     fromDate?:Date
     fromGameId?:string
@@ -17029,9 +17021,30 @@ enum AtBatState {
     ENDED
 }
 
+const PLAYER_LEAGUE_AVERAGE_RATING = 100
+const HITTER_GAME_AVERAGE_XP = 100
 
 
-export  { PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+enum PlayerGrade {
+    A_PLUS = "A+",
+    A = "A",
+    A_MINUS = "A-",
+    B_PLUS = "B+",
+    B = "B",
+    B_MINUS = "B-",
+    C_PLUS = "C+",
+    C = "C",
+    C_MINUS = "C-",
+    D_PLUS = "D+",
+    D = "D",
+    D_MINUS = "D-",
+    F = "F"
+}
+
+
+
+
+export  { HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimPitchCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
     SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

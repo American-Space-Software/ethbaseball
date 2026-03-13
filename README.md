@@ -2,7 +2,7 @@
 
 ## Technical Overview
 
-Ethereum Baseball League (EBL) is a competitive PvP baseball franchise and business simulator.
+Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage players, and compete against other teams in a persistent league.
 The in-game currency (Diamonds) is represented as an Ethereum asset, while all simulation and gameplay run off-chain for performance.
 
 This document provides a technical overview of the stack, quick-start steps, and environment file examples.
@@ -176,19 +176,21 @@ OPENSEA_COLLECTION_URL=
 
 ## What Is EBL?
 
-Ethereum Baseball League (EBL) is a baseball team-management simulation.
+Ethereum Baseball League (EBL) is an online baseball management game.
 
 You run a franchise by managing:
 
 - Rosters
 - Lineups
 - Pitching rotations
-- Roster moves
+- Player transactions
 - Long-term strategy
 
-Games are simulated pitch by pitch using player ratings, stamina, matchups, and game situation.
+Games are simulated pitch-by-pitch using player ratings, stamina, matchups, and game situation.
 
-You can watch games live with a field view and pitch-by-pitch updates.
+You can watch games live with a field view and pitch-by-pitch updates while your team competes against other teams in the league.
+
+The game combines the strategy of a baseball simulator with the accessibility of a browser-based baseball game.
 
 Diamonds are earned through regular-season game-day revenue and season-end rewards.
 

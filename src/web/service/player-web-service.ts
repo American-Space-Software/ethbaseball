@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { HitterPitcher, PitchType, Position } from "../../service/enums.js";
+import { HitterPitcher, PitchType, PlayerGrade, Position } from "../../service/enums.js";
 import { Player } from "../../dto/player.js";
 import { UniverseWebService } from "./universe-web-service.js";
 
@@ -355,16 +355,46 @@ class PlayerWebService {
 
     getRatingBadgeColor(rating) {
 
-      if (rating == null) return 'color-gray'
+        if (rating == null) return 'color-gray'
 
-      if (rating <= 20) return 'color-red'
-      if (rating <= 40) return 'color-orange'
-      if (rating <= 60) return 'color-yellow'
-      if (rating <= 80) return 'color-blue'
+        if (rating >= 170) return 'color-green'   // A+
+        if (rating >= 158) return 'color-green'   // A
+        if (rating >= 146) return 'color-green'   // A-
 
-      return 'color-green'
+        if (rating >= 134) return 'color-blue'    // B+
+        if (rating >= 122) return 'color-blue'    // B
 
+        if (rating >= 110) return 'color-yellow'  // B-
+        if (rating >= 95)  return 'color-yellow'  // C+
+        if (rating >= 83)  return 'color-yellow'  // C
+
+        if (rating >= 71)  return 'color-orange'  // C-
+        if (rating >= 59)  return 'color-orange'  // D+
+        if (rating >= 47)  return 'color-orange'  // D
+
+        if (rating >= 35)  return 'color-red'     // D-
+
+        return 'color-red'                       // F
     }
+
+    ratingToGrade(rating: number): PlayerGrade {
+
+        if (rating >= 170) return PlayerGrade.A_PLUS
+        if (rating >= 158) return PlayerGrade.A
+        if (rating >= 146) return PlayerGrade.A_MINUS
+        if (rating >= 134) return PlayerGrade.B_PLUS
+        if (rating >= 122) return PlayerGrade.B
+        if (rating >= 110) return PlayerGrade.B_MINUS
+        if (rating >= 95) return PlayerGrade.C_PLUS
+        if (rating >= 83) return PlayerGrade.C
+        if (rating >= 71) return PlayerGrade.C_MINUS
+        if (rating >= 59) return PlayerGrade.D_PLUS
+        if (rating >= 47) return PlayerGrade.D
+        if (rating >= 35) return PlayerGrade.D_MINUS
+
+        return PlayerGrade.F
+    }
+
 
 
 }

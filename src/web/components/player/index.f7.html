@@ -15,7 +15,7 @@
             <div class="left">
               <span class="icon">
                 <img style="border-radius: 50%; border: 1px solid #cccccc;" src="/player/image/${player._id}" width="100" height="100" />
-                <span class="badge ${playerWebService.getRatingBadgeColor(player.displayRating)}">${player.displayRating.toFixed(0)}</span>
+                <span class="badge ${playerWebService.getRatingBadgeColor(player.overallRating)}">${player.overallRating.toFixed(0)}</span>
               </span>
             </div>
 
@@ -26,7 +26,7 @@
               <span><strong>Position:</strong> ${player.primaryPosition}</span><br />
               <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
               <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
-              <span><strong>Overall Rating:</strong> ${player.displayRating.toFixed(0)}</span><br />     
+              <span><strong>Overall Rating:</strong> ${player.overallRating.toFixed(0)}</span><br />     
               
               ${player.askingPrice ? $h`
                 <span><strong>Cost:</strong> ${universeWebService.displayDiamonds(player.askingPrice)}</span><br />    

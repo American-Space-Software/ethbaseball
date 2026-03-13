@@ -217,23 +217,24 @@ n
                 return {
                     _id: p.playerId,
                     coverImageCid: p.player.coverImageCid,
-                    displayRating: p.player.displayRating,
                     fullName: `${p.player.firstName} ${p.player.lastName}`,
                     firstName: p.player.firstName,
                     lastName: p.player.lastName,
                     primaryPosition: p.primaryPosition,
                     age: p.age,
                     zodiacSign: p.player.zodiacSign,
-                    ownerId: p.player.ownerId,
                     throws: p.player.throws,
                     hits: p.player.hits,
                     lastGamePlayed: p.player.lastGamePlayed,
                     lastGamePitched: p.player.lastGamePitched,
 
+                    overallRating: p.player.overallRating,
                     pitchRatings: p.pitchRatings,
                     hittingRatings: p.hittingRatings,
 
-                    percentileRatings: p.percentileRatings,
+                    potentialOverallRating: p.player.potentialOverallRating,
+                    potentialPitchRatings: p.potentialPitchRatings,
+                    potentialHittingRatings: p.potentialHittingRatings,
 
                     careerStats: p.player.careerStats,
                     seasonStats: p.stats,
@@ -1035,7 +1036,6 @@ n
         nextPLS.hittingRatings = pls.hittingRatings
         nextPLS.pitchRatings = pls.pitchRatings
         nextPLS.overallRating = pls.overallRating
-        nextPLS.displayRating = pls.displayRating
         nextPLS.startDate = date
         nextPLS.endDate = season.endDate
         nextPLS.age = player.age
@@ -1091,7 +1091,6 @@ n
         nextPLS.hittingRatings = pls.hittingRatings
         nextPLS.pitchRatings = pls.pitchRatings
         nextPLS.overallRating = pls.overallRating
-        nextPLS.displayRating = pls.displayRating
         nextPLS.startDate = date
         nextPLS.endDate = season.endDate
         nextPLS.age = player.age
@@ -1136,7 +1135,14 @@ n
 
     }
 
-    
+    getDevelopmentExpenseForReward(team: Team, rewardAmount: bigint): bigint {
+        return rewardAmount * BigInt(team.developmentStrategy.budgetPercent) / 100n
+    }
+
+    getDevelopmentXpMultiplier(team: Team): bigint {
+        return BigInt(100 + Math.round(team.developmentStrategy.budgetPercent * 0.5))
+    }
+
 
 }
 

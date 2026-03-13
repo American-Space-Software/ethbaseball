@@ -68,13 +68,14 @@ import DataTable from 'framework7/components/data-table'
 import Messages from 'framework7/components/messages'
 import ProgressBar from 'framework7/components/progressbar'
 import PullToRefresh from 'framework7/components/pull-to-refresh'
+import Range from 'framework7/components/range'
 
 
 import { OwnerWebService } from "./service/owner-web-service.js";
 import { PlayerWebService } from "./service/player-web-service.js";
 import { TransactionWebService } from "./service/transaction-web-service.js";
 
-Framework7.use([ PullToRefresh, ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
+Framework7.use([ Range, PullToRefresh, ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
 
 
 import TransactionRow from './components/common/transaction-row.f7.html'

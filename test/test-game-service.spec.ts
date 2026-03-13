@@ -8,14 +8,11 @@ import { RollService } from '../src/service/roll-service.js'
 import { GameService, SimGameCommand } from "../src/service/data/game-service.js"
 import { Game } from "../src/dto/game.js"
 import { PlayerService } from "../src/service/data/player-service.js"
-import { StatService } from "../src/service/stat-service.js"
 
-import { UserIOService } from "../src/service/userio-service.js"
 import { OwnerService } from "../src/service/data/owner-service.js"
 // import { GameQueueService } from "../src/service/game-queue-service.js"
 import { SchemaService } from "../src/service/data/schema-service.js"
-import { PlayerRepository } from "../src/repository/player-repository.js"
-import { IPFSService } from "../src/service/ipfs-service.js"
+
 import { BaseResult, Contact, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from "../src/service/enums.js"
 import dayjs from "dayjs"
 import { SeasonService } from "../src/service/data/season-service.js"
@@ -24,14 +21,15 @@ import { StadiumService } from "../src/service/data/stadium-service.js"
 import { Stadium } from "../src/dto/stadium.js"
 import { Season } from "../src/dto/season.js"
 import { League } from "../src/dto/league.js"
+import { Player } from "../src/dto/player.js"
 
 let owner
-let redTeam
-let blueTeam
+let redTeam:Player[]
+let blueTeam:Player[]
 
-let league
-let season
-let stadium
+let league:League
+let season:Season
+let stadium:Stadium
 
 describe('GameService', async () => {
 
@@ -41,14 +39,9 @@ describe('GameService', async () => {
     let leagueService:LeagueService
     let stadiumService:StadiumService
     let playerService:PlayerService
-    let userIOService:UserIOService
     let ownerService:OwnerService
-    // let gameQueueService:GameQueueService
     let schemaService:SchemaService
-    let statService:StatService
-    let playerRepository:PlayerRepository
-    let ipfsService:IPFSService
-    let sequelize
+
 
     let simDate = new Date(new Date().toUTCString())
 
@@ -61,16 +54,13 @@ describe('GameService', async () => {
         // gameQueueService = container.get(GameQueueService)
         rollService = container.get(RollService)
         playerService = container.get(PlayerService)
-        userIOService = container.get(UserIOService)
         ownerService = container.get(OwnerService)
         schemaService = container.get(SchemaService)
-        statService = container.get(StatService)
-        ipfsService = container.get(IPFSService)
+
         seasonService = container.get(SeasonService)
         leagueService = container.get(LeagueService)
         stadiumService = container.get(StadiumService)
-        playerRepository = container.get("PlayerRepository")
-        sequelize = container.get("sequelize")
+
 
         await schemaService.load()
 
@@ -112,30 +102,12 @@ describe('GameService', async () => {
             await playerService.put(player)
         }
 
-
     })
 
     it("should sim a game", async () => {
 
         // Arrange
-        let laRatings = playerService.buildLeagueAverages( {
-            hittingRatings: {
-                arm: 15,
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34},
-                defense: 15,
-                speed: 15,
-                steals: 15,
-                vsL: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15},
-                vsR: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15}
-            },
-            pitchRatings: {
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34},
-                pitches: [],
-                power: 15,
-                vsL: { control: 15, movement: 15 },
-                vsR: { control: 15, movement: 15 }
-            }
-        })
+        let laRatings = playerService.buildLeagueAverages()
 
         // Create the away TeamInfo object
         const awayTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
@@ -168,30 +140,13 @@ describe('GameService', async () => {
 
         // assert.equal(result.currentInning, 9)
         assert.equal(result.isComplete, true)
-        assert.equal(result.score.away, 1)
-        assert.equal(result.score.home, 10)
+        assert.equal(result.score.away, 19)
+        assert.equal(result.score.home, 15)
 
     })
 
     it("inning can end during runner events; stop further processing but keep events", async () => {
-        const laRatings = playerService.buildLeagueAverages({
-            hittingRatings: {
-                arm: 15,
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
-                defense: 15,
-                speed: 15,
-                steals: 15,
-                vsL: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-                vsR: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-            },
-            pitchRatings: {
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
-                pitches: [],
-                power: 15,
-                vsL: { control: 15, movement: 15 },
-                vsR: { control: 15, movement: 15 },
-            },
-        })
+        const laRatings = playerService.buildLeagueAverages()
 
         const awayTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
         const homeTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
@@ -264,24 +219,7 @@ describe('GameService', async () => {
     })
 
     it("Ground ball to infielder with runner on 3B and 2 outs must record the batter out at 1B (throw if needed), no run", async () => {
-        const laRatings = playerService.buildLeagueAverages({
-            hittingRatings: {
-                arm: 15,
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
-                defense: 15,
-                speed: 15,
-                steals: 15,
-                vsL: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-                vsR: { contact: 15, gapPower: 15, homerunPower: 15, plateDiscipline: 15 },
-            },
-            pitchRatings: {
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34 },
-                pitches: [],
-                power: 15,
-                vsL: { control: 15, movement: 15 },
-                vsR: { control: 15, movement: 15 },
-            },
-        })
+        const laRatings = playerService.buildLeagueAverages()
 
         const awayTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
         const homeTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)

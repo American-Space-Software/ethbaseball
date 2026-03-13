@@ -78,9 +78,9 @@
 
                           <span class="icon">
                             <img src="/player/image/${p._id}" />
-                            ${p.displayRating?.before ? $h`
-                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating.before)}">
-                                ${p.displayRating.before.toFixed(0) }
+                            ${p.overallRating?.before ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating.before)}">
+                                ${p.overallRating.before.toFixed(0) }
                               </span>
                             ` : $h` `}
                           </span>
@@ -324,9 +324,9 @@
                         
                           <span class="icon">
                             <img src="/player/image/${p._id}" />
-                            ${p.displayRating?.before ? $h`
-                              <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating.before)}">
-                                ${p.displayRating.before.toFixed(0) }
+                            ${p.overallRating?.before ? $h`
+                              <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating.before)}">
+                                ${p.overallRating.before.toFixed(0) }
                               </span>
                             ` : $h` `}
                           </span>
@@ -363,9 +363,9 @@
                 
                   <span class="icon">
                     <img src="/player/image/${vm.awayPlayer._id}" />
-                    ${vm.awayPlayer.displayRating?.before ? $h`
-                      <span class="badge ${playerWebService.getRatingBadgeColor(vm.awayPlayer.displayRating.before)}">
-                        ${vm.awayPlayer.displayRating.before.toFixed(0) }
+                    ${vm.awayPlayer.overallRating?.before ? $h`
+                      <span class="badge ${playerWebService.getRatingBadgeColor(vm.awayPlayer.overallRating.before)}">
+                        ${vm.awayPlayer.overallRating.before.toFixed(0) }
                       </span>
                     ` : $h` `}
                   </span>
@@ -396,9 +396,9 @@
 
                 <span class="icon">
                   <img src="/player/image/${vm.homePlayer._id}" />
-                  ${vm.homePlayer.displayRating?.before ? $h`
-                    <span class="badge ${playerWebService.getRatingBadgeColor(vm.homePlayer.displayRating.before)}">
-                      ${vm.homePlayer.displayRating.before.toFixed(0) }
+                  ${vm.homePlayer.overallRating?.before ? $h`
+                    <span class="badge ${playerWebService.getRatingBadgeColor(vm.homePlayer.overallRating.before)}">
+                      ${vm.homePlayer.overallRating.before.toFixed(0) }
                     </span>
                   ` : $h` `}
                 </span>

@@ -146,6 +146,26 @@ class OffchainEventService {
     }
     
 
+
+    async createPlayerExperienceEvent(toTeamId:string, playerId:string, amount:string, source:OffChainEventSource, transactionId:string, options?:any) {
+
+        let offChainEvent:OffchainEvent = new OffchainEvent()
+        offChainEvent._id = uuidv4() 
+        offChainEvent.contractType = ContractType.EXPERIENCE
+        offChainEvent.event = "Transfer"
+        offChainEvent.toTeamId = toTeamId
+        offChainEvent.playerId = playerId
+        offChainEvent.transactionId = transactionId
+        offChainEvent.amount = BigInt(amount).toString()
+        offChainEvent.source = JSON.parse(JSON.stringify(source))
+
+        await this.put(offChainEvent, options)
+
+        return offChainEvent
+
+    }
+
+
     async get(_id:string, options?:any) : Promise<OffchainEvent> {
         return this.offchainEventRepository.get(_id, options)
     }
@@ -162,80 +182,12 @@ class OffchainEventService {
         return this.offchainEventRepository.getByTeamId(teamId, options)
     }
 
-    async getBalanceForOwner(contractType:string, owner:Owner, options?:any) {
-
-        let events:OffchainEvent[] = await this.getByOwner(contractType, owner, options)
-
-        return this.getBalanceForOwnerFromEvents(owner, events)
-
-    }
-
-    getBalanceForOwnerFromEvents(owner:Owner, events:OffchainEvent[]) {
-
-        let diamondBalance = "0"
-
-        //Look through events
-        for (let event of events) {
-
-            if (event.toAddress && event.amount) {
-                if (event.toAddress == owner._id) {
-                    diamondBalance = (  BigInt(diamondBalance || 0) + BigInt(event.amount) ).toString() 
-                } else {
-                    diamondBalance = (  BigInt(diamondBalance || 0) - BigInt(event.amount) ).toString() 
-                }
-            }
-        }
-
-        return diamondBalance
-
-    }
-
     async getBalanceForTeamId(contractAddress:string, teamId:string, options?:any) {
-
-        let events:OffchainEvent[] = await this.offchainEventRepository.getByTeamIdAndContractType(contractAddress, teamId, options)
-
-        let diamondBalance = "0"
-
-        //Look through events
-        for (let event of events) {
-
-            if (event.amount) {
-                if (event.toTeamId == teamId) {
-                    diamondBalance = (  BigInt(diamondBalance || 0) + BigInt(event.amount) ).toString() 
-                } else if (event.fromTeamId == teamId) {
-                    diamondBalance = (  BigInt(diamondBalance || 0) - BigInt(event.amount) ).toString() 
-                }
-
-            }
-
-        }
-
-        return diamondBalance
-
-
+        return this.offchainEventRepository.getBalanceByTeamIdAndContractType(contractAddress, teamId, options)
     }
 
     async getRewardsForTeamSeason(contractAddress:string,team:Team, season:Season, options?:any) {
-
-        let events:OffchainEvent[] = await this.offchainEventRepository.getRewardsByTeamAndSeason(contractAddress, team, season, options)
-
-        let diamondBalance = "0"
-
-        //Look through events
-        for (let event of events) {
-
-            if (event.amount) {
-                if (event.toTeamId == team._id) {
-                    diamondBalance = (  BigInt(diamondBalance || 0) + BigInt(event.amount) ).toString() 
-                } else if (event.fromTeamId == team._id) {
-                    diamondBalance = (  BigInt(diamondBalance || 0) - BigInt(event.amount) ).toString() 
-                }
-            }
-        }
-
-        return diamondBalance
-
-
+        return this.offchainEventRepository.getRewardBalanceByTeamAndSeason(contractAddress, team, season, options)
     }
 
 
@@ -249,6 +201,10 @@ class OffchainEventService {
 
     async listByPage(options?:any) : Promise<OffchainEvent[]> {
         return this.offchainEventRepository.listByPage(options)
+    }
+
+    async getBalanceByPlayerIdAndContractType(contractType: string, playerId: string, options?: any): Promise<string> {
+        return this.getBalanceByPlayerIdAndContractType(contractType, playerId, options)
     }
 
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {

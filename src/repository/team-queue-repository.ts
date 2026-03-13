@@ -9,6 +9,8 @@ interface TeamQueueRepository {
 
     list(limit:number, offset:number, options?:any) : Promise<TeamQueue[]>
     listByLeague(league:League, limit:number, offset:number, options?: any): Promise<TeamQueue[]>
+    listByLeagueTeamRatingDesc(league:League, limit:number, offset:number, options?: any): Promise<TeamQueue[]>
+    
     clear(options?:any)
     isTeamQueued(team:Team, options?: any): Promise<boolean>
     getByTeam(team:Team, options?: any): Promise<TeamQueue>

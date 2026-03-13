@@ -40,34 +40,41 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
 
     }
 
-    async getRewardsByTeamAndSeason(contractType: string, team: Team, season: Season, options?: any): Promise<OffchainEvent[]> {
-        const seasonRange = {
-            [Op.gte]: season.startDate,
-            ...(season.endDate ? { [Op.lt]: season.endDate } : {}),
-        }
+    async getRewardBalanceByTeamAndSeason(contractType: string, team: Team, season: Season, options?: any): Promise<string> {
+
+        let s = await this.sequelize()
 
         const modelAlias = (OffchainEvent as any).name
 
-        const whereClause = {
-            [Op.and]: [
-                { contractType },
-                { toTeamId: team._id },
-                { dateCreated: seasonRange },
-                Sequelize.literal(
-                    `JSON_UNQUOTE(JSON_EXTRACT(\`${modelAlias}\`.\`source\`, '$.type')) = 'reward'`
-                ),
-            ],
+        let queryOptions = {
+            replacements: {
+                contractType: contractType,
+                teamId: team._id,
+                seasonStart: season.startDate,
+                seasonEnd: season.endDate ?? null
+            },
+            type: QueryTypes.SELECT,
+            plain: true
         }
 
-        const query = Object.assign(
-            {
-                where: whereClause,
-                order: [["dateCreated", "DESC"]],
-            },
-            options
-        )
+        const rows = await s.query(
+            `
+            SELECT
+                COALESCE(
+                    CAST(SUM(CAST(amount AS DECIMAL(65,0))) AS CHAR),
+                    '0'
+                ) AS balance
+            FROM offchain_event
+            WHERE contractType = :contractType
+            AND toTeamId = :teamId
+            AND dateCreated >= :seasonStart
+            AND (:seasonEnd IS NULL OR dateCreated < :seasonEnd)
+            AND JSON_UNQUOTE(JSON_EXTRACT(\`${modelAlias}\`.\`source\`, '$.type')) = 'reward'
+            `,
+            Object.assign(queryOptions, options)
+        ) 
 
-        return OffchainEvent.findAll(query)
+        return rows?.balance || "0"
     }
 
     async getByTeamIdAndContractType(contractType:string, teamId:string, options?:any) : Promise<OffchainEvent[]>  {
@@ -203,6 +210,75 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
         )
 
         return rows as unknown as OffchainEvent[]
+    }
+
+    async getBalanceByTeamIdAndContractType(contractType: string, teamId: string, options?: any): Promise<string> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            
+            replacements: { 
+                contractType: contractType, 
+                teamId:teamId 
+            },
+            type: QueryTypes.SELECT,
+            plain: true
+        }
+
+        const rows = await s.query(
+            `
+            SELECT
+                COALESCE(
+                    CAST(
+                        SUM(
+                            CASE
+                                WHEN event = 'Transfer' AND toTeamId = :teamId THEN CAST(amount AS DECIMAL(65,0))
+                                WHEN event = 'Transfer' AND fromTeamId = :teamId THEN -CAST(amount AS DECIMAL(65,0))
+                                ELSE 0
+                            END
+                        ) AS CHAR
+                    ),
+                    '0'
+                ) AS balance
+            FROM offchain_event
+            WHERE contractType = :contractType
+              AND (fromTeamId = :teamId OR toTeamId = :teamId)
+            `, Object.assign( queryOptions, options )
+        ) 
+
+        return rows?.balance || "0"
+    }
+
+    async getBalanceByPlayerIdAndContractType(contractType: string, playerId: string, options?: any): Promise<string> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            replacements: {
+                contractType: contractType,
+                playerId: playerId
+            },
+            type: QueryTypes.SELECT,
+            plain: true
+        }
+
+        const rows = await s.query(
+            `
+            SELECT
+                COALESCE(
+                    CAST(SUM(CAST(amount AS DECIMAL(65,0))) AS CHAR),
+                    '0'
+                ) AS balance
+            FROM offchain_event
+            WHERE contractType = :contractType
+            AND playerId = :playerId
+            AND event = 'Transfer'
+            `,
+            Object.assign(queryOptions, options)
+        ) 
+
+    return rows?.balance || "0"
     }
 
 }

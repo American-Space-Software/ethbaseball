@@ -3338,7 +3338,10 @@ td.action, th.action {
 
 
 
-
+.lineup-title {
+  display: flex;
+  align-items: center;
+}
 
 
 .tx-toolbar {

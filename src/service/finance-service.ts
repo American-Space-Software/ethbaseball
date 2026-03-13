@@ -242,6 +242,20 @@ class FinanceService {
                     perGame: "0",
                     total: "0"
                 }
+            },
+
+            expenses: {
+                seasonToDate: {
+                    total: "0",
+                },
+
+                projectedRemaining: {
+                    total: "0",
+                },
+
+                projectedTotal: {
+                    total: "0",
+                }
             }
 
         }

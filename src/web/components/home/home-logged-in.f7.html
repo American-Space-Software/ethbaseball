@@ -115,20 +115,24 @@
                     </a>
                   </li>
 
-                  <li>
-                    <a class="item-link item-content" @click="${clickPlayBot}">
-                      <div class="item-media">🤖</div>
-                      <div class="item-inner">
-                        <div class="item-title-row">
-                          <div class="item-title">Play Bot</div>
-                          <div class="item-after">Practice</div>
+                  ${!vm.teamInfo.team.isQueued ? $h`
+                    <li>
+                      <a class="item-link item-content" @click="${clickPlayBot}">
+                        <div class="item-media">🤖</div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">Play Bot</div>
+                            <div class="item-after">Practice</div>
+                          </div>
+                          <div class="item-text">
+                            Practice against a computer opponent. No rewards or player progression.
+                          </div>
                         </div>
-                        <div class="item-text">
-                          Practice against a computer opponent. No rewards or player progression.
-                        </div>
-                      </div>
-                    </a>
-                  </li>
+                      </a>
+                    </li>
+                  ` : $h` `}
+
+
 <!-- 
                   <li>
                     <a class="item-link item-content" @click="${clickChallengeFriend}">
@@ -149,6 +153,8 @@
 
               </ul>
             </div>
+
+
 
 
             ${teamComponentService.inProgressGame?.game?._id ? $h`
@@ -226,6 +232,7 @@
     <div class="popup play-ranked-popup">
       <div class="view">
         <div class="page">
+
           <div class="navbar">
             <div class="navbar-bg"></div>
             <div class="navbar-inner">
@@ -237,11 +244,28 @@
               </div>
             </div>
           </div>
+
           <div class="page-content">
 
-            <div class="block block-strong block-outline">
-              Choose the maximum rating difference you want to allow when looking for a ranked opponent.
+            <div class="block-title">You</div>
+
+            <div class="list list-strong-ios list-outline-ios list-dividers-ios">
+              <ul>
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">Rating</div>
+                      <div class="item-after">
+                        <strong>${myRating.toFixed(0)}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
+
+
+            <div class="block-title">Opponent</div>
 
             <div class="list list-strong-ios list-outline-ios list-dividers-ios">
               <ul>
@@ -249,8 +273,10 @@
                 <li>
                   <div class="item-content">
                     <div class="item-inner">
-                      <div class="item-title">Max Rating Difference</div>
-                      <div class="item-after">${selectedMaxRatingDiff}</div>
+                      <div class="item-title">Rating</div>
+                      <div class="item-after">
+                        <strong>${minOpponentRating.toFixed(0)}</strong> - <strong>${maxOpponentRating.toFixed(0)}</strong>
+                      </div>
                     </div>
                   </div>
                 </li>
@@ -259,12 +285,15 @@
                   <div class="item-content">
                     <div class="item-inner">
                       <div class="item-input-wrap">
-                        <div class="range-slider range-slider-init"
-                            data-label="true"
-                            data-min="25"
-                            data-max="250"
-                            data-step="1"
-                            data-value="${selectedMaxRatingDiff}">
+                        <div
+                          class="range-slider range-slider-init"
+                          data-label="true"
+                          data-min="0"
+                          data-max="250"
+                          data-step="1"
+                          data-scale="true"
+                          data-value="${selectedMaxRatingDiff}"
+                          @range:change="${rangeChange}">
                         </div>
                       </div>
                     </div>
@@ -274,17 +303,15 @@
                 <li>
                   <div class="item-content">
                     <div class="item-inner">
-                      <div class="item-title">Projected Reward</div>
-                      <div class="item-after">${projectedReward}</div>
+                      <div class="item-title">Minimum Reward</div>
+                      <div class="item-after">
+                        <strong>${universeWebService.displayDiamonds(projectedReward)}</strong>
+                      </div>
                     </div>
                   </div>
                 </li>
 
               </ul>
-            </div>
-
-            <div class="block block-strong block-outline">
-              Lower values favor closer matchups and higher rewards. Higher values widen the pool of possible opponents.
             </div>
 
             <div class="block">
@@ -326,6 +353,8 @@
   export default (props, { $, $h, $on, $f7, $update }) => {
 
     let eventTarget = ContainerService.getInstance("eventTarget")
+    let leagues = ContainerService.getInstance("leagues")
+
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
     let statService = ContainerService.getInstance(StatService)
@@ -333,6 +362,35 @@
     let teamComponentService = ContainerService.getInstance(TeamComponentService)
 
     let vm = props.vm
+    let authInfo = props.authInfo
+
+
+    let baseDiamondReward = leagues.find(l => l._id == authInfo.leagueId)?.baseDiamondReward
+
+    let selectedMaxRatingDiff =  25
+    let projectedReward = teamWebService.calculateProjectedReward(baseDiamondReward, selectedMaxRatingDiff) 
+
+    let myRating = vm.teamInfo.team.longTermRating.rating
+    let minOpponentRating = myRating - selectedMaxRatingDiff
+    let maxOpponentRating = myRating + selectedMaxRatingDiff
+
+    const rangeChange = (e) => {
+
+      const range = $f7.range.get(e.target)
+
+      selectedMaxRatingDiff = range.value
+
+      minOpponentRating = myRating - selectedMaxRatingDiff
+      maxOpponentRating = myRating + selectedMaxRatingDiff
+
+      projectedReward = teamWebService.calculateProjectedReward(
+        baseDiamondReward,
+        selectedMaxRatingDiff
+      )
+
+      $update()
+
+    }
 
     const saveClick = (e) => {
       $f7.emit('save-roster-click', e)
@@ -366,7 +424,6 @@
 
       $f7.popup.open('.play-ranked-popup')
 
-
     }
 
 
@@ -376,16 +433,13 @@
 
       e.preventDefault()
 
-      $f7.preloader.show()
-
       try {
-        await gameWebService.queue()
+        await gameWebService.queue(selectedMaxRatingDiff)
+        $f7.popup.close('.play-ranked-popup')
         $f7.views.main.router.refreshPage()
       } catch (ex) {
         $f7.dialog.alert(ex?.response?.data)
       }
-
-      $f7.preloader.hide()
 
     }
 

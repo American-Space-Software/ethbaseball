@@ -10,7 +10,7 @@
                     <th class="stamina " data-sort="stamina">🪫</th>
                     ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
-                    <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('displayRating')}" data-sort="displayRating">OVR</th>
+                    <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('overallRating')}" data-sort="overallRating">OVR</th>
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('throws')}" data-sort="throws">Throws</th>
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('hits')}" data-sort="hits">Bats</th>
 
@@ -58,8 +58,8 @@
                               ${p?._id ? $h`
                                 <span class="icon">
                                   <img src="/player/image/${p._id}" />
-                                  <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
-                                    ${p.displayRating.toFixed(0)}
+                                  <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating)}">
+                                    ${playerWebService.ratingToGrade(p.overallRating)}
                                   </span>
                                 </span>
                               ` : $h`<span />`}
@@ -100,7 +100,7 @@
                               <td class="numeric-cell">${universeWebService.displayDiamonds(p.askingPrice)}</td>
                             ` : $h` `}
 
-                            <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
+                            <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
                             <td class="numeric-cell">${p?.throws}</td>
                             <td class="numeric-cell">${p?.hits}</td>
                             <td class="numeric-cell">${getStats(p)?.pitching?.wins}</td>

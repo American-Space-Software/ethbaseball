@@ -34,7 +34,6 @@ describe('UniverseRepository', async () => {
         universe._id = "xyz"
         universe.name = "blah"
         universe.symbol = "BLAH"
-        universe.contractAddress = "Abac"
         universe.minterAddress = "asdfsdf"
         universe.diamondAddress = "eee"
         universe.adminAddress = "asdf"

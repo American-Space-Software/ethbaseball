@@ -38,21 +38,7 @@ class LeagueService {
         return this.leagueRepository.listByRankAsc(options)
     }
 
-    async updateLeagueAveragePlayerRatings(leagues:League[], season:Season, options?:any) {
 
-        for (let league of leagues) {
-
-            league.averageRating = {
-                hittingRatings: await this.playerService.getLeagueAverageHitterRatings(league, season, options),
-                pitchRatings: await this.playerService.getLeagueAveragePitcherRatings(league, season, options)
-            }
-
-            league.changed('averageRating', true)
-
-            await this.put(league, options)
-        }
-
-    }
 
 
 }

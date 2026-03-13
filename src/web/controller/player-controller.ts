@@ -69,7 +69,7 @@ class PlayerController {
             } 
 
             let page = parseInt(routeTo?.query?.page) || 1
-            let sortColumn = routeTo?.query?.sortColumn || "displayRating"
+            let sortColumn = routeTo?.query?.sortColumn || "overallRating"
             let sortDirection = routeTo?.query?.sortDirection || "DESC"
             let position = routeTo?.query?.position || HitterPitcher.HITTER
 

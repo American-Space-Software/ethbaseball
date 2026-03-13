@@ -44,25 +44,7 @@ describe('RollService', async () => {
 
         await schemaService.load()
 
-        la = playerService.buildLeagueAverages( {
-            league: undefined,
-            hittingRatings: {
-                arm: 60,
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34},
-                defense: 60,
-                speed: 60,
-                steals: 60,
-                vsL: { contact: 60, gapPower: 60, homerunPower: 60, plateDiscipline: 60},
-                vsR: { contact: 60, gapPower: 60, homerunPower: 60, plateDiscipline: 60}
-            },
-            pitchRatings: {
-                contactProfile: { flyBall: 33, groundball: 33, lineDrive: 34},
-                pitches: [],
-                power: 60,
-                vsL: { control: 60, movement: 60 },
-                vsR: { control: 60, movement: 60 }
-            }
-        } )
+        la = playerService.buildLeagueAverages()
 
         let hitter:Player = new Player()
         // hitter.dateOfBirth = dayjs().subtract(17, 'years').toDate()
@@ -97,8 +79,8 @@ describe('RollService', async () => {
 
         //Act
         let result = await rollChartService.buildHitterPowerRollInput(la, hitterChange )
-
-        assert.deepStrictEqual(result,{ out: 696, singles: 103, doubles: 59, triples: 6, hr: 77 })
+    
+        assert.deepStrictEqual(result,{ out: 684, singles: 100, doubles: 60, triples: 6, hr: 80 })
 
     })
 
@@ -107,7 +89,7 @@ describe('RollService', async () => {
         //Act
         let result = await rollChartService.buildPitcherPowerRollInput(la, pitcherChange)
 
-        assert.deepStrictEqual(result, { out: 513, singles: 278, doubles: 104, triples: 11, hr: 94 })
+        assert.deepStrictEqual(result, { out: 515, singles: 276, doubles: 104, triples: 11, hr: 94 })
 
     })
 

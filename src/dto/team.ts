@@ -49,6 +49,10 @@ class Team extends Model {
     @Column(DataType.JSON)
     declare seasonRating:Rating
 
+    @AllowNull(false)
+    @Column(DataType.JSON)
+    declare developmentStrategy:DevelopmentStrategy
+    
     @Column(DataType.DATE)
     declare lastGamePlayed?:Date 
 
@@ -69,21 +73,8 @@ interface Revenue {
     total:string
 }
 
-// interface Expenses {
-//     // payroll:string
-//     stadiumLease:string
-//     total:string
-// }
-
-
-interface Profit {
-    total:string
-}
-
-interface Attendance {
-    seasonTickets:number
-    gateTickets:number
-    totalAttendance:number
+interface Expenses {
+  total:string
 }
 
 interface FinanceSeason {
@@ -101,11 +92,11 @@ interface FinanceSeason {
     totalGamesPlayed:number
     // totalGamesRemaining:number
 
-    // expenses: {
-    //     seasonToDate:Expenses
-    //     projectedRemaining:Expenses
-    //     projectedTotal:Expenses
-    // }
+    expenses: {
+        seasonToDate:Expenses
+        projectedRemaining:Expenses
+        projectedTotal:Expenses
+    }
 
     revenue: {
         seasonToDate: Revenue
@@ -160,6 +151,12 @@ interface RotationPitcher {
     _id?:string
     stamina?:number
 }
+
+
+interface DevelopmentStrategy {
+  budgetPercent:number
+}
+
 
 const TEAM_NAMES = new Set([
     "Lynx",
@@ -1579,7 +1576,7 @@ const TEAM_COLORS = [
 
 
 export {
-    Team, Lineup, LineupPlayer, OverallRecord, RotationPitcher, TEAM_NAMES, TEAM_COLORS, FinanceSeason, Revenue, Colors, DiamondMintPass, TeamLogo
+    Team, Lineup, LineupPlayer, OverallRecord, RotationPitcher, TEAM_NAMES, TEAM_COLORS, FinanceSeason, Revenue, Colors, DiamondMintPass, TeamLogo, DevelopmentStrategy
 }
 
 

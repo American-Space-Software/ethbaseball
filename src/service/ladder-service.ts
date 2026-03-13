@@ -98,8 +98,6 @@ class LadderService {
                     const previousDay = dayjs(universe.currentDate).format("YYYY-MM-DD")
 
                     // Day-level housekeeping before opening the next day.
-                    await this.leagueService.updateLeagueAveragePlayerRatings(leagues, season, options)
-
                     if ( previousDay == dayjs(season.endDate).format("YYYY-MM-DD") && !season.isComplete ) {
                         console.time(`Finishing season...`)
                         await this.finishSeason(season, leagues, options)
@@ -249,6 +247,147 @@ class LadderService {
         
     }
 
+    private async startGames(currentDate:Date, league:League, season:Season, rng, options?: any ) {
+
+        let pairs:TeamQueueMatchup[] =  await this.teamQueueService.processQueuePairs(league, options)
+
+        for (let pair of pairs) {
+
+            //Get team1 deets
+            let team1 = await this.teamService.get(pair.team1.teamId, options)
+            let team1Bundle = await this.getTeamBundle(team1, season, options)
+            
+            //Get team2
+            let team2 = await this.teamService.get(pair.team2.teamId, options)
+            let team2Bundle = await this.getTeamBundle(team2, season, options)
+
+            const [home, away] = this.rollService.getRoll(rng, 0, 1) === 0 ? [team1Bundle, team2Bundle] : [team2Bundle, team1Bundle]
+
+
+            //Clear teams from queue
+            await this.teamQueueService.dequeueTeam(team1, options)
+            await this.teamQueueService.dequeueTeam(team2, options)
+
+
+            //Calculate and distribute rewards
+            const baseReward = Number(league.baseDiamondReward)
+
+            const team1GapDown = Math.max(0, pair.team1.teamRating - pair.team2.teamRating)
+            const team2GapDown = Math.max(0, pair.team2.teamRating - pair.team1.teamRating)
+
+            const team1RewardAmount = this.calculateProjectedReward(baseReward, team1GapDown)
+            const team2RewardAmount = this.calculateProjectedReward(baseReward, team2GapDown)
+
+            //Create game
+            let game:Game = await this.createGame(home, away, league, season, currentDate, options)
+
+            //Set finances for each team so we can access it when the game finishes.
+            if (game.away._id == team1._id) {
+                game.away.finances.totalRevenue = team1RewardAmount.toString()
+                game.home.finances.totalRevenue = team2RewardAmount.toString()
+            } else {
+                game.home.finances.totalRevenue = team1RewardAmount.toString()
+                game.away.finances.totalRevenue = team2RewardAmount.toString()
+            }
+
+            await this.gameService.put(game, options)
+
+            await this.teamLeagueSeasonService.put(team1Bundle.tls, options)
+            await this.teamLeagueSeasonService.put(team2Bundle.tls, options)
+
+        }
+
+
+    }
+
+    private async createGame( homeBundle: TeamBundle, awayBundle:TeamBundle, league: League, season: Season, date: Date,  options?: any ) {
+
+        const game: Game = await this.gameService.scheduleGame({
+            league,
+            season,
+            awayTLS: awayBundle.tlsPlain,
+            homeTLS: homeBundle.tlsPlain,
+            startDate: date,
+        }, options)
+
+        const playerIds = []
+            .concat(awayBundle.plss.map(pls => pls.playerId))
+            .concat(homeBundle.plss.map(pls => pls.playerId))
+
+        const players: Player[] = await this.playerService.getByIds(playerIds, options)
+
+        await this.gameService.createGamePlayers(game, playerIds, options)
+
+        this.gameService.startGame({
+
+            game,
+
+            homeTLS: homeBundle.tls,
+            awayTLS: awayBundle.tls,
+
+            awayPlayers: awayBundle.plss,
+            homePlayers: homeBundle.plss,
+
+            away: awayBundle.team,
+            home: homeBundle.team,
+
+            awayStartingPitcher: awayBundle.startingPitcher,
+            homeStartingPitcher: homeBundle.startingPitcher,
+
+            date,
+
+            leagueAverages: this.playerService.buildLeagueAverages()
+
+        })
+
+        await this.gameService.put(game, options)
+
+        homeBundle.team.lastGamePlayed = date
+        awayBundle.team.lastGamePlayed = date
+
+        await this.teamService.put(homeBundle.team, options)
+        await this.teamService.put(awayBundle.team, options)
+
+        for (const player of players) {
+            player.lastGamePlayed = game.startDate
+        }
+
+        const homePitcher = players.find(p => p._id === homeBundle.startingPitcher._id) as Player
+        homePitcher.lastGamePitched = date
+
+        const awayPitcher = players.find(p => p._id === awayBundle.startingPitcher._id) as Player
+        awayPitcher.lastGamePitched = date
+
+        await this.playerService.updateGameFields(players, options)
+
+        return game
+    }
+
+    private async getTeamBundle( theTeam: Team, season: Season, options?: any) : Promise<TeamBundle> {
+
+        const tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(theTeam, season, options)
+
+        const tlsPlain: TeamLeagueSeason = tls.get({ plain: true })
+
+        const plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(theTeam, season, options)
+
+        const plssPlain = plss.map(pls => pls.get({ plain: true }))
+
+        const startingPitcher: RotationPitcher = this.teamService.getStartingPitcherFromPLS( tls.lineups[0].rotation, plssPlain )
+
+        return {
+            team: theTeam,
+            tls,
+            tlsPlain,
+            plss,
+            plssPlain,
+            startingPitcher
+        }
+    }
+
+
+
+
     async finishGame(game:Game, options?:any) {
 
         let season:Season = await this.seasonService.get(game.seasonId, options)
@@ -290,9 +429,27 @@ class LadderService {
         const hitResultByPlayerId = new Map(ghr.map(r => [r.playerId, r]))
         const pitchResultByPlayerId = new Map(gpr.map(r => [r.playerId, r]))
 
-        //If this is a season game then update the player's season and career stats
+        
         if (game.seasonId != undefined) {
 
+            //Distribute rewards to teams.
+            const txId = uuidv4()
+
+            await this.distributeReward(away, awayTLS, season, BigInt(game.away.finances.totalRevenue), { type: "reward", rewardType: "game", fromDate: game.gameDate, fromGameId: game._id  }, txId, options)
+            await this.distributeReward(home, homeTLS, season, BigInt(game.home.finances.totalRevenue), { type: "reward", rewardType: "game", fromDate: game.gameDate, fromGameId: game._id  }, txId, options)
+
+            //Spend development budget
+            const awayDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(away, BigInt(game.away.finances.totalRevenue))
+            const homeDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(home, BigInt(game.home.finances.totalRevenue))
+
+            await this.offchainEventService.createTeamBurnEvent(away._id, awayDevelopmentExpense.toString(), txId, options)
+            await this.offchainEventService.createTeamBurnEvent(home._id, homeDevelopmentExpense.toString(), txId, options)
+
+            const awayDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(away)
+            const homeDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(home)
+
+
+            //If this is a season game then update the player's season and career stats
             const playerIds = players.map(p => p._id)
 
             const careerHitRows = await this.gameHitResultRepository.getPlayersCareerHitResults(playerIds, options)
@@ -333,30 +490,52 @@ class LadderService {
                 pls.changed("stats", true)
 
 
-                //Update overall rating. If WPA is positive they go up. Otherwise, down. Recalculate ratings after.
+                //Update overall rating. 
                 const positiveGame = player.primaryPosition == Position.PITCHER ? pitchResultByPlayerId.get(player._id).wpa > 0 : hitResultByPlayerId.get(player._id).wpa > 0
-                player.overallRating = this.playerService.updateOverallRating(
-                    player.overallRating,
-                    positiveGame,
-                    player.age,
-                    player.primaryPosition == Position.PITCHER
-                )
+
+                //Calculate the base level of XP for this player.
+                let gameExperience:bigint = this.playerService.getExperiencePerGame(positiveGame, player.primaryPosition == Position.PITCHER)
+                
+                //Modify XP by their age-based learning modifier. Aka old players learn slow.
+                const learningModifier = this.playerService.getAgeLearningModifier(player.age)
+                const scaledModifier = Math.round(learningModifier * 100)
+                gameExperience = gameExperience * BigInt(scaledModifier) / 100n
+                
+
+                //Modify by the team's budget spend on development.
+                const teamDevelopmentXpMultiplier = pls.teamId == away._id ? awayDevelopmentXpMultiplier : homeDevelopmentXpMultiplier
+                gameExperience = gameExperience * teamDevelopmentXpMultiplier / 100n
+
+
+                await this.offchainEventService.createPlayerExperienceEvent(pls.teamId, player._id, gameExperience.toString(), { fromGameId: game._id }, txId, options)
+      
+                player.totalExperience = await this.offchainEventService.getBalanceByPlayerIdAndContractType(ContractType.EXPERIENCE, player._id, options)
+
+                player.potentialOverallRating = this.playerService.experienceToOverallRating(BigInt(player.totalExperience))
 
                 this.playerService.updateHittingPitchingRatings(player)
 
                 player.changed("overallRating", true)
-                player.changed("displayRating", true)
                 player.changed("hittingRatings", true)
                 player.changed("pitchRatings", true)
+
+                player.changed("potentialOverallRating", true)
+                player.changed("potentialHittingRatings", true)
+                player.changed("potentialPitchRatings", true)
+
 
                 pls.overallRating = player.overallRating
                 pls.hittingRatings = player.hittingRatings
                 pls.pitchRatings = player.pitchRatings
 
                 pls.changed("overallRating", true)
-                pls.changed("displayRating", true)
                 pls.changed("hittingRatings", true)
-                pls.changed("pitchRatings", true)                
+                pls.changed("pitchRatings", true)    
+                
+                pls.changed("potentialOverallRating", true)
+                pls.changed("potentialHittingRatings", true)
+                pls.changed("potentialPitchRatings", true)
+
 
             }
 
@@ -502,130 +681,7 @@ class LadderService {
 
     }
 
-    private async startGames(currentDate:Date, league:League, season:Season, rng, options?: any ) {
 
-        let pairs:TeamQueueMatchup[] =  await this.teamQueueService.processQueuePairs(league, options)
-
-        for (let pair of pairs) {
-
-            //Get team1 deets
-            let team1 = await this.teamService.get(pair.team1.teamId, options)
-            let team1Bundle = await this.getTeamBundle(team1, season, options)
-            
-            //Get team2
-            let team2 = await this.teamService.get(pair.team2.teamId, options)
-            let team2Bundle = await this.getTeamBundle(team2, season, options)
-
-            const [home, away] = this.rollService.getRoll(rng, 0, 1) === 0 ? [team1Bundle, team2Bundle] : [team2Bundle, team1Bundle]
-
-
-            //Create game
-            let game:Game = await this.createGame(home, away, league, season, currentDate, options)
-
-            //Clear teams from queue
-            await this.teamQueueService.dequeueTeam(team1, options)
-            await this.teamQueueService.dequeueTeam(team2, options)
-
-            //Calculate and distribute rewards
-            const multiplier = this.getRewardMultiplier(pair.ratingDiff)
-            const multiplierScaled = BigInt(Math.round(multiplier * 10000))
-            const rewardAmount = (BigInt(league.baseDiamondReward) * multiplierScaled) / 10000n
-
-            const txId = uuidv4()
-
-            await this.distributeReward(team1Bundle.team, team1Bundle.tls, season, rewardAmount, { type: "reward", rewardType: "game", fromDate: currentDate, fromGameId: game._id  }, txId, options)
-            await this.distributeReward(team2Bundle.team, team2Bundle.tls, season, rewardAmount, { type: "reward", rewardType: "game", fromDate: currentDate, fromGameId: game._id  }, txId, options)
-
-            await this.teamLeagueSeasonService.put(team1Bundle.tls, options)
-            await this.teamLeagueSeasonService.put(team2Bundle.tls, options)
-
-        }
-
-
-    }
-
-    private async createGame( homeBundle: TeamBundle, awayBundle:TeamBundle, league: League, season: Season, date: Date,  options?: any ) {
-
-        const game: Game = await this.gameService.scheduleGame({
-            league,
-            season,
-            awayTLS: awayBundle.tlsPlain,
-            homeTLS: homeBundle.tlsPlain,
-            startDate: date,
-        }, options)
-
-        const playerIds = []
-            .concat(awayBundle.plss.map(pls => pls.playerId))
-            .concat(homeBundle.plss.map(pls => pls.playerId))
-
-        const players: Player[] = await this.playerService.getByIds(playerIds, options)
-
-        await this.gameService.createGamePlayers(game, playerIds, options)
-
-        this.gameService.startGame({
-
-            game,
-
-            homeTLS: homeBundle.tls,
-            awayTLS: awayBundle.tls,
-
-            awayPlayers: awayBundle.plss,
-            homePlayers: homeBundle.plss,
-
-            away: awayBundle.team,
-            home: homeBundle.team,
-
-            awayStartingPitcher: awayBundle.startingPitcher,
-            homeStartingPitcher: homeBundle.startingPitcher,
-
-            date,
-            leagueAverageRatings: league.averageRating
-        })
-
-        await this.gameService.put(game, options)
-
-        homeBundle.team.lastGamePlayed = date
-        awayBundle.team.lastGamePlayed = date
-
-        await this.teamService.put(homeBundle.team, options)
-        await this.teamService.put(awayBundle.team, options)
-
-        for (const player of players) {
-            player.lastGamePlayed = game.startDate
-        }
-
-        const homePitcher = players.find(p => p._id === homeBundle.startingPitcher._id) as Player
-        homePitcher.lastGamePitched = date
-
-        const awayPitcher = players.find(p => p._id === awayBundle.startingPitcher._id) as Player
-        awayPitcher.lastGamePitched = date
-
-        await this.playerService.updateGameFields(players, options)
-
-        return game
-    }
-
-    private async getTeamBundle( theTeam: Team, season: Season, options?: any) : Promise<TeamBundle> {
-
-        const tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(theTeam, season, options)
-
-        const tlsPlain: TeamLeagueSeason = tls.get({ plain: true })
-
-        const plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(theTeam, season, options)
-
-        const plssPlain = plss.map(pls => pls.get({ plain: true }))
-
-        const startingPitcher: RotationPitcher = this.teamService.getStartingPitcherFromPLS( tls.lineups[0].rotation, plssPlain )
-
-        return {
-            team: theTeam,
-            tls,
-            tlsPlain,
-            plss,
-            plssPlain,
-            startingPitcher
-        }
-    }
 
 
     updateRatings(teamRatings:{ rating:Rating, _id:string }[] , games:{ winningTeamId:string, losingTeamId:string }[]) : TeamRating[] {
@@ -771,7 +827,12 @@ class LadderService {
         return 0
     }
 
-    
+    calculateProjectedReward(baseDiamondReward: number, maxRatingDiff: number): bigint {
+      const multiplier = this.getRewardMultiplier(maxRatingDiff)
+      const multiplierScaled = BigInt(Math.round(multiplier * 10000))
+      return (BigInt(baseDiamondReward) * multiplierScaled) / 10000n
+    }
+
     //This should probably move
     async generatePlayerPool(season:Season,  options?:any) {
 

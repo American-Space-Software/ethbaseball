@@ -56,6 +56,23 @@ class TeamQueueRepositoryNodeImpl implements TeamQueueRepository {
         return TeamQueue.findAll(Object.assign(query, options))
     }
 
+    async listByLeagueTeamRatingDesc(league:League, limit:number, offset:number, options?: any): Promise<TeamQueue[]> {
+        
+        let query = {
+            where: {
+                leagueId: league._id
+            },
+            limit: limit,
+            offset: offset,
+            order: [
+                ['teamRating', 'DESC']
+            ]
+        }
+
+        return TeamQueue.findAll(Object.assign(query, options))
+    }
+
+
     async getByTeam(team:Team, options?: any): Promise<TeamQueue> {
         
         let query = {

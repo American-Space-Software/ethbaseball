@@ -8,7 +8,7 @@ import { StatService } from "./stat-service.js"
 import { Handedness, PitchType, Position, PitchResultCount, HitResultCount, OfficialPlayResult, RunnerEvent, BaseRunners, GamePlayer,  Play, MatchupHandedness, PlayResult, Contact, ShallowDeep, PitchLog, PitchResult, RunnerResult, TeamInfo, Pitch, SwingResult, PitchCount, LeagueAverage, ContactProfile, HittingProfile, PitchingProfile,  BaseResult, OfficialRunnerResult, ThrowResult, DefensiveCredit, DefenseCreditType, ThrowRoll, BaseRunnerIds, InningEndingEvent, PitchRatings, HittingRatings, PitcherChange, HitterChange, PitchChange, Score, SimPitchCommand, SimPitchResult, PitchZone, ALL_PITCH_ZONES } from "./enums.js"
 
 const APPLY_PLAYER_CHANGES = true
-
+const PLAYER_CHANGE_SCALE = 0.75
 
 @injectable()
 class RollService {
@@ -1589,7 +1589,7 @@ class RollService {
                             let armChange = this.getChange(command.leagueAverage.hittingRatings.arm, this._getAverage([command.throwFrom.hittingRatings.arm, command.throwFrom.hittingRatings.defense]))
                             let receivingChange = this.getChange(command.leagueAverage.hittingRatings.defense, command.throwFrom.hittingRatings.defense)
     
-                            roll = throwRoll.roll + (throwRoll.roll * armChange) - (throwRoll.roll * receivingChange)
+                            roll = throwRoll.roll + (throwRoll.roll * (armChange * PLAYER_CHANGE_SCALE)) - (throwRoll.roll * (receivingChange * PLAYER_CHANGE_SCALE))
                         }
 
 
@@ -1920,7 +1920,7 @@ class RollService {
         //Return the % chance that the runner is out.
 
         if (APPLY_PLAYER_CHANGES) {
-            return this.applyMinMaxToNumber(Math.round(defaultSuccess - (defaultSuccess * fielderChange) + (defaultSuccess * runnerChange)), 0, 99)
+            return this.applyMinMaxToNumber(Math.round(defaultSuccess - (defaultSuccess * fielderChange * PLAYER_CHANGE_SCALE) + (defaultSuccess * runnerChange  * PLAYER_CHANGE_SCALE)), 0, 99)
         } else {
             return this.applyMinMaxToNumber(Math.round(defaultSuccess), 0, 99)
         }
@@ -1937,7 +1937,7 @@ class RollService {
         //Take the default success rate and apply the fielder and runner's changes.
         //Return the % chance that the runner is out.
         if (APPLY_PLAYER_CHANGES) {
-            return this.applyMinMaxToNumber(Math.round(defaultSuccess - (defaultSuccess * fielderChange) + (defaultSuccess * runnerSpeedChange) + (defaultSuccess * runnerStealsChange)), 0, 99)
+            return this.applyMinMaxToNumber(Math.round(defaultSuccess - (defaultSuccess * fielderChange * PLAYER_CHANGE_SCALE) + (defaultSuccess * runnerSpeedChange * PLAYER_CHANGE_SCALE) + (defaultSuccess * runnerStealsChange * PLAYER_CHANGE_SCALE)), 0, 99)
         } else {
             return this.applyMinMaxToNumber(Math.round(defaultSuccess), 0, 99)
         }
@@ -2152,8 +2152,8 @@ class RollService {
             //Worse players swing less on low-quality strikes (because they are dumb).
             if (APPLY_PLAYER_CHANGES) {
 
-                swingRateAdjust.push(hitterChange.plateDisiplineChange)
-                swingRateAdjust.push(pitchQualityChange * -1)
+                swingRateAdjust.push(hitterChange.plateDisiplineChange * PLAYER_CHANGE_SCALE)
+                swingRateAdjust.push(pitchQualityChange * -1 * PLAYER_CHANGE_SCALE)
 
                 if (guessPitch) {
                     swingRateAdjust.push(.3)
@@ -2168,8 +2168,8 @@ class RollService {
             //Worse players swing more often on balls (because they are dumb).
 
             if (APPLY_PLAYER_CHANGES) {
-                swingRateAdjust.push(hitterChange.plateDisiplineChange * -1 )  //negative adjust
-                swingRateAdjust.push(pitchQualityChange) 
+                swingRateAdjust.push(hitterChange.plateDisiplineChange * -1 * PLAYER_CHANGE_SCALE )  //negative adjust
+                swingRateAdjust.push(pitchQualityChange * PLAYER_CHANGE_SCALE) 
 
                 if (guessPitch) {
                     swingRateAdjust.push(.3 * -1)
@@ -2193,9 +2193,9 @@ class RollService {
             if (APPLY_PLAYER_CHANGES) {
 
                 let swingContactRateAdjust = [
-                    hitterChange.contactChange * -1, 
+                    hitterChange.contactChange * -1 * PLAYER_CHANGE_SCALE, 
                     guessPitch ? -.2 : .2,
-                    pitchQualityChange  
+                    pitchQualityChange * PLAYER_CHANGE_SCALE
                 ]
 
                 swingContactRate = this.rollChartService.applyChanges(swingContactRate, swingContactRateAdjust)
@@ -2292,7 +2292,7 @@ class RollService {
         let roll =  this.getRollUnrounded(gameRNG, 0, 99)
 
         if (APPLY_PLAYER_CHANGES) {
-            roll += (roll * powerChange)// + (roll * (pitchChange * .5))
+            roll += (roll * powerChange * PLAYER_CHANGE_SCALE)
         }
 
 
@@ -2308,7 +2308,7 @@ class RollService {
         let roll = this.getRollUnrounded(gameRNG, 0, 99)
 
         if (APPLY_PLAYER_CHANGES) {
-            roll += (roll * controlChange) //+ (roll * (pitchChange * .5))
+            roll += (roll * controlChange * PLAYER_CHANGE_SCALE) 
         }
 
         if (roll < 0) roll = 0
@@ -2324,7 +2324,7 @@ class RollService {
 
 
         if (APPLY_PLAYER_CHANGES) {
-            roll += (roll * movementChange)// + (roll * (pitchChange * .5))
+            roll += (roll * movementChange * PLAYER_CHANGE_SCALE)
         }
 
 

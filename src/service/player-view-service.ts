@@ -68,12 +68,11 @@ class PlayerViewService {
         let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
 
         if (!currentPls.teamId) {
-            askingPrice = this.playerService.getAskingPrice(currentPls, await this.leagueSerivce.getByRank(1) )
+            askingPrice = this.playerService.getAskingPrice(currentPls )
         }
         
         let result:PlayerViewModel = {
             _id: player._id,
-            displayRating: player.displayRating,
             isRetired: player.isRetired,
             askingPrice: askingPrice,
             minimumPlayerSalary: minimumPlayerSalary,
@@ -164,7 +163,6 @@ interface PlayerViewModel {
     pitchRatings:PitchRatings
     askingPrice:string
     minimumPlayerSalary:string
-    displayRating:number
 
     careerHitterStats: HitterStatLine
     careerPitcherStats: PitcherStatLine

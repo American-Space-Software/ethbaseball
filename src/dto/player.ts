@@ -97,10 +97,6 @@ class Player extends Model {
     declare overallRating:number
 
     @AllowNull(false)
-    @Column(DataType.DECIMAL(10,2))
-    declare displayRating:number
-
-    @AllowNull(false)
     @Is('CompletePitchRatings', validatePitchRatings)
     @Column(DataType.JSON)
     declare pitchRatings:PitchRatings
@@ -110,6 +106,26 @@ class Player extends Model {
     @Column(DataType.JSON)
     declare hittingRatings:HittingRatings
 
+
+    @AllowNull(false)
+    @Column(DataType.DECIMAL(10,2))
+    declare potentialOverallRating:number
+
+    @AllowNull(false)
+    @Is('CompletePitchRatings', validatePitchRatings)
+    @Column(DataType.JSON)
+    declare potentialPitchRatings:PitchRatings
+
+    @AllowNull(false)
+    @Is('CompleteHittingRatings', validateHittingRatings)
+    @Column(DataType.JSON)
+    declare potentialHittingRatings:HittingRatings
+
+
+
+    @AllowNull(true)
+    @Column(DataType.STRING)
+    declare totalExperience?: string
 
     @AllowNull(false)
     @Column(DataType.INTEGER)
@@ -214,19 +230,19 @@ function validateHittingProfile(value:HittingProfile) {
 
 function validatePitchRatings(value:PitchRatings) {
 
-    if (value.vsL.control == undefined || !inRange(value.vsL.control, 1, 1000)) {
+    if (value.vsL.control == undefined || !inRange(value.vsL.control, -1000, 1000)) {
         throw new Error(`Pitcher control invalid`);
     }
 
-    if (value.vsL.movement == undefined || !inRange(value.vsL.movement, 1, 1000)) {
+    if (value.vsL.movement == undefined || !inRange(value.vsL.movement, -1000, 1000)) {
         throw new Error(`Pitcher movemement invalid`);
     }
 
-    if (value.vsR.control == undefined || !inRange(value.vsR.control, 1, 1000)) {
+    if (value.vsR.control == undefined || !inRange(value.vsR.control, -1000, 1000)) {
         throw new Error(`Pitcher control invalid`);
     }
 
-    if (value.vsR.movement == undefined || !inRange(value.vsR.movement, 1, 1000)) {
+    if (value.vsR.movement == undefined || !inRange(value.vsR.movement, -1000, 1000)) {
         throw new Error(`Pitcher movemement invalid`);
     }
 
@@ -249,7 +265,7 @@ function validatePitchRatings(value:PitchRatings) {
     //     }
     // }
 
-    if (value.power == undefined || !inRange(value.power, 1, 1000)) {
+    if (value.power == undefined || !inRange(value.power, -1000, 1000)) {
         throw new Error(`Pitcher power invalid`)
     }
 
@@ -261,47 +277,44 @@ function validatePitchRatings(value:PitchRatings) {
 
 function validateHittingRatings(value:HittingRatings) {
 
-    if (value.vsL.contact == undefined || !inRange(value.vsL.contact, 1, 1000)) {
+    if (value.vsL.contact == undefined || !inRange(value.vsL.contact, -1000, 1000)) {
         throw new Error(`Hitter contact invalid`);
     }
 
-    if (value.vsL.gapPower == undefined || !inRange(value.vsL.gapPower, 1, 1000)) {
+    if (value.vsL.gapPower == undefined || !inRange(value.vsL.gapPower, -1000, 1000)) {
         throw new Error(`Hitter gap power invalid`);
     }
 
-    if (value.vsL.homerunPower == undefined || !inRange(value.vsL.homerunPower, 1, 1000)) {
+    if (value.vsL.homerunPower == undefined || !inRange(value.vsL.homerunPower, -1000, 1000)) {
         throw new Error(`Hitter home run power invalid`);
     }
 
-    if (value.vsL.plateDiscipline == undefined || !inRange(value.vsL.plateDiscipline, 1, 1000)) {
+    if (value.vsL.plateDiscipline == undefined || !inRange(value.vsL.plateDiscipline, -1000, 1000)) {
         throw new Error(`Hitter plate discipline invalid`)
     }
 
 
-    if (value.vsR.contact == undefined || !inRange(value.vsR.contact, 1, 1000)) {
+    if (value.vsR.contact == undefined || !inRange(value.vsR.contact, -1000, 1000)) {
         throw new Error(`Hitter contact invalid`);
     }
 
-    if (value.vsR.gapPower == undefined || !inRange(value.vsR.gapPower, 1, 1000)) {
+    if (value.vsR.gapPower == undefined || !inRange(value.vsR.gapPower, -1000, 1000)) {
         throw new Error(`Hitter gap power invalid`);
     }
 
-    if (value.vsR.homerunPower == undefined || !inRange(value.vsR.homerunPower, 1, 1000)) {
+    if (value.vsR.homerunPower == undefined || !inRange(value.vsR.homerunPower, -1000, 1000)) {
         throw new Error(`Hitter home run power invalid`);
     }
 
-    if (value.vsR.plateDiscipline == undefined || !inRange(value.vsR.plateDiscipline, 1, 1000)) {
+    if (value.vsR.plateDiscipline == undefined || !inRange(value.vsR.plateDiscipline, -1000, 1000)) {
         throw new Error(`Hitter plate discipline invalid`)
     }
 
-
-    if (value.defense == undefined || !inRange(value.defense, 1, 1000)) {
+    if (value.defense == undefined || !inRange(value.defense, -1000, 1000)) {
         throw new Error(`Hitter defense invalid`)
     }
 
-
-
-    if (value.speed == undefined || !inRange(value.speed, 1, 1000)) {
+    if (value.speed == undefined || !inRange(value.speed, -1000, 1000)) {
         throw new Error(`Hitter speed invalid`)
     }
 

@@ -358,7 +358,6 @@ CREATE TABLE `league` (
   `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `rank` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `averageRating` json DEFAULT NULL,
   `baseDiamondReward` varchar(100) DEFAULT NULL,
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
@@ -441,10 +440,15 @@ CREATE TABLE `player` (
   `age` int NOT NULL,
   `stamina` decimal(10,2) NOT NULL,
   `overallRating` decimal(10,2) NOT NULL,
-  `displayRating` decimal(10,2) NOT NULL,
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
+
+  `potentialOverallRating` decimal(10,2) NOT NULL,
+  `potentialPitchRatings` json NOT NULL,
+  `potentialHittingRatings` json NOT NULL,
+
   `percentileRatings` JSON NULL DEFAULT NULL,
+  `totalExperience` varchar(100) NOT NULL DEFAULT "0",
   `lastGamePitched` datetime DEFAULT NULL,
   `lastGamePlayed` datetime DEFAULT NULL,
   `lastTeamChange` datetime DEFAULT NULL,
@@ -481,10 +485,12 @@ CREATE TABLE `player_league_season` (
   `startDate` date DEFAULT NULL,
   `endDate` date DEFAULT NULL,
   `overallRating` decimal(10,2) NOT NULL,
-  `displayRating` decimal(10,2) NOT NULL,
-
   `pitchRatings` json NOT NULL,
   `hittingRatings` json NOT NULL,
+
+  `potentialOverallRating` decimal(10,2) NOT NULL,
+  `potentialPitchRatings` json NOT NULL,
+  `potentialHittingRatings` json NOT NULL,
 
   `percentileRatings` JSON NULL DEFAULT NULL,
 
@@ -495,7 +501,6 @@ CREATE TABLE `player_league_season` (
 
   PRIMARY KEY (`_id`),
 
-  KEY `displayRating` (`displayRating`),
   KEY `playerId` (`playerId`),
   KEY `leagueId` (`leagueId`),
   KEY `seasonId` (`seasonId`),
@@ -767,6 +772,8 @@ CREATE TABLE `team` (
 
   `longTermRating` json NOT NULL,
   `seasonRating` json NOT NULL,
+
+  `developmentStrategy` json NOT NULL,
 
   `userId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `colors` json NOT NULL,

@@ -38,7 +38,6 @@ describe('LadderService', async () => {
         universe._id = uuidv4()
         universe.name = "Ethereum Baseball League"
         universe.symbol = "EBL"
-        universe.contractAddress = "xyz"
         universe.diamondAddress = "abc"
         universe.adminAddress = "blah"
         universe.minterAddress = "blah"

@@ -173,7 +173,6 @@ import { FsBlockstore } from 'blockstore-fs'
 import { FsDatastore } from 'datastore-fs'
 
 import { Eta } from "eta"
-import { UniverseContractService } from "../src/service/universe-contract-service.js"
 import { League } from "../src/dto/league.js"
 import { City } from "../src/dto/city.js"
 
@@ -475,7 +474,6 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(UniverseIndexerService).toSelf().inSingletonScope()
   container.bind(TransactionService).toSelf().inSingletonScope()
   container.bind(ImageService).toSelf().inSingletonScope()
-  container.bind(UniverseContractService).toSelf().inSingletonScope()
   container.bind(CityService).toSelf().inSingletonScope()
   container.bind(TeamService).toSelf().inSingletonScope()
   container.bind(StadiumService).toSelf().inSingletonScope()

@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify"
 import { Game, GameTeam, GamePlayer as GP } from "../../dto/game.js"
 import {  Player } from "../../dto/player.js"
-import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialPlayResult, OfficialRunnerResult, WPA, DefensiveCredit, DefenseCreditType, HomeAway, LeagueAverageRatings, ScheduledGame, Handedness, HitResultGame, PitchResultGame, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand, InningEndingEvent, SimPitchResult, PitchResult, Contact, ShallowDeep, Rating, Pitch, WIN_EXPECTANCY_CHART } from "../enums.js"
+import { Position,  GamePlayer, BaseRunners, GamePlayerBio, HalfInning, LastPlay, Score, TeamInfo, UpcomingMatchup, WPAReward, Play, PlayResult, RunnerEvent, OfficialRunnerResult, DefensiveCredit,  HomeAway, Handedness, MatchupHandedness, HitterChange, PitcherChange, RunnerResult, PitchLog, SimPitchCommand, InningEndingEvent, SimPitchResult, PitchResult, Contact, ShallowDeep, Pitch, LeagueAverageRatings, LeagueAverage, } from "../enums.js"
 
 import { RollService,  } from "../roll-service.js"
 import { GameRepository } from "../../repository/game-repository.js"
@@ -302,12 +302,12 @@ class GameService {
 
     }
 
-    buildTeamInfoFromTeam(leagueAverageRatings:LeagueAverageRatings, tls:TeamLeagueSeason, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number) : TeamInfo {
+    buildTeamInfoFromTeam(leagueAverage:LeagueAverage, tls:TeamLeagueSeason, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number) : TeamInfo {
 
         let plssPlain = plss.map( p => p.get({ plain: true } ))
         let players = plssPlain.map( pls => pls.player)
 
-        let gamePlayer:GamePlayer[] = this.initGamePlayers(leagueAverageRatings, players, startingPitcher, tls.teamId, color1, color2, startingId)
+        let gamePlayer:GamePlayer[] = this.initGamePlayers(leagueAverage, players, startingPitcher, tls.teamId, color1, color2, startingId)
 
         let lineup:Lineup = JSON.parse(JSON.stringify(tls.lineups[0]))
 
@@ -382,10 +382,10 @@ class GameService {
         this.validateGameLineup(command.awayTLS.lineups[0], command.awayPlayers, command.awayStartingPitcher, command.date)
         this.validateGameLineup(command.homeTLS.lineups[0], command.homePlayers, command.homeStartingPitcher, command.date)
 
-        let awayInfo = this.buildTeamInfoFromTeam(command.leagueAverageRatings, command.awayTLS,  command.awayPlayers, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1)
-        let homeInfo = this.buildTeamInfoFromTeam(command.leagueAverageRatings, command.homeTLS,  command.homePlayers, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length)
+        let awayInfo = this.buildTeamInfoFromTeam(command.leagueAverages, command.awayTLS,  command.awayPlayers, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1)
+        let homeInfo = this.buildTeamInfoFromTeam(command.leagueAverages, command.homeTLS,  command.homePlayers, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length)
 
-        game.leagueAverages = this.playerService.buildLeagueAverages(command.leagueAverageRatings)
+        game.leagueAverages = command.leagueAverages
 
         //Set teams on game.
         game.away = awayInfo            
@@ -957,11 +957,11 @@ class GameService {
 
     }
 
-    buildTeamInfoFromPlayers(leagueAverageRatings:LeagueAverageRatings, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) : TeamInfo {
+    buildTeamInfoFromPlayers(leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) : TeamInfo {
 
         let startingPitcher = players.find( p => p.primaryPosition == "P")
 
-        let gamePlayer:GamePlayer[] = this.initGamePlayers(leagueAverageRatings, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
+        let gamePlayer:GamePlayer[] = this.initGamePlayers(leagueAverage, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
 
         let teamInfo:TeamInfo = {
             finances: {},
@@ -1024,7 +1024,7 @@ class GameService {
 
     }
 
-    initGamePlayers(leagueAverageRatings:LeagueAverageRatings, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
+    initGamePlayers(leagueAverage:LeagueAverage, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
 
         let gamePlayers:GamePlayer[] = []
         
@@ -1057,10 +1057,6 @@ class GameService {
                 
                 overallRating:{
                     before: p.overallRating,
-                },
-
-                displayRating: {
-                    before: p.displayRating
                 },
 
                 ownerId: p.ownerId,
@@ -1182,13 +1178,13 @@ class GameService {
                 },
 
                 hitterChange: {
-                    vsL: this.rollService.getHitterChange(p.hittingRatings, leagueAverageRatings.hittingRatings, Handedness.L),
-                    vsR: this.rollService.getHitterChange(p.hittingRatings, leagueAverageRatings.hittingRatings, Handedness.R),
+                    vsL: this.rollService.getHitterChange(p.hittingRatings, leagueAverage.hittingRatings, Handedness.L),
+                    vsR: this.rollService.getHitterChange(p.hittingRatings, leagueAverage.hittingRatings, Handedness.R),
                 },
 
                 pitcherChange: {
-                    vsL: this.rollService.getPitcherChange(p.pitchRatings, leagueAverageRatings.pitchRatings, Handedness.L),
-                    vsR: this.rollService.getPitcherChange(p.pitchRatings, leagueAverageRatings.pitchRatings, Handedness.R),
+                    vsL: this.rollService.getPitcherChange(p.pitchRatings, leagueAverage.pitchRatings, Handedness.L),
+                    vsR: this.rollService.getPitcherChange(p.pitchRatings, leagueAverage.pitchRatings, Handedness.R),
                 },
     
                 lineupIndex: undefined,
@@ -1809,42 +1805,6 @@ class GameService {
         return game        
     }
 
-    // async scheduleGames(league:League, season:Season, date:Date, games:ScheduledGame[], tlss:TeamLeagueSeason[], options?:any) {
-
-    //     if (games.length == 0) return
-
-    //     //We have 3 different start times
-
-    //     // 1 PM
-    //     // 4 PM
-    //     // 7 PM
-    //     let currentSlot = 0
-    //     let perSlot = Math.max(1, Math.round(games.length / 3))
-
-    //     console.time(`Creating ${games.length} games for ${dayjs(date).format("YYYY/MM/DD")}`)
-
-    //     let i=0
-    //     for (let game of games ) {
-
-    //         let startDate = this.getTargetTime(date, [17, 20, 23][currentSlot])
-
-    //         await this.scheduleGame({
-    //             awayTLS: tlss.find(t => t.teamId == game.awayId),
-    //             homeTLS: tlss.find(t => t.teamId == game.homeId),
-    //             startDate: startDate,
-    //             season: season,
-    //             league: league
-    //         }, options)
-
-    //         if (i % perSlot == 0 && currentSlot < 2) currentSlot++
-    //         i++
-    //     }
-
-    //     console.timeEnd(`Creating ${games.length} games for ${dayjs(date).format("YYYY/MM/DD")}`)
-
-    // }
-
-
     createHitResult(game:Game, player:GamePlayer) : GameHitResult {
 
         let ghr = new GameHitResult()
@@ -2148,7 +2108,7 @@ interface StartGameCommand {
     awayTLS:TeamLeagueSeason, 
     awayPlayers:PlayerLeagueSeason[], 
     awayStartingPitcher:RotationPitcher,
-    leagueAverageRatings:LeagueAverageRatings, 
+    leagueAverages:LeagueAverage
     date:Date
 }
 

@@ -9,9 +9,7 @@ import AboutComponent from '../components/about.f7.html'
 import { ModelView } from '../../util/model-view.js';
 import { routeMap } from '../../util/route-map.js';
 import { UniverseWebService } from '../service/universe-web-service.js';
-import { WalletService } from '../../service/wallet-service.js';
 import { LoginWebService } from '../service/login-web-service.js';
-import { GameWebService } from '../service/game-web-service.js';
 
 import { TeamComponentService } from '../service/team-component-service.js';
 
@@ -23,14 +21,14 @@ class HomeController {
         @inject("discord") private discord:string,
         private universeWebService:UniverseWebService,
         private loginWebService:LoginWebService,
-        private teamComponentService:TeamComponentService,
-        @inject("WalletService") private walletService:WalletService
+        private teamComponentService:TeamComponentService
     ) {}
 
     @routeMap("/")
     async showIndex(): Promise<ModelView> {
         
         let authInfo = await this.loginWebService.getAuthInfo(true)
+
 
         if (authInfo?._id) {
 

@@ -17,7 +17,7 @@ import { Animation } from "../../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE } from "../enums.js"
+import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, HITTER_GAME_AVERAGE_XP } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -127,13 +127,13 @@ class PlayerService {
         return this.playerRepository.getIds(options)
     }
 
-    async getLeagueAverageHitterRatings(league:League, season:Season, options?:any) : Promise<HittingRatings>  {
-        return this.playerRepository.getLeagueAverageHitterRatings(league, season, options)
-    }
+    // async getLeagueAverageHitterRatings(league:League, season:Season, options?:any) : Promise<HittingRatings>  {
+    //     return this.playerRepository.getLeagueAverageHitterRatings(league, season, options)
+    // }
 
-    async getLeagueAveragePitcherRatings(league:League,season:Season, options?:any) : Promise<PitchRatings>  {
-        return this.playerRepository.getLeagueAveragePitcherRatings(league, season, options)
-    }
+    // async getLeagueAveragePitcherRatings(league:League,season:Season, options?:any) : Promise<PitchRatings>  {
+    //     return this.playerRepository.getLeagueAveragePitcherRatings(league, season, options)
+    // }
 
     async getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]> {
         return this.playerRepository.getPlayerPercentileRatings(options)
@@ -158,8 +158,6 @@ class PlayerService {
         player.lastName = faker.person.lastName()
 
 
-        player.age = 18
-
         let sign = zodiac.getSignByDate()
 
         player.zodiacSign = sign.name
@@ -168,7 +166,7 @@ class PlayerService {
         player.throws = faker.helpers.weightedArrayElement([{ weight: 80, value: Handedness.R }, { weight: 20, value: Handedness.L }])
         player.hits = faker.helpers.weightedArrayElement([{ weight: 70, value: Handedness.R }, { weight: 20, value: Handedness.L }, { weight: 10, value: Handedness.S }])
 
-        player.overallRating = 40
+        player.potentialOverallRating = 80
         player.age = 19
         player.stamina = 1
 
@@ -237,7 +235,7 @@ class PlayerService {
 
     }
 
-    async draftTeam(startTokenId: number, transactionHash: string, date:string) {
+    async draftTeam(startTokenId: number, transactionHash: string, date:string) : Promise<Player[]> {
 
         let scoutedPlayers: Player[] = await this.scoutTeam(date)
 
@@ -256,7 +254,7 @@ class PlayerService {
 
     }
 
-    calculateHittingRatings(player: Player): HittingRatings {
+    calculateHittingRatings(player: Player, overallRating:number): HittingRatings {
 
         let hittingRatings: HittingRatings = {}
 
@@ -265,39 +263,37 @@ class PlayerService {
         hittingRatings.contactProfile = player.hittingProfile.contactProfile
 
 
-        let normalizedMax = player.overallRating
-
         //Adjust for age
-        normalizedMax *= this.getAgeModifier(player.age)
+        overallRating *= this.getAgeModifier(player.age)
 
         //Slash ratings if this is a pitcher
         if (player.primaryPosition == Position.PITCHER) {
-            normalizedMax *= .25
+            overallRating *= .25
         }
 
-        //Adjust based on player's profile and normalize to rating max.
-        const normalizedRatings = this.normalizeRatings([
-            100 + (100 * player.hittingProfile.speedDelta),
-            100 + (100 * player.hittingProfile.stealsDelta),
-            100 + (100 * player.hittingProfile.defenseDelta),
-            100 + (100 * player.hittingProfile.armDelta),
-            100 + (100 * player.hittingProfile.contactDelta),
-            100 + (100 * player.hittingProfile.gapPowerDelta),
-            100 + (100 * player.hittingProfile.homerunPowerDelta),
-            100 + (100 * player.hittingProfile.plateDisciplineDelta)
-        ], normalizedMax)
+        //Adjust based on player's profile
+        const ratings = [
+            overallRating + (100 * player.hittingProfile.speedDelta),
+            overallRating + (100 * player.hittingProfile.stealsDelta),
+            overallRating + (100 * player.hittingProfile.defenseDelta),
+            overallRating + (100 * player.hittingProfile.armDelta),
+            overallRating + (100 * player.hittingProfile.contactDelta),
+            overallRating + (100 * player.hittingProfile.gapPowerDelta),
+            overallRating + (100 * player.hittingProfile.homerunPowerDelta),
+            overallRating + (100 * player.hittingProfile.plateDisciplineDelta)
+        ]
 
 
-        hittingRatings.speed = normalizedRatings[0]
-        hittingRatings.steals = normalizedRatings[1]
-        hittingRatings.defense = normalizedRatings[2]
-        hittingRatings.arm = normalizedRatings[3]
+        hittingRatings.speed = ratings[0]
+        hittingRatings.steals = ratings[1]
+        hittingRatings.defense = ratings[2]
+        hittingRatings.arm = ratings[3]
 
         let vsOppositeHand: HittingHandednessRatings = {
-            contact: normalizedRatings[4],
-            gapPower: normalizedRatings[5],
-            homerunPower: normalizedRatings[6],
-            plateDiscipline: normalizedRatings[7]
+            contact: ratings[4],
+            gapPower: ratings[5],
+            homerunPower: ratings[6],
+            plateDiscipline: ratings[7]
         }
 
         let vsSameHand = JSON.parse(JSON.stringify(vsOppositeHand))
@@ -321,7 +317,7 @@ class PlayerService {
         return hittingRatings
     }
 
-    calculatePitchRatings(player: Player): PitchRatings {
+    calculatePitchRatings(player: Player, overallRating:number): PitchRatings {
 
         let pitchRatings: PitchRatings = {
             pitches: player.pitchingProfile.pitches
@@ -330,36 +326,26 @@ class PlayerService {
         //Contact profile gets copied over
         pitchRatings.contactProfile = player.pitchingProfile.contactProfile
 
-        let normalizedMax = player.overallRating
-
         //Adjust for age
-        normalizedMax *= this.getAgeModifier(player.age)
+        overallRating *= this.getAgeModifier(player.age)
 
         //Slash ratings if this is a pitcher
         if (player.primaryPosition != Position.PITCHER) {
-            normalizedMax *= .25
+            overallRating *= .25
         }
 
-
+        //Adjust based on player's profile
         let ratings = [
-            100 + (100 * player.pitchingProfile.powerDelta),
-            100 + (100 * player.pitchingProfile.controlDelta),
-            100 + (100 * player.pitchingProfile.movementDelta)
+            overallRating + (100 * player.pitchingProfile.powerDelta),
+            overallRating + (100 * player.pitchingProfile.controlDelta),
+            overallRating + (100 * player.pitchingProfile.movementDelta)
         ]
 
-        // //Add pitches
-        // for (let pitch of player.pitchingProfile.pitches) {
-        //     ratings.push(100 + (100 * pitch.ratingDelta))
-        // }
-
-        //Adjust based on player's profile and normalize to rating max.
-        const normalizedRatings = this.normalizeRatings(ratings, normalizedMax)
-
-        pitchRatings.power = normalizedRatings[0]
+        pitchRatings.power = ratings[0]
 
         let vsOppositeHand: PitchingHandednessRatings = {
-            control: normalizedRatings[1],
-            movement: normalizedRatings[2],
+            control: ratings[1],
+            movement: ratings[2],
         }
 
         // let i = 3
@@ -404,12 +390,12 @@ class PlayerService {
 
 
 
-    normalizeRatings(numbers: number[], max: number): number[] {
+    // normalizeRatings(numbers: number[], max: number): number[] {
 
-        const ratio = Math.max(...numbers) / max
-        return numbers.map(v => Math.round(v / ratio))
+    //     const ratio = Math.max(...numbers) / max
+    //     return numbers.map(v => Math.round(v / ratio))
 
-    }
+    // }
 
 
 
@@ -612,12 +598,40 @@ class PlayerService {
 
     }
 
-    buildLeagueAverages(leagueAverageRatings:LeagueAverageRatings): LeagueAverage {
+    buildLeagueAverages(): LeagueAverage {
 
         let la: LeagueAverage = {
 
-            hittingRatings: leagueAverageRatings.hittingRatings,
-            pitchRatings: leagueAverageRatings.pitchRatings,
+            hittingRatings: {
+                speed: PLAYER_LEAGUE_AVERAGE_RATING,
+                steals: PLAYER_LEAGUE_AVERAGE_RATING,
+                arm: PLAYER_LEAGUE_AVERAGE_RATING,
+                defense: PLAYER_LEAGUE_AVERAGE_RATING,
+                vsL: {
+                    contact: PLAYER_LEAGUE_AVERAGE_RATING,
+                    gapPower: PLAYER_LEAGUE_AVERAGE_RATING,
+                    homerunPower: PLAYER_LEAGUE_AVERAGE_RATING,
+                    plateDiscipline: PLAYER_LEAGUE_AVERAGE_RATING
+                },
+                vsR: {
+                    contact: PLAYER_LEAGUE_AVERAGE_RATING,
+                    gapPower: PLAYER_LEAGUE_AVERAGE_RATING,
+                    homerunPower: PLAYER_LEAGUE_AVERAGE_RATING,
+                    plateDiscipline: PLAYER_LEAGUE_AVERAGE_RATING
+                }
+            },
+
+            pitchRatings: {
+                power: PLAYER_LEAGUE_AVERAGE_RATING,
+                vsL: {
+                    control: PLAYER_LEAGUE_AVERAGE_RATING,
+                    movement: PLAYER_LEAGUE_AVERAGE_RATING
+                },
+                vsR: {
+                    control: PLAYER_LEAGUE_AVERAGE_RATING,
+                    movement: PLAYER_LEAGUE_AVERAGE_RATING
+                }
+            },
 
             foulRate: LEAGUE_AVERAGE_FOUL_RATE,
 
@@ -796,42 +810,17 @@ class PlayerService {
 
     updateHittingPitchingRatings(player: Player) {
 
-        player.hittingRatings = this.calculateHittingRatings( player)
-        player.pitchRatings = this.calculatePitchRatings( player)
+        //Calculate actual ratings
+        player.overallRating = player.potentialOverallRating * this.getAgeModifier(player.age)
+        player.hittingRatings = this.calculateHittingRatings( player, player.overallRating)
+        player.pitchRatings = this.calculatePitchRatings( player, player.overallRating)
 
-
-        if (player.primaryPosition == Position.PITCHER) {
-            player.displayRating = this.getAveragePitchingRating(player.pitchRatings)
-        } else {
-            player.displayRating = this.getAverageHittingRating(player.hittingRatings)
-        }
+        //Calculate potential ratings
+        player.potentialHittingRatings = this.calculateHittingRatings(player, player.potentialOverallRating)
+        player.potentialPitchRatings = this.calculatePitchRatings(player, player.potentialOverallRating)
 
     }
 
-
-
-    updateOverallRating(currentRating: number, hadGoodGame: boolean, age: number, isPitcher: boolean): number {
-    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
-
-    const ageMod = this.getAgeLearningModifier(age)
-
-    // Design: a "good season" should be around +20 points at peak learning.
-    // Since you have no negative games, define "good season" as ~75% good games.
-    const targetGainPerSeasonAt75 = 20
-    const goodRate = 0.75
-
-    // Opportunities: hitters 162 games; pitchers ~162/5 games
-    const gamesPerSeason = 162
-    const pitcherGamesPerSeason = gamesPerSeason / 5
-    const N = isPitcher ? pitcherGamesPerSeason : gamesPerSeason
-
-    // Solve: N * goodRate * perGoodGameGain = targetGainPerSeasonAt75
-    const perGoodGameGainAtPeak = targetGainPerSeasonAt75 / (N * goodRate)
-
-    const delta = hadGoodGame ? (perGoodGameGainAtPeak * ageMod) : 0
-
-    return clamp(currentRating + delta, 40, 99)
-    }
 
 
     async getPlayerReport(options?: any) {
@@ -1066,13 +1055,9 @@ class PlayerService {
 
 
 
-    async getPlayerViewModels(startDate:Date, rankOneLeague:League, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
+    async getPlayerViewModels(startDate:Date, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
 
         let season:Season = await this.seasonService.getByDate(startDate)
-
-
-        let laPitcherRating:number
-        let laHitterRating:number
 
         let tlss:TeamLeagueSeason[] = []
 
@@ -1089,9 +1074,6 @@ class PlayerService {
 
         } else {
 
-            laPitcherRating = this.getAveragePitchingRating(rankOneLeague.averageRating.pitchRatings) 
-            laHitterRating = this.getAverageHittingRating(rankOneLeague.averageRating.hittingRatings) 
-
             plss = await this.playerLeagueSeasonService.getFreeAgentsBySeason(season, positions, sortColumn, sortDirection, options)
         }
 
@@ -1105,7 +1087,6 @@ class PlayerService {
 
             let vm:any = {
                 _id: p.player._id,
-                displayRating: p.player.displayRating,
                 coverImageCid: p.player.coverImageCid,
                 fullName: `${p.player.firstName} ${p.player.lastName}`,
                 firstName: p.player.firstName,
@@ -1117,8 +1098,15 @@ class PlayerService {
                 throws: p.player.throws,
                 hits: p.player.hits,
                 lastGamePlayed: p.player.lastGamePlayed,
-                hittingRatings: p.hittingRatings,
+
+                overallRating: p.player.overallRating,
                 pitchRatings: p.pitchRatings,
+                hittingRatings: p.hittingRatings,
+
+                potentialOverallRating: p.player.potentialOverallRating,
+                potentialPitchRatings: p.potentialPitchRatings,
+                potentialHittingRatings: p.potentialHittingRatings,
+
                 careerStats: p.player.careerStats,
                 seasonStats: p.stats,
                 stamina: p.player.stamina
@@ -1133,15 +1121,14 @@ class PlayerService {
                     owner: {
                         _id: t.team.userId
                     }
+                    
                 }
 
             } else {
 
                 const daysFreeAgent = Math.max( 0, dayjs().startOf('day').diff(  dayjs(pls.startDate).startOf('day'), 'day' ))
 
-                let laRating = p.primaryPosition == Position.PITCHER ? laPitcherRating : laHitterRating
-
-                vm.askingPrice =  this.getFreeAgentSalary(p.player.displayRating, laRating, daysFreeAgent)
+                vm.askingPrice =  this.getFreeAgentSalary(p.player.overallRating, PLAYER_LEAGUE_AVERAGE_RATING, daysFreeAgent)
 
             
             }
@@ -1154,18 +1141,13 @@ class PlayerService {
 
     }
 
-    getAskingPrice(pls:PlayerLeagueSeason, rankOneLeague:League) {
+    getAskingPrice(pls:PlayerLeagueSeason) {
 
         let plsPlain = pls.get({ plain: true})
 
         const daysFreeAgent = Math.max( 0, dayjs().startOf('day').diff(  dayjs(pls.startDate).startOf('day'), 'day' ))
 
-        let laPitcherRating = this.getAveragePitchingRating(rankOneLeague.averageRating.pitchRatings) 
-        let laHitterRating = this.getAverageHittingRating(rankOneLeague.averageRating.hittingRatings) 
-
-        let laRating = pls.primaryPosition == Position.PITCHER ? laPitcherRating : laHitterRating
-
-        return this.getFreeAgentSalary(plsPlain.player.displayRating, laRating, daysFreeAgent)
+        return this.getFreeAgentSalary(plsPlain.player.overallRating, PLAYER_LEAGUE_AVERAGE_RATING, daysFreeAgent)
     }
 
 
@@ -1306,6 +1288,90 @@ class PlayerService {
     }
 
 
+    ratingToGrade(rating: number): PlayerGrade {
+
+        if (rating >= 170) return PlayerGrade.A_PLUS
+        if (rating >= 158) return PlayerGrade.A
+        if (rating >= 146) return PlayerGrade.A_MINUS
+        if (rating >= 134) return PlayerGrade.B_PLUS
+        if (rating >= 122) return PlayerGrade.B
+        if (rating >= 110) return PlayerGrade.B_MINUS
+        if (rating >= 95) return PlayerGrade.C_PLUS
+        if (rating >= 83) return PlayerGrade.C
+        if (rating >= 71) return PlayerGrade.C_MINUS
+        if (rating >= 59) return PlayerGrade.D_PLUS
+        if (rating >= 47) return PlayerGrade.D
+        if (rating >= 35) return PlayerGrade.D_MINUS
+
+        return PlayerGrade.F
+    }
+
+
+    getExperiencePerGame(hadGoodGame:boolean, isPitcher:boolean) : bigint {
+
+        let base = isPitcher ? HITTER_GAME_AVERAGE_XP * 5 : HITTER_GAME_AVERAGE_XP
+
+        let goodExp = BigInt(base * 125 / 100)
+        let badExp = BigInt(base * 75 / 100)
+
+        return hadGoodGame ? goodExp : badExp
+        
+    }
+
+
+    /**
+     * Converts a player's total accumulated experience into an overall rating.
+     *
+     * Design goals of the progression system:
+     *
+     * - Players enter the league at age 18 around ~80 overall.
+     * - A typical player should gain roughly ~10 overall points during their first season.
+     * - Development continues through the player's 20s, slowing gradually with age.
+     * - A full career (age 18–40) produces roughly ~300k total experience.
+     *
+     * Target progression curve (approximate):
+     *
+     * XP        Rating
+     * 0         80
+     * ~15k      90
+     * ~33k      100
+     * ~55k      110
+     * ~82k      120
+     * ~115k     130
+     * ~155k     140
+     * ~203k     150
+     * ~260k     160
+     * ~330k     170
+     *
+     * Ratings above ~170 represent extremely rare elite players.
+     *
+     * The curve is intentionally exponential so that:
+     * - Early development feels quick and rewarding.
+     * - Mid-career growth slows naturally.
+     * - Elite ratings become increasingly expensive.
+     *
+     * Experience is stored as a bigint and accumulated via gameplay events.
+     * Age-based learning modifiers adjust how quickly experience is earned,
+     * but this function itself is purely XP → rating.
+     */
+
+    experienceToOverallRating(totalExperience: bigint): number {
+
+        const baseRating = 80
+        const baseXP = 1500
+        const growth = 1.01
+
+        const xp = Number(totalExperience)
+
+        const levels =
+            Math.log((xp * (growth - 1) / baseXP) + 1) /
+            Math.log(growth)
+
+        return Math.floor(baseRating + levels)
+
+    }
+
+
     // async updateAllPercentileRatings() {
 
     //     //Make sure that players have percentile ratings. 
@@ -1344,25 +1410,7 @@ class PlayerService {
 
     // }
 
-    updateAge(currentAge: number, gameCount: number): number {
 
-        if (gameCount < 26) {
-            return 17
-        } else if (gameCount >= 26 && gameCount < 51) {
-            return 18
-        } else if (gameCount >= 51 && gameCount < 76) {
-            return 19
-        } else if (gameCount >= 76 && gameCount < 101) {
-            return 20
-        } else if (gameCount >= 101 && gameCount < 126) {
-            return 21
-        } else if (gameCount >= 126) {
-            const extraYears = Math.floor((gameCount - 126) / 162); // Number of 162-game cycles
-            return 22 + extraYears
-        }
-    
-        return currentAge
-    }
 
 }
 
@@ -1384,10 +1432,17 @@ interface PlayerRowViewModel {
     primaryPosition: Position
     age: number
     zodiacSign: string
-    ownerId: string
     throws: Handedness
     hits: Handedness
     lastGamePlayed: Date
+
+    overallRating:number
+    pitchRatings:PitchRatings
+    hittingRatings:HittingRatings
+
+    potentialOverallRating:number
+    potentialPitchRatings:PitchRatings
+    potentialHittingRatings:HittingRatings    
 
     teamId?:string,
     team?: {
@@ -1395,9 +1450,6 @@ interface PlayerRowViewModel {
         name?:string
         cityName?:string
     }
-
-    pitchRatings:PitchRatings
-    hittingRatings:HittingRatings
 
     stats?: PlayerStatLines
 

@@ -374,9 +374,6 @@ class RollChartService {
             gapPowerChange: this.clamp(this.getChange(laHandednessRatings.gapPower, handednessRatings.gapPower), MIN_CHANGE, MAX_CHANGE),
             hrPowerChange: this.clamp(this.getChange(laHandednessRatings.homerunPower, handednessRatings.homerunPower), MIN_CHANGE, MAX_CHANGE),
 
-            // lineDriveChange: this.clamp(this.getChange(averageRating, handednessRatings.lineDrive), MIN_CHANGE, MAX_CHANGE),
-            // groundBallChange: this.clamp(this.getChange(averageRating, handednessRatings.groundBall), MIN_CHANGE, MAX_CHANGE),
-
             speedChange: this.clamp(this.getChange(laHittingRatings.speed, hittingRatings.speed), MIN_CHANGE, MAX_CHANGE),
             stealsChange: this.clamp(this.getChange(laHittingRatings.speed, hittingRatings.steals), MIN_CHANGE, MAX_CHANGE),
 

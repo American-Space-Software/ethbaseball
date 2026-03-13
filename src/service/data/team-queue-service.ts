@@ -74,7 +74,7 @@ class TeamQueueService {
     async processQueuePairs( league: League, options?: any ): Promise<TeamQueueMatchup[]> {
 
         const pairs:{ team1:TeamQueue, team2:TeamQueue, ratingDiff:number }[] = []
-        const queue = await this.teamQueueRepository.listByLeague(league, 10000, 0, options)
+        const queue = await this.teamQueueRepository.listByLeagueTeamRatingDesc(league, 10000, 0, options)
 
         const used = new Set<string>()
 

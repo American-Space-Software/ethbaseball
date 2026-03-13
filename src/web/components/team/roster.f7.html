@@ -4,27 +4,36 @@
 
         <div class="tx-toolbar">
 
-            ${teamComponentService.isTeamOwner() && !teamComponentService.team.isQueued ? $h`
-                
-                <div class="tx-toolbar-left">
-                    <a class="button button-small button-outline" href="${universeWebService.startDateLink(`/players/?rank=0`)}">➕ Add Players</a>
-                    <a class="button button-small button-outline" @click="${dropPlayersClick}">${showDropButtons ? 'Cancel Drop' : '⛔ Drop Players'}</a>
-                </div>
 
-            ` : $h` ` }
+
+
+        </div>
+
+
+        
+        <div class="block-title block-title-medium lineup-title">
+            Lineup
 
             <div class="tx-toolbar-right">
+
+                
+
+                ${teamComponentService.isTeamOwner() && !teamComponentService.team.isQueued ? $h`
+                    
+                    <div class="segmented" style="margin-right: 10px;">
+                        <a class="button button-small button-outline" href="${universeWebService.startDateLink(`/players/?rank=0`)}">➕ Add</a>
+                        <a class="button button-small button-outline" @click="${dropPlayersClick}">${showDropButtons ? 'Cancel Drop' : '⛔ Drop'}</a>
+                    </div>
+
+                ` : $h` ` }
+
+
                 <select @change="${statsChange}" class="tx-toolbar-select button button-outline">
                     <option value="stats" selected>Stats</option>
                     <option value="ratings">Ratings</option>
                 </select>
             </div>
-        </div>
 
-
-        
-        <div class="block-title block-title-medium lineup-title-row">
-            Starting Lineup
         </div>
 
         <div class=" block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">

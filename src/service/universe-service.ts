@@ -650,11 +650,6 @@ Join us at [https://playebl.com](https://playebl.com)`,
           //Generate player pool
           await this.ladderService.generatePlayerPool(season, options)
 
-          let allLeagues:League[] = await this.leagueService.list(options)
-          await this.leagueService.updateLeagueAveragePlayerRatings(allLeagues, season, options)
-
-
-
 
         }
 

@@ -122,7 +122,6 @@ class PlayerLeagueSeasonService {
         pls.startDate = season.startDate
         pls.endDate = season.endDate
         pls.overallRating = player.overallRating
-        pls.displayRating = player.displayRating
         pls.pitchRatings = player.pitchRatings
         pls.hittingRatings = player.hittingRatings
         pls.stats = player.careerStats

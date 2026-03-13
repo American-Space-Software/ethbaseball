@@ -8,7 +8,7 @@
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
             ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
-            <th @click=${sortHitters} class="numeric-cell" data-sort="displayRating">OVR</th>
+            <th @click=${sortHitters} class="numeric-cell" data-sort="overallRating">OVR</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="hits">Bats</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.defense">DEF</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.arm">ARM</th>
@@ -58,8 +58,8 @@
                   ${p?._id ? $h`
                     <span class="icon">
                       <img src="/player/image/${p._id}" />
-                      <span class="badge ${playerWebService.getRatingBadgeColor(p.displayRating)}">
-                        ${p.displayRating.toFixed(0)}
+                      <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating)}">
+                        ${playerWebService.ratingToGrade(p.overallRating)}
                       </span>
                     </span>
                   ` : $h`<span />`}
@@ -90,7 +90,7 @@
                 ` : $h` `}
 
 
-                <td class="numeric-cell">${p?.displayRating?.toFixed(0)}</td>
+                <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
                 <td class="numeric-cell">${p?.hits}</td>
 
                 <td class="numeric-cell">${p?.hittingRatings?.defense}</td>

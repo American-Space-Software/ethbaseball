@@ -314,8 +314,8 @@ let startWebServer = async () => {
 
         await renderIndex(res,{ 
           twitter: TWITTER,
-          title: "Ethereum Baseball League - Step Into the Owner’s Box. The League Awaits.",
-          description: "Ethereum Baseball League (EBL) is a competitive PvP baseball ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned. ",
+          title: "Play a Baseball Game Online – Ethereum Baseball League",
+          description: "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage players, watch games live, and compete in a persistent season.",
           VERSION: version,
           image: `${process.env.WEB}/ebl-512.png`,
           url: req.originalUrl
@@ -1002,7 +1002,7 @@ let startWebServer = async () => {
       }
 
 
-      let sortColumn = req.query.sortColumn ? req.query.sortColumn.toString() : 'displayRating'
+      let sortColumn = req.query.sortColumn ? req.query.sortColumn.toString() : 'overallRating'
       let sortDirection = req.query.sortDirection ? req.query.sortDirection.toString() : 'DESC'
       let playerPosition = req.query.position ? req.query.position.toString() : HitterPitcher.HITTER
 
@@ -1031,7 +1031,7 @@ let startWebServer = async () => {
         positions = [playerPosition as Position]
       }
 
-      return res.json(await playerService.getPlayerViewModels(startDate, rankOneLeague, league, positions, sortColumn, sortDirection, options))
+      return res.json(await playerService.getPlayerViewModels(startDate, league, positions, sortColumn, sortDirection, options))
     } catch (ex) {
       console.log(ex)
       res.sendStatus(404)
@@ -1176,7 +1176,7 @@ let startWebServer = async () => {
 
           let leagueRankOne = await leagueService.getByRank(1, options)
 
-          let askingPrice = playerService.getAskingPrice(pls, leagueRankOne)
+          let askingPrice = playerService.getAskingPrice(pls)
 
           if (BigInt(diamondBalance) < BigInt(askingPrice)) {
             throw new Error(`Team does not have enough diamonds to sign this player.`)
@@ -1933,8 +1933,10 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(userId)
+      let season = await seasonService.getMostRecent()
 
-      return res.json(await userService.getAuthInfo(user))
+
+      return res.json(await userService.getAuthInfo(user, season))
 
     } catch (ex) {
       res.status(500)

@@ -446,7 +446,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             }
         }
 
-        const DEFAULT_SORT = 'displayRating' 
+        const DEFAULT_SORT = 'overallRating' 
         const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? PLAYER_STATS_SORT_EXPRESSION[DEFAULT_SORT]
 
         const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
@@ -540,7 +540,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             }
         }
 
-        const DEFAULT_SORT = 'displayRating' 
+        const DEFAULT_SORT = 'overallRating' 
         const expr = PLAYER_STATS_SORT_EXPRESSION[sortColumn] ?? PLAYER_STATS_SORT_EXPRESSION[DEFAULT_SORT]
 
         const safeDir = sortDirection === 'ASC' ? 'ASC' : 'DESC'
@@ -592,8 +592,8 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
     async updateGameFields(plss: PlayerLeagueSeason[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "playerId", "leagueId", "seasonId", "teamId", "stats", "startDate", "endDate", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "percentileRatings", "primaryPosition", "age", "seasonIndex"],
-            updateOnDuplicate: ["_id", "playerId", "leagueId", "seasonId", "stats",  "teamId", "startDate", "endDate", "overallRating", "displayRating", "hittingRatings", "percentileRatings", "pitchRatings", "primaryPosition",  "age", "seasonIndex"],
+            fields: ["_id", "playerId", "leagueId", "seasonId", "teamId", "stats", "startDate", "endDate", "overallRating",  "hittingRatings", "pitchRatings","potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "percentileRatings", "primaryPosition", "age", "seasonIndex"],
+            updateOnDuplicate: ["_id", "playerId", "leagueId", "seasonId", "stats",  "teamId", "startDate", "endDate", "overallRating", "hittingRatings","potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "percentileRatings", "pitchRatings", "primaryPosition",  "age", "seasonIndex"],
         }, options)
 
         let updatePlayers = plss.map(p => {
@@ -607,10 +607,14 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
                 startDate: p.startDate,
                 endDate: p.endDate,
                 overallRating: p.overallRating,
-                displayRating: p.displayRating,
                 hittingRatings: p.hittingRatings,
-                percentileRatings: p.percentileRatings,
                 pitchRatings: p.pitchRatings,
+                potentialOverallRating: p.potentialOverallRating,
+                potentialPitchRatings: p.potentialPitchRatings,
+                potentialHittingRatings: p.potentialHittingRatings,
+
+                percentileRatings: p.percentileRatings,
+
                 primaryPosition: p.primaryPosition,
                 age: p.age,
                 seasonIndex: p.seasonIndex

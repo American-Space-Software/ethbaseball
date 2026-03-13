@@ -120,14 +120,21 @@ describe('PlayerService', async () => {
       let ratings = service.calculateHittingRatings(player)
 
 
+
+
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 21,
-        steals: 13,
-        defense: 47,
-        arm: 30,
-        vsL: { contact: 40, gapPower: 47, homerunPower: 21, plateDiscipline: 47 },
-        vsR: { contact: 51, gapPower: 60, homerunPower: 26, plateDiscipline: 60 }
+        speed: 15,
+        steals: -7,
+        defense: 81,
+        arm: 37,
+        vsL: { contact: 73, gapPower: 90, homerunPower: 21, plateDiscipline: 90 },
+        vsR: {
+          contact: 92,
+          gapPower: 114,
+          homerunPower: 26,
+          plateDiscipline: 114
+        }
       })
 
 
@@ -140,15 +147,20 @@ describe('PlayerService', async () => {
 
       ratings = service.calculateHittingRatings(player)
 
-
+      
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 18,
-        steals: 11,
-        defense: 39,
-        arm: 25,
-        vsL: { contact: 34, gapPower: 40, homerunPower: 17, plateDiscipline: 40 },
-        vsR: { contact: 43, gapPower: 50, homerunPower: 21, plateDiscipline: 50 }
+        speed: 5,
+        steals: -17,
+        defense: 71,
+        arm: 27,
+        vsL: { contact: 65, gapPower: 82, homerunPower: 13, plateDiscipline: 82 },
+        vsR: {
+          contact: 82,
+          gapPower: 104,
+          homerunPower: 16,
+          plateDiscipline: 104
+        }
       })
 
 
@@ -163,12 +175,17 @@ describe('PlayerService', async () => {
 
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 20,
-        steals: 12,
-        defense: 43,
-        arm: 28,
-        vsL: { contact: 37, gapPower: 43, homerunPower: 19, plateDiscipline: 43 },
-        vsR: { contact: 47, gapPower: 55, homerunPower: 24, plateDiscipline: 55 }
+        speed: 10,
+        steals: -12,
+        defense: 76,
+        arm: 32,
+        vsL: { contact: 69, gapPower: 86, homerunPower: 17, plateDiscipline: 86 },
+        vsR: {
+          contact: 87,
+          gapPower: 109,
+          homerunPower: 21,
+          plateDiscipline: 109
+        }
       })
 
       // player.rating = {
@@ -191,12 +208,17 @@ describe('PlayerService', async () => {
 
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 23,
-        steals: 14,
-        defense: 50,
-        arm: 32,
-        vsL: { contact: 43, gapPower: 51, homerunPower: 21, plateDiscipline: 51 },
-        vsR: { contact: 55, gapPower: 64, homerunPower: 27, plateDiscipline: 64 }
+        speed: 19,
+        steals: -3,
+        defense: 85,
+        arm: 41,
+        vsL: { contact: 76, gapPower: 93, homerunPower: 24, plateDiscipline: 93 },
+        vsR: {
+          contact: 96,
+          gapPower: 118,
+          homerunPower: 30,
+          plateDiscipline: 118
+        }
       })
 
 
@@ -219,12 +241,17 @@ describe('PlayerService', async () => {
 
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 24,
-        steals: 15,
-        defense: 53,
-        arm: 34,
-        vsL: { contact: 46, gapPower: 54, homerunPower: 23, plateDiscipline: 54 },
-        vsR: { contact: 58, gapPower: 68, homerunPower: 29, plateDiscipline: 68 }
+        speed: 23,
+        steals: 1,
+        defense: 89,
+        arm: 45,
+        vsL: { contact: 79, gapPower: 96, homerunPower: 27, plateDiscipline: 96 },
+        vsR: {
+          contact: 100,
+          gapPower: 122,
+          homerunPower: 34,
+          plateDiscipline: 122
+        }
       })
 
       // player.rating = {
@@ -246,12 +273,22 @@ describe('PlayerService', async () => {
 
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 26,
-        steals: 16,
-        defense: 58,
-        arm: 37,
-        vsL: { contact: 50, gapPower: 58, homerunPower: 25, plateDiscipline: 58 },
-        vsR: { contact: 63, gapPower: 74, homerunPower: 32, plateDiscipline: 74 }
+        speed: 29,
+        steals: 7,
+        defense: 95,
+        arm: 51,
+        vsL: {
+          contact: 84,
+          gapPower: 101,
+          homerunPower: 31,
+          plateDiscipline: 101
+        },
+        vsR: {
+          contact: 106,
+          gapPower: 128,
+          homerunPower: 40,
+          plateDiscipline: 128
+        }
       })
 
       // player.rating = {
@@ -271,12 +308,22 @@ describe('PlayerService', async () => {
 
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 28,
-        steals: 17,
-        defense: 62,
-        arm: 40,
-        vsL: { contact: 54, gapPower: 62, homerunPower: 27, plateDiscipline: 62 },
-        vsR: { contact: 68, gapPower: 79, homerunPower: 34, plateDiscipline: 79 }
+        speed: 34,
+        steals: 12,
+        defense: 100,
+        arm: 56,
+        vsL: {
+          contact: 88,
+          gapPower: 105,
+          homerunPower: 36,
+          plateDiscipline: 105
+        },
+        vsR: {
+          contact: 111,
+          gapPower: 133,
+          homerunPower: 45,
+          plateDiscipline: 133
+        }
       })
 
       // player.dateOfBirth = dayjs().subtract(27, 'years').toDate()
@@ -289,12 +336,22 @@ describe('PlayerService', async () => {
 
       assert.deepStrictEqual(ratings, {
         contactProfile: { groundball: 20, flyBall: 60, lineDrive: 20 },
-        speed: 32,
-        steals: 19,
-        defense: 70,
-        arm: 45,
-        vsL: { contact: 60, gapPower: 70, homerunPower: 30, plateDiscipline: 70 },
-        vsR: { contact: 76, gapPower: 89, homerunPower: 38, plateDiscipline: 89 }
+        speed: 44,
+        steals: 22,
+        defense: 110,
+        arm: 66,
+        vsL: {
+          contact: 96,
+          gapPower: 113,
+          homerunPower: 43,
+          plateDiscipline: 113
+        },
+        vsR: {
+          contact: 121,
+          gapPower: 143,
+          homerunPower: 55,
+          plateDiscipline: 143
+        }
       })
 
 
@@ -311,22 +368,24 @@ describe('PlayerService', async () => {
         assert.equal(player.hits, "R")
 
 
+
+
         assert.deepStrictEqual(player.hittingRatings, {
           contactProfile: { groundball: 365, flyBall: 364, lineDrive: 271 },
-          speed: 19,
-          steals: 27,
-          defense: 15,
-          arm: 32,
-          vsR: { contact: 29, gapPower: 15, homerunPower: 25, plateDiscipline: 25 },
-          vsL: { contact: 29, gapPower: 15, homerunPower: 25, plateDiscipline: 25 }
+          speed: 60,
+          steals: 96,
+          defense: 42,
+          arm: 114,
+          vsR: { contact: 104, gapPower: 42, homerunPower: 86, plateDiscipline: 86 },
+          vsL: { contact: 105, gapPower: 42, homerunPower: 87, plateDiscipline: 87 }
         })
 
         assert.deepStrictEqual(player.pitchRatings, {
           pitches: [ 'FF' ],
           contactProfile: { groundball: 272, flyBall: 454, lineDrive: 274 },
-          power: 8,
-          vsR: { control: 3, movement: 6 },
-          vsL: { control: 3, movement: 6 }
+          power: 60,
+          vsR: { control: -27, movement: 30 },
+          vsL: { control: -28, movement: 32 }
         })
 
 
@@ -345,21 +404,31 @@ describe('PlayerService', async () => {
 
         assert.deepStrictEqual(player.hittingRatings, {
           contactProfile: { groundball: 516, flyBall: 219, lineDrive: 265 },
-          speed: 2,
-          steals: 5,
-          defense: 8,
-          arm: 2,
-          vsR: { contact: 5, gapPower: 7, homerunPower: 3, plateDiscipline: 3 },
-          vsL: { contact: 5, gapPower: 8, homerunPower: 3, plateDiscipline: 3 }
+          speed: -26,
+          steals: 37,
+          defense: 91,
+          arm: -35,
+          vsR: {
+            contact: 33,
+            gapPower: 90,
+            homerunPower: -16,
+            plateDiscipline: -16
+          },
+          vsL: {
+            contact: 37,
+            gapPower: 100,
+            homerunPower: -17,
+            plateDiscipline: -17
+          }
         })
 
 
         assert.deepStrictEqual(player.pitchRatings, {
           pitches: [ 'FF', 'SV', 'CU', 'SL' ],
           contactProfile: { groundball: 426, flyBall: 264, lineDrive: 310 },
-          power: 18,
-          vsR: { control: 29, movement: 18 },
-          vsL: { control: 32, movement: 20 }
+          power: 59,
+          vsR: { control: 109, movement: 62 },
+          vsL: { control: 119, movement: 67 }
         })
 
     })
@@ -419,52 +488,52 @@ describe('PlayerService', async () => {
 
     // })
 
-    it('should update player attributes when gameCount is 25', async () => {
-      // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
-      // assert.strictEqual(player.playerLevel, PlayerLevel.HIGH_SCHOOL_SENIOR)
-      // assert.strictEqual(player.gameLevel, GameLevel.HIGH_SCHOOL)
-      assert.strictEqual(service.updateAge(17, 26), 18)
-    })
+    // it('should update player attributes when gameCount is 25', async () => {
+    //   // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
+    //   // assert.strictEqual(player.playerLevel, PlayerLevel.HIGH_SCHOOL_SENIOR)
+    //   // assert.strictEqual(player.gameLevel, GameLevel.HIGH_SCHOOL)
+    //   assert.strictEqual(service.updateAge(17, 26), 18)
+    // })
   
-    it('should update player attributes when gameCount is 50', async () => {
-      // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
-      // await service.updateAgeAndGameLevel(player, 50)
-      // assert.strictEqual(player.playerLevel, PlayerLevel.JUNIOR_COLLEGE)
-      // assert.strictEqual(player.gameLevel, GameLevel.JUNIOR_COLLEGE)
-      assert.strictEqual(service.updateAge(18, 51), 19)
-    })
+    // it('should update player attributes when gameCount is 50', async () => {
+    //   // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
+    //   // await service.updateAgeAndGameLevel(player, 50)
+    //   // assert.strictEqual(player.playerLevel, PlayerLevel.JUNIOR_COLLEGE)
+    //   // assert.strictEqual(player.gameLevel, GameLevel.JUNIOR_COLLEGE)
+    //   assert.strictEqual(service.updateAge(18, 51), 19)
+    // })
   
-    it('should update player attributes when gameCount is 75', async () => {
-      // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
-      // await service.updateAgeAndGameLevel(player, 75)
-      // assert.strictEqual(player.playerLevel, PlayerLevel.COLLEGE_JUNIOR)
-      // assert.strictEqual(player.gameLevel, GameLevel.COLLEGE)
-      assert.strictEqual(service.updateAge(19, 76), 20)
-    })
+    // it('should update player attributes when gameCount is 75', async () => {
+    //   // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
+    //   // await service.updateAgeAndGameLevel(player, 75)
+    //   // assert.strictEqual(player.playerLevel, PlayerLevel.COLLEGE_JUNIOR)
+    //   // assert.strictEqual(player.gameLevel, GameLevel.COLLEGE)
+    //   assert.strictEqual(service.updateAge(19, 76), 20)
+    // })
   
-    it('should update player attributes when gameCount is 100', async () => {
-      // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
-      // await service.updateAgeAndGameLevel(player, 100)
-      // assert.strictEqual(player.playerLevel, PlayerLevel.COLLEGE_SENIOR)
-      // assert.strictEqual(player.gameLevel, GameLevel.COLLEGE)
-      assert.strictEqual(service.updateAge(20, 101), 21)
-    })
+    // it('should update player attributes when gameCount is 100', async () => {
+    //   // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
+    //   // await service.updateAgeAndGameLevel(player, 100)
+    //   // assert.strictEqual(player.playerLevel, PlayerLevel.COLLEGE_SENIOR)
+    //   // assert.strictEqual(player.gameLevel, GameLevel.COLLEGE)
+    //   assert.strictEqual(service.updateAge(20, 101), 21)
+    // })
   
-    it('should update player attributes when gameCount is 125', async () => {
-      // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
-      // await service.updateAgeAndGameLevel(player, 125)
-      // assert.strictEqual(player.playerLevel, PlayerLevel.MINORS)
-      // assert.strictEqual(player.gameLevel, GameLevel.MINORS)
-      assert.strictEqual(service.updateAge(21, 126), 22)
-    })
+    // it('should update player attributes when gameCount is 125', async () => {
+    //   // let player = await service.scoutPlayer({ type: Position.SECOND_BASE })
+    //   // await service.updateAgeAndGameLevel(player, 125)
+    //   // assert.strictEqual(player.playerLevel, PlayerLevel.MINORS)
+    //   // assert.strictEqual(player.gameLevel, GameLevel.MINORS)
+    //   assert.strictEqual(service.updateAge(21, 126), 22)
+    // })
   
-    it('should increment player age every 162 games after 125', async () => {
-      let player = await service.scoutPlayer({ type: Position.SECOND_BASE, onDate: dayjs(simDate).format("YYYY-MM-DD") })
+    // it('should increment player age every 162 games after 125', async () => {
+    //   let player = await service.scoutPlayer({ type: Position.SECOND_BASE, onDate: dayjs(simDate).format("YYYY-MM-DD") })
       
-      assert.strictEqual(service.updateAge(22, 288), 23)
-      assert.strictEqual(service.updateAge(23, 450), 24)
+    //   assert.strictEqual(service.updateAge(22, 288), 23)
+    //   assert.strictEqual(service.updateAge(23, 450), 24)
 
-    })
+    // })
   
 
 

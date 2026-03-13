@@ -44,19 +44,15 @@ interface PlayerRepository {
     getPitcherIds(options?:any): Promise<string[]> 
     getPitcherIdsByOwner(owner:Owner, options?:any): Promise<string[]>
 
-    // getRecentAveragePlayerRating(options?:any) : Promise<{ age:number, averageRating:number }>    
-    // getLeagueAveragePlayerRating(league:League, options?:any) : Promise<{ age:number, averageRating:number }>
-
-    getLeagueAverageHitterRatings(league:League, season:Season, options?:any) : Promise<HittingRatings>
-    getLeagueAveragePitcherRatings(league:League, season:Season, options?:any) : Promise<PitchRatings>
+    // getLeagueAverageHitterRatings(league:League, season:Season, options?:any) : Promise<HittingRatings>
+    // getLeagueAveragePitcherRatings(league:League, season:Season, options?:any) : Promise<PitchRatings>
     
     getFreeAgentPitcherIds(date:Date, options?:any): Promise<string[]>
     getFreeAgentHitterIds(date:Date, options?:any): Promise<string[]>
-    // getFreeAgentIdsByPosition(position:Position, limit:number, offset:number, options?:any): Promise<string[]>    
+
     getFreeAgentIdsByPositionAndSalary(position:Position, salary:bigint, date:Date, limit:number, offset:number , options?:any): Promise<string[]>
     getFreeAgentsAfterSeason(season:Season, options?:any) : Promise<PlayerFinalContract[]>
 
-    // getPurgeable(options?: any) : Promise<Player[]>
     getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]>
     getPlayerIdsByGameDate(date:Date, options?:any) : Promise<string[]>
 }

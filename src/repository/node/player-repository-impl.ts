@@ -171,17 +171,20 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
     async updateGameFields(players: Player[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched",  "age", "personalityType", "stamina"],
-            updateOnDuplicate: ["_id", "overallRating", "displayRating", "hittingRatings", "pitchRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "age", "stamina"],
+            fields: ["_id", "overallRating",  "hittingRatings", "pitchRatings", "potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "careerStats", "firstName", "lastName", "primaryPosition", "zodiacSign", "pitchingProfile", "hittingProfile", "throws", "hits", "isRetired", "lastGamePlayed", "lastGamePitched",  "age", "personalityType", "stamina"],
+            updateOnDuplicate: ["_id", "overallRating", "hittingRatings", "pitchRatings", "potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "careerStats", "lastGamePlayed", "lastGamePitched", "age", "stamina"],
         }, options)
 
         let updatePlayers = players.map(p => {
             return {
                 _id: p._id,
                 overallRating: p.overallRating,
-                displayRating: p.displayRating,
                 hittingRatings: p.hittingRatings,
                 pitchRatings: p.pitchRatings,
+                potentialOverallRating: p.potentialOverallRating,
+                potentialPitchRatings: p.potentialPitchRatings,
+                potentialHittingRatings: p.potentialHittingRatings,
+
                 careerStats: p.careerStats,
                 firstName: p.firstName,
                 lastName: p.lastName,
@@ -713,117 +716,117 @@ class PlayerRepositoryNodeImpl implements PlayerRepository {
 
     }
 
-    async getLeagueAverageHitterRatings(league: League, season: Season, options?: any): Promise<HittingRatings> {
+    // async getLeagueAverageHitterRatings(league: League, season: Season, options?: any): Promise<HittingRatings> {
 
-        let s = await this.sequelize()
+    //     let s = await this.sequelize()
 
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-            replacements: {
-                leagueId: league._id,
-                seasonId: season._id
-            }
-        }
+    //     let queryOptions = {
+    //         type: s.QueryTypes.RAW,
+    //         plain: true,
+    //         mapToModel: false,
+    //         replacements: {
+    //             leagueId: league._id,
+    //             seasonId: season._id
+    //         }
+    //     }
 
-        const [queryResults, metadata] = await s.query(`
-            SELECT 
-				AVG(pls.overallRating) overallRating,
-                AVG(pls.age) age,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.arm')) arm,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.defense')) defense,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.speed')) speed,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.steals')) steals,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.plateDiscipline')) r_plateDiscipline,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.contact')) r_contact,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.gapPower')) r_gapPower,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.homerunPower')) r_homerunPower,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.plateDiscipline')) l_plateDiscipline,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.contact')) l_contact,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.gapPower')) l_gapPower,
-                AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.homerunPower')) l_homerunPower
-            FROM player_league_season pls
-            INNER join player p on p._id = pls.playerId
-            WHERE
-               pls.primaryPosition != "P" AND pls.leagueId = :leagueId AND pls.seasonId = :seasonId
-        `, Object.assign(queryOptions, options))
+    //     const [queryResults, metadata] = await s.query(`
+    //         SELECT 
+	// 			AVG(pls.overallRating) overallRating,
+    //             AVG(pls.age) age,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.arm')) arm,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.defense')) defense,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.speed')) speed,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.steals')) steals,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.plateDiscipline')) r_plateDiscipline,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.contact')) r_contact,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.gapPower')) r_gapPower,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsR.homerunPower')) r_homerunPower,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.plateDiscipline')) l_plateDiscipline,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.contact')) l_contact,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.gapPower')) l_gapPower,
+    //             AVG(JSON_EXTRACT(pls.hittingRatings, '$.vsL.homerunPower')) l_homerunPower
+    //         FROM player_league_season pls
+    //         INNER join player p on p._id = pls.playerId
+    //         WHERE
+    //            pls.primaryPosition != "P" AND pls.leagueId = :leagueId AND pls.seasonId = :seasonId
+    //     `, Object.assign(queryOptions, options))
 
-        let qr = queryResults[0]
+    //     let qr = queryResults[0]
 
-        return {
-            defense: qr.defense,
-            arm: qr.arm,
-            speed: qr.speed,
-            steals: qr.steals,
+    //     return {
+    //         defense: qr.defense,
+    //         arm: qr.arm,
+    //         speed: qr.speed,
+    //         steals: qr.steals,
 
-            vsR: {
-                plateDiscipline: qr.r_plateDiscipline,
-                contact: qr.r_contact,
-                gapPower: qr.r_gapPower,
-                homerunPower: qr.r_homerunPower
-            },
+    //         vsR: {
+    //             plateDiscipline: qr.r_plateDiscipline,
+    //             contact: qr.r_contact,
+    //             gapPower: qr.r_gapPower,
+    //             homerunPower: qr.r_homerunPower
+    //         },
 
-            vsL: {
-                plateDiscipline: qr.l_plateDiscipline,
-                contact: qr.l_contact,
-                gapPower: qr.l_gapPower,
-                homerunPower: qr.l_homerunPower
-            }
-        }
-
-
-
-    }
-
-    async getLeagueAveragePitcherRatings(league: League, season: Season, options?: any): Promise<PitchRatings> {
-
-        let s = await this.sequelize()
-
-        let queryOptions = {
-            type: s.QueryTypes.RAW,
-            plain: true,
-            mapToModel: false,
-            replacements: {
-                leagueId: league._id,
-                seasonId: season._id
-            }
-        }
-
-        const [queryResults, metadata] = await s.query(`
-            SELECT 
-				AVG(pls.overallRating) overallRating,
-                AVG(pls.age) age,
-                AVG(JSON_EXTRACT(pls.pitchRatings, '$.power')) power,
-                AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsR.control')) r_control,
-                AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsR.movement')) r_movement,
-				AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsL.control')) l_control,
-                AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsL.movement')) l_movement
-            FROM player_league_season pls
-            INNER join player p on p._id = pls.playerId
-            WHERE
-               pls.primaryPosition = "P" AND pls.leagueId = :leagueId AND pls.seasonId = :seasonId
-        `, Object.assign(queryOptions, options))
-
-        let qr = queryResults[0]
+    //         vsL: {
+    //             plateDiscipline: qr.l_plateDiscipline,
+    //             contact: qr.l_contact,
+    //             gapPower: qr.l_gapPower,
+    //             homerunPower: qr.l_homerunPower
+    //         }
+    //     }
 
 
-        return {
-            power: qr.power,
 
-            vsR: {
-                control: qr.r_control,
-                movement: qr.r_movement
-            },
+    // }
 
-            vsL: {
-                control: qr.l_control,
-                movement: qr.l_movement
-            }
-        }
+    // async getLeagueAveragePitcherRatings(league: League, season: Season, options?: any): Promise<PitchRatings> {
+
+    //     let s = await this.sequelize()
+
+    //     let queryOptions = {
+    //         type: s.QueryTypes.RAW,
+    //         plain: true,
+    //         mapToModel: false,
+    //         replacements: {
+    //             leagueId: league._id,
+    //             seasonId: season._id
+    //         }
+    //     }
+
+    //     const [queryResults, metadata] = await s.query(`
+    //         SELECT 
+	// 			AVG(pls.overallRating) overallRating,
+    //             AVG(pls.age) age,
+    //             AVG(JSON_EXTRACT(pls.pitchRatings, '$.power')) power,
+    //             AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsR.control')) r_control,
+    //             AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsR.movement')) r_movement,
+	// 			AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsL.control')) l_control,
+    //             AVG(JSON_EXTRACT(pls.pitchRatings, '$.vsL.movement')) l_movement
+    //         FROM player_league_season pls
+    //         INNER join player p on p._id = pls.playerId
+    //         WHERE
+    //            pls.primaryPosition = "P" AND pls.leagueId = :leagueId AND pls.seasonId = :seasonId
+    //     `, Object.assign(queryOptions, options))
+
+    //     let qr = queryResults[0]
 
 
-    }
+    //     return {
+    //         power: qr.power,
+
+    //         vsR: {
+    //             control: qr.r_control,
+    //             movement: qr.r_movement
+    //         },
+
+    //         vsL: {
+    //             control: qr.l_control,
+    //             movement: qr.l_movement
+    //         }
+    //     }
+
+
+    // }
 
     async getFreeAgentsAfterSeason(season: Season, options?: any): Promise<PlayerFinalContract[]> {
 

@@ -56,16 +56,20 @@ describe("TeamQueueRepository", async () => {
   }
 
   const createQueueRow = async (team: Team, league: League) => {
+
     const tq: TeamQueue = Object.assign(new TeamQueue(), {
       _id: uuidv4(),
       teamId: team._id,
       leagueId: league._id,
+      teamRating: 0,
+      maxRatingDiff: 0,
       lastUpdated: null,
       dateCreated: null
     })
 
     await teamQueueRepository.put(tq)
     return tq
+
   }
 
   before("", async () => {
