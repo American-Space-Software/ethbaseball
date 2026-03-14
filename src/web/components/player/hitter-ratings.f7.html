@@ -8,23 +8,24 @@
             <th @click=${sortHitters} data-sort="fullName" class="name">Name</th>
             ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
-            <th @click=${sortHitters} class="numeric-cell" data-sort="overallRating">OVR</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="hits">Bats</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.defense">DEF</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.arm">ARM</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.speed">SPD</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.steals">STL</th>
+            
+            <th @click=${sortHitters} data-sort="hits">Bats</th>
+            <th @click=${sortHitters} data-sort="overallRating">OVR</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.defense">DEF</th>
+            <th @click=${sortHitters}  data-sort="hittingRatings.arm">ARM</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.speed">SPD</th>
+            <th @click=${sortHitters}  data-sort="hittingRatings.steals">STL</th>
 
             <th class="handed-label">vsR</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsR.plateDiscipline">EYE</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsR.contact">CON</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsR.gapPower">GAP</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsR.homerunPower">HR</th>
+            <th @click=${sortHitters}  data-sort="hittingRatings.vsR.plateDiscipline">EYE</th>
+            <th @click=${sortHitters}  data-sort="hittingRatings.vsR.contact">CON</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.vsR.gapPower">GAP</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.vsR.homerunPower">HR</th>
             <th class="handed-label">vsL</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsL.plateDiscipline">EYE</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsL.contact">CON</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsL.gapPower">GAP</th>
-            <th @click=${sortHitters} class="numeric-cell" data-sort="percentileRatings.hittingRatings.vsL.homerunPower">HR</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.vsL.plateDiscipline">EYE</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.vsL.contact">CON</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.vsL.gapPower">GAP</th>
+            <th @click=${sortHitters} data-sort="hittingRatings.vsL.homerunPower">HR</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="hittingRatings.contactProfile.groundball">GB</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="hittingRatings.contactProfile.flyBall">FB</th>
             <th @click=${sortHitters} class="numeric-cell" data-sort="hittingRatings.contactProfile.lineDrive">LD</th>
@@ -58,7 +59,7 @@
                   ${p?._id ? $h`
                     <span class="icon">
                       <img src="/player/image/${p._id}" />
-                      <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating)}">
+                      <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating)} overall-badge">
                         ${playerWebService.ratingToGrade(p.overallRating)}
                       </span>
                     </span>
@@ -90,30 +91,32 @@
                 ` : $h` `}
 
 
-                <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
-                <td class="numeric-cell">${p?.hits}</td>
+               
+                <td>${p?.hits}</td>
+                <td>${badge(p?.overallRating)}</td>
 
-                <td class="numeric-cell">${p?.hittingRatings?.defense}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.arm}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.speed}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.steals}</td>
+                <td>${badge(p?.hittingRatings?.defense)}</td>
+                <td>${badge(p?.hittingRatings?.arm)}</td>
+                <td>${badge(p?.hittingRatings?.speed)}</td>
+                <td>${badge(p?.hittingRatings?.steals)}</td>
 
-                
-                <td class="handed-label" ></td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsR?.plateDiscipline}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsR?.contact}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsR?.gapPower}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsR?.homerunPower}</td>
-                
-                <td class="handed-label" ></td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsL?.plateDiscipline}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsL?.contact}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsL?.gapPower}</td>
-                <td class="numeric-cell">${p?.hittingRatings?.vsL?.homerunPower}</td>
+                <td class="handed-label"></td>
 
-                <td class="numeric-cell">${statService.displayPercent(p?.hittingRatings?.contactProfile?.groundball / 1000)}</td>
-                <td class="numeric-cell">${statService.displayPercent(p?.hittingRatings?.contactProfile?.flyBall / 1000)}</td>
-                <td class="numeric-cell">${statService.displayPercent(p?.hittingRatings?.contactProfile?.lineDrive / 1000)}</td>
+                <td>${badge(p?.hittingRatings?.vsR?.plateDiscipline)}</td>
+                <td>${badge(p?.hittingRatings?.vsR?.contact)}</td>
+                <td>${badge(p?.hittingRatings?.vsR?.gapPower)}</td>
+                <td>${badge(p?.hittingRatings?.vsR?.homerunPower)}</td>
+
+                <td class="handed-label"></td>
+
+                <td>${badge(p?.hittingRatings?.vsL?.plateDiscipline)}</td>
+                <td>${badge(p?.hittingRatings?.vsL?.contact)}</td>
+                <td>${badge(p?.hittingRatings?.vsL?.gapPower)}</td>
+                <td>${badge(p?.hittingRatings?.vsL?.homerunPower)}</td>
+                                
+                <td>${statService.displayPercent(p?.hittingRatings?.contactProfile?.groundball / 1000)}</td>
+                <td>${statService.displayPercent(p?.hittingRatings?.contactProfile?.flyBall / 1000)}</td>
+                <td>${statService.displayPercent(p?.hittingRatings?.contactProfile?.lineDrive / 1000)}</td>
 
             </tr>
             `)}
@@ -146,13 +149,18 @@
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
 
-  export default (props, { $, $on, $f7, $update }) => {
+  export default (props, { $, $on, $f7, $h, $update }) => {
 
     let statService = ContainerService.getInstance(StatService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let pagingService = ContainerService.getInstance(PagingService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
+
+    const badge = (rating) => {
+      if (rating == null) return ""
+      return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
+    }
 
     let currentPage = 0
 

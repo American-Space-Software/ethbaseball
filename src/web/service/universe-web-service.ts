@@ -101,6 +101,8 @@ class UniverseWebService {
 
         if (value == null) return
 
+        const trimZeros = (s) => s.replace(/\.?0+$/, '')
+
         const diamonds = ethers.formatUnits(value)
         const num = Number(diamonds)
         if (!Number.isFinite(num)) return diamonds
@@ -121,7 +123,7 @@ class UniverseWebService {
         }
 
         const plain = fitPlain(num)
-        if (plain) return plain
+        if (plain) return trimZeros(plain)
 
         const formatAbbrev = (n, suffix, div) => {
             const v = n / div
@@ -133,7 +135,7 @@ class UniverseWebService {
             if (s.length > 7 && decimals > 1) s = v.toFixed(decimals - 1)
             if (s.length > 7) s = v.toFixed(1)
             if (s.length > 7) s = v.toFixed(0)
-            return `${s}${suffix}`
+            return `${trimZeros(s)}${suffix}`
         }
 
         if (abs >= 1e9) return formatAbbrev(abs, 'B', 1e9)

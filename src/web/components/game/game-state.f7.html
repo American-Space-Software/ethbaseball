@@ -80,7 +80,7 @@
                             <img src="/player/image/${p._id}" />
                             ${p.overallRating?.before ? $h`
                               <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating.before)}">
-                                ${p.overallRating.before.toFixed(0) }
+                                ${ playerWebService.ratingToGrade(p.overallRating.before)}
                               </span>
                             ` : $h` `}
                           </span>
@@ -326,7 +326,7 @@
                             <img src="/player/image/${p._id}" />
                             ${p.overallRating?.before ? $h`
                               <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating.before)}">
-                                ${p.overallRating.before.toFixed(0) }
+                                ${ playerWebService.ratingToGrade(p.overallRating.before)}
                               </span>
                             ` : $h` `}
                           </span>
@@ -365,7 +365,7 @@
                     <img src="/player/image/${vm.awayPlayer._id}" />
                     ${vm.awayPlayer.overallRating?.before ? $h`
                       <span class="badge ${playerWebService.getRatingBadgeColor(vm.awayPlayer.overallRating.before)}">
-                        ${vm.awayPlayer.overallRating.before.toFixed(0) }
+                        ${ playerWebService.ratingToGrade(vm.awayPlayer.overallRating.before)}
                       </span>
                     ` : $h` `}
                   </span>
@@ -398,7 +398,7 @@
                   <img src="/player/image/${vm.homePlayer._id}" />
                   ${vm.homePlayer.overallRating?.before ? $h`
                     <span class="badge ${playerWebService.getRatingBadgeColor(vm.homePlayer.overallRating.before)}">
-                      ${vm.homePlayer.overallRating.before.toFixed(0) }
+                      ${ playerWebService.ratingToGrade(vm.homePlayer.overallRating.before)}
                     </span>
                   ` : $h` `}
                 </span>

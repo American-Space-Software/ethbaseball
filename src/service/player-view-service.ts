@@ -86,8 +86,16 @@ class PlayerViewService {
             displayName: `${player.firstName.substring(0, 1).toUpperCase()}. ${player.lastName}`,
             
             ownerId: player.ownerId,
-            hittingRatings: player.hittingRatings,
+
+            overallRating: player.overallRating,
             pitchRatings: player.pitchRatings,
+            hittingRatings: player.hittingRatings,
+
+            potentialOverallRating: player.potentialOverallRating,
+            potentialPitchRatings: player.potentialPitchRatings,
+            potentialHittingRatings: player.potentialHittingRatings,
+
+
             careerHitterStats: player.careerStats.hitting,
             careerPitcherStats: player.careerStats.pitching,
             careerSeasonsHitterStats: plsList.filter( p => p.teamId != undefined).map( p => {
@@ -159,8 +167,15 @@ interface PlayerViewModel {
     fullName: string
     displayName: string
     ownerId:string
-    hittingRatings:HittingRatings
-    pitchRatings:PitchRatings
+
+    overallRating: number
+    pitchRatings: PitchRatings
+    hittingRatings: HittingRatings
+
+    potentialOverallRating: number
+    potentialPitchRatings: PitchRatings
+    potentialHittingRatings: HittingRatings
+
     askingPrice:string
     minimumPlayerSalary:string
 

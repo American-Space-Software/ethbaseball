@@ -10,7 +10,7 @@
                     <th class="stamina " data-sort="stamina">🪫</th>
                     ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
-                    <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('overallRating')}" data-sort="overallRating">OVR</th>
+                    <th @click=${sortRows} class="${getSortHeaderClass('overallRating')}" data-sort="overallRating">OVR</th>
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('throws')}" data-sort="throws">Throws</th>
                     <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('hits')}" data-sort="hits">Bats</th>
 
@@ -58,7 +58,7 @@
                               ${p?._id ? $h`
                                 <span class="icon">
                                   <img src="/player/image/${p._id}" />
-                                  <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating)}">
+                                  <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating)} overall-badge">
                                     ${playerWebService.ratingToGrade(p.overallRating)}
                                   </span>
                                 </span>
@@ -100,7 +100,7 @@
                               <td class="numeric-cell">${universeWebService.displayDiamonds(p.askingPrice)}</td>
                             ` : $h` `}
 
-                            <td class="numeric-cell">${p?.overallRating?.toFixed(0)}</td>
+                            <td>${badge(p?.overallRating)}</td>
                             <td class="numeric-cell">${p?.throws}</td>
                             <td class="numeric-cell">${p?.hits}</td>
                             <td class="numeric-cell">${getStats(p)?.pitching?.wins}</td>
@@ -150,13 +150,18 @@
 
   import StaminaBar from "../common/stamina-bar.f7.html"
 
-  export default (props, { $, $on, $f7, $update }) => {
+  export default (props, { $, $on, $f7, $h, $update }) => {
 
     let statService = ContainerService.getInstance(StatService)
     let playerWebService = ContainerService.getInstance(PlayerWebService)
     let pagingService = ContainerService.getInstance(PagingService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
+
+    const badge = (rating) => {
+      if (rating == null) return ""
+      return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
+    }
 
     let currentPage = 0
     const PAGE_SIZE = props.pagesize

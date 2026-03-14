@@ -230,7 +230,7 @@
                             <img src="/player/image/${p._id}" />
                             ${p.overallRating?.before ? $h`
                               <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating.before)}">
-                                ${p.overallRating.before.toFixed(0) }
+                                ${ playerWebService.ratingToGrade(p.overallRating.before)}
                               </span>
                             ` : $h` `}
                           </span>
@@ -286,7 +286,7 @@
                             <img src="/player/image/${p._id}" />
                             ${p.overallRating?.before ? $h`
                               <span class="badge ${playerWebService.getRatingBadgeColor(p.overallRating.before)}">
-                                ${p.overallRating.before.toFixed(0) }
+                                ${ playerWebService.ratingToGrade(p.overallRating.before)}
                               </span>
                             ` : $h` `}
                           </span>
