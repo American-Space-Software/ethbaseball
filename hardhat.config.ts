@@ -68,14 +68,16 @@ let config:any = {
         auto: false,
         interval: 5000
       }
-    },
+    }
 
-    mainnet: {
+  }
+}
+
+if (PROVIDER_LINK) {
+  config.networks.mainnet = {
       type: "http",
       chainType: "l1",
       url: PROVIDER_LINK
-    }
-
   }
 }
 

@@ -96,8 +96,14 @@ describe('PlayerRepository', async () => {
         player.hits = Handedness.L
 
 
-        player.hittingRatings = playerService.calculateHittingRatings(player)
-        player.pitchRatings = playerService.calculatePitchRatings(player)
+        player.hittingRatings = playerService.calculateHittingRatings(player, player.overallRating)
+        player.pitchRatings = playerService.calculatePitchRatings(player, player.overallRating)
+
+        player.potentialOverallRating = 75
+
+    
+        player.potentialHittingRatings = playerService.calculateHittingRatings(player, player.potentialOverallRating)
+        player.potentialPitchRatings = playerService.calculatePitchRatings(player, player.potentialOverallRating)
 
         //Act
         await repository.put(player)

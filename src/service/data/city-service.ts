@@ -29,6 +29,8 @@ class CityService {
     async list(limit:number, offset:number, options?:any) : Promise<City[]> {
         return this.cityRepository.list(limit, offset, options)
     }
+
+
 }
 
 

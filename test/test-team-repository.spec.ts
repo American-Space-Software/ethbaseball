@@ -54,7 +54,8 @@ describe('TeamRepository', async () => {
             diamondBalance: "0",
             longTermRating: 1500,
             seasonRating: 1500,
-            tokenId: 1
+            tokenId: 1,
+            developmentStrategy: { budgetPercent: 50 }
         })
 
         //Act

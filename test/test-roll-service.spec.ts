@@ -67,8 +67,8 @@ describe('RollService', async () => {
 
         pitcher.pitchingProfile = await service.generatePitchingProfile()
 
-        hittingRatings = playerService.calculateHittingRatings( hitter)
-        pitchRatings = playerService.calculatePitchRatings(pitcher)
+        hittingRatings = playerService.calculateHittingRatings( hitter, hitter.overallRating)
+        pitchRatings = playerService.calculatePitchRatings(pitcher, hitter.overallRating)
 
         hitterChange = rollChartService.getHitterChange(hittingRatings, la.hittingRatings, Handedness.R )
         pitcherChange = rollChartService.getPitcherChange(pitchRatings, la.pitchRatings , Handedness.R)

@@ -30,6 +30,7 @@ import { SeasonService } from "./season-service.js"
 import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import dayjs from "dayjs"
+import { PlayerSharedService } from "../shared/player-shared-service.js"
 
 
 const zodiac = zodiacFn("en")
@@ -66,7 +67,8 @@ class PlayerService {
         private statService: StatService,
         private seasonService:SeasonService,
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
-        private teamLeagueSeasonService:TeamLeagueSeasonService
+        private teamLeagueSeasonService:TeamLeagueSeasonService,
+        private playerSharedService:PlayerSharedService
     ) { }
 
 
@@ -166,7 +168,7 @@ class PlayerService {
         player.throws = faker.helpers.weightedArrayElement([{ weight: 80, value: Handedness.R }, { weight: 20, value: Handedness.L }])
         player.hits = faker.helpers.weightedArrayElement([{ weight: 70, value: Handedness.R }, { weight: 20, value: Handedness.L }, { weight: 10, value: Handedness.S }])
 
-        player.potentialOverallRating = 80
+        player.potentialOverallRating = 70
         player.age = 19
         player.stamina = 1
 
@@ -400,169 +402,11 @@ class PlayerService {
 
 
     getAgeModifier(yearsOld: number): number {
-
-        switch (yearsOld) {
-
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-                return .50
-            case 17:
-                return .75
-            case 18:
-                return .77
-            case 19:
-                return .79
-            case 20:
-                return .85
-            case 21:
-                return .87
-            case 22:
-                return .89
-            case 23:
-                return .91
-            case 24:
-                return .92
-            case 25:
-                return .94
-            case 26:
-                return .97
-            case 27:
-                return 1
-            case 28:
-                return .97
-            case 29:
-                return .96
-            case 30:
-                return .95
-            case 31:
-                return .93
-            case 32:
-                return .9
-            case 33:
-                return .87
-            case 34:
-                return .85
-            case 35:
-                return .8
-            case 36:
-                return .75
-            case 37:
-                return .74
-            case 38:
-                return .73
-            case 39:
-                return .72
-            case 40:
-                return .70
-            case 41:
-                return .68
-            case 42:
-                return .65
-            case 43:
-                return .60
-            case 44:
-                return .1
-
-        }
-
+        return this.playerSharedService.getAgeModifier(yearsOld)
     }
 
     getAgeLearningModifier(yearsOld: number): number {
-
-        switch (yearsOld) {
-
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-                return .95
-            case 17:
-                return .96
-            case 18:
-                return .97
-            case 19:
-                return .98
-            case 20:
-                return .99
-            case 21:
-                return 1.0
-            case 22:
-                return .99
-            case 23:
-                return .98
-            case 24:
-                return .97
-            case 25:
-                return .96
-            case 26:
-                return .95
-            case 27:
-                return .94
-            case 28:
-                return .93
-            case 29:
-                return .90
-            case 30:
-                return .87
-            case 31:
-                return .84
-            case 32:
-                return .81
-            case 33:
-                return .80
-            case 34:
-                return .75
-            case 35:
-                return .70
-            case 36:
-                return .65
-            case 37:
-                return .60
-            case 38:
-                return .55
-            case 39:
-                return .50
-            case 40:
-                return .45
-            case 41:
-                return .30
-            case 42:
-                return .2
-            case 43:
-                return .1
-            case 44:
-                return .1
-
-        }
-
+        return this.playerSharedService.getAgeLearningModifier(yearsOld)
     }
 
     getRatingModifier(rating: number): number {
@@ -1289,86 +1133,17 @@ class PlayerService {
 
 
     ratingToGrade(rating: number): PlayerGrade {
-
-        if (rating >= 170) return PlayerGrade.A_PLUS
-        if (rating >= 158) return PlayerGrade.A
-        if (rating >= 146) return PlayerGrade.A_MINUS
-        if (rating >= 134) return PlayerGrade.B_PLUS
-        if (rating >= 122) return PlayerGrade.B
-        if (rating >= 110) return PlayerGrade.B_MINUS
-        if (rating >= 95) return PlayerGrade.C_PLUS
-        if (rating >= 83) return PlayerGrade.C
-        if (rating >= 71) return PlayerGrade.C_MINUS
-        if (rating >= 59) return PlayerGrade.D_PLUS
-        if (rating >= 47) return PlayerGrade.D
-        if (rating >= 35) return PlayerGrade.D_MINUS
-
-        return PlayerGrade.F
+        return this.playerSharedService.ratingToGrade(rating)
     }
 
 
     getExperiencePerGame(hadGoodGame:boolean, isPitcher:boolean) : bigint {
-
-        let base = isPitcher ? HITTER_GAME_AVERAGE_XP * 5 : HITTER_GAME_AVERAGE_XP
-
-        let goodExp = BigInt(base * 125 / 100)
-        let badExp = BigInt(base * 75 / 100)
-
-        return hadGoodGame ? goodExp : badExp
-        
+        return this.playerSharedService.getExperiencePerGame(hadGoodGame, isPitcher)
     }
 
 
-    /**
-     * Converts a player's total accumulated experience into an overall rating.
-     *
-     * Design goals of the progression system:
-     *
-     * - Players enter the league at age 18 around ~80 overall.
-     * - A typical player should gain roughly ~10 overall points during their first season.
-     * - Development continues through the player's 20s, slowing gradually with age.
-     * - A full career (age 18–40) produces roughly ~300k total experience.
-     *
-     * Target progression curve (approximate):
-     *
-     * XP        Rating
-     * 0         80
-     * ~15k      90
-     * ~33k      100
-     * ~55k      110
-     * ~82k      120
-     * ~115k     130
-     * ~155k     140
-     * ~203k     150
-     * ~260k     160
-     * ~330k     170
-     *
-     * Ratings above ~170 represent extremely rare elite players.
-     *
-     * The curve is intentionally exponential so that:
-     * - Early development feels quick and rewarding.
-     * - Mid-career growth slows naturally.
-     * - Elite ratings become increasingly expensive.
-     *
-     * Experience is stored as a bigint and accumulated via gameplay events.
-     * Age-based learning modifiers adjust how quickly experience is earned,
-     * but this function itself is purely XP → rating.
-     */
-
     experienceToOverallRating(totalExperience: bigint): number {
-
-        const baseRating = 80
-        const baseXP = 1500
-        const growth = 1.01
-
-        const xp = Number(totalExperience)
-
-        const levels =
-            Math.log((xp * (growth - 1) / baseXP) + 1) /
-            Math.log(growth)
-
-        return Math.floor(baseRating + levels)
-
+        return this.playerSharedService.experienceToOverallRating(totalExperience)
     }
 
 

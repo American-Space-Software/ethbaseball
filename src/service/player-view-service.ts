@@ -75,6 +75,7 @@ class PlayerViewService {
             _id: player._id,
             isRetired: player.isRetired,
             askingPrice: askingPrice,
+            totalExperience: player.totalExperience,
             minimumPlayerSalary: minimumPlayerSalary,
             team: currentPls?.team,
             hits: player.hits,
@@ -167,6 +168,8 @@ interface PlayerViewModel {
     fullName: string
     displayName: string
     ownerId:string
+
+    totalExperience:string
 
     overallRating: number
     pitchRatings: PitchRatings

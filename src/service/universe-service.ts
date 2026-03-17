@@ -397,8 +397,6 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
     async generateTeams(rng, allCities:City[], numberOfTeams:number, options?:any) : Promise<TeamWithLocation[]> {
 
-        let tokenId = 1
-
         let teams:TeamWithLocation[] = []
 
         let chosenCities:City[] = []
@@ -443,7 +441,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             team.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
             team.longTermRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
-
+            team.developmentStrategy = { budgetPercent: 50 }
 
             await this.teamService.put(team, options)
 

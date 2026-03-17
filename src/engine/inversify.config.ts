@@ -165,6 +165,7 @@ import { TeamQueueRepositoryNodeImpl } from "../repository/node/team-queue-repos
 import { TeamQueueService } from "../service/data/team-queue-service.js"
 import { GameSharedService } from "../service/shared/game-shared-service.js"
 import { TeamSharedService } from "../service/shared/team-shared-service.js"
+import { PlayerSharedService } from "../service/shared/player-shared-service.js"
 
 
 const client = new Client({ intents: [
@@ -423,6 +424,7 @@ async function getContainer() {
     container.bind(TeamQueueService).toSelf().inSingletonScope()
     container.bind(GameSharedService).toSelf().inSingletonScope()
     container.bind(TeamSharedService).toSelf().inSingletonScope()
+    container.bind(PlayerSharedService).toSelf().inSingletonScope()
 
     container.bind("TeamRepository").to(TeamRepositoryNodeImpl).inSingletonScope()
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()

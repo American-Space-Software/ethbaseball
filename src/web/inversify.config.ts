@@ -69,13 +69,14 @@ import Messages from 'framework7/components/messages'
 import ProgressBar from 'framework7/components/progressbar'
 import PullToRefresh from 'framework7/components/pull-to-refresh'
 import Range from 'framework7/components/range'
+import Toggle from 'framework7/components/toggle'
 
 
 import { OwnerWebService } from "./service/owner-web-service.js";
 import { PlayerWebService } from "./service/player-web-service.js";
 import { TransactionWebService } from "./service/transaction-web-service.js";
 
-Framework7.use([ Range, PullToRefresh, ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
+Framework7.use([ Toggle, Range, PullToRefresh, ProgressBar, Messages, DataTable, Panel, Swiper, Sheet, Picker, Notification, Accordion, AutoComplete, Dialog, Popover, Stepper, Preloader, Toast, Breadcrumbs, VirtualList, Input, Checkbox, Radio, InfiniteScroll, SmartSelect, Popup, Tabs, SearchBar, Form])
 
 
 import TransactionRow from './components/common/transaction-row.f7.html'
@@ -86,7 +87,6 @@ import HitterRatings from './components/player/hitter-ratings.f7.html'
 import PitcherStats from './components/player/pitcher-stats.f7.html'
 import PitcherRatings from './components/player/pitcher-ratings.f7.html'
 
-import { NewsController } from "./controller/news-controller.js";
 
 import { PlayerController } from "./controller/player-controller.js";
 import { OwnerPageWebService } from "./service/owner-page-web-service.js";
@@ -112,6 +112,7 @@ import { SocketWebService } from "./service/socket-web-service.js";
 import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 import { QuillWebService } from "./service/quill-web-service.js";
+import { PlayerSharedService } from "../service/shared/player-shared-service.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -248,7 +249,6 @@ async function getContainer(env, footerRoutes, leagues) {
     container.bind(GameController).toSelf().inSingletonScope()
     container.bind(TeamController).toSelf().inSingletonScope()
     container.bind(LeagueController).toSelf().inSingletonScope()
-    container.bind(NewsController).toSelf().inSingletonScope()
     container.bind(UserController).toSelf().inSingletonScope()
     container.bind(ActivityController).toSelf().inSingletonScope()
 
@@ -277,6 +277,7 @@ async function getContainer(env, footerRoutes, leagues) {
     container.bind(DiamondWebService).toSelf().inSingletonScope()
     container.bind(PostWebService).toSelf().inSingletonScope()
     container.bind(TeamSharedService).toSelf().inSingletonScope()
+    container.bind(PlayerSharedService).toSelf().inSingletonScope()
 
     container.bind(GameTransactionWebService).toSelf().inSingletonScope()
 

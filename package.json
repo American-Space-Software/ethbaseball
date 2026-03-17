@@ -1,6 +1,6 @@
 {
   "name": "ethbaseball",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Ethereum Baseball League (EBL) is a baseball team-management sim. You run a franchise by managing rosters, lineups, and pitching rotations with the goal of winning games and building a strong baseball business.",
   "repository": {
     "type": "git",
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register",
-    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-roll-service.spec.ts",
+    "test1": "node --env-file=.env.engine.development ./node_modules/mocha/bin/mocha --timeout 9999999999 --require ts-node/register test/test-ladder-service.spec.ts",
 
     "test:contracts": "export NODE_ENV=development && npx hardhat test test/hardhat/test-diamonds.spec.js",
 

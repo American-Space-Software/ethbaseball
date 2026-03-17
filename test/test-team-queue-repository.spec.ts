@@ -48,6 +48,7 @@ describe("TeamQueueRepository", async () => {
       diamondBalance: "0",
       longTermRating: 1500,
       seasonRating: 1500,
+      developmentStrategy: { budgetPercent: 50 },
       tokenId
     })
 

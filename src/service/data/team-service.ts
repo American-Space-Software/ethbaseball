@@ -1,13 +1,13 @@
 import { inject, injectable } from "inversify";
 
-import { Colors, DiamondMintPass, FinanceSeason, Lineup, OverallRecord, RotationPitcher, Team, TEAM_COLORS } from "../../dto/team.js";
+import { Colors, DevelopmentStrategy, DiamondMintPass, FinanceSeason, Lineup, OverallRecord, RotationPitcher, Team, TEAM_COLORS } from "../../dto/team.js";
 import { TeamRepository } from "../../repository/team-repository.js";
 
 import { Player } from "../../dto/player.js";
-import { GLICKO_SETTINGS, NFTMetadata, PlayerRowViewModel, PlayerService } from "./player-service.js";
+import { GLICKO_SETTINGS,  PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import { ContractType, Position, Rating, TeamInfo, TEAMS_PER_TIER } from "../enums.js";
-import { TeamRating, TeamRecord } from "../../repository/node/team-repository-impl.js";
+import { ContractType, Position, Rating, TEAMS_PER_TIER } from "../enums.js";
+import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
 import dayjs from "dayjs";
@@ -21,7 +21,6 @@ import { TeamLeagueSeasonService } from "./team-league-season-service.js";
 import { PlayerLeagueSeason } from "../../dto/player-league-season.js";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
 import { OffchainEventService } from "./offchain-event-service.js";
-import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { GameService, GameSummaryViewModel } from "./game-service.js";
 import { User } from "../../dto/user.js";
 import { v4 as uuidv4 } from 'uuid';
@@ -29,6 +28,7 @@ import { ImageService } from "./image-service.js";
 import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
+import { TeamSharedService } from "../shared/team-shared-service.js";
 
 
 const MAX_ROSTER_SIZE = 13
@@ -53,11 +53,11 @@ n
         private financeService: FinanceService,
         private lineupService:LineupService,
         private offchainEventService:OffchainEventService,
-        private diamondMintPassService:DiamondMintPassService,
         private gameService:GameService,
         private imageService:ImageService,
         private teamQueueService:TeamQueueService,
-        private statService:StatService
+        private statService:StatService,
+        private teamSharedService:TeamSharedService
     ) { }
 
 
@@ -177,7 +177,7 @@ n
 
         let events = await this.offchainEventService.getByTeamId(team._id, Object.assign({ limit: 5, offset: 0 }, options) )
         let eventsViewModel = await this.offchainEventService.getOffChainEventViewModels(events, season, options)
-
+        
         return {
             team: {
                 _id: team._id,
@@ -200,6 +200,7 @@ n
                 overallRecord: t.overallRecord,
                 financeSeason: t.financeSeason,
                 isQueued: isQueued,
+                developmentStrategy: team.developmentStrategy,
 
                 owner: {
                     _id: team.userId,
@@ -1140,7 +1141,7 @@ n
     }
 
     getDevelopmentXpMultiplier(team: Team): bigint {
-        return BigInt(100 + Math.round(team.developmentStrategy.budgetPercent * 0.5))
+        return this.teamSharedService.getDevelopmentXpMultiplier(team.developmentStrategy.budgetPercent)
     }
 
 
@@ -1187,6 +1188,7 @@ interface TeamViewModel {
 
         isQueued:boolean
         minimumPlayerSalary:string
+        developmentStrategy:DevelopmentStrategy
     }
 
     players?: PlayerRowViewModel[]

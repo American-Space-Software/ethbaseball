@@ -59,7 +59,7 @@ describe('PlayerService', async () => {
 
       player.overallRating = 80
 
-      let ratings = service.calculateHittingRatings(player)
+      let ratings = service.calculateHittingRatings(player, player.overallRating)
 
       assert.deepStrictEqual(ratings, {
         speed: 80,
@@ -117,7 +117,7 @@ describe('PlayerService', async () => {
       }
 
 
-      let ratings = service.calculateHittingRatings(player)
+      let ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
 
@@ -145,7 +145,7 @@ describe('PlayerService', async () => {
       player.age = 18
 
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
       
       assert.deepStrictEqual(ratings, {
@@ -170,7 +170,7 @@ describe('PlayerService', async () => {
       // player.dateOfBirth = dayjs().subtract(19, 'years').toDate()
       player.age = 19
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
       assert.deepStrictEqual(ratings, {
@@ -203,7 +203,7 @@ describe('PlayerService', async () => {
 
       player.overallRating = 75
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
       assert.deepStrictEqual(ratings, {
@@ -235,7 +235,7 @@ describe('PlayerService', async () => {
 
       player.overallRating = 78
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
 
@@ -268,7 +268,7 @@ describe('PlayerService', async () => {
       player.overallRating = 83
 
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
       assert.deepStrictEqual(ratings, {
@@ -303,7 +303,7 @@ describe('PlayerService', async () => {
 
       player.overallRating = 86
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
       assert.deepStrictEqual(ratings, {
@@ -331,7 +331,7 @@ describe('PlayerService', async () => {
 
       player.overallRating = 89
 
-      ratings = service.calculateHittingRatings(player)
+      ratings = service.calculateHittingRatings(player, player.overallRating)
 
 
       assert.deepStrictEqual(ratings, {
@@ -372,20 +372,20 @@ describe('PlayerService', async () => {
 
         assert.deepStrictEqual(player.hittingRatings, {
           contactProfile: { groundball: 365, flyBall: 364, lineDrive: 271 },
-          speed: 60,
-          steals: 96,
-          defense: 42,
-          arm: 114,
-          vsR: { contact: 104, gapPower: 42, homerunPower: 86, plateDiscipline: 86 },
-          vsL: { contact: 105, gapPower: 42, homerunPower: 87, plateDiscipline: 87 }
+          speed: 25,
+          steals: 61,
+          defense: 7,
+          arm: 79,
+          vsR: { contact: 69, gapPower: 7, homerunPower: 51, plateDiscipline: 51 },
+          vsL: { contact: 70, gapPower: 7, homerunPower: 52, plateDiscipline: 52 }
         })
 
         assert.deepStrictEqual(player.pitchRatings, {
           pitches: [ 'FF' ],
           contactProfile: { groundball: 272, flyBall: 454, lineDrive: 274 },
-          power: 60,
-          vsR: { control: -27, movement: 30 },
-          vsL: { control: -28, movement: 32 }
+          power: 51,
+          vsR: { control: -36, movement: 22 },
+          vsL: { control: -37, movement: 23 }
         })
 
 
@@ -402,23 +402,24 @@ describe('PlayerService', async () => {
         assert.equal(player.throws, "R")
         assert.equal(player.hits, "R")
 
+
         assert.deepStrictEqual(player.hittingRatings, {
           contactProfile: { groundball: 516, flyBall: 219, lineDrive: 265 },
-          speed: -26,
-          steals: 37,
-          defense: 91,
-          arm: -35,
+          speed: -35,
+          steals: 28,
+          defense: 82,
+          arm: -44,
           vsR: {
-            contact: 33,
-            gapPower: 90,
-            homerunPower: -16,
-            plateDiscipline: -16
+            contact: 25,
+            gapPower: 82,
+            homerunPower: -23,
+            plateDiscipline: -23
           },
           vsL: {
-            contact: 37,
-            gapPower: 100,
-            homerunPower: -17,
-            plateDiscipline: -17
+            contact: 28,
+            gapPower: 91,
+            homerunPower: -26,
+            plateDiscipline: -26
           }
         })
 
@@ -426,9 +427,9 @@ describe('PlayerService', async () => {
         assert.deepStrictEqual(player.pitchRatings, {
           pitches: [ 'FF', 'SV', 'CU', 'SL' ],
           contactProfile: { groundball: 426, flyBall: 264, lineDrive: 310 },
-          power: 59,
-          vsR: { control: 109, movement: 62 },
-          vsL: { control: 119, movement: 67 }
+          power: 24,
+          vsR: { control: 77, movement: 29 },
+          vsL: { control: 84, movement: 32 }
         })
 
     })

@@ -10,48 +10,365 @@
 
         ${player ? $h`
 
-          <div class="block block-strong block-outline player-info">
+          <div class="list media-list list-outline-ios list-strong player-info">
+            <ul>
+              <li>
+                <div class="item-content">
+                  <div class="item-media">
+                        <span class="icon"> 
+                          <img style="border-radius: 50%; border: 1px solid #cccccc;" src="/player/image/${player._id}" width="56" height="56" /> 
+                          <span class="badge ${playerWebService.getRatingBadgeColor(player.overallRating)} overall-badge">
+                            ${playerWebService.ratingToGrade(player.overallRating)}
+                          </span> 
+                        </span>
+                  </div>
 
-            <div class="left">
-              <span class="icon">
-                <img style="border-radius: 50%; border: 1px solid #cccccc;" src="/player/image/${player._id}" width="100" height="100" />
-                <span class="badge ${playerWebService.getRatingBadgeColor(player.overallRating)}">${playerWebService.ratingToGrade(player.overallRating)}</span>
-              </span>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">${player.fullName}</div>
+
+                    </div>
+
+                    <div class="item-text">
+
+                      <div class="chip">
+                        <div class="chip-media background-color-gray">${player.primaryPosition}</div>
+                        <div class="chip-label">Position</div>
+                      </div>
+
+                      <div class="chip">
+                        <div class="chip-media background-color-gray">${player.age}</div>
+                        <div class="chip-label">Age</div>
+                      </div>
+
+                      <div class="chip">
+                        <div class="chip-media background-color-gray">${player.hits}</div>
+                        <div class="chip-label">Hits</div>
+                      </div>
+
+                      
+                      <div class="chip">
+                        <div class="chip-media background-color-gray">${player.throws}</div>
+                        <div class="chip-label">Throws</div>
+                      </div>
+
+                      <div class="chip">
+                        <div class="chip-label">${player.zodiacSign}</div>
+                      </div>
+                      
+                    </div>
+
+                  </div>
+                </div>
+              </li>
+            
+              <li>
+                <div class="item-content">
+
+                  <div class="item-inner">
+
+                    ${player.askingPrice ? $h`
+                      <div class="item-text">
+                        Cost: ${universeWebService.displayDiamonds(player.askingPrice)}
+                      </div>
+                    ` : $h` `}
+
+                    ${showInsufficientDiamonds ? $h`
+                      <div class="item-text">
+                        Your team does not have enough diamonds to sign this player.
+                      </div>
+                    ` : $h` `}
+
+                    ${showInsufficientDiamondsToDrop ? $h`
+                      <div class="item-text">
+                        You need a balance of at least ${universeWebService.displayDiamonds(player.minimumPlayerSalary)} to drop a player.
+                      </div>
+                    ` : $h` `}
+
+                  </div>
+                </div>
+              </li>
+
+
+            </ul>
+          </div>
+
+
+
+        <div class="block-title block-title-medium">Experience</div>
+        <div class="block block-outline block-strong">
+
+          <div class="display-flex align-items-center justify-content-space-between" style="gap:12px; margin-bottom:8px;">
+
+            <div class="chip">
+              <div class="chip-media bg-color-blue">LVL</div>
+              <div class="chip-label">
+                ${playerWebService.getDisplayLevel(BigInt(player.totalExperience))}
+              </div>
             </div>
 
-            <div class="right">
+            <div
+              class="progressbar"
+              data-progress="${playerWebService.getDisplayLevelProgress(BigInt(player.totalExperience))}">
+            </div>
 
-              <div class="name">${player.fullName}</div>
-
-              <span><strong>Position:</strong> ${player.primaryPosition}</span><br />
-              <span><strong>Bats:</strong> ${player.hits} • <strong>Throws:</strong> ${player.throws}</span><br />
-              <span><strong>Age:</strong> ${player.age} • <strong>Zodiac:</strong> ${player.zodiacSign}</span><br />
-              <span><strong>Overall Rating:</strong> ${player.overallRating.toFixed(0)}</span><br />     
-              
-              ${player.askingPrice ? $h`
-                <span><strong>Cost:</strong> ${universeWebService.displayDiamonds(player.askingPrice)}</span><br />    
-              ` : $h` `}
-
-
-              ${showInsufficientDiamonds ? $h`
-                <p>
-                  Your team does not have enough diamonds to sign this player.
-                </p>
-              ` : $h` `}
-
-              ${showInsufficientDiamondsToDrop ? $h`
-                <p>
-                  You need a balance of at least ${universeWebService.displayDiamonds(player.minimumPlayerSalary)} to drop a player.
-                </p>
-              ` : $h` `}
-
+            <div class="text-color-gray">
+              ${playerWebService.getDisplayLevel(BigInt(player.totalExperience))}/100
             </div>
 
           </div>
 
+          ${playerWebService.getDisplayLevel(BigInt(player.totalExperience)) < 100 ? $h`
+            <div class="text-color-gray" style="font-size:14px;">
+              ${formatBigInt(BigInt(player.totalExperience))} / ${formatBigInt(playerWebService.getNextLevelExperience(BigInt(player.totalExperience)))} XP to Level ${playerWebService.getNextDisplayLevel(BigInt(player.totalExperience))}
+            </div>
+          ` : $h`
+            <div class="text-color-green" style="font-size:14px;">
+              Max Level Reached
+            </div>
+          `}
+        </div>
+
+
+
+
+
+
+
+
+
+          ${player.primaryPosition == Position.PITCHER ? $h`
+            
+            <div class="block-title block-title-small">Pitching Ratings</div>
+
+            <div class="list list-outline-ios list-strong-ios list-dividers-ios ratings-list">
+              <ul>
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      
+                      <div class="item-title">
+                        Overall
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("OVR", showPotential ? player?.potentialOverallRaing : player?.overallRating)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        Power
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("POW", showPotential ? player?.potentialPitchRatings?.power :  player?.pitchRatings?.power)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        vsR
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("CTL", showPotential ? player?.potentialPitchRatings?.vsR?.control :  player?.pitchRatings?.vsR?.control)}
+                        ${chip("MOV", showPotential ? player?.potentialPitchRatings?.vsR?.movement : player?.pitchRatings?.vsR?.movement)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        vsL
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("CTL", showPotential ? player?.potentialPitchRatings?.vsL?.control : player?.pitchRatings?.vsL?.control)}
+                        ${chip("MOV", showPotential ? player?.potentialPitchRatings?.vsL?.movement : player?.pitchRatings?.vsL?.movement)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        Contact
+                      </div>
+                      <div class="item-after">                  
+                        ${textChip("GB", statService.displayPercent(player?.pitchRatings?.contactProfile?.groundball / 1000), 'color-red')}
+                        ${textChip("FB", statService.displayPercent(player?.pitchRatings?.contactProfile?.flyBall / 1000), 'color-blue')}
+                        ${textChip("LD", statService.displayPercent(player?.pitchRatings?.contactProfile?.lineDrive / 1000), 'color-green')}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        Pitches
+                      </div>
+                      <div class="item-after">                  
+                        
+                        ${player.pitchRatings.pitches?.map( p => $h`
+
+                          <div class="chip">
+                            <div class="chip-label">${playerWebService.getPitchTypeFull(p)}</div>
+                          </div>                          
+                          
+                        `) }
+                        
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                
+                ${player.age < 27 ? $h`
+                  <li>
+                    <label class="item-content">
+                      <div class="item-inner">
+                        <div class="item-title">Potential</div>
+                        <div class="item-after">
+                          <div class="toggle toggle-init" @change="${potentialChange}">
+                            <input type="checkbox" />
+                            <span class="toggle-icon"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </li>
+                ` : $h``}
+
+              </ul>
+            </div>
+
+          ` : $h` `}
+
+          ${player.primaryPosition != Position.PITCHER ? $h`
+            
+            <div class="block-title block-title-small">Hitting Ratings</div>
+
+            <div class="list list-outline-ios list-strong-ios list-dividers-ios ratings-list">
+              <ul>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        Overall
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("OVR", showPotential ? player?.potentialOverallRating : player?.overallRating)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        Core
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("DEF", showPotential ? player?.potentialHittingRatings?.defense : player?.hittingRatings?.defense)}
+                        ${chip("ARM", showPotential ? player?.potentialHittingRatings?.arm : player?.hittingRatings?.arm)}
+                        ${chip("SPD", showPotential ? player?.potentialHittingRatings?.speed : player?.hittingRatings?.speed)}
+                        ${chip("STL", showPotential ? player?.potentialHittingRatings?.steals : player?.hittingRatings?.steals)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        vsR
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("EYE", showPotential ? player?.potentialHittingRatings?.vsR?.plateDiscipline : player?.hittingRatings?.vsR?.plateDiscipline)}
+                        ${chip("CON", showPotential ? player?.potentialHittingRatings?.vsR?.contact : player?.hittingRatings?.vsR?.contact)}
+                        ${chip("GAP", showPotential ? player?.potentialHittingRatings?.vsR?.gapPower : player?.hittingRatings?.vsR?.gapPower)}
+                        ${chip("HR",  showPotential ? player?.potentialHittingRatings?.vsR?.homerunPower : player?.hittingRatings?.vsR?.homerunPower)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        vsL
+                      </div>
+                      <div class="item-after">                  
+                        ${chip("EYE", showPotential ? player?.potentialHittingRatings?.vsL?.plateDiscipline : player?.hittingRatings?.vsL?.plateDiscipline)}
+                        ${chip("CON", showPotential ? player?.potentialHittingRatings?.vsL?.contact : player?.hittingRatings?.vsL?.contact)}
+                        ${chip("GAP", showPotential ? player?.potentialHittingRatings?.vsL?.gapPower : player?.hittingRatings?.vsL?.gapPower)}
+                        ${chip("HR",  showPotential ? player?.potentialHittingRatings?.vsL?.homerunPower : player?.hittingRatings?.vsL?.homerunPower)}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">
+                        Contact
+                      </div>
+                      <div class="item-after">                  
+                        ${textChip("GB", statService.displayPercent(player?.hittingRatings?.contactProfile?.groundball / 1000), 'color-red')}
+                        ${textChip("FB", statService.displayPercent(player?.hittingRatings?.contactProfile?.flyBall / 1000), 'color-blue')}
+                        ${textChip("LD", statService.displayPercent(player?.hittingRatings?.contactProfile?.lineDrive / 1000) , 'color-green')}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                ${player.age < 27 ? $h`
+                  <li>
+                    <label class="item-content">
+                      <div class="item-inner">
+                        <div class="item-title">Potential</div>
+                        <div class="item-after">
+                          <div class="toggle toggle-init" @change="${potentialChange}">
+                            <input type="checkbox" />
+                            <span class="toggle-icon"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </li>
+                ` : $h``}
+
+
+              </ul>
+            </div>
+
+          ` : $h` `}
+
+
+
 
           ${showActions ? $h`
-              <div class="block-header">Team Actions</div>
+              <div class="block-title block-title-small">Team Actions</div>
               <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
 
@@ -117,195 +434,8 @@
 
                   </ul>
               </div>
-
-
           ` : $h` `}
 
-
-
-
-          ${player.primaryPosition == Position.PITCHER ? $h`
-            
-            <div class="block-title block-title-small">Pitching Ratings</div>
-            <div class="block block-outline block-strong">
-                <div class="rating-table">
-
-                  <div class="full">
-                    <div class="skill-wrapper">
-                      <div class="label">Power</div>
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis: ${player.pitchRatings.power }%;">${ player.pitchRatings.power }</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Control</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.pitchRatings.vsL.control}%;"><strong>L</strong> ${ player.pitchRatings.vsL.control }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.control }%;"> <strong>R</strong> ${ player.pitchRatings.vsR.control }</div>
-                      </div>
-
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Movement</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.pitchRatings.vsL.movement }%;"> <strong>L</strong> ${ player.pitchRatings.vsL.movement }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="light-red" style="flex-basis:${ player.pitchRatings.vsR.movement}%;"> <strong>R</strong> ${ player.pitchRatings.vsR.movement }</div>
-                      </div>
-
-                    </div>
-
-                    <div class="skill-wrapper">
-
-                      <div class="label">Contact Profile</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.pitchRatings.contactProfile.groundball / 10 }%;"><strong>GB</strong> ${player.pitchRatings.contactProfile.groundball / 10 }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="blue" style="flex-basis:${ player.pitchRatings.contactProfile.flyBall / 10 }%;"> <strong>FB</strong> ${player.pitchRatings.contactProfile.flyBall / 10 }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="green" style="flex-basis:${ player.pitchRatings.contactProfile.lineDrive  / 10 }%;"><strong>LD</strong> ${player.pitchRatings.contactProfile.lineDrive / 10 }</div>
-                      </div>
-
-                    </div>
-
-                    <br />
-
-                    <strong>Pitches:</strong> ${player.pitchRatings.pitches?.map( p => playerWebService.getPitchTypeFull(p)).join(", ")}
-
-
-                  </div>
-
-                </div>
-            </div>
-          ` : $h` ` }
-
-          ${player.primaryPosition != Position.PITCHER ? $h`
-            
-            <div class="block-title block-title-small">Hitting Ratings</div>
-            <div class="block block-outline block-strong">
-                <div class="rating-table">
-                  <div class="left">
-
-                    <div class="skill-wrapper">
-                      <div class="label">Speed</div>
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis: ${player.hittingRatings.speed }%;">${player.hittingRatings.speed}</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Steals</div>
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis: ${ player.hittingRatings.steals }%;">${player.hittingRatings.steals}</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Defense</div>
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis: ${ player.hittingRatings.defense }%;">${player.hittingRatings.defense}</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Arm</div>
-                      <div class="skill-bar">
-                        <div class="red" style="flex-basis: ${player.hittingRatings.arm }%;">${player.hittingRatings.arm }</div>
-                      </div>
-                    </div>
-
-                    <div class="skill-wrapper">
-
-                      <div class="label">Contact Profile</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.hittingRatings.contactProfile.groundball / 10 }%;"><strong>GB</strong> ${player.hittingRatings.contactProfile.groundball / 10}</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="blue" style="flex-basis:${ player.hittingRatings.contactProfile.flyBall / 10 }%;"><strong>FB</strong> ${player.hittingRatings.contactProfile.flyBall / 10 }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="green" style="flex-basis:${ player.hittingRatings.contactProfile.lineDrive / 10 }%;"><strong>LD</strong> ${player.hittingRatings.contactProfile.lineDrive / 10 }</div>
-                      </div>
-
-                    </div>
-
-                  </div>
-                  <div class="right">
-
-                    <div class="skill-wrapper">
-                      <div class="label">Contact</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis: ${player.hittingRatings.vsL.contact}%;"><strong>L</strong> ${player.hittingRatings.vsL.contact}</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="light-red" style="flex-basis: ${player.hittingRatings.vsR.contact }%;"><strong>R</strong> ${ player.hittingRatings.vsR.contact }</div>
-                      </div>
-
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Gap Power</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.gapPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.gapPower }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.gapPower }%;"><strong>R</strong> ${player.hittingRatings.vsR.gapPower }</div>
-                      </div>
-
-                    </div>
-
-                    <div class="skill-wrapper">
-                      <div class="label">Home Run</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.homerunPower }%;"><strong>L</strong> ${player.hittingRatings.vsL.homerunPower }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.homerunPower }%;"><strong>R</strong> ${ player.hittingRatings.vsR.homerunPower }</div>
-                      </div>
-
-                    </div>
-
-
-                    <div class="skill-wrapper">
-                      <div class="label">Plate Discipline</div>
-
-                      <div class="skill-bar handedness">
-                        <div class="red" style="flex-basis:${ player.hittingRatings.vsL.plateDiscipline }%;"><strong>L</strong> ${player.hittingRatings.vsL.plateDiscipline }</div>
-                      </div>
-
-                      <div class="skill-bar handedness">
-                        <div class="light-red" style="flex-basis:${ player.hittingRatings.vsR.plateDiscipline }%;"><strong>R</strong> ${player.hittingRatings.vsR.plateDiscipline }</div>
-                      </div>
-
-                    </div>
-
-                  </div>
-                </div>
-            </div>
-          ` : $h` ` }
 
 
           <div class="block-title block-title-small">Career Stats</div>
@@ -398,7 +528,6 @@
                           <td>${ player.careerPitcherStats?.so }</td>
                           <td>${ player.careerPitcherStats?.hbp }</td>
                           <td>${ player.careerPitcherStats.wpa?.toFixed(2) }</td>
-      
                         </tr>
                     ` : $h`
                       <tr>
@@ -407,9 +536,6 @@
                     `}
 
                   </tbody>
-                  
-
-
                 </table>
               `} 
             </div>
@@ -469,8 +595,7 @@
                         <td>${ hitResult.bb }</td>
                         <td>${ hitResult.so }</td>
                         <td>${ formatRatio(hitResult.avg) }</td>
-                        <td>${ formatRatio(hitResult.obp) }
-                        </td>
+                        <td>${ formatRatio(hitResult.obp) }</td>
                         <td>${ formatRatio(hitResult.slg) }</td>
                         <td>${ formatRatio(hitResult.ops) }</td>
                         <td>${ hitResult.wpa?.toFixed(2) }</td>
@@ -483,10 +608,6 @@
                       <td style="text-align:left;" colspan="20">No games played.</td>
                     </tr>
                     `}
-
-
-
-
 
                   </tbody>
                 </table>
@@ -514,7 +635,6 @@
                     </tr>
                   </thead>
                   <tbody>
-
 
                     ${player.careerSeasonsPitcherStats?.length > 0 ? $h`
 
@@ -550,7 +670,6 @@
                   </tbody>
                 </table>
               `}
-
 
             </div>
           </div>
@@ -637,7 +756,6 @@
                             <th class="numeric-cell">BB</th>
                             <th class="numeric-cell">SO</th>
                             <th class="numeric-cell">WPA</th>
-
                         </tr>
                     </thead>
                     <tbody>
@@ -687,7 +805,6 @@
                     <div class="navbar-inner">
                       <div class="title">Drop Player</div>
                       <div class="right">
-                        <!-- Link to close popup -->
                         <a class="link popup-close">Close</a>
                       </div>
                     </div>
@@ -715,7 +832,6 @@
                     <div class="navbar-inner">
                       <div class="title">Add Player</div>
                       <div class="right">
-                        <!-- Link to close popup -->
                         <a class="link popup-close">Close</a>
                       </div>
                     </div>
@@ -744,10 +860,7 @@
 
                           </div>
 
-
-                          
                         ` : $h` `}
-
 
                   </div>
                 </div>
@@ -756,11 +869,7 @@
           
           `}
 
-
-
-
         ` : $h` `}
-
 
       </div>
 
@@ -772,11 +881,9 @@
 
 <style>
 
-
 </style>
 
 <script>
-
 
   import Navbar from "../common/navbar.f7.html"
 
@@ -793,7 +900,7 @@
   import { Position } from "../../../service/enums.ts"
   import StartDate from "../common/start-date.f7.html"
 
-  export default (props, { $on, $, $f7, $update, $onMounted }) => {
+  export default (props, { $on, $, $f7, $update, $onMounted, $h }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
@@ -806,6 +913,47 @@
     let authInfo = props.authInfo
     let player = props.player
     
+
+    let showPotential = false
+
+
+    const formatBigInt = (value) => {
+        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    }
+
+
+    const potentialChange = (e) => {
+      showPotential = e.target.checked
+    }
+
+
+    const chip = (label, rating) => {
+      if (rating == null) return ""
+      return $h`
+        <div class="chip">
+          <div class="chip-media bg-${playerWebService.getRatingBadgeColor(rating)}">
+            ${playerWebService.ratingToGrade(rating)}
+          </div>
+          <div class="chip-label">${label}</div>
+        </div>
+      `
+    }
+
+    const textChip = (label, value, bgColor) => {
+      if (value == null) return ""
+      return $h`
+        <div class="chip">
+          <div class="chip-media bg-${bgColor}">${label}</div>
+          <div class="chip-label ">${value}</div>
+        </div>
+      `
+    }
+
+    const badge = (rating) => {
+      if (rating == null) return ""
+      return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
+    }
+
     const canAffordDrop = () => {
 
       if (!authInfo?.offChainDiamondBalance) return false
@@ -887,20 +1035,16 @@
 
     const formatRatio = (num) => {
 
-      // Special case for 0 to format as .000
       if (num === 0) {
         return ".000";
       }
 
-      // Format the number to always have 3 decimal places
       let numStr = num.toFixed(3)
 
-      // Check if the number is less than 1 and greater than -1 but not 0
       if (num < 1 && num > -1 && num !== 0) {
-        // Remove the leading 0
         numStr = numStr.replace(/^0/, '')
       }
-      // Return the formatted string
+
       return numStr
 
     }
@@ -946,8 +1090,6 @@
         `View ${player.fullName} in Ethereum Baseball League.`
       ) 
 
-
-
       await $update()
     })
 
@@ -961,16 +1103,8 @@
 
 
     $onMounted(() => {
-      
-
       $('.sign-popup').on('popup:opened', async (e) => {
-            // $f7.preloader.show()
-            // await loadUser(true)
-            // await $update()
-            // $f7.preloader.hide()
       })
-
-
     })
 
 

@@ -1529,6 +1529,48 @@ let startWebServer = async () => {
 
   })
 
+  app.post('/api/team/budget/:teamId', async function (req, res) {
+
+    try {
+
+      //@ts-ignore
+      let loggedInUser = req.session?.passport?.user
+
+      if (!loggedInUser) {
+        return res.sendStatus(401)
+      }
+
+      let user: User = await userService.get(loggedInUser)
+      // let owner: Owner = await ownerService.get(user.address)
+      let team: Team = await teamService.get(req.params.teamId)
+
+      if (team == undefined || user._id != team.userId) {
+        return res.sendStatus(401)
+      }
+
+
+      let budgetPercent = parseIntWithException(req.body.budgetPercent)
+
+      if (budgetPercent < 0 || budgetPercent > 100) {
+        throw new Error("Invalid budget amount.")
+      }
+
+
+      team.developmentStrategy.budgetPercent = budgetPercent
+      team.changed('developmentStrategy', true)
+
+      await teamService.put(team)
+
+      return res.json("success")
+
+    } catch (ex) {
+      console.log(ex)
+      return res.status(403).send(ex.message)
+    }
+
+  })
+
+
   app.get('/api/team/mint', async function (req, res) {
 
     try {

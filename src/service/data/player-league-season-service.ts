@@ -124,6 +124,11 @@ class PlayerLeagueSeasonService {
         pls.overallRating = player.overallRating
         pls.pitchRatings = player.pitchRatings
         pls.hittingRatings = player.hittingRatings
+        pls.potentialOverallRating = player.potentialOverallRating
+        pls.potentialHittingRatings = player.potentialHittingRatings
+        pls.potentialPitchRatings = player.potentialPitchRatings
+
+
         pls.stats = player.careerStats
         pls.age = player.age
 

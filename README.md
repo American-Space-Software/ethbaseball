@@ -196,6 +196,7 @@ Diamonds are earned through regular-season game-day revenue and season-end rewar
 
 ---
 
+
 ## Season Structure
 
 Seasons run on a real-world calendar.
@@ -204,7 +205,7 @@ Seasons run on a real-world calendar.
 - Each day represents **one game on the schedule**
 - The season day advances daily at **9:30 AM ET**
 
-If your team falls behind the schedule, you can join matchmaking again to play additional games until you catch up.
+If your team falls behind the schedule, you can queue additional games to catch up to the current season day.
 
 ---
 
@@ -243,6 +244,202 @@ Regular-season game-day revenue is identical across all leagues and teams.
 | 150 | 10% | 10 🔷 |
 | 250+ | 0% | 0 🔷 |
 
+
+---
+
+
+## Player Progression & Ratings
+
+### Rating System Philosophy
+
+The player rating system in EBL is designed to feel intuitive while still supporting a deep underlying simulation model.
+
+#### League Average
+
+- **100 overall is considered league average**
+- Players above 100 are above-average contributors
+- Players below 100 are below-average or developing
+
+This gives ratings a clear, interpretable meaning:
+
+- ~80 → replacement-level / early development  
+- ~100 → solid everyday player  
+- ~120+ → high-level player  
+- ~140+ → elite  
+- ~160+ → rare, top-tier talent  
+
+---
+
+### Potential vs Current Rating
+
+Each player has a **potential rating** that represents their long-term ceiling.
+
+At generation:
+
+- Players enter the league with **low potential (e.g. ~70)**
+- Their **actual rating is derived** using age-based modifiers and experience
+
+This means:
+
+- A young player may have a lower current rating than their potential  
+- Ratings increase over time as the player gains experience  
+
+---
+
+### Experience-Based Progression
+
+Player progression is driven by **experience (XP)** earned through gameplay.
+
+- XP accumulates over time  
+- Ratings are calculated from XP using an exponential curve  
+- Ratings are **derived values**, not directly incremented  
+
+#### Rating Range
+
+- Minimum: **70 overall**  
+- Maximum: **170 overall**  
+
+This creates a **100-level progression system**:
+
+---
+
+
+### Development Curve
+
+The system is designed so that:
+
+- A typical player starting around **70 potential**  
+- Will reach approximately **league average (~100 overall)**  
+- In about **3 seasons of regular play**  
+
+This ensures:
+
+- Early progression feels fast and rewarding  
+- Players become viable contributors within a reasonable timeframe  
+- Long-term growth still requires sustained performance  
+
+---
+
+### Age-Based Development
+
+Player development is influenced by age:
+
+- Younger players gain experience more efficiently  
+- Growth slows as players approach their late 20s and beyond  
+
+The rating shown in the UI always reflects:
+
+- Total accumulated experience  
+- Age-based learning modifiers  
+- The progression curve  
+
+---
+### Letter Grades (User-Facing Ratings)
+
+While the simulation operates on numeric ratings, EBL primarily presents player ability using **letter grades**.
+
+This keeps the game readable and intuitive without requiring players to understand the full underlying model.
+
+#### Why Letter Grades?
+
+- Prevents over-optimization based on exact numbers  
+- Keeps player evaluation closer to real-world scouting  
+- Maintains competitive fairness in an open-source system  
+- Improves readability across large rosters and stat tables  
+
+Players are evaluated using grades like:
+
+A+, A, A-  
+B+, B, B-  
+C+, C, C-  
+D+, D  
+F  
+
+---
+
+#### Mapping Ratings to Grades
+
+Each letter grade corresponds to a range of underlying ratings.
+
+Example ranges:
+
+| Grade | Rating Range |
+|------|-------------|
+| A+   | 160+        |
+| A    | 150–159     |
+| A-   | 140–149     |
+| B+   | 130–139     |
+| B    | 120–129     |
+| B-   | 110–119     |
+| C+   | 100–109     |
+| C    | 90–99       |
+| C-   | 80–89       |
+| D+   | 75–79       |
+| D    | 70–74       |
+| F    | <70         |
+
+> Note: Exact ranges may be tuned over time as the game evolves.
+
+---
+
+#### Design Philosophy
+
+Letter grades are intended to:
+
+- Provide **clear, quick evaluation** of players  
+- Encourage **relative comparison**, not exact optimization  
+- Align with familiar sports concepts (scouting grades, tiers, etc.)
+
+Advanced players can still explore the full model through the open-source code, but gameplay is designed to be fully understandable using grades alone.
+
+
+---
+
+### Development Budget
+
+Teams can allocate a percentage of their earnings toward player development.
+
+#### Tradeoff
+
+- **Higher budget**
+  - Faster player growth (more XP)  
+  - Less diamond profit  
+
+- **Lower budget**
+  - Slower development  
+  - More diamonds saved for roster moves  
+
+#### XP Bonus Formula
+
+
+Examples:
+
+| Budget | XP Bonus |
+|--------|---------|
+| 0%     | +0%     |
+| 50%    | +25%    |
+| 100%   | +50%    |
+
+---
+
+### Game Settlement
+
+Rewards are applied **after each game completes**.
+
+Each game produces:
+
+1. **Reward transaction** (Diamonds earned)  
+2. **Development expense** (budget allocation)  
+
+
+---
+
+### Transparency
+
+EBL is fully open source and designed for technically curious players.
+
+- The progression system is intentionally transparent  
+- XP, ratings, and formulas can be inspected  
 
 ---
 

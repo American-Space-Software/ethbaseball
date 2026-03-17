@@ -3,6 +3,7 @@ import axios from "axios"
 import { HitterPitcher, PitchType, PlayerGrade, Position } from "../../service/enums.js";
 import { Player } from "../../dto/player.js";
 import { UniverseWebService } from "./universe-web-service.js";
+import { PlayerSharedService } from "../../service/shared/player-shared-service.js";
 
 
 
@@ -10,7 +11,8 @@ import { UniverseWebService } from "./universe-web-service.js";
 class PlayerWebService {
 
     constructor(
-        private universeWebService:UniverseWebService
+        private universeWebService:UniverseWebService,
+        private playerSharedService:PlayerSharedService
     ) { }
 
     async dropPlayer(player:Player) {
@@ -270,86 +272,7 @@ class PlayerWebService {
 
 
     getAgeModifier(yearsOld: number): number {
-
-        switch (yearsOld) {
-
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-                return .50
-            case 17:
-                return .75
-            case 18:
-                return .77
-            case 19:
-                return .79
-            case 20:
-                return .85
-            case 21:
-                return .87
-            case 22:
-                return .89
-            case 23:
-                return .91
-            case 24:
-                return .92
-            case 25:
-                return .94
-            case 26:
-                return .97
-            case 27:
-                return 1
-            case 28:
-                return .97
-            case 29:
-                return .96
-            case 30:
-                return .95
-            case 31:
-                return .93
-            case 32:
-                return .9
-            case 33:
-                return .87
-            case 34:
-                return .85
-            case 35:
-                return .8
-            case 36:
-                return .75
-            case 37:
-                return .74
-            case 38:
-                return .73
-            case 39:
-                return .72
-            case 40:
-                return .70
-            case 41:
-                return .68
-            case 42:
-                return .65
-            case 43:
-                return .60
-            case 44:
-                return .1
-
-        }
-
+        return this.playerSharedService.getAgeModifier(yearsOld)
     }
 
 
@@ -379,20 +302,27 @@ class PlayerWebService {
 
     ratingToGrade(rating: number): PlayerGrade {
 
-        if (rating >= 170) return PlayerGrade.A_PLUS
-        if (rating >= 158) return PlayerGrade.A
-        if (rating >= 146) return PlayerGrade.A_MINUS
-        if (rating >= 134) return PlayerGrade.B_PLUS
-        if (rating >= 122) return PlayerGrade.B
-        if (rating >= 110) return PlayerGrade.B_MINUS
-        if (rating >= 95) return PlayerGrade.C_PLUS
-        if (rating >= 83) return PlayerGrade.C
-        if (rating >= 71) return PlayerGrade.C_MINUS
-        if (rating >= 59) return PlayerGrade.D_PLUS
-        if (rating >= 47) return PlayerGrade.D
-        if (rating >= 35) return PlayerGrade.D_MINUS
+        return this.playerSharedService.ratingToGrade(rating)
+    }
 
-        return PlayerGrade.F
+    getDisplayLevel(totalExperience: bigint) {
+        return this.playerSharedService.getDisplayLevel(totalExperience)
+    }
+
+    getExperienceForDisplayLevel(displayLevel: number): bigint {
+        return this.playerSharedService.getExperienceForDisplayLevel(displayLevel)
+    }
+
+    getDisplayLevelProgress(totalExperience: bigint): number {
+        return this.playerSharedService.getDisplayLevelProgress(totalExperience)
+    }  
+
+    getNextDisplayLevel(totalExperience: bigint): number {
+        return this.playerSharedService.getNextDisplayLevel(totalExperience)
+    }
+
+    getNextLevelExperience(totalExperience: bigint): bigint {
+        return this.playerSharedService.getNextLevelExperience(totalExperience)
     }
 
 

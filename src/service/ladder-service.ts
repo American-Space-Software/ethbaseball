@@ -405,15 +405,6 @@ class LadderService {
 
         await this.gameService.put(game, options)
 
-        let homeRecord = await this.teamService.updateSeasonRecord(home, season, homeTLS, options)
-        let awayRecord = await this.teamService.updateSeasonRecord(away, season, awayTLS, options)
-
-        game.home.overallRecord.after = JSON.parse(JSON.stringify(homeRecord))
-        game.away.overallRecord.after = JSON.parse(JSON.stringify(awayRecord))
-
-        game.changed("away", true)
-        game.changed("home", true)
-
         //Update results for players
         let ghr:GameHitResult[] = []
         let gpr:GamePitchResult[] = []
@@ -425,121 +416,167 @@ class LadderService {
 
         await this.gameHitResultRepository.updateGameHitResults(ghr, options)
         await this.gamePitchResultRepository.updateGamePitchResults(gpr, options)
+        
+        if (game.seasonId != undefined) {
+            await this.finishSeasonGame(away, awayTLS, home, homeTLS, season, game, players, plss, ghr, gpr, options)
+        } else {
+            await this.finishNonSeasonGame(away, home, game, options)
+        }
+
+    }
+
+
+    private async finishSeasonGame(away:Team, awayTLS:TeamLeagueSeason, home:Team, homeTLS:TeamLeagueSeason, 
+                                   season:Season, game:Game, players:Player[], 
+                                   plss:PlayerLeagueSeason[], 
+                                   ghr:GameHitResult[],
+                                   gpr:GamePitchResult[],
+                                   options?:any
+                            ) {
+
+
+        //Update team record.
+        let homeRecord = await this.teamService.updateSeasonRecord(home, season, homeTLS, options)
+        let awayRecord = await this.teamService.updateSeasonRecord(away, season, awayTLS, options)
+
+        game.home.overallRecord.after = JSON.parse(JSON.stringify(homeRecord))
+        game.away.overallRecord.after = JSON.parse(JSON.stringify(awayRecord))
+
+        game.changed("away", true)
+        game.changed("home", true)
+
+
+        //Distribute rewards to teams.
+        const txId = uuidv4()
+
+        await this.distributeReward(away, awayTLS, season, BigInt(game.away.finances.totalRevenue), { type: "reward", rewardType: "game", fromDate: game.gameDate, fromGameId: game._id  }, txId, options)
+        await this.distributeReward(home, homeTLS, season, BigInt(game.home.finances.totalRevenue), { type: "reward", rewardType: "game", fromDate: game.gameDate, fromGameId: game._id  }, txId, options)
+
+        //Spend development budget
+        const awayDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(away, BigInt(game.away.finances.totalRevenue))
+        const homeDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(home, BigInt(game.home.finances.totalRevenue))
+
+        await this.offchainEventService.createTeamBurnEvent(away._id, awayDevelopmentExpense.toString(), txId, options)
+        await this.offchainEventService.createTeamBurnEvent(home._id, homeDevelopmentExpense.toString(), txId, options)
+
+        const awayDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(away)
+        const homeDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(home)
+
+
 
         const hitResultByPlayerId = new Map(ghr.map(r => [r.playerId, r]))
         const pitchResultByPlayerId = new Map(gpr.map(r => [r.playerId, r]))
 
-        
-        if (game.seasonId != undefined) {
 
-            //Distribute rewards to teams.
-            const txId = uuidv4()
+        //Update the player's season and career stats
+        const playerIds = players.map(p => p._id)
 
-            await this.distributeReward(away, awayTLS, season, BigInt(game.away.finances.totalRevenue), { type: "reward", rewardType: "game", fromDate: game.gameDate, fromGameId: game._id  }, txId, options)
-            await this.distributeReward(home, homeTLS, season, BigInt(game.home.finances.totalRevenue), { type: "reward", rewardType: "game", fromDate: game.gameDate, fromGameId: game._id  }, txId, options)
+        const careerHitRows = await this.gameHitResultRepository.getPlayersCareerHitResults(playerIds, options)
+        const seasonHitRows = await this.gameHitResultRepository.getPlayersSeasonHitResults(playerIds, season._id, options)
 
-            //Spend development budget
-            const awayDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(away, BigInt(game.away.finances.totalRevenue))
-            const homeDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(home, BigInt(game.home.finances.totalRevenue))
+        const careerPitchRows = await this.gamePitchResultRepository.getPlayersCareerPitchResults(playerIds, options)
+        const seasonPitchRows = await this.gamePitchResultRepository.getPlayersSeasonPitchResults(playerIds, season._id, options)
 
-            await this.offchainEventService.createTeamBurnEvent(away._id, awayDevelopmentExpense.toString(), txId, options)
-            await this.offchainEventService.createTeamBurnEvent(home._id, homeDevelopmentExpense.toString(), txId, options)
+        const careerHitByPlayerId = new Map(careerHitRows.map(r => [r.playerId, r]))
+        const seasonHitByPlayerId = new Map(seasonHitRows.map(r => [r.playerId, r]))
 
-            const awayDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(away)
-            const homeDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(home)
+        const careerPitchByPlayerId = new Map(careerPitchRows.map(r => [r.playerId, r]))
+        const seasonPitchByPlayerId = new Map(seasonPitchRows.map(r => [r.playerId, r]))
+
+        const gamePlayers = [].concat(game.home.players).concat(game.away.players)
+
+        for (const player of players) {
+
+            let pls = plss.find( p => p.playerId == player._id)
+
+            const careerHitResult:HitResult = careerHitByPlayerId.get(player._id)
+            const seasonHitResult:HitResult = seasonHitByPlayerId.get(player._id)
+
+            const careerPitchResult:PitchResult = careerPitchByPlayerId.get(player._id)
+            const seasonPitchResult:PitchResult = seasonPitchByPlayerId.get(player._id)
+
+            player.careerStats = {
+                hitting: this.statService.hitResultToHitterStatLine(careerHitResult),
+                pitching: this.statService.pitchResultToPitcherStatLine(careerPitchResult)
+            }
+
+            player.changed("careerStats", true)
 
 
-            //If this is a season game then update the player's season and career stats
-            const playerIds = players.map(p => p._id)
+            pls.stats = {
+                hitting: this.statService.hitResultToHitterStatLine(seasonHitResult),
+                pitching: this.statService.pitchResultToPitcherStatLine(seasonPitchResult)
+            }
 
-            const careerHitRows = await this.gameHitResultRepository.getPlayersCareerHitResults(playerIds, options)
-            const seasonHitRows = await this.gameHitResultRepository.getPlayersSeasonHitResults(playerIds, season._id, options)
+            pls.changed("stats", true)
 
-            const careerPitchRows = await this.gamePitchResultRepository.getPlayersCareerPitchResults(playerIds, options)
-            const seasonPitchRows = await this.gamePitchResultRepository.getPlayersSeasonPitchResults(playerIds, season._id, options)
 
-            const careerHitByPlayerId = new Map(careerHitRows.map(r => [r.playerId, r]))
-            const seasonHitByPlayerId = new Map(seasonHitRows.map(r => [r.playerId, r]))
+            //Update overall rating. 
+            const positiveGame = player.primaryPosition == Position.PITCHER ? pitchResultByPlayerId.get(player._id).wpa > 0 : hitResultByPlayerId.get(player._id).wpa > 0
 
-            const careerPitchByPlayerId = new Map(careerPitchRows.map(r => [r.playerId, r]))
-            const seasonPitchByPlayerId = new Map(seasonPitchRows.map(r => [r.playerId, r]))
+            //Calculate the base level of XP for this player.
+            let gameExperience:bigint = this.playerService.getExperiencePerGame(positiveGame, player.primaryPosition == Position.PITCHER)
+            
+            //Modify XP by their age-based learning modifier. Aka old players learn slow.
+            const learningModifier = this.playerService.getAgeLearningModifier(player.age)
+            const scaledModifier = Math.round(learningModifier * 100)
+            gameExperience = gameExperience * BigInt(scaledModifier) / 100n
+            
 
-            for (const player of players) {
+            //Modify by the team's budget spend on development.
+            const teamDevelopmentXpMultiplier = pls.teamId == away._id ? awayDevelopmentXpMultiplier : homeDevelopmentXpMultiplier
+            gameExperience = gameExperience * teamDevelopmentXpMultiplier / 100n
 
-                let pls = plss.find( p => p.playerId == player._id)
 
-                const careerHitResult:HitResult = careerHitByPlayerId.get(player._id)
-                const seasonHitResult:HitResult = seasonHitByPlayerId.get(player._id)
+            await this.offchainEventService.createPlayerExperienceEvent(pls.teamId, player._id, gameExperience.toString(), { fromGameId: game._id }, txId, options)
+    
+            player.totalExperience = await this.offchainEventService.getBalanceByPlayerIdAndContractType(ContractType.EXPERIENCE, player._id, options)
 
-                const careerPitchResult:PitchResult = careerPitchByPlayerId.get(player._id)
-                const seasonPitchResult:PitchResult = seasonPitchByPlayerId.get(player._id)
+            player.potentialOverallRating = this.playerService.experienceToOverallRating(BigInt(player.totalExperience))
 
-                player.careerStats = {
-                    hitting: this.statService.hitResultToHitterStatLine(careerHitResult),
-                    pitching: this.statService.pitchResultToPitcherStatLine(careerPitchResult)
+            this.playerService.updateHittingPitchingRatings(player)
+
+            player.changed("overallRating", true)
+            player.changed("hittingRatings", true)
+            player.changed("pitchRatings", true)
+
+            player.changed("potentialOverallRating", true)
+            player.changed("potentialHittingRatings", true)
+            player.changed("potentialPitchRatings", true)
+
+
+            pls.overallRating = player.overallRating
+            pls.hittingRatings = player.hittingRatings
+            pls.pitchRatings = player.pitchRatings
+
+            pls.changed("overallRating", true)
+            pls.changed("hittingRatings", true)
+            pls.changed("pitchRatings", true)    
+            
+            pls.changed("potentialOverallRating", true)
+            pls.changed("potentialHittingRatings", true)
+            pls.changed("potentialPitchRatings", true)
+
+
+            //Adjust stamina
+            if (player.primaryPosition == Position.PITCHER) {
+
+                let gamePlayer = gamePlayers.find( gp => gp._id == player._id)
+
+                //Pitchers that pitches are at .2 and others are +.2
+                if (gamePlayer.pitchResult.pitches > 0) {
+                    player.stamina = .2
+                } else {
+                    player.stamina = Math.min(1, player.stamina + 0.2)
                 }
 
-                player.changed("careerStats", true)
-
-
-                pls.stats = {
-                    hitting: this.statService.hitResultToHitterStatLine(seasonHitResult),
-                    pitching: this.statService.pitchResultToPitcherStatLine(seasonPitchResult)
-                }
-
-                pls.changed("stats", true)
-
-
-                //Update overall rating. 
-                const positiveGame = player.primaryPosition == Position.PITCHER ? pitchResultByPlayerId.get(player._id).wpa > 0 : hitResultByPlayerId.get(player._id).wpa > 0
-
-                //Calculate the base level of XP for this player.
-                let gameExperience:bigint = this.playerService.getExperiencePerGame(positiveGame, player.primaryPosition == Position.PITCHER)
-                
-                //Modify XP by their age-based learning modifier. Aka old players learn slow.
-                const learningModifier = this.playerService.getAgeLearningModifier(player.age)
-                const scaledModifier = Math.round(learningModifier * 100)
-                gameExperience = gameExperience * BigInt(scaledModifier) / 100n
-                
-
-                //Modify by the team's budget spend on development.
-                const teamDevelopmentXpMultiplier = pls.teamId == away._id ? awayDevelopmentXpMultiplier : homeDevelopmentXpMultiplier
-                gameExperience = gameExperience * teamDevelopmentXpMultiplier / 100n
-
-
-                await this.offchainEventService.createPlayerExperienceEvent(pls.teamId, player._id, gameExperience.toString(), { fromGameId: game._id }, txId, options)
-      
-                player.totalExperience = await this.offchainEventService.getBalanceByPlayerIdAndContractType(ContractType.EXPERIENCE, player._id, options)
-
-                player.potentialOverallRating = this.playerService.experienceToOverallRating(BigInt(player.totalExperience))
-
-                this.playerService.updateHittingPitchingRatings(player)
-
-                player.changed("overallRating", true)
-                player.changed("hittingRatings", true)
-                player.changed("pitchRatings", true)
-
-                player.changed("potentialOverallRating", true)
-                player.changed("potentialHittingRatings", true)
-                player.changed("potentialPitchRatings", true)
-
-
-                pls.overallRating = player.overallRating
-                pls.hittingRatings = player.hittingRatings
-                pls.pitchRatings = player.pitchRatings
-
-                pls.changed("overallRating", true)
-                pls.changed("hittingRatings", true)
-                pls.changed("pitchRatings", true)    
-                
-                pls.changed("potentialOverallRating", true)
-                pls.changed("potentialHittingRatings", true)
-                pls.changed("potentialPitchRatings", true)
-
+                player.changed('stamina', true)
 
             }
 
+
         }
+
 
         await this.playerLeagueSeasonService.updateGameFields(plss, options)
         await this.playerService.updateGameFields(players, options)
@@ -561,9 +598,27 @@ class LadderService {
         game.away.seasonRating.after = away.seasonRating.rating
 
         game.home.longTermRating.after = home.longTermRating.rating
-        game.away.longTermRating.after = away.longTermRating.rating
+        game.away.longTermRating.after = away.longTermRating.rating        
 
     }
+
+
+    private async finishNonSeasonGame(away:Team, home:Team,game:Game, options?:any ) {
+
+        //Distribute 1  to teams.
+        const txId = uuidv4()
+
+        await this.offchainEventService.createTeamMintEvent(away._id, ethers.parseUnits("1", "ether").toString(), { type: "reward", rewardType: "exhibition", fromDate: game.gameDate, fromGameId: game._id  }, txId, options )
+        await this.offchainEventService.createTeamMintEvent(home._id, ethers.parseUnits("1", "ether").toString(), { type: "reward", rewardType: "exhibition", fromDate: game.gameDate, fromGameId: game._id  }, txId, options )
+
+        game.home.seasonRating.after = home.seasonRating.rating
+        game.away.seasonRating.after = away.seasonRating.rating
+
+        game.home.longTermRating.after = home.longTermRating.rating
+        game.away.longTermRating.after = away.longTermRating.rating        
+
+    }
+
 
     async finishSeason(season:Season, leagues:League[], options?:any) {
 

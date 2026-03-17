@@ -97,6 +97,8 @@ import { DiamondMintPassService } from "../src/service/data/diamond-mint-pass-se
 
 import { StatService } from "../src/service/stat-service.js";
 import { ASCIIService } from "../src/service/ascii-service.js";
+import { PlayerSharedService } from "../src/service/shared/player-shared-service.js";
+
 import { BlockService } from "../src/service/data/block-service.js";
 import { ContractStateService } from "../src/service/data/contract-state-service.js";
 
@@ -491,6 +493,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(TeamQueueService).toSelf().inSingletonScope()
   container.bind(GameSharedService).toSelf().inSingletonScope()
   container.bind(TeamSharedService).toSelf().inSingletonScope()
+  container.bind(PlayerSharedService).toSelf().inSingletonScope()
 
   //Override the RNG
   let seedService: SeedService = container.get(SeedService)

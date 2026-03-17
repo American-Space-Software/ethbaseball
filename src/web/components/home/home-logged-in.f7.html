@@ -82,80 +82,74 @@
                       </div>
                     </div>
                   </li>
-                ` : $h`
+                ` : $h` `}
 
+
+                ${vm.teamInfo.team.isQueued ? $h`
                   <li class="game-mode-primary">
-                    <a class="item-link item-content ${vm.teamInfo.team.isQueued ? '' : 'bg-color-green text-color-black'}"
-                       @click="${vm.teamInfo.team.isQueued ? clickLeaveQueue : openJoinRankedQueuePopup}">
+                    <a class="item-link item-content" @click="${clickLeaveQueue}">
                       
-                      <div class="item-media">
-                        ${vm.teamInfo.team.isQueued ? '✅' : '🏟️'}
-                      </div>
+                      <div class="item-media">✅</div>
 
                       <div class="item-inner">
 
                         <div class="item-title-row">
                           <div class="item-title">
-                            ${vm.teamInfo.team.isQueued ? 'You’re in the ranked queue' : 'Join Ranked Queue'}
+                            In the ranked queue
                           </div>
 
-                          ${vm.teamInfo.team.isQueued ? $h`
-                            <div class="item-after">Leave</div>
-                          ` : $h`<div class="item-after">Ranked</div>`}
+                          <div class="item-after">Leave</div>
+
                         </div>
 
                         <div class="item-text text-color-black">
-                          ${vm.teamInfo.team.isQueued
-                            ? $h`${getQueuedSubtitle(vm.season)}`
-                            : $h`Match against another team near your rating. Ranked games earn rewards and player progression.`}
+                            ${getQueuedSubtitle(vm.season)}
                         </div>
 
                       </div>
 
                     </a>
                   </li>
-
-                  ${!vm.teamInfo.team.isQueued ? $h`
-                    <li>
-                      <a class="item-link item-content" @click="${clickPlayBot}">
-                        <div class="item-media">🤖</div>
-                        <div class="item-inner">
-                          <div class="item-title-row">
-                            <div class="item-title">Play Bot</div>
-                            <div class="item-after">Practice</div>
-                          </div>
-                          <div class="item-text">
-                            Practice against a computer opponent. No rewards or player progression.
-                          </div>
-                        </div>
-                      </a>
-                    </li>
-                  ` : $h` `}
-
-
-<!-- 
+                ` : $h`
                   <li>
-                    <a class="item-link item-content" @click="${clickChallengeFriend}">
-                      <div class="item-media">🤝</div>
+                    <a class="item-link item-content popup-open" data-popup=".play-game-popup">
+                      <div class="item-media">🏟️</div>
                       <div class="item-inner">
                         <div class="item-title-row">
-                          <div class="item-title">Play a Friend</div>
-                          <div class="item-after">Unranked</div>
+                          <div class="item-title">Play Game</div>
+                          <div class="item-after"></div>
                         </div>
-                        <div class="item-text">
-                          Friendly match that does not affect rating. No rewards or player progression.
-                        </div>
+
                       </div>
                     </a>
-                  </li> -->
-
+                  </li>
                 `}
+
 
               </ul>
             </div>
 
+            <div class="block-title block-title-medium">Player Development</div>
+            <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
 
+              <ul>
+                    <li>
+                      <a class="item-link item-content popup-open" data-popup=".development-budget-popup">
+                        <div class="item-media">🏋️</div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">Training Budget</div>
+                            <div class="item-after">${vm.teamInfo.team.developmentStrategy.budgetPercent}%</div>
+                          </div>
+                          <div class="item-text">
+                            Choose the % of your rewards that go towards player development.
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+              </ul>
 
+            </div>
 
             ${teamComponentService.inProgressGame?.game?._id ? $h`
                 <div class="block-title block-title-medium">In Progress</div>
@@ -288,7 +282,7 @@
                         <div
                           class="range-slider range-slider-init"
                           data-label="true"
-                          data-min="0"
+                          data-min="25"
                           data-max="250"
                           data-step="1"
                           data-scale="true"
@@ -314,8 +308,12 @@
               </ul>
             </div>
 
+            <div class="block block-outline block-strong">
+              Note: If you are the lower level team you will always receive the maximum reward of 100 🔷.
+            </div>
+
             <div class="block">
-              <a class="button button-fill button-large"
+              <a class="popup-close button button-fill button-large"
                 @click="${confirmRankedQueueClick}">
                 Join Ranked Queue
               </a>
@@ -326,6 +324,206 @@
       </div>
     </div>
 
+    <div class="popup development-budget-popup">
+      <div class="view">
+        <div class="page">
+
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="title">
+                Set Team Development Budget
+              </div>
+              <div class="right">
+                <a class="link popup-close">Close</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-content">
+
+            <div class="block-title block-title-medium">Development Budget</div>
+
+            <div class="block block-outline block-strong">
+
+              <p>
+                Choose how much of your team's rewards are invested into player development.
+              </p>
+
+              <p>
+                A higher development budget improves how quickly your players gain experience.
+              </p>
+
+              <p>
+                However, money spent on development cannot be saved.
+              </p>
+
+              <p>
+                <strong>Higher budget:</strong> faster player growth.<br />
+                <strong>Lower budget:</strong> more diamonds saved for signings and roster moves.
+              </p>
+
+            </div>
+
+            <div class="block-title block-title-medium">Choose Budget</div>
+
+
+
+            <div class="list list-strong-ios list-outline-ios list-dividers-ios">
+              <ul>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+
+                      <div class="item-input-wrap">
+                        <div
+                          class="range-slider budget-slider"
+                          data-value="${selectedBudgetPercent}"
+                          @range:change="${developmentBudgetChange}">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+              </ul>
+            </div>
+
+            <div class="list list-strong-ios list-outline-ios list-dividers-ios">
+              <ul>
+
+                <li>
+                  <div class="item-content">
+                    <div class="item-inner">
+                      <div class="item-title">XP Bonus</div>
+                      <div class="item-after">${formatDevelopmentXpBonus(selectedBudgetPercent)}</div>
+                    </div>
+                  </div>
+                </li>
+
+              </ul>
+            </div>
+
+
+            <div class="block-title block-title-medium">Example Rewards</div>
+
+            <div class="block block-outline block-strong">
+
+              <div class="stat-table-wrapper">
+                <table class="data-table small">
+                  <tbody>
+
+                    <tr>
+                      <td>Rewards</td>
+                      <td class="numeric-cell">100 🔷</td>
+                    </tr>
+
+                    <tr>
+                      <td>Player Development</td>
+                      <td class="numeric-cell">
+                        ${Math.round(selectedBudgetPercent)} 🔷
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td><strong>Profit</strong></td>
+                      <td class="numeric-cell">
+                        <strong>${100 - Math.round(selectedBudgetPercent)} 🔷</strong>
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+
+            <div class="block">
+              <a class="popup-close button button-fill button-large"
+                @click="${setBudgetClick}">
+                Set Budget
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup play-game-popup">
+      <div class="view">
+        <div class="page">
+
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="title">
+                Play Game
+              </div>
+              <div class="right">
+                <a class="link popup-close">Close</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-content">
+
+              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                <ul>
+                  ${!vm.teamInfo.team.isQueued ? $h`
+
+                  <li>
+                    <a class="popup-close item-link item-content" @click="${clickPlayCampaign}">
+                      <div class="item-media">🐮</div>
+                      <div class="item-inner">
+                        <div class="item-title-row">
+                          <div class="item-title">Barnstorming</div>
+                          <div class="item-after"></div>
+                        </div>
+                        <div class="item-text">
+                          Travel the country playing exhibition games against computer controlled teams. <br /><br /> <strong>Reward</strong> 1 🔷
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+
+                  <li class="game-mode-primary">
+                    <a class="popup-close item-link item-content"
+                       @click="${openJoinRankedQueuePopup}">
+                      
+                      <div class="item-media">
+                        🏟️
+                      </div>
+
+                      <div class="item-inner">
+
+                        <div class="item-title-row">
+                          <div class="item-title">
+                            Play Online
+                          </div>
+
+                          <div class="item-after">Ranked</div>
+                        </div>
+
+                        <div class="item-text">
+                          Match against another team near your rating. Ranked games earn rewards and player progression.
+                        </div>
+
+                      </div>
+
+                    </a>
+                  </li>
+
+                  ` : $h` `}
+                </ul>
+              </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 
@@ -352,6 +550,8 @@
 
   export default (props, { $, $h, $on, $f7, $update }) => {
 
+    let env = ContainerService.getInstance("env")()
+
     let eventTarget = ContainerService.getInstance("eventTarget")
     let leagues = ContainerService.getInstance("leagues")
 
@@ -364,6 +564,7 @@
     let vm = props.vm
     let authInfo = props.authInfo
 
+    let selectedBudgetPercent = vm.teamInfo.team.developmentStrategy.budgetPercent
 
     let baseDiamondReward = leagues.find(l => l._id == authInfo.leagueId)?.baseDiamondReward
 
@@ -373,6 +574,40 @@
     let myRating = vm.teamInfo.team.longTermRating.rating
     let minOpponentRating = myRating - selectedMaxRatingDiff
     let maxOpponentRating = myRating + selectedMaxRatingDiff
+
+
+    const formatRangeLabel = (value) => {
+      return `${value}%`
+    }
+
+    const formatDevelopmentXpBonus = (budgetPercent) => {
+      const multiplier = teamWebService.getDevelopmentXpMultiplier(budgetPercent)
+      const bonus = Number(multiplier) - 100
+      return `+${bonus}%`
+    }
+
+    const developmentBudgetChange = async (e) => {
+      const range = $f7.range.get(e.target)
+      selectedBudgetPercent = range.value
+
+      await teamWebService.setBudget(vm.teamInfo.team._id, selectedBudgetPercent)
+
+      await $update()
+    }
+
+    const setBudgetClick = async (e) => {
+
+      e.preventDefault()
+
+      try {
+        // await gameWebService.queue(selectedMaxRatingDiff)
+        // $f7.popup.close('.development-budget-popup')
+        $f7.views.main.router.refreshPage()
+      } catch (ex) {
+        $f7.dialog.alert(ex?.response?.data)
+      }
+
+    }
 
     const rangeChange = (e) => {
 
@@ -417,7 +652,6 @@
 
     }
 
-
     const openJoinRankedQueuePopup = async (e) => {
 
       e.preventDefault()
@@ -426,21 +660,22 @@
 
     }
 
-
-
-
     const confirmRankedQueueClick = async (e) => {
 
       e.preventDefault()
 
       try {
         await gameWebService.queue(selectedMaxRatingDiff)
-        $f7.popup.close('.play-ranked-popup')
         $f7.views.main.router.refreshPage()
       } catch (ex) {
         $f7.dialog.alert(ex?.response?.data)
       }
 
+    }
+
+    const clickPlayCampaign = async (e) => {
+      e.preventDefault()
+      $f7.dialog.alert("Not implemented yet.")
     }
 
     const clickPlayBot = async (e) => {
@@ -498,6 +733,19 @@
 
     $on('pageBeforeIn', async () => {
 
+      const range = $f7.range.create({
+        el: '.budget-slider',
+        label: true,
+        min: 0,
+        max: 100,
+        step: 1,
+        scale: true,
+        scaleSteps: 5,
+        scaleSubSteps: 2,
+        formatScaleLabel: (value) => `${value}%`
+      })
+
+
       $f7.off('roster-refresh-lineup')
       $f7.on('roster-refresh-lineup', () => {
         $update()
@@ -513,6 +761,17 @@
           tabLink: "/"
         }
       }))
+
+
+
+      universeWebService.setMetadata(
+        `Play a Baseball Game Online – Ethereum Baseball League`, 
+        window.location.href, 
+        `${env.WEB}/logo.png`, 
+        "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage players, watch games live, and compete in a persistent season."
+      ) 
+
+
 
       await $update()
 

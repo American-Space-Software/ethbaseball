@@ -70,6 +70,15 @@ class TeamWebService {
 
     }
 
+
+    async setBudget(teamId:string, budgetPercent:number) {
+        
+        //Download it.
+        let result = await axios.post(`/api/team/budget/${teamId}`, { budgetPercent: budgetPercent })
+        return result.data
+
+    }
+
     async getActiveLineup(teamId:string) {
         //Download it.
         let result = await axios.get(`/api/team/lineup/${teamId}`)
@@ -105,33 +114,15 @@ class TeamWebService {
     }
 
     getRewardMultiplier(ratingGap: number): number {
-
-        if (ratingGap <= 25) {
-            return 1
-        }
-
-        if (ratingGap <= 100) {
-            const slope = -0.5 / 75
-            return 1 + (ratingGap - 25) * slope
-        }
-
-        if (ratingGap <= 150) {
-            const slope = -0.4 / 50
-            return 0.5 + (ratingGap - 100) * slope
-        }
-
-        if (ratingGap <= 250) {
-            const slope = -0.1 / 100
-            return 0.1 + (ratingGap - 150) * slope
-        }
-
-        return 0
+        return this.teamSharedService.getRewardMultiplier(ratingGap)
     }
     
     calculateProjectedReward(baseDiamondReward: number, maxRatingDiff: number): bigint {
-      const multiplier = this.getRewardMultiplier(maxRatingDiff)
-      const multiplierScaled = BigInt(Math.round(multiplier * 10000))
-      return (BigInt(baseDiamondReward) * multiplierScaled) / 10000n
+      return this.teamSharedService.calculateProjectedReward(baseDiamondReward, maxRatingDiff)
+    }
+
+    getDevelopmentXpMultiplier(budgetPercent) {
+        return this.teamSharedService.getDevelopmentXpMultiplier(budgetPercent)
     }
 
 }

@@ -479,16 +479,14 @@ class GameService {
         //Get all players
         let gamePlayers:GamePlayer[] = [].concat(winningTeam.players).concat(losingTeam.players)
 
-        //Update players
+        //Update wpa for players
         for (let gamePlayer of gamePlayers) {
 
             let hittingRewards = rewards.find(r => r.hitting == true && r.playerId == gamePlayer._id)
             let pitchingRewards = rewards.find(r => r.hitting == false && r.playerId == gamePlayer._id)
 
-            let player = players.find(p => p._id == gamePlayer._id)
-            let pls = plss.find( p => p.playerId == player._id)
-
-            this.finalizePlayer(player, pls, gamePlayer, hittingRewards, pitchingRewards)
+            gamePlayer.hitResult.wpa = hittingRewards?.reward || 0
+            gamePlayer.pitchResult.wpa = pitchingRewards?.reward || 0
             
         }
 
@@ -505,35 +503,7 @@ class GameService {
 
     }
 
-    private finalizePlayer(player:Player, pls:PlayerLeagueSeason, gamePlayer:GamePlayer, hittingRewards:WPAReward, pitchingRewards:WPAReward) {
 
-        if (!player) {
-            throw new Error("Can not finalize invalid (null) player.")
-        }
-
-        gamePlayer.hitResult.wpa = hittingRewards?.reward || 0
-        gamePlayer.pitchResult.wpa = pitchingRewards?.reward || 0
-
-        //Adjust stamina
-        if (player.primaryPosition == Position.PITCHER) {
-
-            //Pitchers that pitches are at .2 and others are +.2
-            if (gamePlayer.pitchResult.pitches > 0) {
-                player.stamina = .2
-            } else {
-                player.stamina = Math.min(1, player.stamina + 0.2)
-            }
-
-            player.changed('stamina', true)
-
-        }
-
-
-        pls.primaryPosition = player.primaryPosition
-
-        pls.changed("overallRating", true)
-
-    }
 
     generateWPA(game:Game) : WPAReward[] {
         
