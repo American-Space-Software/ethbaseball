@@ -41,6 +41,8 @@
   --runner-defender-image-width: 30px;
 
   --f7-table-cell-padding-horizontal: 5px;
+
+  --f7-list-item-text-text-color: #000000;
 }
 
 .logo {
@@ -329,6 +331,7 @@ html {
   --f7-navbar-bg-color: unset; 
   --f7-navbar-link-color: unset;
   color-scheme: dark;
+  --f7-list-item-text-text-color: #FFFFFF;
 } 
 
 .dark a {
@@ -503,20 +506,20 @@ h1 {
 
 
 
-.badge.color-red,  .badge.color-orange  {
+.badge.color-red,  .badge.color-orange, .chip-media.bg-color-red, .chip-media.bg-color-orange  {
   color: #fff;
 }
 
-.dark .badge.color-red, .dark  .badge.color-orange {
+.dark .badge.color-red, .dark  .badge.color-orange,  .dark .chip-media.bg-color-red, .dark .chip-media.bg-color-orange {
   color: #000;
 }
 
 
-.badge.color-yellow, .badge.color-green {
+.badge.color-yellow, .badge.color-green, .chip-media.bg-color-yellow, .chip-media.bg-color-green {
   color: #000;
 }
 
-.badge.color-blue, .badge.color-blue {
+.badge.color-blue, .chip-media.bg-color-blue {
   color: #fff;
 }
 
@@ -1072,6 +1075,41 @@ h1 {
   background: unset;
 }
 
+.game-state .chip {
+  height: 15px;
+  font-size: 11px;
+  margin: 0px;
+  padding-right: 6px;  
+  padding-left: 6px;  
+}
+
+.game-state .chip .chip-media {
+  height: 15px;
+  font-size: 11px;
+  width: 17px;
+  margin-left: -7px;
+}
+
+.game-state .chip .chip-media + .chip-label {
+  margin-left: 2px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .game-state .game-main {
   flex: 1 1 100%;
@@ -1296,8 +1334,8 @@ h1 {
 
 .game-state .game-info .defender .game-stats,
 .game-state .game-info .runner .game-stats {
-  color: #f1f1f1;
-  background: #757575;
+  color: #000;
+  background: #b4b4b4;
   font-size: 10px;
   padding: 2px;
   font-weight: bold;
@@ -1387,6 +1425,7 @@ h1 {
   }
 
   .at-bat-ended {
+    position: relative;
     top: 50%;
     bottom: auto;
     transform: translate(-50%, -50%);
@@ -3263,13 +3302,24 @@ td.action, th.action {
 }
 
 
-
 .transaction-li .transaction-events {
   margin-top: 6px;
 }
 
 .transaction-event-row {
-  padding: 6px 0;
+  padding: 0px 6px;
+  border-radius: 6px;
+}
+
+/* alternating background */
+.transaction-event-row:nth-child(even) {
+  background: #f5f5f5;
+}
+
+/* dark theme support */
+.theme-dark .transaction-event-row:nth-child(even),
+.dark .transaction-event-row:nth-child(even) {
+  background: #2a2a2a;
 }
 
 .transaction-event-row + .transaction-event-row {

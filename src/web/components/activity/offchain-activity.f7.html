@@ -10,7 +10,7 @@
 
                     <div class="block">
                         <p class="segmented">
-                            <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active">Rewards & Player Moves</a>
+                            <a href="${universeWebService.fullLink(`/activity`)}" class="button button-outline tab-link tab-link-active">Transactions</a>
                             <a href="${universeWebService.fullLink(`/activity/on`)}" class="button button-outline tab-link" >On-chain</a>
                         </p>
                     </div>
@@ -112,16 +112,16 @@
             eventTarget.dispatchEvent(new CustomEvent('main-nav', {
                 detail: {
                     tabLink: "/activity",
-                    breadcrumbs: [{ text: "Home", path: "/" }, { text: "Rewards & Player Moves" }],
+                    breadcrumbs: [{ text: "Home", path: "/" }, { text: "Transactions" }],
                 }
             }))
 
 
             universeWebService.setMetadata(
-                     `Rewards & Player Moves - Ethereum Baseball League`, 
+                     `Activity - Ethereum Baseball League`, 
                     window.location.href, 
                     `${env.WEB}/logo.png`,
-                   `Rewards & Player Moves in Ethereum Baseball League.`
+                   `Activity in Ethereum Baseball League.`
             ) 
 
             $('.hide-on-pageinit').hide()

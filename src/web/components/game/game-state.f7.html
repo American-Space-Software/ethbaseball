@@ -141,7 +141,7 @@
                     <div class="text" style="background: ${vm.runner1B.color1}; color: ${getFontColor(vm.runner1B.color1)};">
                       ${vm.runner1B.displayName}
                     </div>
-                    <div class="game-stats">Speed: ${vm.runner1B.hittingRatings.speed}</div>
+                    <div class="game-stats">${chip('SPD', vm.runner1B.hittingRatings.speed)}</div>
                   </div>
                 </a>
               ` : $h` `}
@@ -152,7 +152,7 @@
                     <div class="text" style="background: ${vm.runner2B.color1}; color: ${getFontColor(vm.runner2B.color1)};">
                       ${vm.runner2B.displayName}
                     </div>
-                    <div class="game-stats">Speed: ${vm.runner2B.hittingRatings.speed}</div>
+                    <div class="game-stats">${chip('SPD', vm.runner2B.hittingRatings.speed)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.runner2B._id}" style="border: 1px solid ${vm.runner2B.color1};" />
@@ -169,7 +169,7 @@
                     <div class="text" style="background: ${vm.runner3B.color1}; color: ${getFontColor(vm.runner3B.color1)};">
                       ${vm.runner3B.displayName}
                     </div>
-                    <div class="game-stats">Speed: ${vm.runner3B.hittingRatings.speed}</div>
+                    <div class="game-stats">${chip('SPD', vm.runner3B.hittingRatings.speed)}</div>
                   </div>
                 </a>
               ` : $h` `}
@@ -195,7 +195,7 @@
                     <div class="text" style="background: ${vm.catcher.color1}; color: ${getFontColor(vm.catcher.color1)};">
                       ${vm.catcher.displayName}
                     </div>
-                    <div class="game-stats">C DEF: ${vm.catcher.hittingRatings.defense} / ARM: ${vm.catcher.hittingRatings.arm}</div>
+                    <div class="game-stats">${chip('ARM', vm.catcher.hittingRatings.arm)}</div>
                   </div>
                 </a>
 
@@ -204,7 +204,7 @@
                     <div class="text" style="background: ${vm.firstBase.color1}; color: ${getFontColor(vm.firstBase.color1)};">
                       ${vm.firstBase.displayName}
                     </div>
-                    <div class="game-stats">1B DEF: ${vm.firstBase.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.firstBase.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.firstBase._id}" style="border: 1px solid ${vm.firstBase.color1};" />
@@ -216,7 +216,7 @@
                     <div class="text" style="background: ${vm.secondBase.color1}; color: ${getFontColor(vm.secondBase.color1)};">
                       ${vm.secondBase.displayName}
                     </div>
-                    <div class="game-stats">2B DEF: ${vm.secondBase.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.secondBase.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.secondBase._id}" style="border: 1px solid ${vm.secondBase.color1};" />
@@ -228,7 +228,7 @@
                     <div class="text" style="background: ${vm.thirdBase.color1}; color: ${getFontColor(vm.thirdBase.color1)};">
                       ${vm.thirdBase.displayName}
                     </div>
-                    <div class="game-stats">3B DEF: ${vm.thirdBase.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.thirdBase.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.thirdBase._id}" style="border: 1px solid ${vm.thirdBase.color1};" />
@@ -240,7 +240,7 @@
                     <div class="text" style="background: ${vm.ss.color1}; color: ${getFontColor(vm.ss.color1)};">
                       ${vm.ss.displayName}
                     </div>
-                    <div class="game-stats">SS DEF: ${vm.ss.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.ss.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.ss._id}" style="border: 1px solid ${vm.ss.color1};" />
@@ -252,7 +252,7 @@
                     <div class="text" style="background: ${vm.lf.color1}; color: ${getFontColor(vm.lf.color1)};">
                       ${vm.lf.displayName}
                     </div>
-                    <div class="game-stats">LF DEF: ${vm.lf.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.lf.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.lf._id}" style="border: 1px solid ${vm.lf.color1};" />
@@ -264,7 +264,7 @@
                     <div class="text" style="background: ${vm.cf.color1}; color: ${getFontColor(vm.cf.color1)};">
                       ${vm.cf.displayName}
                     </div>
-                    <div class="game-stats">CF DEF: ${vm.cf.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.cf.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.cf._id}" style="border: 1px solid ${vm.cf.color1};" />
@@ -276,7 +276,7 @@
                     <div class="text" style="background: ${vm.rf.color1}; color: ${getFontColor(vm.rf.color1)};">
                       ${vm.rf.displayName}
                     </div>
-                    <div class="game-stats">RF DEF: ${vm.rf.hittingRatings.defense}</div>
+                    <div class="game-stats">${chip('DEF', vm.rf.hittingRatings.defense)}</div>
                   </div>
                   <div class="image">
                     <img src="/player/image/${vm.rf._id}" style="border: 1px solid ${vm.rf.color1};" />
@@ -376,17 +376,9 @@
 
                   <br />
 
-                  ${showPlayerStats ? $h`
-                    <span class="game-stats">
-                    ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
-                    </span>
-                  ` : $h` 
-
-                    <span class="player-ratings">
-                      ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.awayPlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.awayPlayer, vm.matchupHandedness?.throws))}
-                    </span>
-                  
-                  `}
+                  <span class="game-stats">
+                  ${vm.awayPlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.awayPlayer) : gameWebService.hitterGameStats(vm.awayPlayer)}
+                  </span>
                 
               ` : $h` `}
             </div>   
@@ -409,17 +401,9 @@
 
                 <br />
 
-                ${showPlayerStats ? $h`
-                  <span class="game-stats">
+                <span class="game-stats">
                   ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherGameStats(vm.homePlayer) : gameWebService.hitterGameStats(vm.homePlayer)}
-                  </span>
-                ` : $h` 
-
-                  <span class="player-ratings">
-                    ${vm.homePlayer._id == vm.pitcher._id ? gameWebService.pitcherRatings(gameWebService.getEffectivePitchRatings(vm.homePlayer, vm.matchupHandedness?.hits)) : gameWebService.hitterRatings(gameWebService.getEffectiveHittingRatings(vm.homePlayer, vm.matchupHandedness?.throws))}
-                  </span>
-                
-                `}
+                </span>
 
               ` : $h` `}
             </div>
@@ -480,7 +464,7 @@
 
   
 
-  export default (props, { $on, $, $f7, $update, $onBeforeUnmount, $onMounted }) => {
+  export default (props, { $on, $, $f7, $update, $h, $onBeforeUnmount, $onMounted }) => {
 
     let gameWebService = ContainerService.getInstance(GameWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
@@ -493,6 +477,28 @@
     let showMatchup = true
 
     let allPopups = ['.at-bat-started', '.at-bat-ongoing', '.at-bat-ended']
+
+    const chip = (label, rating) => {
+      if (rating == null) return ""
+      return $h`
+        <div class="chip">
+          <div class="chip-media bg-${playerWebService.getRatingBadgeColor(rating)}">
+            ${playerWebService.ratingToGrade(rating)}
+          </div>
+          <div class="chip-label">${label}</div>
+        </div>
+      `
+    }
+
+
+    const simpleChip = (label) => {
+      return $h`
+        <div class="chip">
+          <div class="chip-label">${label}</div>
+        </div>
+      `
+    }
+
 
     const showPopup = (popup) => {
       for (let p of allPopups) {
@@ -582,8 +588,6 @@
     let awayBoxscoreViewModel = vm.awayBoxscoreViewModel
     let homeBoxscoreViewModel = vm.homeBoxscoreViewModel
 
-    let showPlayerStats = true
-
 
     const onGameUpdate = (gameViewModel, messagesComponent, showDelay) => {
 
@@ -611,8 +615,6 @@
         syncMessages(messagesComponent, allMessages, v, effectiveShowDelay)
       )
 
-      //Flip this 
-      showPlayerStats = !showPlayerStats
 
       // showMatchup = atBatState != AtBatState.STARTED
 

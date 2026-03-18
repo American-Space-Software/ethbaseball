@@ -387,6 +387,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
         team.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
         team.longTermRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
+        team.developmentStrategy = { budgetPercent: 50 }
 
         return {
             team: team,

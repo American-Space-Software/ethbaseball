@@ -4,70 +4,71 @@
 
     <div class="page-content">
 
-        <div class="block-title block-title-medium">${model?.owner?._id}</div>
-        <div class="block block-strong block-outline owner-info">
+        <div class="fixed-width-content center">
 
-            <div class="row">
-                <span class="label">Diamond Balance:</span> <span class="value">${universeWebService.displayDiamonds(model?.owner?.diamondBalance || 0)}</span>
+
+            <div class="block-title block-title-medium">${model?.owner?._id}</div>
+            <div class="block block-strong block-outline owner-info">
+
+                <div class="row">
+                    <span class="label">Diamond Balance:</span> <span class="value">${universeWebService.displayDiamonds(model?.owner?.diamondBalance || 0)}</span>
+                </div>
+
+                <div class="row">
+                    <span class="label">Reward Balance:</span> <span class="value">${universeWebService.displayDiamonds(model?.owner?.offChainDiamondBalance || 0)}</span>
+                </div>
+
             </div>
 
-            <div class="row">
-                <span class="label">Reward Balance:</span> <span class="value">${universeWebService.displayDiamonds(model?.owner?.offChainDiamondBalance || 0)}</span>
-            </div>
+            ${model?.onChainEvents?.transactions?.length > 0 || model?.offChainEvents?.events?.length >0 ? $h`
+                
+                ${model?.onChainEvents?.transactions?.length > 0 ? $h`
+
+                    <div class="card card-outline card-header-divider">
+                        <div class="card-header">On-chain Events</div>
+                        <div class="card-content">
+                            <${OnChainEvents} events="${model?.onChainEvents}" />
+                        </div>
+                    </div>
+                    
+                ` : $h` `}
+
+
+                ${model?.offChainEvents?.events?.length > 0 ? $h`
+
+                    <div class="card card-outline card-header-divider">
+                        <div class="card-header">Off-chain Events</div>
+                        <div class="card-content">
+                            <${OffChainEvents} model="${model?.offChainEvents}" />
+                        </div>
+                    </div>
+
+                    
+                ` : $h` `}
+
+                <div class="block split-row-both">
+                    <div>
+                        ${previousPage ? $h`
+                            <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
+                        ` : $h` `}
+                    </div>
+                    <div>
+                        ${nextPage ? $h`
+                            <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
+                        ` : $h` `}
+                    </div>
+                </div>
+
+            ` : $h`
+                <div class="block">
+                    No activity.
+                </div>
+            
+            `}
+
 
         </div>
 
-        ${model?.onChainEvents?.transactions?.length > 0 || model?.offChainEvents?.events?.length >0 ? $h`
-            
-            ${model?.onChainEvents?.transactions?.length > 0 ? $h`
-
-                <div class="card card-outline card-header-divider">
-                    <div class="card-header">On-chain Events</div>
-                    <div class="card-content">
-                        <${OnChainEvents} events="${model?.onChainEvents}" />
-                    </div>
-                </div>
-                
-            ` : $h` `}
-
-
-            ${model?.offChainEvents?.events?.length > 0 ? $h`
-
-                <div class="card card-outline card-header-divider">
-                    <div class="card-header">Off-chain Events</div>
-                    <div class="card-content">
-                        <${OffChainEvents} model="${model?.offChainEvents}" />
-                    </div>
-                </div>
-
-                
-            ` : $h` `}
-
-            <div class="block split-row-both">
-                <div>
-                    ${previousPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${previousPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-outline color-gray">Previous</a>
-                    ` : $h` `}
-                </div>
-                <div>
-                    ${nextPage ? $h`
-                        <a data-reload-current="true" data-force="true" data-browser-history="true" href="/u/activity/?address=${address}&page=${nextPage}&startDate=${universeWebService.getStartDate()}&rank=${universeWebService.getRank()}" class="button button-fill">Next</a>
-                    ` : $h` `}
-                </div>
-            </div>
-
-        ` : $h`
-            <div class="block">
-                No activity.
-            </div>
-        
-        `}
-
-
-
-
-
-        
      
     </div>
 

@@ -139,6 +139,8 @@ let browserConfig = {
           fs.copyFileSync(`src/web/apple-touch-icon.png`, `public/apple-touch-icon.png`)
 
           fs.copyFileSync(`src/web/html/images/logo.png`, `public/logo.png`)
+          fs.copyFileSync(`src/web/html/images/logo-small.png`, `public/logo-small.png`)
+
           fs.copyFileSync(`src/web/html/images/screenshots/game.png`, `public/game.png`)
 
 

@@ -290,6 +290,9 @@ class LadderService {
                 game.away.finances.totalRevenue = team2RewardAmount.toString()
             }
 
+            game.changed('home', true)
+            game.changed('away', true)
+
             await this.gameService.put(game, options)
 
             await this.teamLeagueSeasonService.put(team1Bundle.tls, options)
@@ -442,8 +445,7 @@ class LadderService {
         game.home.overallRecord.after = JSON.parse(JSON.stringify(homeRecord))
         game.away.overallRecord.after = JSON.parse(JSON.stringify(awayRecord))
 
-        game.changed("away", true)
-        game.changed("home", true)
+
 
 
         //Distribute rewards to teams.
@@ -456,8 +458,8 @@ class LadderService {
         const awayDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(away, BigInt(game.away.finances.totalRevenue))
         const homeDevelopmentExpense = this.teamService.getDevelopmentExpenseForReward(home, BigInt(game.home.finances.totalRevenue))
 
-        await this.offchainEventService.createTeamBurnEvent(away._id, awayDevelopmentExpense.toString(), txId, options)
-        await this.offchainEventService.createTeamBurnEvent(home._id, homeDevelopmentExpense.toString(), txId, options)
+        await this.offchainEventService.createTeamBurnEventWithSource(away._id, awayDevelopmentExpense.toString(), txId, { fromGameId: game._id, type: "playerDevelopment" }, options)
+        await this.offchainEventService.createTeamBurnEventWithSource(home._id, homeDevelopmentExpense.toString(), txId, { fromGameId: game._id, type: "playerDevelopment" } , options)
 
         const awayDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(away)
         const homeDevelopmentXpMultiplier = this.teamService.getDevelopmentXpMultiplier(home)
@@ -536,6 +538,8 @@ class LadderService {
 
             this.playerService.updateHittingPitchingRatings(player)
 
+            player.changed("totalExperience")
+
             player.changed("overallRating", true)
             player.changed("hittingRatings", true)
             player.changed("pitchRatings", true)
@@ -600,12 +604,15 @@ class LadderService {
         game.home.longTermRating.after = home.longTermRating.rating
         game.away.longTermRating.after = away.longTermRating.rating        
 
+        game.changed("away", true)
+        game.changed("home", true)
+
     }
 
 
     private async finishNonSeasonGame(away:Team, home:Team,game:Game, options?:any ) {
 
-        //Distribute 1  to teams.
+        //Distribute 1 to teams.
         const txId = uuidv4()
 
         await this.offchainEventService.createTeamMintEvent(away._id, ethers.parseUnits("1", "ether").toString(), { type: "reward", rewardType: "exhibition", fromDate: game.gameDate, fromGameId: game._id  }, txId, options )

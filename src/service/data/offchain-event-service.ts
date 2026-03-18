@@ -95,6 +95,27 @@ class OffchainEventService {
 
     }
 
+    async createTeamBurnEventWithSource(fromTeamId:string, amount:string, transactionId:string, source:OffChainEventSource, options?:any) {
+
+        if (BigInt(amount) <= 0) throw new Error("Burn amount can not be negative.")
+
+        let offChainEvent:OffchainEvent = new OffchainEvent()
+        offChainEvent._id = uuidv4() 
+        offChainEvent.contractType = ContractType.DIAMONDS
+        offChainEvent.event = "Transfer"
+        offChainEvent.toAddress = "0x0000000000000000000000000000000000000000"
+        offChainEvent.fromTeamId = fromTeamId
+        offChainEvent.amount = BigInt(amount).toString()
+        offChainEvent.transactionId = transactionId
+        offChainEvent.source = source
+
+        await this.put(offChainEvent, options)
+
+        return offChainEvent
+
+    }
+
+
     async createPlayerTransferEvent(fromTeamId:string, toTeamId:string, playerId:string, transactionId:string, options?:any) {
 
         let offChainEvent:OffchainEvent = new OffchainEvent()
@@ -204,7 +225,7 @@ class OffchainEventService {
     }
 
     async getBalanceByPlayerIdAndContractType(contractType: string, playerId: string, options?: any): Promise<string> {
-        return this.getBalanceByPlayerIdAndContractType(contractType, playerId, options)
+        return this.offchainEventRepository.getBalanceByPlayerIdAndContractType(contractType, playerId, options)
     }
 
     async getOffChainEventViewModels(oce:OffchainEvent[], season:Season, options?:any) {

@@ -987,8 +987,9 @@ n
 
         team.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
         team.longTermRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
+        team.developmentStrategy = { budgetPercent: 50 }
 
-        await this.put(team, options)
+        await this.teamRepository.put(team, options)
 
         let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(team, league, season, undefined, undefined, financeSeason)
 

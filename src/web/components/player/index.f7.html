@@ -913,7 +913,6 @@
     let authInfo = props.authInfo
     let player = props.player
     
-
     let showPotential = false
 
 
@@ -924,6 +923,7 @@
 
     const potentialChange = (e) => {
       showPotential = e.target.checked
+      $update()
     }
 
 

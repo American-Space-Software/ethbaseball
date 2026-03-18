@@ -9,7 +9,7 @@
           <div class="block">
 
             <div class="segmented segmented-tabs">
-                <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link tab-link-active">Rewards & Player Moves</a>
+                <a href="${universeWebService.fullLink(`/t/activity/index/${teamId}`)}" class="button button-outline tab-link tab-link-active">Transactions</a>
                 <a href="${universeWebService.fullLink(`/t/activity/on/${teamId}`)}" class="button button-outline tab-link" >On-chain</a>
             </div>
 
@@ -110,7 +110,7 @@
                 { 
                     text: teamWebService.getTeamName(teamComponentService.team), 
                     path: universeWebService.startDateLink(`/t/index/${teamComponentService.team._id}`) 
-                }, { text: 'Rewards & Player Moves'}]
+                }, { text: 'Transactions'}]
             }
         }))
 

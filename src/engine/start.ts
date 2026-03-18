@@ -27,8 +27,6 @@ let startEngine = async () => {
   const SECONDS_BETWEEN_INDEXES = process.env.SECONDS_BETWEEN_INDEXES ?  parseInt(process.env.SECONDS_BETWEEN_INDEXES) : 30
   const SECONDS_BETWEEN_MINT_PASS_SIGNINGS = process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS  ? parseInt(process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS) : 5
   const BLOCK_CONFIRMATIONS = process.env.BLOCK_CONFIRMATIONS  ? parseInt(process.env.BLOCK_CONFIRMATIONS) : 35
-
-  // const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY
   
   //@ts-ignore
   const version = VERSION

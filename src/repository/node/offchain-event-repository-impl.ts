@@ -64,7 +64,7 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
                     CAST(SUM(CAST(amount AS DECIMAL(65,0))) AS CHAR),
                     '0'
                 ) AS balance
-            FROM offchain_event
+            FROM offchain_event \`${modelAlias}\`
             WHERE contractType = :contractType
             AND toTeamId = :teamId
             AND dateCreated >= :seasonStart
@@ -278,7 +278,7 @@ class OffchainEventRepositoryNodeImpl implements OffchainEventRepository {
             Object.assign(queryOptions, options)
         ) 
 
-    return rows?.balance || "0"
+        return rows?.balance || "0"
     }
 
 }

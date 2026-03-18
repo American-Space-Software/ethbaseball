@@ -6,61 +6,64 @@
 
     <div class="panel panel-left panel-push panel-init" data-visible-breakpoint="1024">
       
-        <div class="navbar">
-          <div class="navbar-inner">
-            <div class="left">
-              <a href="/" class="logo" aria-label="Home">
-                <img src="${logo}" alt="Logo" class="logo panel-close" />
-              </a>
+          <div class="navbar">
+            <div class="navbar-inner">
+              <div class="left">
+                <a href="/" class="logo" aria-label="Home">
+                  <img src="${logo}" alt="Logo" class="logo panel-close" />
+                </a>
+              </div>
+
             </div>
+          </div>
+
+          <div class="list list-dividers-ios" style="margin-top: 0px;" >
+            ${universeWebService != undefined ? $h`
+              <ul>
+                <li>
+                  <span class="item-link smart-select" data-page-title="League"  >
+                    <select name="league" @change="${leagueChange}">
+                      ${leagues?.map( (l, index) => $h`
+
+                          ${l.rank == universeWebService.rank ? $h`
+                              <option value="${l.rank}" selected>${l.name}</option>
+                          ` : $h`
+                              <option value="${l.rank}">${l.name}</option>
+                          `}
+
+                      `)}
+                    </select>
+                    <div class="item-content">
+                      <div class="item-inner">
+                        <div class="item-title ">${leagues.find( l => l.rank == universeWebService.rank).name}</div>
+                        <div class="item-after " style="display:none;"></div>
+                      </div>
+                    </div>
+                  </span>
+                </li>
+
+
+                <li><a href="/" class="panel-close list-button popover-close ${tabLink == '/' ? 'active' : ''}">🏠 Home</a></li>
+                <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="panel-close list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}">📊 Standings</a></li>
+                <li><a href="${universeWebService.fullLink(`/games`)}" class="panel-close  list-button popover-close ${tabLink == '/games' ? 'active' : ''}">🏟️ Scores</a></li>
+                <li><a href="${universeWebService.fullLink(`/players/`)}"  class="panel-close  list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">🧢 Players</a></li>
+                <li><a href="/activity" class="panel-close list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">⚡ Transactions</a></li>
+                <li><a href="/about" class="panel-close  list-button popover-close ${tabLink == '/about' ? 'active' : ''}">📖 About</a></li>
+                <li><a class="panel-close list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
+              </ul>
+              
+            ` : $h` `}
 
           </div>
-        </div>
-
-        <div class="list list-dividers-ios" style="margin-top: 0px;" >
-          ${universeWebService != undefined ? $h`
-            <ul>
-              <li>
-                <span class="item-link smart-select" data-page-title="League"  >
-                  <select name="league" @change="${leagueChange}">
-                    ${leagues?.map( (l, index) => $h`
-
-                        ${l.rank == universeWebService.rank ? $h`
-                            <option value="${l.rank}" selected>${l.name}</option>
-                        ` : $h`
-                            <option value="${l.rank}">${l.name}</option>
-                        `}
-
-                    `)}
-                  </select>
-                  <div class="item-content">
-                    <div class="item-inner">
-                      <div class="item-title ">${leagues.find( l => l.rank == universeWebService.rank).name}</div>
-                      <div class="item-after " style="display:none;"></div>
-                    </div>
-                  </div>
-                </span>
-              </li>
-
-
-              <li><a href="/" class="panel-close list-button popover-close ${tabLink == '/' ? 'active' : ''}">🏠 Home</a></li>
-              <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="panel-close list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}">📊 Standings</a></li>
-              <li><a href="${universeWebService.fullLink(`/games`)}" class="panel-close  list-button popover-close ${tabLink == '/games' ? 'active' : ''}">🏟️ Scores</a></li>
-              <li><a href="${universeWebService.fullLink(`/players/`)}"  class="panel-close  list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">🧢 Players</a></li>
-              <li><a href="/activity" class="panel-close list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">⚡ Activity</a></li>
-              <li><a href="/about" class="panel-close  list-button popover-close ${tabLink == '/about' ? 'active' : ''}">📖 About</a></li>
-              <li><a class="panel-close list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>
-            </ul>
-            
-          ` : $h` `}
-
-        </div>
 
     </div>
 
     <div class="view view-init view-main" data-browser-history="true" data-browser-history-tabs="push" data-allow-duplicate-urls="true" >
+      
       <${Navbar} auth=${authInfo} />
+      
     </div>
+
 
   </div>
 </template>

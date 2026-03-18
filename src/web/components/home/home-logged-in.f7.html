@@ -44,113 +44,6 @@
               </ul>
             </div>
 
-            <div class="block-title block-title-medium">
-              Play
-            </div>
-
-            <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-              <ul>
-
-                ${isAhead(vm.season) ? $h`
-                  <li>
-                    <div class="item-content">
-                      <div class="item-media">⚠️</div>
-                      <div class="item-inner">
-                        <div class="item-title-row">
-                          <div class="item-title item-title-wrap">Too far ahead</div>
-                        </div>
-                        <div class="item-text">
-                          ${getDaysAhead(vm.season)} day${getDaysAhead(vm.season) === 1 ? '' : 's'} ahead.
-                          You may be blocked from queueing.
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ` : $h``}
-
-                ${isSeasonComplete(vm.season) ? $h`
-                  <li>
-                    <div class="item-content">
-                      <div class="item-media">🏁</div>
-                      <div class="item-inner">
-                        <div class="item-title-row">
-                          <div class="item-title item-title-wrap">Season complete</div>
-                        </div>
-                        <div class="item-text">
-                          Final results locked in.
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ` : $h` `}
-
-
-                ${vm.teamInfo.team.isQueued ? $h`
-                  <li class="game-mode-primary">
-                    <a class="item-link item-content" @click="${clickLeaveQueue}">
-                      
-                      <div class="item-media">✅</div>
-
-                      <div class="item-inner">
-
-                        <div class="item-title-row">
-                          <div class="item-title">
-                            In the ranked queue
-                          </div>
-
-                          <div class="item-after">Leave</div>
-
-                        </div>
-
-                        <div class="item-text text-color-black">
-                            ${getQueuedSubtitle(vm.season)}
-                        </div>
-
-                      </div>
-
-                    </a>
-                  </li>
-                ` : $h`
-                  <li>
-                    <a class="item-link item-content popup-open" data-popup=".play-game-popup">
-                      <div class="item-media">🏟️</div>
-                      <div class="item-inner">
-                        <div class="item-title-row">
-                          <div class="item-title">Play Game</div>
-                          <div class="item-after"></div>
-                        </div>
-
-                      </div>
-                    </a>
-                  </li>
-                `}
-
-
-              </ul>
-            </div>
-
-            <div class="block-title block-title-medium">Player Development</div>
-            <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-
-              <ul>
-                    <li>
-                      <a class="item-link item-content popup-open" data-popup=".development-budget-popup">
-                        <div class="item-media">🏋️</div>
-                        <div class="item-inner">
-                          <div class="item-title-row">
-                            <div class="item-title">Training Budget</div>
-                            <div class="item-after">${vm.teamInfo.team.developmentStrategy.budgetPercent}%</div>
-                          </div>
-                          <div class="item-text">
-                            Choose the % of your rewards that go towards player development.
-                          </div>
-                        </div>
-                      </a>
-                    </li>
-              </ul>
-
-            </div>
-
             ${teamComponentService.inProgressGame?.game?._id ? $h`
                 <div class="block-title block-title-medium">In Progress</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
@@ -158,7 +51,94 @@
                       <${InProgress} vm=${teamComponentService.inProgressGame} />
                     </ul>
                 </div>
-            ` : $h` `}
+            ` : $h` 
+                <div class="block-title block-title-medium">Play</div>
+                <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
+
+                    ${isSeasonComplete(vm.season) ? $h`
+                      <li>
+                        <div class="item-content">
+                          <div class="item-media">🏁</div>
+                          <div class="item-inner">
+                            <div class="item-title-row">
+                              <div class="item-title item-title-wrap">Season complete</div>
+                            </div>
+                            <div class="item-text">
+                              Final results locked in.
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ` : $h` `}
+
+
+                    ${vm.teamInfo.team.isQueued ? $h`
+                      <li class="game-mode-primary">
+                        <a class="item-link item-content" @click="${clickLeaveQueue}">
+                          
+                          <div class="item-media">✅</div>
+
+                          <div class="item-inner">
+
+                            <div class="item-title-row">
+                              <div class="item-title">
+                                In the ranked queue
+                              </div>
+
+                              <div class="item-after">Leave</div>
+
+                            </div>
+
+                            <div class="item-text">
+                                ${getQueuedSubtitle(vm.season)}
+                            </div>
+
+                          </div>
+
+                        </a>
+                      </li>
+                    ` : $h`
+                      <li>
+                        <a class="item-link item-content popup-open" data-popup=".play-game-popup">
+                          <div class="item-media">🏟️</div>
+                          <div class="item-inner">
+                            <div class="item-title-row">
+                              <div class="item-title">Play Game</div>
+                              <div class="item-after"></div>
+                            </div>
+
+                          </div>
+                        </a>
+                      </li>
+                    `}
+
+
+                  </ul>
+                </div>
+
+                <div class="block-title block-title-medium">Player Development</div>
+                <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+
+                  <ul>
+                        <li>
+                          <a class="item-link item-content popup-open" data-popup=".development-budget-popup">
+                            <div class="item-media">🏋️</div>
+                            <div class="item-inner">
+                              <div class="item-title-row">
+                                <div class="item-title">Training Budget</div>
+                                <div class="item-after">${vm.teamInfo.team.developmentStrategy.budgetPercent}%</div>
+                              </div>
+                              <div class="item-text">
+                                Choose the % of your rewards that go towards player development.
+                              </div>
+                            </div>
+                          </a>
+                        </li>
+                  </ul>
+
+                </div>            
+            `}
 
 
             <${Roster} />
@@ -194,7 +174,7 @@
 
             ${vm.teamInfo.eventsViewModel?.transactions?.length > 0 ? $h`
 
-                <div class="block-title block-title-medium">Activity</div>
+                <div class="block-title block-title-medium">Recent Transactions</div>
                 <${OffChainEvents} model="${vm.teamInfo.eventsViewModel}" />
 
             ` : $h` `}
@@ -207,7 +187,7 @@
                         <div class="item-media">🔷</div>
                         <div class="item-inner">
                           <div class="item-title-row">
-                            <div class="item-title item-title-wrap">Rewards & Player Moves</div>
+                            <div class="item-title item-title-wrap">Transactions</div>
                           </div>
                         </div>
                       </a>
