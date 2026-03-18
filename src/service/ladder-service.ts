@@ -4,7 +4,7 @@ import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./data/pl
 
 import { GameService } from "./data/game-service.js"
 import { FinanceSeason,  RotationPitcher,  Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource } from "./enums.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, GamePlayer } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -513,59 +513,68 @@ class LadderService {
             pls.changed("stats", true)
 
 
-            //Update overall rating. 
-            const positiveGame = player.primaryPosition == Position.PITCHER ? pitchResultByPlayerId.get(player._id).wpa > 0 : hitResultByPlayerId.get(player._id).wpa > 0
+            let gamePlayer:GamePlayer = gamePlayers.find( gp => gp._id == player._id)
 
-            //Calculate the base level of XP for this player.
-            let gameExperience:bigint = this.playerService.getExperiencePerGame(positiveGame, player.primaryPosition == Position.PITCHER)
-            
-            //Modify XP by their age-based learning modifier. Aka old players learn slow.
-            const learningModifier = this.playerService.getAgeLearningModifier(player.age)
-            const scaledModifier = Math.round(learningModifier * 100)
-            gameExperience = gameExperience * BigInt(scaledModifier) / 100n
-            
+            //Check if player actually played.
+            if (gamePlayer.hitResult.pa > 0 || gamePlayer.pitchResult.pitches > 0) {
+                
+                //Update overall rating. 
+                const positiveGame = player.primaryPosition == Position.PITCHER ? pitchResultByPlayerId.get(player._id).wpa > 0 : hitResultByPlayerId.get(player._id).wpa > 0
 
-            //Modify by the team's budget spend on development.
-            const teamDevelopmentXpMultiplier = pls.teamId == away._id ? awayDevelopmentXpMultiplier : homeDevelopmentXpMultiplier
-            gameExperience = gameExperience * teamDevelopmentXpMultiplier / 100n
+                //Calculate the base level of XP for this player.
+                let gameExperience:bigint = this.playerService.getExperiencePerGame(positiveGame, player.primaryPosition == Position.PITCHER)
+                
+                //Modify XP by their age-based learning modifier. Aka old players learn slow.
+                const learningModifier = this.playerService.getAgeLearningModifier(player.age)
+                const scaledModifier = Math.round(learningModifier * 100)
+                gameExperience = gameExperience * BigInt(scaledModifier) / 100n
+                
 
-
-            await this.offchainEventService.createPlayerExperienceEvent(pls.teamId, player._id, gameExperience.toString(), { fromGameId: game._id }, txId, options)
-    
-            player.totalExperience = await this.offchainEventService.getBalanceByPlayerIdAndContractType(ContractType.EXPERIENCE, player._id, options)
-
-            player.potentialOverallRating = this.playerService.experienceToOverallRating(BigInt(player.totalExperience))
-
-            this.playerService.updateHittingPitchingRatings(player)
-
-            player.changed("totalExperience")
-
-            player.changed("overallRating", true)
-            player.changed("hittingRatings", true)
-            player.changed("pitchRatings", true)
-
-            player.changed("potentialOverallRating", true)
-            player.changed("potentialHittingRatings", true)
-            player.changed("potentialPitchRatings", true)
+                //Modify by the team's budget spend on development.
+                const teamDevelopmentXpMultiplier = pls.teamId == away._id ? awayDevelopmentXpMultiplier : homeDevelopmentXpMultiplier
+                gameExperience = gameExperience * teamDevelopmentXpMultiplier / 100n
 
 
-            pls.overallRating = player.overallRating
-            pls.hittingRatings = player.hittingRatings
-            pls.pitchRatings = player.pitchRatings
+                await this.offchainEventService.createPlayerExperienceEvent(pls.teamId, player._id, gameExperience.toString(), { fromGameId: game._id }, txId, options)
+        
+                player.totalExperience = await this.offchainEventService.getBalanceByPlayerIdAndContractType(ContractType.EXPERIENCE, player._id, options)
 
-            pls.changed("overallRating", true)
-            pls.changed("hittingRatings", true)
-            pls.changed("pitchRatings", true)    
-            
-            pls.changed("potentialOverallRating", true)
-            pls.changed("potentialHittingRatings", true)
-            pls.changed("potentialPitchRatings", true)
+                player.potentialOverallRating = this.playerService.experienceToOverallRating(BigInt(player.totalExperience))
+
+                this.playerService.updateHittingPitchingRatings(player)
+
+                player.changed("totalExperience")
+
+                player.changed("overallRating", true)
+                player.changed("hittingRatings", true)
+                player.changed("pitchRatings", true)
+
+                player.changed("potentialOverallRating", true)
+                player.changed("potentialHittingRatings", true)
+                player.changed("potentialPitchRatings", true)
+
+
+                pls.overallRating = player.overallRating
+                pls.hittingRatings = player.hittingRatings
+                pls.pitchRatings = player.pitchRatings
+
+                pls.potentialOverallRating = player.potentialOverallRating
+                pls.potentialHittingRatings = player.potentialHittingRatings
+                pls.potentialPitchRatings = player.potentialPitchRatings
+
+                pls.changed("overallRating", true)
+                pls.changed("hittingRatings", true)
+                pls.changed("pitchRatings", true)    
+                
+                pls.changed("potentialOverallRating", true)
+                pls.changed("potentialHittingRatings", true)
+                pls.changed("potentialPitchRatings", true)
+
+            } 
 
 
             //Adjust stamina
             if (player.primaryPosition == Position.PITCHER) {
-
-                let gamePlayer = gamePlayers.find( gp => gp._id == player._id)
 
                 //Pitchers that pitches are at .2 and others are +.2
                 if (gamePlayer.pitchResult.pitches > 0) {

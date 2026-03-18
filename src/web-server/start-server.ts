@@ -1803,8 +1803,8 @@ let startWebServer = async () => {
           throw new Error("Can not join queue while team has a game in progress.")
         }
 
-        if (gamesPlayed > seasonInfo.dayNumber) {
-          throw new Error("Team is too far ahead to join the queue.")
+        if (gamesPlayed >= seasonInfo.dayNumber) {
+          throw new Error("All caught up on games. Join the queue again at 9:30AM eastern time.")
         }
 
 
@@ -2064,6 +2064,9 @@ let startWebServer = async () => {
     await gameLoop()
   }
 
+
+
+  await playerService.updateAllRatings()
 
 
 

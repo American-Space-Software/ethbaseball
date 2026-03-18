@@ -44,8 +44,8 @@ class GameController {
                 if (this.universeWebService.isCurrentSeason) {
 
                     const nowET = dayjs().tz('America/New_York')
-                    const cutoff = nowET.hour(13) // 1 PM ET today
-
+                    const cutoff = nowET.hour(9).minute(30).second(0).millisecond(0)
+                    
                     gameDate = (nowET.isBefore(cutoff)
                         ? nowET.subtract(1, 'day')
                         : nowET

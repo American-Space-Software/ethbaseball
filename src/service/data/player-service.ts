@@ -660,8 +660,8 @@ class PlayerService {
         player.pitchRatings = this.calculatePitchRatings( player, player.overallRating)
 
         //Calculate potential ratings
-        player.potentialHittingRatings = this.calculateHittingRatings(player, player.potentialOverallRating)
-        player.potentialPitchRatings = this.calculatePitchRatings(player, player.potentialOverallRating)
+        player.potentialHittingRatings = this.calculateHittingRatings(player, Math.max(player.potentialOverallRating, 125) ) 
+        player.potentialPitchRatings = this.calculatePitchRatings(player, Math.max(player.potentialOverallRating, 125) )
 
     }
 
@@ -1146,6 +1146,56 @@ class PlayerService {
         return this.playerSharedService.experienceToOverallRating(totalExperience)
     }
 
+    async updateAllRatings() {
+
+        let players = await this.playerRepository.list()
+        let season = await this.seasonService.getMostRecent()
+
+        for (const player of players) {
+
+            let pls = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+
+            player.potentialOverallRating = this.experienceToOverallRating(BigInt(player.totalExperience))
+
+            this.updateHittingPitchingRatings(player)
+
+            player.changed("totalExperience")
+
+            player.changed("overallRating", true)
+            player.changed("hittingRatings", true)
+            player.changed("pitchRatings", true)
+
+            player.changed("potentialOverallRating", true)
+            player.changed("potentialHittingRatings", true)
+            player.changed("potentialPitchRatings", true)
+
+
+            pls.overallRating = player.overallRating
+            pls.hittingRatings = player.hittingRatings
+            pls.pitchRatings = player.pitchRatings
+
+            pls.potentialOverallRating = player.potentialOverallRating
+            pls.potentialHittingRatings = player.potentialHittingRatings
+            pls.potentialPitchRatings = player.potentialPitchRatings
+
+            pls.changed("overallRating", true)
+            pls.changed("hittingRatings", true)
+            pls.changed("pitchRatings", true)    
+            
+            pls.changed("potentialOverallRating", true)
+            pls.changed("potentialHittingRatings", true)
+            pls.changed("potentialPitchRatings", true)
+
+            await this.playerRepository.put(player)
+            await this.playerLeagueSeasonService.put(pls)
+
+
+        }
+
+
+
+    }
+    
 
     // async updateAllPercentileRatings() {
 

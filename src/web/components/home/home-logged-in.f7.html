@@ -452,8 +452,6 @@
 
               <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
                 <ul>
-                  ${!vm.teamInfo.team.isQueued ? $h`
-
                   <li>
                     <a class="popup-close item-link item-content" @click="${clickPlayCampaign}">
                       <div class="item-media">🐮</div>
@@ -469,34 +467,55 @@
                     </a>
                   </li>
 
-                  <li class="game-mode-primary">
-                    <a class="popup-close item-link item-content"
-                       @click="${openJoinRankedQueuePopup}">
-                      
-                      <div class="item-media">
-                        🏟️
-                      </div>
+                  ${vm.season.team.gamesPlayed < vm.season.dayNumber ? $h`
+                    
+                    <li class="game-mode-primary">
+                      <a class="popup-close item-link item-content"
+                        @click="${openJoinRankedQueuePopup}">
+                        
+                        <div class="item-media">
+                          🏟️
+                        </div>
 
-                      <div class="item-inner">
+                        <div class="item-inner">
 
-                        <div class="item-title-row">
-                          <div class="item-title">
-                            Play Online
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              Play Online
+                            </div>
+
+                            <div class="item-after">Ranked</div>
                           </div>
 
-                          <div class="item-after">Ranked</div>
+                          <div class="item-text">
+                            Match against another team near your rating. Ranked games earn rewards and player progression.
+                          </div>
+
                         </div>
 
-                        <div class="item-text">
-                          Match against another team near your rating. Ranked games earn rewards and player progression.
+                      </a>
+                    </li>
+
+                  ` : $h`
+                  
+                    <li>
+                      <a class="popup-close item-link item-content" @click="${clickPlayCampaign}">
+                        <div class="item-media">🏟️</div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">All Caught Up</div>
+                            <div class="item-after"></div>
+                          </div>
+                          <div class="item-text">
+                            Join the queue for online play again at 9:30AM.
+                          </div>
                         </div>
+                      </a>
+                    </li>
+                  
+                  `}
 
-                      </div>
 
-                    </a>
-                  </li>
-
-                  ` : $h` `}
                 </ul>
               </div>
 
@@ -543,6 +562,7 @@
 
     let vm = props.vm
     let authInfo = props.authInfo
+
 
     let selectedBudgetPercent = vm.teamInfo.team.developmentStrategy.budgetPercent
 
