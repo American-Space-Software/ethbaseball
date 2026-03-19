@@ -17,7 +17,7 @@ import { Animation } from "../../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, HITTER_GAME_AVERAGE_XP } from "../enums.js"
+import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, HITTER_GAME_AVERAGE_XP, GLICKO_SETTINGS } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -37,21 +37,6 @@ const zodiac = zodiacFn("en")
 
 // const parser = new DOMParser()
 
-const GLICKO_SETTINGS = {
-    // tau : "Reasonable choices are between 0.3 and 1.2, though the system should
-    //      be tested to decide which value results in greatest predictive accuracy."
-    tau: 0.5,
-    // rating : default rating
-    rating: 1500,
-    //rd : Default rating deviation 
-    //     small number = good confidence on the rating accuracy
-    rd: 25,
-    //vol : Default volatility (expected fluctation on the player rating)
-    vol: 0.06
-}
-
-const MAX_RATING = 2500
-const PLAYER_RETIREMENT_AGE = 41
 
 
 @injectable()
@@ -129,17 +114,25 @@ class PlayerService {
         return this.playerRepository.getIds(options)
     }
 
-    // async getLeagueAverageHitterRatings(league:League, season:Season, options?:any) : Promise<HittingRatings>  {
-    //     return this.playerRepository.getLeagueAverageHitterRatings(league, season, options)
-    // }
-
-    // async getLeagueAveragePitcherRatings(league:League,season:Season, options?:any) : Promise<PitchRatings>  {
-    //     return this.playerRepository.getLeagueAveragePitcherRatings(league, season, options)
-    // }
-
     async getPlayerPercentileRatings(options?:any) : Promise<PlayerPercentileRatings[]> {
         return this.playerRepository.getPlayerPercentileRatings(options)
     }
+
+    async getByOwner(owner: Owner, options?: any): Promise<Player[]> {
+        return this.playerRepository.getByOwner(owner, options)
+    }
+
+    async countByOwner(owner: Owner, options?: any): Promise<number> {
+        return this.playerRepository.countByOwner(owner, options)
+    }
+
+    async count(options?: any): Promise<number> {
+        return this.playerRepository.count(options)
+    }
+
+    async countActive(options?:any): Promise<number> {
+        return this.playerRepository.countActive(options)
+    }    
     
     async scoutPlayer(command: ScoutPlayerCommand) {
 
@@ -195,8 +188,6 @@ class PlayerService {
         
         return player
     }
-
-
 
     async scoutTeam(date:string) {
 
@@ -266,7 +257,7 @@ class PlayerService {
 
 
         //Adjust for age
-        overallRating *= this.getAgeModifier(player.age)
+        overallRating *= this.playerSharedService.getAgeModifier(player.age)
 
         //Slash ratings if this is a pitcher
         if (player.primaryPosition == Position.PITCHER) {
@@ -329,7 +320,7 @@ class PlayerService {
         pitchRatings.contactProfile = player.pitchingProfile.contactProfile
 
         //Adjust for age
-        overallRating *= this.getAgeModifier(player.age)
+        overallRating *= this.playerSharedService.getAgeModifier(player.age)
 
         //Slash ratings if this is a pitcher
         if (player.primaryPosition != Position.PITCHER) {
@@ -390,44 +381,8 @@ class PlayerService {
     
     }
 
-
-
-    // normalizeRatings(numbers: number[], max: number): number[] {
-
-    //     const ratio = Math.max(...numbers) / max
-    //     return numbers.map(v => Math.round(v / ratio))
-
-    // }
-
-
-
-    getAgeModifier(yearsOld: number): number {
-        return this.playerSharedService.getAgeModifier(yearsOld)
-    }
-
     getAgeLearningModifier(yearsOld: number): number {
         return this.playerSharedService.getAgeLearningModifier(yearsOld)
-    }
-
-    getRatingModifier(rating: number): number {
-        if (rating > MAX_RATING) rating = MAX_RATING
-        return 1 + this.rollService.getChange(1500, rating)
-    }
-
-    async getByOwner(owner: Owner, options?: any): Promise<Player[]> {
-        return this.playerRepository.getByOwner(owner, options)
-    }
-
-    async countByOwner(owner: Owner, options?: any): Promise<number> {
-        return this.playerRepository.countByOwner(owner, options)
-    }
-
-    async count(options?: any): Promise<number> {
-        return this.playerRepository.count(options)
-    }
-
-    async countActive(options?:any): Promise<number> {
-        return this.playerRepository.countActive(options)
     }
 
     calculateRating(players: RatingPlayer[]): Rating {
@@ -443,6 +398,8 @@ class PlayerService {
     }
 
     buildLeagueAverages(laRating?:number): LeagueAverage {
+
+        if (!laRating) laRating = PLAYER_LEAGUE_AVERAGE_RATING
 
         let la: LeagueAverage = {
 
@@ -655,7 +612,7 @@ class PlayerService {
     updateHittingPitchingRatings(player: Player) {
 
         //Calculate actual ratings
-        player.overallRating = player.potentialOverallRating * this.getAgeModifier(player.age)
+        player.overallRating = player.potentialOverallRating * this.playerSharedService.getAgeModifier(player.age)
         player.hittingRatings = this.calculateHittingRatings( player, player.overallRating)
         player.pitchRatings = this.calculatePitchRatings( player, player.overallRating)
 
@@ -664,8 +621,6 @@ class PlayerService {
         player.potentialPitchRatings = this.calculatePitchRatings(player, Math.max(player.potentialOverallRating, 125) )
 
     }
-
-
 
     async getPlayerReport(options?: any) {
         return this.playerRepository.getPlayerReport(options)
@@ -679,163 +634,6 @@ class PlayerService {
         return this.playerRepository.getMaxTokenId(options)
     }
 
-    createNFTMetadata(player: Player, coverImage: Image, animation: Animation) {
-
-        let result: NFTMetadata = {
-            tokenId: player.tokenId,
-            name: player.fullName,
-            description: '',
-
-        }
-
-        result.animation_url = `ipfs://${animation.cid}`
-        result.image = `ipfs://${coverImage.cid}`
-
-        result.attributes = [
-            {
-                trait_type: "ID",
-                value: player._id.toString()
-            },
-            {
-                trait_type: "Name",
-                value: player.fullName
-            },
-            {
-                trait_type: "Age",
-                value: player.age.toString()
-            },
-            {
-                trait_type: "Zodiac",
-                value: player.zodiacSign
-            },
-            {
-                trait_type: "Position",
-                value: this.getPositionFull(player.primaryPosition)
-            },
-            {
-                trait_type: "Bats",
-                value: player.hits
-            },
-            {
-                trait_type: "Throws",
-                value: player.throws
-            },
-            {
-                trait_type: "Overall Rating",
-                value: player.overallRating.toFixed(2)
-            },
-            {
-                trait_type: "Speed",
-                value: player.hittingRatings.speed.toString()
-            },
-            {
-                trait_type: "Steals",
-                value: player.hittingRatings.steals.toString()
-            },
-            {
-                trait_type: "Defense",
-                value: player.hittingRatings.defense.toString()
-            },
-            {
-                trait_type: "Arm",
-                value: player.hittingRatings.arm.toString()
-            },
-            {
-                trait_type: "Ground Ball",
-                value: (player.hittingRatings.contactProfile.groundball * .1).toFixed(1).toString()
-            },
-            {
-                trait_type: "Fly Ball",
-                value: (player.hittingRatings.contactProfile.flyBall * .1).toFixed(1).toString()
-            },
-            {
-                trait_type: "Line Drive",
-                value: (player.hittingRatings.contactProfile.lineDrive * .1).toFixed(1).toString()
-            },
-            {
-                trait_type: "Contact vs L",
-                value: player.hittingRatings.vsL.contact.toString()
-            },
-            {
-                trait_type: "Contact vs R",
-                value: player.hittingRatings.vsR.contact.toString()
-            },
-            {
-                trait_type: "Gap Power vs L",
-                value: player.hittingRatings.vsL.gapPower.toString()
-            },
-            {
-                trait_type: "Gap Power vs R",
-                value: player.hittingRatings.vsR.gapPower.toString()
-            },
-            {
-                trait_type: "Home Run Power vs L",
-                value: player.hittingRatings.vsL.homerunPower.toString()
-            },
-            {
-                trait_type: "Home Run Power vs R",
-                value: player.hittingRatings.vsR.homerunPower.toString()
-            },
-            {
-                trait_type: "Plate Discipline vs L",
-                value: player.hittingRatings.vsL.plateDiscipline.toString()
-            },
-            {
-                trait_type: "Plate Discipline vs R",
-                value: player.hittingRatings.vsR.plateDiscipline.toString()
-            },
-            {
-                trait_type: "Power (Pitch)",
-                value: player.pitchRatings.power.toString()
-            },
-            {
-                trait_type: "Control vs L (Pitch)",
-                value: player.pitchRatings.vsL.control.toString()
-            },
-            {
-                trait_type: "Control vs R (Pitch)",
-                value: player.pitchRatings.vsR.control.toString()
-            },
-            {
-                trait_type: "Movement vs L (Pitch)",
-                value: player.pitchRatings.vsL.movement.toString()
-            },
-            {
-                trait_type: "Movement vs R (Pitch)",
-                value: player.pitchRatings.vsR.movement.toString()
-            },
-            {
-                trait_type: "Ground Ball (Pitch)",
-                value: (player.pitchRatings.contactProfile.groundball * .1).toFixed(1).toString()
-            },
-            {
-                trait_type: "Fly Ball (Pitch)",
-                value: (player.pitchRatings.contactProfile.flyBall * .1).toFixed(1).toString()
-            },
-            {
-                trait_type: "Line Drive (Pitch)",
-                value: (player.pitchRatings.contactProfile.lineDrive * .1).toFixed(1).toString()
-            }
-        ]
-
-
-        return result
-
-    }
-
-    createGeneratingNFTMetadata(coverImage: Image, animation: Animation) {
-
-        let result: NFTMetadata = {
-            description: ''
-        }
-
-        result.animation_url = `ipfs://${animation.cid}`
-        result.image = `ipfs://${coverImage.cid}`
-
-        return result
-
-    }
-
     async list(options?: any): Promise<Player[]> {
         return this.playerRepository.list(options)
     }
@@ -843,7 +641,6 @@ class PlayerService {
     async getPlayerIdsByGameDate(date:Date, options?:any) {
         return this.playerRepository.getPlayerIdsByGameDate(date, options)
     }
-
 
     getHandednessFull(handedness: Handedness) {
         return PlayerService.getHandednessFull(handedness)
@@ -860,10 +657,6 @@ class PlayerService {
             case Handedness.S:
                 return "Switch"
         }
-    }
-
-    getPositionFull(position: Position) {
-        return PlayerService.getPositionFull(position)
     }
 
     static getPositionFull(position: Position) {
@@ -890,14 +683,13 @@ class PlayerService {
         }
     }
 
-
+    getPositionFull(position: Position) {
+        return PlayerService.getPositionFull(position)
+    }
 
     async clearAllTransactions(options?: any): Promise<void> {
         return this.playerRepository.clearAllTransactions(options)
     }
-
-
-
 
     async getPlayerViewModels(startDate:Date, league:League, positions:Position[], sortColumn:string, sortDirection:string, options?:any) : Promise<any[]> {
 
@@ -993,7 +785,6 @@ class PlayerService {
 
         return this.getFreeAgentSalary(plsPlain.player.overallRating, PLAYER_LEAGUE_AVERAGE_RATING, daysFreeAgent)
     }
-
 
     getFreeAgentSalary( playerRating: number, leagueAvgRating: number, daysFreeAgent: number ) {
 
@@ -1120,7 +911,6 @@ class PlayerService {
         return this.playerRepository.getFreeAgentIdsByPositionAndSalary(position, salary, date, limit, offset, options)
     }
 
-
     randomPersonalityType(rng) : PersonalityType {
 
         const mbtiOrder = Object.keys(PersonalityType) as (keyof typeof PersonalityType)[]
@@ -1131,16 +921,13 @@ class PlayerService {
 
     }
 
-
     ratingToGrade(rating: number): PlayerGrade {
         return this.playerSharedService.ratingToGrade(rating)
     }
 
-
     getExperiencePerGame(hadGoodGame:boolean, isPitcher:boolean) : bigint {
         return this.playerSharedService.getExperiencePerGame(hadGoodGame, isPitcher)
     }
-
 
     experienceToOverallRating(totalExperience: bigint): number {
         return this.playerSharedService.experienceToOverallRating(totalExperience)
@@ -1196,7 +983,6 @@ class PlayerService {
 
     }
     
-
     // async updateAllPercentileRatings() {
 
     //     //Make sure that players have percentile ratings. 
@@ -1409,32 +1195,6 @@ interface ScoutPlayerCommand {
 }
 
 
-interface NFTMetadata {
-
-    tokenId?: number
-
-    name?: string
-    description?: string
-
-    image?: string
-    image_data?: string
-
-    external_url?: string
-
-    attributes?: AttributeSelection[]
-
-    background_color?: string
-    animation_url?: string
-}
-
-
-interface AttributeSelection {
-    id?: string
-    trait_type?: string
-    value?: string
-}
-
-
 export {
-    PlayerService, GLICKO_SETTINGS, RatingPlayer, NFTMetadata, RowItemViewModel, PlayerRowViewModel, PLAYER_RETIREMENT_AGE
+    PlayerService, RatingPlayer,  RowItemViewModel, PlayerRowViewModel
 }

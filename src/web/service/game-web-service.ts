@@ -415,15 +415,6 @@ class GameWebService {
 
             await this.animatePath(el, container, bases)
 
-            // -------------------------------
-            // ⭐ OUT POPUP GOES EXACTLY HERE ⭐
-            // The runner has just reached the base where they were thrown out.
-            // Show your "Runner is out!" message here.
-            // Example:
-            //
-            // if (m.isOut) this.socketWebService.showOutMessage(ev.runner?._id)
-            //
-            // -------------------------------
 
         })
     }

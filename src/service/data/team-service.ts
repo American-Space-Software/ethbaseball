@@ -4,9 +4,9 @@ import { Colors, DevelopmentStrategy, DiamondMintPass, FinanceSeason, Lineup, Ov
 import { TeamRepository } from "../../repository/team-repository.js";
 
 import { Player } from "../../dto/player.js";
-import { GLICKO_SETTINGS,  PlayerRowViewModel, PlayerService } from "./player-service.js";
+import {  PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import { ContractType, Position, Rating, TEAMS_PER_TIER } from "../enums.js";
+import { ContractType, GLICKO_SETTINGS, Position, Rating, TEAMS_PER_TIER } from "../enums.js";
 import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
@@ -1149,6 +1149,10 @@ n
 
     getDevelopmentXpMultiplier(team: Team): bigint {
         return this.teamSharedService.getDevelopmentXpMultiplier(team.developmentStrategy.budgetPercent)
+    }
+
+    calculateProjectedReward(baseDiamondReward: number, maxRatingDiff: number): bigint {
+      return this.teamSharedService.calculateProjectedReward(baseDiamondReward, maxRatingDiff)
     }
 
 

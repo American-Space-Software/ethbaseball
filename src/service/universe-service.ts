@@ -2,7 +2,6 @@ import { inject, injectable } from "inversify";
 
 import { UniverseRepository } from "../repository/universe-repository.js";
 import { Universe } from "../dto/universe.js";
-import { GLICKO_SETTINGS, NFTMetadata, PlayerService } from "./data/player-service.js";
 import { IPFSService } from "./ipfs-service.js";
 import { ImageService } from "./data/image-service.js";
 
@@ -37,6 +36,7 @@ import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
 import dayjs from "dayjs";
 
 import { FinanceService } from "./finance-service.js";
+import { GLICKO_SETTINGS } from "./enums.js";
 
 const BASE_DIAMOND_REWARD = "100000000000000000000" //100 EBLD
 
