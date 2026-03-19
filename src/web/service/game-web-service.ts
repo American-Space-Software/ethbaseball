@@ -16,10 +16,7 @@ class GameWebService {
 
     constructor(
         private socketWebService: SocketWebService,
-        private playerWebService:PlayerWebService,
-        private teamWebService:TeamWebService,
-        private gameSharedService:GameSharedService,
-        @inject('env') private env:any
+        private gameSharedService:GameSharedService
     ) { }
 
     
@@ -51,9 +48,9 @@ class GameWebService {
 
     }
 
-    async getGames(dateString:string, rank:number) {
+    async getGames(rank:number) {
 
-        let result = await axios.get(`/api/game/list/${rank}/${dateString}`, {
+        let result = await axios.get(`/api/game/list/${rank}`, {
             // query URL without using browser cache
             headers: {
                 'Cache-Control': 'no-cache',

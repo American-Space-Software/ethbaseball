@@ -9,6 +9,8 @@
             ${showAskingPrice ? $h`<th class="numeric-cell">Cost</th>` : $h` `}
 
             <th @click=${sortRows} class="${getSortHeaderClass('overallRating')}" data-sort="overallRating">OVR</th>
+            <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('age')}" data-sort="age">Age</th>
+
             <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('hits')}" data-sort="hits">Bats</th>
 
             <th @click=${sortRows} class="numeric-cell ${getSortHeaderClass('hitting.games')}" data-sort="hitting.games">G</th>
@@ -91,6 +93,7 @@
                 ` : $h` `}
 
                 <td>${badge(p?.overallRating)}</td>
+                <td class="numeric-cell">${p?.age}</td>                
                 <td class="numeric-cell">${p?.hits}</td>
                 <td class="numeric-cell">${getStats(p)?.hitting?.games}</td>
                 <td class="numeric-cell">${getStats(p)?.hitting?.pa}</td>

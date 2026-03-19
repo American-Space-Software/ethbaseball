@@ -442,38 +442,38 @@ class PlayerService {
 
     }
 
-    buildLeagueAverages(): LeagueAverage {
+    buildLeagueAverages(laRating?:number): LeagueAverage {
 
         let la: LeagueAverage = {
 
             hittingRatings: {
-                speed: PLAYER_LEAGUE_AVERAGE_RATING,
-                steals: PLAYER_LEAGUE_AVERAGE_RATING,
-                arm: PLAYER_LEAGUE_AVERAGE_RATING,
-                defense: PLAYER_LEAGUE_AVERAGE_RATING,
+                speed: laRating,
+                steals: laRating,
+                arm: laRating,
+                defense: laRating,
                 vsL: {
-                    contact: PLAYER_LEAGUE_AVERAGE_RATING,
-                    gapPower: PLAYER_LEAGUE_AVERAGE_RATING,
-                    homerunPower: PLAYER_LEAGUE_AVERAGE_RATING,
-                    plateDiscipline: PLAYER_LEAGUE_AVERAGE_RATING
+                    contact: laRating,
+                    gapPower: laRating,
+                    homerunPower: laRating,
+                    plateDiscipline: laRating
                 },
                 vsR: {
-                    contact: PLAYER_LEAGUE_AVERAGE_RATING,
-                    gapPower: PLAYER_LEAGUE_AVERAGE_RATING,
-                    homerunPower: PLAYER_LEAGUE_AVERAGE_RATING,
-                    plateDiscipline: PLAYER_LEAGUE_AVERAGE_RATING
+                    contact: laRating,
+                    gapPower: laRating,
+                    homerunPower: laRating,
+                    plateDiscipline: laRating
                 }
             },
 
             pitchRatings: {
-                power: PLAYER_LEAGUE_AVERAGE_RATING,
+                power: laRating,
                 vsL: {
-                    control: PLAYER_LEAGUE_AVERAGE_RATING,
-                    movement: PLAYER_LEAGUE_AVERAGE_RATING
+                    control: laRating,
+                    movement: laRating
                 },
                 vsR: {
-                    control: PLAYER_LEAGUE_AVERAGE_RATING,
-                    movement: PLAYER_LEAGUE_AVERAGE_RATING
+                    control: laRating,
+                    movement: laRating
                 }
             },
 

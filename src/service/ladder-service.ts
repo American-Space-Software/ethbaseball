@@ -4,7 +4,7 @@ import { GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, PlayerService } from "./data/pl
 
 import { GameService } from "./data/game-service.js"
 import { FinanceSeason,  RotationPitcher,  Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, GamePlayer } from "./enums.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, GamePlayer, PLAYER_LEAGUE_AVERAGE_RATING } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -339,7 +339,7 @@ class LadderService {
 
             date,
 
-            leagueAverages: this.playerService.buildLeagueAverages()
+            leagueAverages: this.playerService.buildLeagueAverages(PLAYER_LEAGUE_AVERAGE_RATING)
 
         })
 
@@ -722,6 +722,9 @@ class LadderService {
                 nextSeasonPLS.overallRating = pls.overallRating
                 nextSeasonPLS.hittingRatings = pls.hittingRatings
                 nextSeasonPLS.pitchRatings = pls.pitchRatings
+                nextSeasonPLS.potentialOverallRating = pls.potentialOverallRating
+                nextSeasonPLS.potentialHittingRatings = pls.potentialHittingRatings
+                nextSeasonPLS.potentialPitchRatings = pls.potentialPitchRatings
                 nextSeasonPLS.startDate = nextSeason.startDate
                 nextSeasonPLS.endDate = nextSeason.endDate
                 nextSeasonPLS.age = player.age

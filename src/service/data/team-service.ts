@@ -1037,7 +1037,9 @@ n
         nextPLS.overallRating = pls.overallRating
         nextPLS.hittingRatings = pls.hittingRatings
         nextPLS.pitchRatings = pls.pitchRatings
-        nextPLS.overallRating = pls.overallRating
+        nextPLS.potentialOverallRating = pls.potentialOverallRating
+        nextPLS.potentialHittingRatings = pls.potentialHittingRatings
+        nextPLS.potentialPitchRatings = pls.potentialPitchRatings
         nextPLS.startDate = date
         nextPLS.endDate = season.endDate
         nextPLS.age = player.age
@@ -1092,7 +1094,11 @@ n
         nextPLS.overallRating = pls.overallRating
         nextPLS.hittingRatings = pls.hittingRatings
         nextPLS.pitchRatings = pls.pitchRatings
-        nextPLS.overallRating = pls.overallRating
+
+        nextPLS.potentialOverallRating = pls.potentialOverallRating
+        nextPLS.potentialHittingRatings = pls.potentialHittingRatings
+        nextPLS.potentialPitchRatings = pls.potentialPitchRatings
+
         nextPLS.startDate = date
         nextPLS.endDate = season.endDate
         nextPLS.age = player.age

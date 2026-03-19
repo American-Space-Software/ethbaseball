@@ -13,6 +13,7 @@ interface GameRepository {
     getByIds(ids: string[], options?: any): Promise<Game[]>
     getByDateIds(date:Date, options?:any): Promise<string[]>
     getByDateAndLeagueIds(date:Date, league:League, options?:any): Promise<string[]>
+    getByLeagueIds(league:League, options?:any): Promise<string[]>    
     getByDateAndTeamIds(date:Date, teams:Team[], options?:any): Promise<string[]>
     getByDatesAndTeamIds(dates:Date[], teams:Team[], options?:any): Promise<string[]>
     getIdsByTeamAndPeriod(team:Team, start:Date, end:Date, options?:any)

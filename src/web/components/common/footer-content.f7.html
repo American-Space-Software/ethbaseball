@@ -3,12 +3,12 @@
   <div class="page page-with-subnavbar" data-name="player-index">
 
     <div class="page-content">
-      <div class="block">
-        ${content}
+
+      <div class="fixed-width-content center">
+        <div class="block">
+          ${content}
+        </div>
       </div>
-
-      <${Footer} />
-
 
     </div>
 
@@ -19,8 +19,6 @@
 
 
 <script>
-
-    import Footer from "./footer.f7.html"
 
 
     import { ContainerService } from "../../../service/container-service"
@@ -34,7 +32,7 @@
 
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
           detail: {
-            visible: false,
+            visible: true,
             tabLink: "/",
             breadcrumbs: [{ text: "Home", path: "/" }, { text: props.linkText}]
           }

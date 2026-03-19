@@ -423,6 +423,34 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     }
 
+    async getByLeagueIds(league:League, options?:any): Promise<string[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: s.QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                leagueId: league._id
+            }
+        }
+
+        const [queryResults, metadata] = await s.query(`
+            select g._id
+            FROM game g
+            WHERE g.leagueId = :leagueId
+            order by g.dateCreated DESC
+            ${options?.limit ? `LIMIT ${options.limit} `: ''}
+            ${options?.offset ? `OFFSET ${options.offset} `: ''}            
+        `, Object.assign(queryOptions, options))
+
+        return queryResults?.map(r => r._id)
+
+
+    }
+
+
     async getByDateAndTeamIds(date:Date, teams:Team[], options?:any): Promise<string[]> {
 
         let s = await this.sequelize()

@@ -16,6 +16,8 @@
 
                     <th @click=${sortPitchers} data-sort="overallRating">OVR</th>
 
+                    <th @click=${sortHitters} class="numeric-cell" data-sort="age">Age</th>
+
                     <th @click=${sortPitchers} data-sort="pitchRatings.power">POW</th>
                     <th class="handed-label">vsR</th>
                     <th @click=${sortPitchers} data-sort="pitchRatings.vsR.control">CON</th>
@@ -115,7 +117,7 @@
                             <td>${p?.throws}</td>
                             <td>${p?.hits}</td>
                             <td>${badge(p?.overallRating)}</td>
-
+                            <td>${p?.age}</td>
                             <td>${badge(p?.pitchRatings?.power)}</td>
 
                             <td class="handed-label"></td>

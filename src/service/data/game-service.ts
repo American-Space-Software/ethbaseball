@@ -88,9 +88,9 @@ class GameService {
         return this.gameRepository.getRecentScheduledDate(options)
     }
 
-    async getByDateAndLeague(date:Date, league:League, options?:any) {
+    async getByLeague(league:League, options?:any) {
 
-        let ids = await this.gameRepository.getByDateAndLeagueIds(date, league, options)
+        let ids = await this.gameRepository.getByLeagueIds(league, options)
         if (ids.length == 0) return []
 
         let games:Game[] = await this.gameRepository.getByIds(ids, options)
@@ -264,15 +264,12 @@ class GameService {
         return this.gameRepository.getGameCountsByTeamSeason(team, season, date, options)
     }
 
-    async getGames(date:Date, league:League, options?:any) : Promise<GamesViewModel> {
+    async getGames(league:League, options?:any) : Promise<GameSummaryViewModel[]> {
 
-        let games = await this.getByDateAndLeague(date, league, options)
+        let games = await this.getByLeague(league, options)
 
-        return {
-            inProgress: games.filter( g => g.isComplete == false && g.isStarted == true).map( g => this.getGameSummaryViewModel(g)),
-            scheduled: games.filter( g => g.isComplete == false && g.isStarted == false).map( g => this.getGameSummaryViewModel(g)),
-            finished: games.filter( g => g.isComplete == true && g.isStarted == true).map( g => this.getGameSummaryViewModel(g))
-        }
+        return games.map( g => this.getGameSummaryViewModel(g))
+
     }
 
     validateGameLineup(lineup:Lineup, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, gameDate:Date) {
@@ -1948,11 +1945,11 @@ interface GameSummaryViewModel {
 
 }
 
-interface GamesViewModel {
-    inProgress:GameSummaryViewModel[]
-    scheduled: GameSummaryViewModel[]
-    finished: GameSummaryViewModel[]
-}
+// interface GamesViewModel {
+//     inProgress:GameSummaryViewModel[]
+//     scheduled: GameSummaryViewModel[]
+//     finished: GameSummaryViewModel[]
+// }
 
 interface TeamSummary {
     _id:string

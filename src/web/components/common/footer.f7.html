@@ -1,13 +1,13 @@
 <template>
 
-  <footer class="block footer">
+  <footer class="list links-list footer">
 
       <ul>
         ${footerRoutes?.map( l => $h`
           ${l.link.startsWith("/") ? $h`
-            <li><a href="${l.link}">${l.linkText}</a></li>
+            <li><a href="${l.link}" class="panel-close" >${l.linkText}</a></li>
           ` : $h`
-            <li><a href="${l.link}" class="external">${l.linkText}</a></li>
+            <li><a href="${l.link}" class="panel-close external">${l.linkText}</a></li>
           `}
         `)}
       </ul>

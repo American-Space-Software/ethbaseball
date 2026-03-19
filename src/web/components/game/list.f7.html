@@ -4,80 +4,30 @@
 
     <div class="page-content">
 
-      ${gameDate != undefined ? $h`
-
         <div class="fixed-width-content center">
 
             <div class="block-title block-title-large">
-              ${dayjs(gameDate).format('MMMM D, YYYY')} 
-<!-- 
-              <div class="date-picker">
-                <input type="date" placeholder="Date" value="${dayjs(gameDate).format('YYYY-MM-DD')}" @change="${gameDateChange}"/>
-              </div> -->
-
+              Scoreboard 
             </div>
             
+            ${games?.length > 0 ? $h`
 
-      
-            ${games?.inProgress?.length > 0 ? $h`
-              <div class="block-title">Scoreboard</div>
+                <div class="list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
+                      ${games?.map(game => renderGameRow(game))}
+                    </ul>
+                </div>
 
-              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
-
-                    ${games?.inProgress?.map( game => $h`
-                      <${InProgress} game=${game} />
-
-                    `)}
-
-                  </ul>
-
-              </div>
-              
-            ` : $h` `}
-
-
-            ${games?.finished?.length > 0 ? $h`
-              <div class="block-title">Results</div>
-
-              <div class="list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
-
-                    ${games?.finished?.map( game => $h`
-                      <${Result} game=${game} />
-                    `)}
-
-                  </ul>
-              </div>
-              
-            ` : $h` `}
-
-            ${games?.inProgress?.length == 0 && games?.scheduled?.length == 0 && games?.finished?.length == 0 ? $h`
-              <div class="block">
+            ` : $h`
+            
+              <div class="block block-outline block-strong">
                 No games.
               </div>
-            ` : $h` `}  
 
-
-
-            <div class="block split-row-both">
-              <div>
-                  ${previousPage ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="${universeWebService.startDateLink(`/games?gameDate=${dayjs(gameDate).subtract(1, 'day').format('YYYY-MM-DD')}`)}" class="button button-outline color-gray">Previous</a>
-                  ` : $h` `}
-              </div>
-              <div>
-                  ${nextPage ? $h`
-                    <a data-reload-current="true" data-force="true" data-browser-history="true" href="${universeWebService.startDateLink(`/games?gameDate=${dayjs(gameDate).add(1, 'day').format('YYYY-MM-DD')}`)}" class="button button-fill">Next</a>
-                  ` : $h` `}
-              </div>
-            </div>
-
+            `}  
 
 
         </div>
-
-      ` : $h` `}
     </div>
 
   </div>
@@ -93,7 +43,6 @@
 
 
   import Navbar from "../common/navbar.f7.html"
-  import LeagueRank from "../common/league-rank.f7.html"
   import InProgress from "../game/in-progress.f7.html"
   import Result from "../game/result.f7.html"
 
@@ -102,7 +51,7 @@
 
   import dayjs from 'dayjs'
 
-  export default (props, { $on, $, $f7, $update }) => {
+  export default (props, { $on, $, $f7, $h, $update }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
@@ -112,9 +61,28 @@
     let gameDate = props.gameDate
     let leagues = props.leagues
 
-    let previousPage = props.previousPage
-    let nextPage = props.nextPage
+    const renderGameRow = (game) => {
+      if (!game.isStarted) return ''
 
+      const component = game.isFinished ? Result : InProgress
+
+      const renderFn = component(
+        { game },
+        { $on, $, $f7, $update, $h }
+      )
+
+      return renderFn({
+        $,
+        $h,
+        $root: null,
+        $f7,
+        $f7route: $f7.views.main.router.currentRoute,
+        $f7router: $f7.views.main.router,
+        $theme: $f7.theme,
+        $update,
+        $store: $f7.store
+      })
+    }
 
     const rankChange = (e) => {
 

@@ -197,7 +197,6 @@
 
           </div>
 
-          <${Footer} />
 
         ` : $h` `}
 
@@ -499,7 +498,7 @@
                   ` : $h`
                   
                     <li>
-                      <a class="popup-close item-link item-content" @click="${clickPlayCampaign}">
+                      <a class="item-link item-content">
                         <div class="item-media">🏟️</div>
                         <div class="item-inner">
                           <div class="item-title-row">
@@ -544,7 +543,6 @@
   import InProgress from "./in-progress.f7.html"
   import Result from "./result.f7.html"
   import Roster from "../team/roster.f7.html"
-  import Footer from "../common/footer.f7.html"
   import OffChainEvents from "../activity/offchain-events.f7.html"
 
   export default (props, { $, $h, $on, $f7, $update }) => {

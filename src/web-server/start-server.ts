@@ -48,7 +48,6 @@ import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, 
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { ProcessedTransactionService } from '../service/data/processed-transaction-service.js'
 import { DiamondMintPassService } from '../service/data/diamond-mint-pass-service.js'
-import { TeamMintPassService } from '../service/data/team-mint-pass-service.js'
 
 import { Eta } from "eta"
 import { CityService } from '../service/data/city-service.js'
@@ -1174,8 +1173,6 @@ let startWebServer = async () => {
           //Make sure the team has enough budget to sign this player
           let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
 
-          let leagueRankOne = await leagueService.getByRank(1, options)
-
           let askingPrice = playerService.getAskingPrice(pls)
 
           if (BigInt(diamondBalance) < BigInt(askingPrice)) {
@@ -1708,16 +1705,15 @@ let startWebServer = async () => {
    */
 
 
-  app.get('/api/game/list/:rank/:date', async function (req, res) {
+  app.get('/api/game/list/:rank', async function (req, res) {
 
     try {
 
       let allLeagues: League[] = await leagueService.listByRankAsc()
       let league:League = allLeagues.find( l => l.rank == parseIntWithException(req.params.rank))
 
-      let date = dayjs(req.params.date).toDate()
 
-      let vm = await gameService.getGames(date, league)
+      let vm = await gameService.getGames(league, { limit: 25 })
 
       //@ts-ignore
       vm.allLeagues = allLeagues.map( l => { return { _id: l._id, rank: l.rank } })
@@ -2066,7 +2062,7 @@ let startWebServer = async () => {
 
 
 
-  await playerService.updateAllRatings()
+  // await playerService.updateAllRatings()
 
 
 

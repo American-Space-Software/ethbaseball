@@ -354,7 +354,6 @@ let engineConfig = {
   ]
 }
 
-
 let createCarConfig = Object.assign(Object.assign({}, engineConfig), {
     entry: "./src/engine/create-car.ts",
 
@@ -375,7 +374,6 @@ let createCarConfig = Object.assign(Object.assign({}, engineConfig), {
     ]
   }
 )
-
 
 let webServerConfig = {
   entry: "./src/web-server/index.ts",
@@ -498,7 +496,8 @@ let indexConfig = {
     // }),
 
     new webpack.DefinePlugin({
-      VERSION: VERSION      
+      VERSION: VERSION,
+      BUILD_ID: BUILD_ID.replace('"', '').replace('"', '')
     }),
 
     {

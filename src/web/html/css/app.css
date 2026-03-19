@@ -2829,21 +2829,24 @@ td.action, th.action {
   }
 }
 
+
 .footer {
   text-align: center;
-}
-
-.footer ul {
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  position: absolute;
+  bottom: 0;
+  font-size: .75em;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .footer li {
-  display: inline-block;
-  margin-right: 10px;
-  font-size: 14px;
+  height: 30px;
 }
+
+.footer a {
+  height: 30px;
+}
+
 
 .mint-help {
   padding: 15px;
