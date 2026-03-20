@@ -43,6 +43,9 @@
   --f7-table-cell-padding-horizontal: 5px;
 
   --f7-list-item-text-text-color: #000000;
+
+  --f7-block-font-size: 15px;
+  --f7-list-item-title-font-size: 18px;
 }
 
 .logo {
@@ -2840,11 +2843,11 @@ td.action, th.action {
 }
 
 .footer li {
-  height: 30px;
+  height: 37px;
 }
 
 .footer a {
-  height: 30px;
+  height: 37px;
 }
 
 

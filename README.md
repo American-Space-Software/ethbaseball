@@ -375,7 +375,7 @@ Players are evaluated using grades like:
 A+, A, A-  
 B+, B, B-  
 C+, C, C-  
-D+, D  
+D+, D, D-
 F  
 
 ---
@@ -384,22 +384,23 @@ F
 
 Each letter grade corresponds to a range of underlying ratings.
 
-Example ranges:
+Current ranges:
 
 | Grade | Rating Range |
 |------|-------------|
-| A+   | 160+        |
-| A    | 150–159     |
-| A-   | 140–149     |
-| B+   | 130–139     |
-| B    | 120–129     |
-| B-   | 110–119     |
-| C+   | 100–109     |
-| C    | 90–99       |
-| C-   | 80–89       |
-| D+   | 75–79       |
-| D    | 70–74       |
-| F    | <70         |
+| A+   | 170+        |
+| A    | 158–169     |
+| A-   | 146–157     |
+| B+   | 134–145     |
+| B    | 122–133     |
+| B-   | 110–121     |
+| C+   | 95–109      |
+| C    | 83–94       |
+| C-   | 71–82       |
+| D+   | 59–70       |
+| D    | 47–58       |
+| D-   | 35–46       |
+| F    | <35         |
 
 > Note: Exact ranges may be tuned over time as the game evolves.
 
