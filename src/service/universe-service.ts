@@ -211,7 +211,7 @@ class UniverseService {
 
         let result:ContractMetadata = {
           name: "Ethereum Baseball League",
-          description: `Ethereum Baseball League (EBL) is a competitive PvP sports ownership and business simulator. Build a winning team, manage your finances, and outmaneuver real opponents in a player-driven economy where teams and Diamonds are bought, sold, and earned.
+          description: `Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine.
 
  - Own a franchise as an NFT (ERC-721) on Ethereum. 
  - 280 teams · 10 leagues · 162-day seasons with a 30-day offseason. 

@@ -2,12 +2,24 @@
 
 ## Technical Overview
 
-Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage players, and compete against other teams in a persistent league.
-The in-game currency (Diamonds) is represented as an Ethereum asset, while all simulation and gameplay run off-chain for performance.
+Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine.
 
-This document provides a technical overview of the stack, quick-start steps, and environment file examples.
+The simulation and game state run off-chain for performance. Diamonds can move onto Ethereum through open smart contracts, which allows them to exist outside the main game instead of remaining locked to a single app.
+
+This document provides a technical overview of the stack, quick-start steps, environment file examples, and a summary of the core game systems.
 
 ---
+
+## Why This Project Exists
+
+EBL started from a simple frustration: baseball games and franchise saves reset too often, and too much player history depends on a single company or a single release cycle.
+
+This project takes a different approach.
+
+The simulation engine is open source so it can be studied, preserved, modified, and extended over time. The web app is built for shared league play instead of only single-player franchise mode. Ethereum is used as open infrastructure for optional Diamond withdrawals and deposits, so value is not forced to remain inside one server.
+
+EBL is the first public baseball game built on top of that philosophy.
+
 
 ## Core Technologies
 
@@ -37,8 +49,9 @@ This document provides a technical overview of the stack, quick-start steps, and
 
 ## Contracts & Blockchain
 
-- Diamonds (ERC-20): In-game currency for payroll, signings, etc.
+- Diamonds (ERC-20): Optional on-chain representation of Diamonds earned in-game
 - Tooling: Hardhat, OpenZeppelin
+- Design: Gameplay and simulation remain off-chain for speed; Ethereum is used where open infrastructure is useful
 - Indexing: Custom services listen for on-chain events; primary game state lives off-chain in MySQL for performance
 
 ---
@@ -176,7 +189,7 @@ OPENSEA_COLLECTION_URL=
 
 ## What Is EBL?
 
-Ethereum Baseball League (EBL) is an online baseball management game.
+Ethereum Baseball League (EBL) is an online baseball management game built around shared league play.
 
 You run a franchise by managing:
 
@@ -188,14 +201,24 @@ You run a franchise by managing:
 
 Games are simulated pitch-by-pitch using player ratings, stamina, matchups, and game situation.
 
-You can watch games live with a field view and pitch-by-pitch updates while your team competes against other teams in the league.
+You can watch games live with a field view and pitch-by-pitch updates while your team competes against other teams across the same season.
 
-The game combines the strategy of a baseball simulator with the accessibility of a browser-based baseball game.
+The game combines the strategy of a baseball simulator with the accessibility of a browser-based app and the continuity of an open simulation engine.
 
 Diamonds are earned through regular-season game-day revenue and season-end rewards.
 
 ---
 
+## Technical Design Philosophy
+
+EBL splits the system into two layers:
+
+1. **Off-chain simulation and game state** for speed, flexible design, and a responsive web app
+2. **Optional on-chain settlement** for Diamonds when players want balances to move onto Ethereum
+
+This split is intentional. Baseball simulation involves constant state changes and frequent updates that are better handled off-chain. Ethereum is used where open infrastructure is most useful: optional transfers, open smart contracts, and the possibility of compatible community-run systems.
+
+--- 
 
 ## Season Structure
 
@@ -454,7 +477,7 @@ Stronger teams generally finish higher in the standings, and stronger ratings ge
 
 ## Diamonds 🔷
 
-Diamonds are the in-game currency used for things such as:
+Diamonds are used for things such as:
 
 - signing players
 - payroll
@@ -465,9 +488,11 @@ Diamonds are tracked **off-chain by default**.
 
 Regular-season Diamonds are introduced through game-day revenue. Additional Diamonds are introduced through the season-end reward pool.
 
-Diamonds are minted on Ethereum only when withdrawn.
+Diamonds are created on Ethereum only when withdrawn.
 
 Players can also deposit on-chain Diamonds back into their team balance.
+
+Because Diamonds can move onto open infrastructure, they do not have to remain locked inside one server. In the long run, that creates room for compatible community-run universes and side games built on the same basic system.
 
 A wallet is **not required to play**.
 
@@ -475,14 +500,22 @@ A wallet is **not required to play**.
 
 ## Goals
 
-- Strategic baseball management
-- Transparent simulation engine
-- Optional blockchain integration
-- Open-source ecosystem
-- Forkable universes
-- Long-term competitive play
+- Strategic baseball management with meaningful long-term decisions
+- Shared league play in a browser-based app
+- Transparent, open simulation logic
+- Optional Ethereum integration built on open infrastructure
+- Forkable universes and community-run extensions
+- Long-term continuity instead of yearly resets
 
 ---
+
+## Maintainer
+
+EBL is created and maintained by Patrick Toner.
+
+If you have ideas, want to contribute, or want to build on the project, feel free to reach out:
+
+- LinkedIn: https://www.linkedin.com/in/%E2%9A%BE%F0%9F%8F%B4%E2%80%8D%E2%98%A0%EF%B8%8F-patrick-toner-69343713/
 
 ## License
 

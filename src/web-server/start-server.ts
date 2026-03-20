@@ -314,7 +314,7 @@ let startWebServer = async () => {
         await renderIndex(res,{ 
           twitter: TWITTER,
           title: "Play a Baseball Game Online – Ethereum Baseball League",
-          description: "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage players, watch games live, and compete in a persistent season.",
+          description: "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine.",
           VERSION: version,
           image: `${process.env.WEB}/ebl-512.png`,
           url: req.originalUrl
