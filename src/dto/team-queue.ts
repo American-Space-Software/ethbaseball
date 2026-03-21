@@ -42,6 +42,9 @@ class TeamQueue extends Model {
     @Column(DataType.INTEGER)
     declare maxRatingDiff:number 
 
+    @Column(DataType.BOOLEAN)
+    declare expandRange:boolean    
+
     @Column(DataType.DATE)
     declare lastUpdated?:Date 
     

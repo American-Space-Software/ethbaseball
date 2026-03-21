@@ -1135,6 +1135,7 @@ CREATE TABLE `team_queue` (
   `leagueId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `teamRating` decimal(10,2) NOT NULL,
   `maxRatingDiff` INT NOT NULL,
+  `expandRange` tinyint(1) DEFAULT NULL,
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
 

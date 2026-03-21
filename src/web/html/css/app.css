@@ -3441,3 +3441,6 @@ td.action, th.action {
 }
 
 
+.item-title.small {
+  font-size: 14px;
+}

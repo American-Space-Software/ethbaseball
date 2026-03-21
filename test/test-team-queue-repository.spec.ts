@@ -64,6 +64,7 @@ describe("TeamQueueRepository", async () => {
       leagueId: league._id,
       teamRating: 0,
       maxRatingDiff: 0,
+      expandRange: false,
       lastUpdated: null,
       dateCreated: null
     })

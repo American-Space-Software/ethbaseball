@@ -37,7 +37,7 @@ class TeamQueueService {
         return this.teamQueueRepository.clear(options)
     }
 
-    async queueTeam(team:Team, league:League, teamRating:number, maxRatingDiff:number, options?: any): Promise<TeamQueue> {
+    async queueTeam(team:Team, league:League, teamRating:number, maxRatingDiff:number, expandRange:boolean, options?: any): Promise<TeamQueue> {
 
         const tq = Object.assign(new TeamQueue(), {
             _id: uuidv4(),
@@ -45,6 +45,7 @@ class TeamQueueService {
             leagueId: league._id,
             maxRatingDiff: maxRatingDiff,
             teamRating: teamRating,
+            expandRange: expandRange,
             dateCreated: null,
             lastUpdated: null
         })
@@ -73,31 +74,32 @@ class TeamQueueService {
 
     async processQueuePairs( league: League, options?: any ): Promise<TeamQueueMatchup[]> {
 
-        const pairs:{ team1:TeamQueue, team2:TeamQueue, ratingDiff:number }[] = []
+        const pairs: { team1: TeamQueue, team2: TeamQueue, ratingDiff: number }[] = []
         const queue = await this.teamQueueRepository.listByLeagueTeamRatingDesc(league, 10000, 0, options)
 
         const used = new Set<string>()
 
-        const isUsed = (tq:TeamQueue) => used.has(tq._id)
+        const isUsed = (tq: TeamQueue) => used.has(tq._id)
 
-        const ratingDiff = (a:TeamQueue, b:TeamQueue) =>
+        const ratingDiff = (a: TeamQueue, b: TeamQueue) =>
             Math.abs(a.teamRating - b.teamRating)
 
-        const isCompatible = (a:TeamQueue, b:TeamQueue) => {
+        const isCompatible = (a: TeamQueue, b: TeamQueue) => {
             const diff = ratingDiff(a, b)
-            return diff <= a.maxRatingDiff && diff <= b.maxRatingDiff
+            const aMax = this.getEffectiveMaxRatingDiff(a)
+            const bMax = this.getEffectiveMaxRatingDiff(b)
+
+            return diff <= aMax && diff <= bMax
         }
 
         for (let i = 0; i < queue.length; i++) {
-
             const team1 = queue[i]
             if (isUsed(team1)) continue
 
-            let best:TeamQueue = null
+            let best: TeamQueue = null
             let bestDiff = Infinity
 
             for (let j = i + 1; j < queue.length; j++) {
-
                 const team2 = queue[j]
                 if (isUsed(team2)) continue
 
@@ -126,6 +128,28 @@ class TeamQueueService {
 
         return pairs
     }
+
+
+    private getEffectiveMaxRatingDiff(teamQueue: TeamQueue): number {
+
+        if (!teamQueue.expandRange) {
+            return teamQueue.maxRatingDiff 
+        }
+
+        const createdAt = new Date(teamQueue.dateCreated).getTime()
+        const now = Date.now()
+
+        if (Number.isNaN(createdAt) || now <= createdAt) {
+            return Math.min(teamQueue.maxRatingDiff , 250)
+        }
+
+        const elapsedMs = now - createdAt
+        const fiveMinuteBlocks = Math.floor(elapsedMs / (5 * 60 * 1000))
+        const expanded = teamQueue.maxRatingDiff  + (fiveMinuteBlocks * 5)
+
+        return Math.min(expanded, 250)
+    }
+
 
 
 }

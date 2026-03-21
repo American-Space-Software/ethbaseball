@@ -211,6 +211,10 @@ let startWebServer = async () => {
 
   }
 
+  const parseBoolean = (theStr) => {
+    return (theStr === 'true')
+  }  
+
   const getEnv = async () => {
 
     let season = await seasonService.getMostRecent()
@@ -1752,6 +1756,9 @@ let startWebServer = async () => {
           return res.send("Not authorized.")
         }
 
+        const expandRange = parseBoolean(req.query.expandRange)
+
+
         const maxRatingDiff = req.query.maxRatingDiff != undefined ? parseIntWithException(String(req.query.maxRatingDiff)) : 25
 
         if (maxRatingDiff < 25 || maxRatingDiff > 250) {
@@ -1815,7 +1822,7 @@ let startWebServer = async () => {
         let teamRating = (team.longTermRating.rating + team.seasonRating.rating) / 2
 
 
-        await teamQueueService.queueTeam(team, league, teamRating, maxRatingDiff)
+        await teamQueueService.queueTeam(team, league, teamRating, maxRatingDiff, expandRange)
 
         return res.send("success")
 
