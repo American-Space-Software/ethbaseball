@@ -1,13 +1,13 @@
 import { inject, injectable } from "inversify";
 
 import { TeamLeagueSeasonRepository } from "../../repository/team-league-season-repository.js";
-import { FinanceSeason, Team } from "../../dto/team.js";
+import { Team } from "../../dto/team.js";
 import { League } from "../../dto/league.js";
 import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 import { Season } from "../../dto/season.js";
 import { Stadium } from "../../dto/stadium.js";
 import { City } from "../../dto/city.js";
-import { Position, TeamSeasonId } from "../enums.js";
+import { FinanceSeason, Position, TeamSeasonId } from "../enums.js";
 import { v4 as uuidv4 } from 'uuid';
 import { User } from "../../dto/user.js";
 

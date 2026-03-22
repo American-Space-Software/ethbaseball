@@ -25,7 +25,7 @@ import { OwnerService } from "../service/data/owner-service.js"
 import connectSessionSequelize from "connect-session-sequelize"
 import { UserService } from "../service/data/user-service.js"
 import { User } from "../dto/user.js"
-import { DiamondMintPass, RotationPitcher, Team } from "../dto/team.js"
+import { DiamondMintPass,  Team } from "../dto/team.js"
 import { TeamService } from "../service/data/team-service.js"
 import { GameService } from "../service/data/game-service.js"
 import { UniverseService } from "../service/universe-service.js"
@@ -44,7 +44,7 @@ import { PlayerLeagueSeasonService } from '../service/data/player-league-season-
 import { TeamLeagueSeasonService } from '../service/data/team-league-season-service.js'
 
 import { OffchainEventService } from '../service/data/offchain-event-service.js'
-import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, SeasonInfo, TeamCost } from '../service/enums.js'
+import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, RotationPitcher, SeasonInfo, TeamCost } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { ProcessedTransactionService } from '../service/data/processed-transaction-service.js'
 import { DiamondMintPassService } from '../service/data/diamond-mint-pass-service.js'
@@ -308,9 +308,6 @@ let startWebServer = async () => {
 
   }
 
-
-
-
   app.get("/", async function (req, res) {
 
       try {
@@ -351,8 +348,6 @@ let startWebServer = async () => {
       }
 
   })
-
-
 
   app.get("/t/index/:teamId", async function (req, res) {
 
@@ -699,7 +694,6 @@ let startWebServer = async () => {
 
   })
 
-
   app.get("/u/owners", async function (req, res) {
 
       try {
@@ -756,9 +750,6 @@ let startWebServer = async () => {
       }
 
   })
-
-
-
 
   app.get('/image/:id', cacheService.cacheResponse({ tag: IMAGES }), async function (req, res) {
 

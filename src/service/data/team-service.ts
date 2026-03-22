@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 
-import { Colors, DevelopmentStrategy, DiamondMintPass, FinanceSeason, Lineup, OverallRecord, RotationPitcher, Team, TEAM_COLORS } from "../../dto/team.js";
+import {  DiamondMintPass, Team, TEAM_COLORS } from "../../dto/team.js";
 import { TeamRepository } from "../../repository/team-repository.js";
 
 import { Player } from "../../dto/player.js";
 import {  PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import { ContractType, GLICKO_SETTINGS, Position, Rating, TEAMS_PER_TIER } from "../enums.js";
+import { Colors, ContractType, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, Position, Rating, RotationPitcher, TEAMS_PER_TIER } from "../enums.js";
 import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";

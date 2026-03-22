@@ -1,8 +1,8 @@
 import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryKey, ForeignKey, AllowNull, BelongsTo, Unique, Index } from 'sequelize-typescript'
-import { Owner } from './owner.js'
-import { Position, Rating } from '../service/enums.js'
+
 import { DiamondMintPass } from './diamond-mint-pass.js'
 import { User } from './user.js'
+import { Colors, DevelopmentStrategy, Rating } from '../service/enums.js'
 
 
 
@@ -62,99 +62,6 @@ class Team extends Model {
     @Column(DataType.DATE)
     declare dateCreated?:Date
 
-}
-
-interface TeamLogo {
-    imageData:Buffer
-}
-
-interface Revenue {
-    perGame:string
-    total:string
-}
-
-interface Expenses {
-  total:string
-}
-
-interface FinanceSeason {
-
-    diamondBalance:string
-
-    // currentTicketPrice:string
-
-    homeGamesPlayed:number
-    // homeGamesRemaining:number
-
-    awayGamesPlayed:number
-    // awayGamesRemaining:number
-
-    totalGamesPlayed:number
-    // totalGamesRemaining:number
-
-    expenses: {
-        seasonToDate:Expenses
-        projectedRemaining:Expenses
-        projectedTotal:Expenses
-    }
-
-    revenue: {
-        seasonToDate: Revenue
-        projectedRemaining:Revenue
-        projectedTotal: Revenue
-    }
-    
-    // profit: {
-    //     seasonToDate: Profit
-    //     projectedRemaining:Profit
-    //     projectedTotal: Profit
-    // }
-
-    // attendance: {
-    //     seasonTicketsSold:number
-    //     seasonToDate: Attendance
-    //     projectedRemaining:Attendance
-    //     projectedTotal: Attendance
-    // }
-
-}
-
-interface Colors {
-    color1:string
-    color2:string
-}
-
-interface OverallRecord {
-    _id?:string
-    wins:number
-    losses:number
-    winPercent:number
-    gamesBehind:number
-    resultLast10?:boolean[]
-    runsScored?:number
-    runsAgainst?:number
-    rank:number
-}
-
-interface Lineup {
-    order?:LineupPlayer[]
-    rotation?:RotationPitcher[]
-    valid?:boolean
-}
-
-interface LineupPlayer {
-    _id?:string
-    position?:Position
-}
-
-interface RotationPitcher {
-    _id?:string
-    stamina?:number
-}
-
-
-interface DevelopmentStrategy {
-  budgetPercent:number
 }
 
 
@@ -1576,10 +1483,9 @@ const TEAM_COLORS = [
 
 
 export {
-    Team, Lineup, LineupPlayer, OverallRecord, RotationPitcher, TEAM_NAMES, TEAM_COLORS, FinanceSeason, Revenue, Colors, DiamondMintPass, TeamLogo, DevelopmentStrategy
+    Team, TEAM_NAMES, TEAM_COLORS,  DiamondMintPass
+
 }
-
-
 
 
   

@@ -166,6 +166,7 @@ import { TeamQueueService } from "../service/data/team-queue-service.js"
 import { GameSharedService } from "../service/shared/game-shared-service.js"
 import { TeamSharedService } from "../service/shared/team-shared-service.js"
 import { PlayerSharedService } from "../service/shared/player-shared-service.js"
+import { SimSharedService } from "../service/shared/sim-shared-service.js"
 
 
 const client = new Client({ intents: [
@@ -395,6 +396,8 @@ async function getContainer() {
     container.bind(DeployService).toSelf().inSingletonScope()
     container.bind(DiamondService).toSelf().inSingletonScope()
     container.bind(GameService).toSelf().inSingletonScope()
+    container.bind(SimSharedService).toSelf().inSingletonScope()
+
     container.bind("WalletService").to(NodeWalletServiceImpl).inSingletonScope()
     container.bind(IPFSService).toSelf().inSingletonScope()
     container.bind(BlockService).toSelf().inSingletonScope()

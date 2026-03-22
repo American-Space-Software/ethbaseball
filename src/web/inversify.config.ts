@@ -113,6 +113,9 @@ import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 import { QuillWebService } from "./service/quill-web-service.js";
 import { PlayerSharedService } from "../service/shared/player-shared-service.js";
+import { SimSharedService } from "../service/shared/sim-shared-service.js";
+import { RollService } from "../service/roll-service.js";
+import { RollChartService } from "../service/roll-chart-service.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -278,6 +281,9 @@ async function getContainer(env, footerRoutes, leagues) {
     container.bind(PostWebService).toSelf().inSingletonScope()
     container.bind(TeamSharedService).toSelf().inSingletonScope()
     container.bind(PlayerSharedService).toSelf().inSingletonScope()
+    container.bind(SimSharedService).toSelf().inSingletonScope()
+    container.bind(RollService).toSelf().inSingletonScope()
+    container.bind(RollChartService).toSelf().inSingletonScope()
 
     container.bind(GameTransactionWebService).toSelf().inSingletonScope()
 

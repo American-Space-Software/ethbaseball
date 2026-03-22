@@ -161,6 +161,7 @@ import { TeamQueueService } from "../service/data/team-queue-service.js";
 import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 import { PlayerSharedService } from "../service/shared/player-shared-service.js";
+import { SimSharedService } from "../service/shared/sim-shared-service.js";
 
 let _diamondsAddress:string
 let _universe:Universe
@@ -375,6 +376,8 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(LineupService).toSelf().inSingletonScope()
     container.bind(SeasonService).toSelf().inSingletonScope()
     container.bind(FinanceService).toSelf().inSingletonScope()
+    container.bind(SimSharedService).toSelf().inSingletonScope()
+
     container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
     container.bind(PlayerLeagueSeasonService).toSelf().inSingletonScope()
     container.bind(ChatGPTService).toSelf().inSingletonScope()

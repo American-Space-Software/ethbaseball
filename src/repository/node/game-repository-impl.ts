@@ -3,11 +3,12 @@ import {  inject, injectable } from "inversify"
 import { Game } from "../../dto/game.js"
 import { GameRepository } from "../game-repository.js"
 import dayjs from "dayjs"
-import { OverallRecord, Team } from "../../dto/team.js"
+import { Team } from "../../dto/team.js"
 import { Season } from "../../dto/season.js"
 import { League } from "../../dto/league.js"
 import { Player } from "../../dto/player.js"
 import { Op } from "sequelize"
+import { OverallRecord } from "../../service/enums.js"
 
 
 

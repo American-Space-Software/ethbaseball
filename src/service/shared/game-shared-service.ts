@@ -1,120 +1,16 @@
 import { inject, injectable } from "inversify";
 import { AtBatState, BaseResult, Contact, Count, DefensiveCredit, GamePlayer, GamePlayerBio, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Pitch, PitchResult, PitchType, PitchZone, Play, PlayDescription, PlayDescriptionType, PlayResult, Position, RunnerEvent, Score, ShallowDeep, WIN_EXPECTANCY_CHART, WPA, WPAReward } from "../enums.js";
 import { TeamSharedService } from "./team-shared-service.js";
+import { SimSharedService } from "./sim-shared-service.js";
 
 
 @injectable()
 class GameSharedService {
 
     constructor(
-        private teamSharedService:TeamSharedService
+        private teamSharedService:TeamSharedService,
+        private simSharedService:SimSharedService
     ) {}
-
-    getWPAFromPlay(play:Play, hitter:GamePlayer|GamePlayerBio, pitcher:GamePlayer|GamePlayerBio, isLastPlay:boolean) : WPA {
-
-        let expectancyBefore = this.getWinExpectancy(play.inningNum, play.inningTop, play.runner.result.start.first != undefined, play.runner.result.start.second != undefined, play.runner.result.start.third != undefined, play.count.start.outs, play.score.start, false)
-        
-        let inningTop = play.inningTop
-        let inningNum = play.inningNum
-        let outs = play.count.end.outs
-
-
-        if (play.count.end.outs >= 3) {
-
-            if (inningTop) {
-                inningTop = false
-            } else {
-                inningNum++
-                inningTop = true
-            }
-
-            outs = 0
-        }
-                
-        let expectancyAfter = this.getWinExpectancy(inningNum, inningTop, play.runner.result.end.first != undefined, play.runner.result.end.second != undefined, play.runner.result.end.third != undefined, outs, play.score.end, isLastPlay )
-        
-        let total = expectancyAfter - expectancyBefore
-
-        return {
-            expectancyBefore: expectancyBefore,
-            expectancyAfter: expectancyAfter,
-            total: total,
-            rewards: this.getWinExpectancyRewards(play.inningTop, total, { hitter: hitter, pitcher: pitcher}, play.credits)
-        }
-
-    }
-
-    getWinExpectancy(inning:number, top:boolean, runner1B:boolean, runner2B:boolean, runner3B:boolean, outs:number, score:Score, isComplete:boolean) : number {
-
-        if (isComplete) {
-
-            if (score.home > score.away) return 1
-            if (score.away > score.home) return 0
-
-            throw new Error("Error calculating WPA at end of game")
-
-        }
-
-        let baseSit:number
-
-        if (!runner1B && !runner2B && !runner3B) baseSit = 1
-        if (runner1B && !runner2B && !runner3B) baseSit = 2
-        if (!runner1B && runner2B && !runner3B) baseSit = 3
-        if (runner1B && runner2B && !runner3B) baseSit = 4
-        if (!runner1B && !runner2B && runner3B) baseSit = 5
-        if (runner1B && !runner2B && runner3B) baseSit = 6
-        if (!runner1B && runner2B && runner3B) baseSit = 7
-        if (runner1B && runner2B && runner3B) baseSit = 8
-
-        if (inning > 9) inning = 9        
-        
-        let weRow = WIN_EXPECTANCY_CHART.filter(r => r.inning == inning && r.top == (top == true ? 'Top' : 'Bottom') && r.basesit == baseSit && r.outs == outs)[0]
-
-        let homeDiff = score.home - score.away
-        
-        if (homeDiff < -15) homeDiff = -15
-        if (homeDiff > 15) homeDiff = 15
-
-        if (homeDiff == 0) {
-            return weRow.zero
-        } else if (homeDiff < 0) {
-            return weRow[homeDiff.toString().replace("-", "neg")]
-        } else if (homeDiff > 0) {
-            return weRow[`pos${homeDiff.toString()}`]
-        } 
-
-    }
-
-    getWinExpectancyRewards(isTopInning:boolean, wpaTotal:number, matchup, defensiveCredits:DefensiveCredit[]) : WPAReward[] {
-        
-        let rewards:WPAReward[] = []
-
-        //wpaTotal represents the total amount of wpa awarded to the home team.
-
-        let homePlayerId = isTopInning ? matchup.pitcher._id : matchup.hitter._id
-        let awayPlayerId = isTopInning ? matchup.hitter._id : matchup.pitcher._id
-
-        if (wpaTotal == 0) {
-                //no change
-                rewards.push({ playerId: matchup.pitcher._id, hitting: false, reward: wpaTotal })
-                rewards.push({ playerId: matchup.hitter._id, hitting: true, reward: wpaTotal })
-
-        } else {
-
-            //WPA applied for home team
-            rewards.push({ playerId: homePlayerId, hitting: homePlayerId == matchup.hitter._id, reward: wpaTotal })
-
-            //Negative WPA for away team
-            rewards.push({ playerId: awayPlayerId, hitting: awayPlayerId == matchup.hitter._id, reward: wpaTotal * -1 })
-        }
-
-
-
-
-        return rewards
-
-
-    }
 
 
     // splitRewards(reward: number, pitcherId: string, defensiveCredits: DefensiveCredit[]): { playerId: string; reward: number }[] {
@@ -1441,7 +1337,7 @@ class GameSharedService {
         const hitter:GamePlayer =   Object.values(gamePlayers).find((p: GamePlayer) => p._id == play.hitterId) as GamePlayer
         const pitcher:GamePlayer =   Object.values(gamePlayers).find((p: GamePlayer) => p._id == play.pitcherId) as GamePlayer
 
-        let wpa = this.getWPAFromPlay(play, hitter, pitcher, game.isComplete && play.index == game.playIndex)
+        let wpa = this.simSharedService.getWPAFromPlay(play, hitter, pitcher, game.isComplete && play.index == game.playIndex)
 
         let playMeta = {
             result: play.result,

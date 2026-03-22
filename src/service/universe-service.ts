@@ -19,7 +19,7 @@ import pluralize from "pluralize"
 import { City, SEED_DATA } from "../dto/city.js";
 import { CityRepository } from "../repository/city-repository.js";
 import { TeamService } from "./data/team-service.js";
-import {  FinanceSeason, Team, TEAM_COLORS, TEAM_NAMES } from "../dto/team.js";
+import {  Team, TEAM_COLORS, TEAM_NAMES } from "../dto/team.js";
 import { CityService } from "./data/city-service.js";
 import { SeedService } from "./data/seed-service.js";
 import { RollService } from "./roll-service.js";
@@ -36,7 +36,7 @@ import { TeamLeagueSeasonService } from "./data/team-league-season-service.js";
 import dayjs from "dayjs";
 
 import { FinanceService } from "./finance-service.js";
-import { GLICKO_SETTINGS } from "./enums.js";
+import { FinanceSeason, GLICKO_SETTINGS } from "./enums.js";
 
 const BASE_DIAMOND_REWARD = "100000000000000000000" //100 EBLD
 

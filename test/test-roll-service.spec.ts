@@ -8,7 +8,7 @@ import { SeedService } from "../src/service/data/seed-service.js"
 import { PlayerService } from "../src/service/data/player-service.js"
 import { RollChartService } from "../src/service/roll-chart-service.js"
 import { SchemaService } from "../src/service/data/schema-service.js"
-import { GamePlayer, Handedness, HitterChange, HittingProfile, HittingRatings, HomeAway, LeagueAverage, MatchupHandedness, OfficialPlayResult, PitchRatings, PitchType, PitcherChange, PitchingProfile, Play, PlayResult, Position, RunnerResult, SimPitchCommand } from "../src/service/enums.js"
+import { GamePlayer, Handedness, HitterChange, HittingProfile, HittingRatings, HomeAway, LeagueAverage, MatchupHandedness, OfficialPlayResult, PitchRatings, PitchType, PitcherChange, PitchingProfile, Play, PlayResult, Position, RunnerResult } from "../src/service/enums.js"
 import { Player } from "../src/dto/player.js"
 import { GameService } from "../src/service/data/game-service.js"
 
@@ -55,7 +55,7 @@ describe('RollService', async () => {
         hitter.hits = Handedness.R
         hitter.primaryPosition = Position.CATCHER
 
-        hitter.hittingProfile = await service.generateHittingProfile()
+        hitter.hittingProfile = await playerService.generateHittingProfile()
 
         let pitcher:Player = new Player()
         pitcher.age = 17
@@ -65,7 +65,7 @@ describe('RollService', async () => {
         pitcher.primaryPosition = Position.PITCHER
 
 
-        pitcher.pitchingProfile = await service.generatePitchingProfile()
+        pitcher.pitchingProfile = await playerService.generatePitchingProfile()
 
         hittingRatings = playerService.calculateHittingRatings( hitter, hitter.overallRating)
         pitchRatings = playerService.calculatePitchRatings(pitcher, hitter.overallRating)
@@ -921,40 +921,7 @@ describe('RollService', async () => {
     // })
 
 
-    it("should generate a hitting profile", async () => {
 
-        let profile:HittingProfile = await service.generateHittingProfile()
-        
-
-        assert.deepStrictEqual(profile, {
-            plateDisciplineDelta: -0.19,
-            contactDelta: 0.17000000000000015,
-            gapPowerDelta: -0.1,
-            homerunPowerDelta: 0.17000000000000015,
-            speedDelta: 0.26,
-            stealsDelta: -0.37,
-            defenseDelta: -0.19,
-            armDelta: 0.26,
-            vsSameHandDelta: -0.01,
-            contactProfile: { groundball: 445, flyBall: 387, lineDrive: 168 }
-        })
-          
-    })
-
-    it("should generate a pitching profile", async () => {
-
-        let profile:PitchingProfile = await service.generatePitchingProfile()
-
-        assert.deepStrictEqual(profile, {
-            controlDelta: 0.52,
-            movementDelta: -0.16,
-            powerDelta: -0.36,
-            vsSameHandDelta: -0,
-            contactProfile: { groundball: 297, flyBall: 514, lineDrive: 189 },
-            pitches: [ 'FF', 'FS', 'SV', 'SC', 'SL' ]
-        })
-
-    })
   
     // it('should calculate a hitter game score', async () => {
 

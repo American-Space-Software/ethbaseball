@@ -234,6 +234,7 @@ dayjs.extend(localizedFormat)
 
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
+import { SimSharedService } from "../src/service/shared/sim-shared-service.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -494,6 +495,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(GameSharedService).toSelf().inSingletonScope()
   container.bind(TeamSharedService).toSelf().inSingletonScope()
   container.bind(PlayerSharedService).toSelf().inSingletonScope()
+  container.bind(SimSharedService).toSelf().inSingletonScope()
 
   //Override the RNG
   let seedService: SeedService = container.get(SeedService)

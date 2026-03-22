@@ -1,7 +1,5 @@
-import { Game } from "../dto/game.js"
-import { League } from "../dto/league.js"
+
 import { ContactTypeRollInput, PowerRollInput } from "../dto/roll-input.js"
-import { OverallRecord } from "../dto/team.js"
 
 const DIAMONDS_PER_DAY = 1000 
 
@@ -748,32 +746,10 @@ interface WPAReward {
     hitting:boolean
 }
 
-interface SimPitchCommand {
 
-    game:Game
-    play:Play
 
-    offense:TeamInfo
-    defense:TeamInfo
 
-    hitter:GamePlayer
-    pitcher:GamePlayer
 
-    hitterChange:HitterChange
-    pitcherChange:PitcherChange
-
-    catcher:GamePlayer
-
-    halfInningRunnerEvents:RunnerEvent[]
-    halfInning:HalfInning
-    
-    leagueAverages: LeagueAverage
-
-    matchupHandedness:MatchupHandedness
-
-    rng:any
-
-}
 
 interface SimPitchResult {
     continueAtBat:boolean
@@ -1098,11 +1074,6 @@ interface StrikeSwingByCount {
     swing:number
 }
 
-interface LeagueAverageRatings {
-    league?:League
-    hittingRatings:HittingRatings
-    pitchRatings:PitchRatings
-}
 
 type ScheduledGame = { 
     awayId:string
@@ -1200,11 +1171,7 @@ interface PromotionRelegationLog {
     previousRank:number
 }
 
-interface LeagueBundle {
-    league:League
-    laPlayerRating:number
-    laSalary:number
-}
+
 
 interface HitResultGame {
     gameId:string
@@ -17051,9 +17018,117 @@ const GLICKO_SETTINGS = {
 
 const PLAYER_RETIREMENT_AGE = 41
 
-export  {GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, LeagueBundle, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
-    LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, SimPitchCommand, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
-    SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult, LeagueAverageRatings,
+
+
+
+
+
+
+
+
+
+
+
+
+
+interface TeamLogo {
+    imageData:Buffer
+}
+
+interface Revenue {
+    perGame:string
+    total:string
+}
+
+interface Expenses {
+  total:string
+}
+
+interface FinanceSeason {
+
+    diamondBalance:string
+
+    // currentTicketPrice:string
+
+    homeGamesPlayed:number
+    // homeGamesRemaining:number
+
+    awayGamesPlayed:number
+    // awayGamesRemaining:number
+
+    totalGamesPlayed:number
+    // totalGamesRemaining:number
+
+    expenses: {
+        seasonToDate:Expenses
+        projectedRemaining:Expenses
+        projectedTotal:Expenses
+    }
+
+    revenue: {
+        seasonToDate: Revenue
+        projectedRemaining:Revenue
+        projectedTotal: Revenue
+    }
+    
+    // profit: {
+    //     seasonToDate: Profit
+    //     projectedRemaining:Profit
+    //     projectedTotal: Profit
+    // }
+
+    // attendance: {
+    //     seasonTicketsSold:number
+    //     seasonToDate: Attendance
+    //     projectedRemaining:Attendance
+    //     projectedTotal: Attendance
+    // }
+
+}
+
+interface Colors {
+    color1:string
+    color2:string
+}
+
+interface OverallRecord {
+    _id?:string
+    wins:number
+    losses:number
+    winPercent:number
+    gamesBehind:number
+    resultLast10?:boolean[]
+    runsScored?:number
+    runsAgainst?:number
+    rank:number
+}
+
+interface Lineup {
+    order?:LineupPlayer[]
+    rotation?:RotationPitcher[]
+    valid?:boolean
+}
+
+interface LineupPlayer {
+    _id?:string
+    position?:Position
+}
+
+interface RotationPitcher {
+    _id?:string
+    stamina?:number
+}
+
+
+interface DevelopmentStrategy {
+  budgetPercent:number
+}
+
+const STANDARD_INNINGS = 9
+
+export  {STANDARD_INNINGS, Revenue, RotationPitcher, Colors, OverallRecord, Lineup,LineupPlayer, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, PitchZone, ALL_PITCH_ZONES, SimPitchResult, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, PitcherChange, HitterChange, PitchChange, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
+    LEASE_PER_CAPACITY, SERIES_LENGTH, WPAReward, WPA, MatchupHandedness, PlayResult, Play, ShallowDeep, Contact ,ShallowDeepChance,  FielderChance, InningEndingEvent,
+    SwingResult, LastPlay, TeamInfo, HalfInning, UpcomingMatchup, BaseRunners, Count, Score, BaseRunnerIds, GamePlayerBio, OfficialPlayResult,
     RunnerResult, HomeAway,HitterPitcher, PitchResultCount, HitResultCount, HittingHandednessRatings, PitchingHandednessRatings, Position, PitchType, ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,
     Handedness, Rating, PitchRatings, HittingRatings, ContactProfile, GamePlayer, HitterStatLine, PitcherStatLine, PitchLog, PitchResult, RunnerEvent, Pitch, PitchCount,
      BaseResult, DefensiveCredit, DefenseCreditType, LeagueAverage,ThrowRoll, InZoneByCount, OfficialRunnerResult, ThrowResult, BallTakeByCount, BallSwingByCount, StrikeSwingByCount, StrikeTakeByCount,HittingProfile, PitchingProfile, PlayerStatLines, PersonalityType }

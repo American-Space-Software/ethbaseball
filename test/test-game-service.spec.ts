@@ -13,7 +13,7 @@ import { OwnerService } from "../src/service/data/owner-service.js"
 // import { GameQueueService } from "../src/service/game-queue-service.js"
 import { SchemaService } from "../src/service/data/schema-service.js"
 
-import { BaseResult, Contact, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from "../src/service/enums.js"
+import { BaseResult, Contact, GamePlayer, LeagueAverage, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from "../src/service/enums.js"
 import dayjs from "dayjs"
 import { SeasonService } from "../src/service/data/season-service.js"
 import { LeagueService } from "../src/service/data/league-service.js"
@@ -22,6 +22,7 @@ import { Stadium } from "../src/dto/stadium.js"
 import { Season } from "../src/dto/season.js"
 import { League } from "../src/dto/league.js"
 import { Player } from "../src/dto/player.js"
+import { SimSharedService } from "../src/service/shared/sim-shared-service.js"
 
 let owner
 let redTeam:Player[]
@@ -30,6 +31,7 @@ let blueTeam:Player[]
 let league:League
 let season:Season
 let stadium:Stadium
+let simSharedService:SimSharedService
 
 describe('GameService', async () => {
 
@@ -41,6 +43,7 @@ describe('GameService', async () => {
     let playerService:PlayerService
     let ownerService:OwnerService
     let schemaService:SchemaService
+
 
 
     let simDate = new Date(new Date().toUTCString())
@@ -60,7 +63,7 @@ describe('GameService', async () => {
         seasonService = container.get(SeasonService)
         leagueService = container.get(LeagueService)
         stadiumService = container.get(StadiumService)
-
+        simSharedService = container.get(SimSharedService)
 
         await schemaService.load()
 
@@ -110,14 +113,14 @@ describe('GameService', async () => {
         let laRatings = playerService.buildLeagueAverages()
 
         // Create the away TeamInfo object
-        const awayTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const awayTeam:TeamInfo = buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
 
 
         // Create the home TeamInfo object
-        const homeTeam:TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const homeTeam:TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
 
-        let game: Game = service.initGame(new Game())
+        let game: Game = simSharedService.initGame(new Game()) as Game
 
         game.seasonId = season._id
         game.leagueId = league._id
@@ -148,8 +151,8 @@ describe('GameService', async () => {
     it("inning can end during runner events; stop further processing but keep events", async () => {
         const laRatings = playerService.buildLeagueAverages()
 
-        const awayTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
-        const homeTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const awayTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const homeTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
         const pitcher = homeTeam.players.find(p => p._id === homeTeam.currentPitcherId)!
         const fielder =
@@ -175,15 +178,15 @@ describe('GameService', async () => {
 
         const defensiveCredits: any[] = []
 
-        const originalChance = (rollService as any).getChanceRunnerSafe
-        const originalThrow = (rollService as any).getThrowResult
+        const originalChance = (simSharedService as any).getChanceRunnerSafe
+        const originalThrow = (simSharedService as any).getThrowResult
 
-            ; (rollService as any).getChanceRunnerSafe = () => 95
-            ; (rollService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
+            ; (simSharedService as any).getChanceRunnerSafe = () => 95
+            ; (simSharedService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
 
         let inPlayRunnerEvents: any[] = []
         try {
-            inPlayRunnerEvents = rollService.getRunnerEvents(
+            inPlayRunnerEvents = simSharedService.getRunnerEvents(
                 () => 0.5,
                 runnerResult,
                 halfInningRunnerEvents,
@@ -203,8 +206,8 @@ describe('GameService', async () => {
                 0
             ) as any[]
         } finally {
-            ; (rollService as any).getChanceRunnerSafe = originalChance
-                ; (rollService as any).getThrowResult = originalThrow
+            ; (simSharedService as any).getChanceRunnerSafe = originalChance
+                ; (simSharedService as any).getThrowResult = originalThrow
         }
 
         const outs =
@@ -221,8 +224,8 @@ describe('GameService', async () => {
     it("Ground ball to infielder with runner on 3B and 2 outs must record the batter out at 1B (throw if needed), no run", async () => {
         const laRatings = playerService.buildLeagueAverages()
 
-        const awayTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
-        const homeTeam: TeamInfo = service.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const awayTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const homeTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
         const pitcher = homeTeam.players.find(p => p._id === homeTeam.currentPitcherId)
         assert.ok(pitcher)
@@ -257,15 +260,15 @@ describe('GameService', async () => {
 
         const defensiveCredits: any[] = []
 
-        const originalChance = (rollService as any).getChanceRunnerSafe
-        const originalThrow = (rollService as any).getThrowResult
+        const originalChance = (simSharedService as any).getChanceRunnerSafe
+        const originalThrow = (simSharedService as any).getThrowResult
 
-            ; (rollService as any).getChanceRunnerSafe = () => 95
-            ; (rollService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
+            ; (simSharedService as any).getChanceRunnerSafe = () => 95
+            ; (simSharedService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
 
         let inPlayRunnerEvents: any[] = []
         try {
-            inPlayRunnerEvents = rollService.getRunnerEvents(
+            inPlayRunnerEvents = simSharedService.getRunnerEvents(
                 () => 0.5,
                 runnerResult,
                 halfInningRunnerEvents,
@@ -285,8 +288,8 @@ describe('GameService', async () => {
                 2
             ) as any[]
         } finally {
-            ; (rollService as any).getChanceRunnerSafe = originalChance
-                ; (rollService as any).getThrowResult = originalThrow
+            ; (simSharedService as any).getChanceRunnerSafe = originalChance
+                ; (simSharedService as any).getThrowResult = originalThrow
         }
 
         // Find the batter-runner event (HOME -> FIRST) and assert it ended as an out at 1B
@@ -322,3 +325,69 @@ describe('GameService', async () => {
 
 })
 
+const buildTeamInfoFromPlayers = (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) => {
+
+    let startingPitcher = players.find( p => p.primaryPosition == "P")
+
+    let gamePlayer:GamePlayer[] = simSharedService.initGamePlayers(leagueAverage, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
+
+    let teamInfo:TeamInfo = {
+        finances: {},
+        logoId: undefined,
+        name: name,
+        abbrev: name,
+        players: gamePlayer,
+
+        seasonRating: {
+            before:1500
+        },
+    
+        longTermRating: {
+            before:1500
+        },
+    
+        overallRecord: {
+            before:{ 
+                wins: 0, 
+                losses: 0,
+                gamesBehind: 0,
+                resultLast10: [],
+                rank: 0,
+                runsAgainst: 0,
+                runsScored: 0,
+                winPercent: 0
+            }
+        },
+
+        lineupIds: players.map( p =>  p._id ),
+
+        currentHitterIndex: 0,
+        currentPitcherId: undefined,
+
+        runner1BId: undefined,
+        runner2BId: undefined,
+        runner3BId: undefined,
+
+        homeAway: undefined,
+
+        color1: color1,
+        color2: color2
+
+    }
+
+    //Sync players to the proper positions. Right now this is simple because 
+    //a player can only play one position but it's possible we'll need to pass
+    //this info in later.
+    teamInfo.lineupIds.forEach( (id, idx) => {
+
+        let player:GamePlayer = teamInfo.players.find( p => p._id == id)
+        //Set spot in lineup
+        if (player) player.lineupIndex = idx 
+
+    })
+
+    teamInfo.currentPitcherId = teamInfo.players.find( p => p.currentPosition == Position.PITCHER)._id
+
+    return teamInfo
+
+}

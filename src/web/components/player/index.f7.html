@@ -62,33 +62,34 @@
                 </div>
               </li>
             
-              <li>
-                <div class="item-content">
+              ${player.askingPrice || showInsufficientDiamonds || showInsufficientDiamondsToDrop ? $h`
+                <li>
+                  <div class="item-content">
 
-                  <div class="item-inner">
+                    <div class="item-inner">
 
-                    ${player.askingPrice ? $h`
-                      <div class="item-text">
-                        Cost: ${universeWebService.displayDiamonds(player.askingPrice)}
-                      </div>
-                    ` : $h` `}
+                      ${player.askingPrice ? $h`
+                        <div class="item-text">
+                          Cost: ${universeWebService.displayDiamonds(player.askingPrice)}
+                        </div>
+                      ` : $h` `}
 
-                    ${showInsufficientDiamonds ? $h`
-                      <div class="item-text">
-                        Your team does not have enough diamonds to sign this player.
-                      </div>
-                    ` : $h` `}
+                      ${showInsufficientDiamonds ? $h`
+                        <div class="item-text">
+                          Your team does not have enough diamonds to sign this player.
+                        </div>
+                      ` : $h` `}
 
-                    ${showInsufficientDiamondsToDrop ? $h`
-                      <div class="item-text">
-                        You need a balance of at least ${universeWebService.displayDiamonds(player.minimumPlayerSalary)} to drop a player.
-                      </div>
-                    ` : $h` `}
+                      ${showInsufficientDiamondsToDrop ? $h`
+                        <div class="item-text">
+                          You need a balance of at least ${universeWebService.displayDiamonds(player.minimumPlayerSalary)} to drop a player.
+                        </div>
+                      ` : $h` `}
 
+                    </div>
                   </div>
-                </div>
-              </li>
-
+                </li>                
+              ` : $h` `}
 
             </ul>
           </div>

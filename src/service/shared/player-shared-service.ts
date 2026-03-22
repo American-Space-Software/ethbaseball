@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { HITTER_GAME_AVERAGE_XP, PlayerGrade } from "../enums.js";
+import { HITTER_GAME_AVERAGE_XP, HittingRatings, PitchRatings, PlayerGrade } from "../enums.js";
 
 const BASE_RATING = 70
 const BASE_XP = 720
@@ -288,7 +288,30 @@ class PlayerSharedService {
 
         return this.getExperienceForDisplayLevel(level + 1)
     }
+    
+    modifyRatings(ratings: HittingRatings | PitchRatings, modifier: number) {
 
+        let keys = Object.keys(ratings).filter(k => k != "contactProfile")
+
+        for (let key of keys) {
+
+            if (!Array.isArray(ratings[key])) {
+
+                if (Object.keys(ratings[key]).length > 0) {
+
+                    for (let k of Object.keys(ratings[key])) {
+                        ratings[key][k] *= modifier
+                    }
+
+                } else {
+                    ratings[key] *= modifier
+                }
+
+            } 
+
+        }
+
+    }
 
 }
 

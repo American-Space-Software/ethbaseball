@@ -6,7 +6,7 @@ import { SchemaService } from "../src/service/data/schema-service.js"
 import {  Player} from "../src/dto/player.js"
 import assert from "assert"
 import { GameService } from "../src/service/data/game-service.js"
-import { Position } from "../src/service/enums.js"
+import { HittingProfile, PitchingProfile, Position } from "../src/service/enums.js"
 import dayjs from "dayjs"
 
 let container = getContainer()
@@ -367,9 +367,6 @@ describe('PlayerService', async () => {
         assert.equal(player.throws, "R")
         assert.equal(player.hits, "R")
 
-
-
-
         assert.deepStrictEqual(player.hittingRatings, {
           contactProfile: { groundball: 365, flyBall: 364, lineDrive: 271 },
           speed: 25,
@@ -433,6 +430,42 @@ describe('PlayerService', async () => {
         })
 
     })
+
+
+    it("should generate a hitting profile", async () => {
+
+        let profile:HittingProfile = await service.generateHittingProfile()
+
+        assert.deepStrictEqual(profile, {
+          plateDisciplineDelta: 0.35,
+          contactDelta: 0.53,
+          gapPowerDelta: -0.19,
+          homerunPowerDelta: -0.28,
+          speedDelta: -0.28,
+          stealsDelta: -0.64,
+          defenseDelta: -0.1,
+          armDelta: 0.53,
+          vsSameHandDelta: -0.08,
+          contactProfile: { groundball: 389, flyBall: 396, lineDrive: 215 }
+        })
+                  
+    })
+
+    it("should generate a pitching profile", async () => {
+
+        let profile:PitchingProfile = await service.generatePitchingProfile()
+
+        assert.deepStrictEqual(profile, {
+          controlDelta: 0.36,
+          movementDelta: -0.56,
+          powerDelta: 0.28,
+          vsSameHandDelta: -0.08,
+          contactProfile: { groundball: 326, flyBall: 400, lineDrive: 274 },
+          pitches: [ 'FF', 'CH' ]
+        })
+
+    })
+
 
     // it("should update player ratings", async () => {
       

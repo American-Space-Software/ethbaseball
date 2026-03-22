@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
-import { Lineup } from "../dto/team.js";
-import { Position } from "./enums.js";
+import { Lineup, Position } from "./enums.js";
 
 @injectable()
 class LineupService {

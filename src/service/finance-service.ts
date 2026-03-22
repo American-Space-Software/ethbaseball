@@ -1,10 +1,10 @@
 import { inject, injectable } from "inversify";
 
-import { FinanceSeason, Lineup, Revenue, RotationPitcher, Team } from "../dto/team.js";
+import { Team } from "../dto/team.js";
 
 import { Player } from "../dto/player.js";
 
-import { GameTeamFinance, LEASE_PER_CAPACITY, Position, RewardPerTeam} from "./enums.js";
+import { FinanceSeason, GameTeamFinance, LEASE_PER_CAPACITY, Position, Revenue, RewardPerTeam} from "./enums.js";
 
 import { LineupService } from "./lineup-service.js";
 import { ethers } from "ethers";

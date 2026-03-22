@@ -2,10 +2,10 @@ import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryK
 import { League } from './league.js'
 
 import { Season } from './season.js'
-import { FinanceSeason, Lineup, OverallRecord, Team } from './team.js'
+import { Team } from './team.js'
 import { City } from './city.js'
 import { Stadium } from './stadium.js'
-import { Rating } from '../service/enums.js'
+import { FinanceSeason, Lineup, OverallRecord, Rating } from '../service/enums.js'
 import { Image } from './image.js'
 
 

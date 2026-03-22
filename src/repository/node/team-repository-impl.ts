@@ -1,9 +1,9 @@
 import {  inject, injectable } from "inversify"
 
 import { TeamRepository } from "../team-repository.js"
-import { OverallRecord, Team } from "../../dto/team.js"
+import {  Team } from "../../dto/team.js"
 import { Owner } from "../../dto/owner.js"
-import { Rating } from "../../service/enums.js"
+import { OverallRecord, Rating } from "../../service/enums.js"
 import { Op, QueryTypes } from "sequelize"
 import { City } from "../../dto/city.js"
 import { Stadium } from "../../dto/stadium.js"

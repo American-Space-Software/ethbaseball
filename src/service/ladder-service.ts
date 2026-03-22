@@ -3,8 +3,8 @@ import { inject, injectable } from "inversify"
 import { PlayerService } from "./data/player-service.js"
 
 import { GameService } from "./data/game-service.js"
-import { FinanceSeason,  RotationPitcher,  Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, GamePlayer, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE } from "./enums.js"
+import { Team } from "../dto/team.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, GamePlayer, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, RotationPitcher, FinanceSeason } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -37,6 +37,7 @@ import { ethers } from "ethers"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { TeamQueueMatchup } from "../dto/team-queue.js"
 import { RollService } from "./roll-service.js"
+import { SimSharedService } from "./shared/sim-shared-service.js"
 
 
 @injectable()
@@ -67,7 +68,8 @@ class LadderService {
         private statService:StatService,
         private offchainEventService:OffchainEventService,
         private teamQueueService:TeamQueueService,
-        private rollService:RollService
+        private rollService:RollService,
+        private simSharedService:SimSharedService
     ) {}
 
 
@@ -330,15 +332,21 @@ class LadderService {
 
         const avgOverallRating = activePlayers.reduce((sum, p) => sum + p.overallRating, 0) / activePlayers.length
 
-        this.gameService.startGame({
+        this.simSharedService.startGame({
 
             game,
 
             homeTLS: homeBundle.tls,
             awayTLS: awayBundle.tls,
 
+            homeTLSPlain: homeBundle.tls.get({ plain: true }),
+            awayTLSPlain: awayBundle.tls.get({ plain: true }),
+
             awayPlayers: awayBundle.plss,
             homePlayers: homeBundle.plss,
+
+            awayPlssPlain: awayBundle.plss.map( pls => pls.get({ plain: true })),
+            homePlssPlain: homeBundle.plss.map( pls => pls.get({ plain: true })),
 
             away: awayBundle.team,
             home: homeBundle.team,
@@ -351,6 +359,13 @@ class LadderService {
             leagueAverages: this.playerService.buildLeagueAverages(avgOverallRating)
 
         })
+
+        game.changed('leagueAverages', true)
+        game.changed('away', true)
+        game.changed('home', true)
+        game.changed('startDate', true)
+        game.changed('isStarted', true)
+
 
         await this.gameService.put(game, options)
 
@@ -413,7 +428,15 @@ class LadderService {
         let players:Player[] = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
         let plss = await this.playerLeagueSeasonService.getMostRecentByPlayersSeason(players, season, options)
 
-        this.gameService.finishGame(game, players, plss)
+        this.simSharedService.finishGame(game)
+
+
+        game.changed('home', true)
+        game.changed('away', true)
+        game.changed('winningPitcherId', true)
+        game.changed('losingPitcherId', true)
+        game.changed('winningTeamId', true)
+        game.changed('losingTeamId', true)        
 
         await this.gameService.put(game, options)
 

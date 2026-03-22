@@ -4,7 +4,7 @@ import Big from 'big.js'
 
 import { RollChart } from "../dto/roll-chart.js"
 import { ContactTypeRollInput, FielderChanceRollInput, PowerRollInput, ShallowDeepRollInput } from "../dto/roll-input.js"
-import { Contact, Handedness, HitterChange, HittingRatings, LeagueAverage, PitchChange, PitcherChange, PitchRatings, PitchType, PlayResult, Position, ShallowDeep } from "./enums.js"
+import { Contact, Handedness, HitterChange, HittingRatings, LeagueAverage, PitcherChange, PitchRatings, PlayResult, Position, ShallowDeep } from "./enums.js"
 
 const MIN_CHANGE = -.5
 const MAX_CHANGE = .5

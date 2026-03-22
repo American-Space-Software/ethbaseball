@@ -17,7 +17,7 @@ import { Animation } from "../../dto/animation.js"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, LeagueAverageRatings, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, HITTER_GAME_AVERAGE_XP, GLICKO_SETTINGS } from "../enums.js"
+import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, HITTER_GAME_AVERAGE_XP, GLICKO_SETTINGS, HittingProfile, ContactProfile, PitchingProfile } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -167,8 +167,8 @@ class PlayerService {
 
         player.isRetired = false
 
-        player.hittingProfile = await this.rollService.generateHittingProfile()
-        player.pitchingProfile = await this.rollService.generatePitchingProfile(player.primaryPosition == Position.PITCHER)
+        player.hittingProfile = await this.generateHittingProfile()
+        player.pitchingProfile = await this.generatePitchingProfile(player.primaryPosition == Position.PITCHER)
 
         //Calculate ratings
         
@@ -187,6 +187,212 @@ class PlayerService {
         }
         
         return player
+    }
+
+    async generateHittingProfile(): Promise<HittingProfile> {
+
+        let rng = await this.seedService.getRNG()
+
+        //Generate 9 distributed ratings
+        let nums = this.rollService.getRatingDistribution(rng, 9)
+
+        let lowestIndex = 0;
+        let lowestAbs = Math.abs(nums[0])
+
+        // 1. Find the index of the number with the lowest absolute value
+        for (let i = 1; i < nums.length; i++) {
+
+            const currentAbs = Math.abs(nums[i])
+            
+            if (currentAbs < lowestAbs) {
+                lowestAbs = currentAbs
+                lowestIndex = i
+            }
+
+        }
+
+        // 2. Remove the element from its current position
+        const [element] = nums.splice(lowestIndex, 1)
+
+        // 3. Add the element to the end of the array
+        nums.push(element)
+
+
+
+        //Generate contact profile
+        let contactProfile = this.generateContactProfile(rng)
+
+
+        let profile:HittingProfile = {
+            plateDisciplineDelta: nums[0],
+            contactDelta: nums[1],
+        
+            gapPowerDelta: nums[2],
+            homerunPowerDelta: nums[3],
+        
+            speedDelta: nums[4],
+            stealsDelta: nums[5],
+        
+            defenseDelta: nums[6],
+            armDelta: nums[7],
+        
+            vsSameHandDelta: -Math.abs(nums[8]), //Make sure it's negative
+
+            contactProfile: contactProfile
+            
+        }
+
+        return profile
+
+    }
+
+    async generatePitchingProfile(isPitcher: boolean = true): Promise<PitchingProfile> {
+
+        let rng = await this.seedService.getRNG()
+
+        let pitches:PitchType[]
+        let nums
+        let vsSameHandDelta
+
+        do {
+
+            pitches = []
+
+            //Roll for # of pitches 3-5
+            let numPitches
+
+            if (isPitcher) {
+                numPitches = this.rollService.weightedRandom(rng, [2, 3, 4, 5], [20, 20, 40, 20])
+            } else {
+                numPitches = 1
+            }
+
+            //Generate distributed ratings
+            nums = this.rollService.getRatingDistribution(rng, 4)
+
+
+            let lowestIndex = 0;
+            let lowestAbs = Math.abs(nums[0])
+
+            // 1. Find the index of the number with the lowest absolute value
+            for (let i = 1; i < nums.length; i++) {
+
+                const currentAbs = Math.abs(nums[i])
+                
+                if (currentAbs < lowestAbs) {
+                    lowestAbs = currentAbs
+                    lowestIndex = i
+                }
+
+            }
+
+            // 2. Remove the element from its current position
+            [vsSameHandDelta] = nums.splice(lowestIndex, 1)
+
+            vsSameHandDelta = -Math.abs(vsSameHandDelta) //make sure it's negative
+
+            for (let i = 0; i < numPitches; i++) {
+                pitches.push(this.generatePitchType(rng, i + 1, pitches))
+            }
+        
+            //Remove any pitches that are 15% worse than league average. Pitchers wouldn't throw them. Except fastball.
+            //This probably messes with the actual league average. There's probably a better way to do this.
+            //Hitters can have a trash fastball though
+            // if (pitches.length > 1) {
+            //     pitches = pitches.filter( p => p.ratingDelta > -.15 || p.type == PitchType.FF)
+            // }
+
+        } while (pitches.length == 0) //if we don't have any pitches re-roll
+
+        let contactProfile = this.generateContactProfile(rng)
+
+        let profile:PitchingProfile = {
+            controlDelta: nums[0],
+            movementDelta: nums[1],
+            powerDelta: nums[2],
+            vsSameHandDelta: vsSameHandDelta,
+            contactProfile: contactProfile,
+            pitches: pitches
+        }
+
+        return profile
+
+    }
+
+    generateContactProfile(playerRNG): ContactProfile {
+
+        let nums: number[] = []
+
+        //Generate until we get an array that adds up to 1000
+        while (nums.length == 0) {
+
+            //Generate numRatings number of ratings
+            for (let i = 0; i < 3; i++) {
+                nums.push(this.rollService.getRoll(playerRNG, 0, 1000))
+            }
+
+            //Get the total
+            let total = nums.reduce((acc, num) => acc + num, 0)
+
+            //Divide each one by the total and round.
+            for (let i = 0; i < nums.length; i++) {
+                nums[i] = Math.round((nums[i] / total) * 1000)
+            }
+
+            let newTotal = nums.reduce((acc, num) => acc + num, 0)
+
+            //If we don't equal 1000 start over.
+            if (newTotal != 1000) {
+                nums.length = 0//try again
+                continue
+            }
+
+            //GB percent between 250 and 650
+            if (nums[0] > 650 || nums[0] < 250) {
+                nums.length = 0 //try again
+            }
+
+            //FB percent between 150 and 550
+            if (nums[1] > 550 || nums[1] < 150) {
+                nums.length = 0 //try again
+            } 
+
+            //LD percent between 150 and 350
+            if (nums[2] > 350 || nums[2] < 150) {
+                nums.length = 0 //try again
+            }
+
+        }
+
+        return {
+            groundball: nums[0],
+            flyBall: nums[1],
+            lineDrive: nums[2]
+        }
+        
+    }
+
+
+    generatePitchType(playerRNG, pitchNum: number, exclude: PitchType[]): PitchType {
+
+        let available: PitchType[] = [PitchType.SI, PitchType.SL, PitchType.SV, PitchType.CU, PitchType.CH, PitchType.SC, PitchType.FS, PitchType.FO]
+
+        for (let e of exclude) {
+            available.splice(available.indexOf(e), 1)
+        }
+
+        let type
+
+        if (pitchNum == 1) {
+            type = PitchType.FF
+        } else {
+            type = this.rollService.weightedRandom(playerRNG, available, available.map(p => 1))
+        }
+
+
+
+        return type
+
     }
 
     async scoutTeam(date:string) {
@@ -459,25 +665,7 @@ class PlayerService {
 
     modifyRatings(ratings: HittingRatings | PitchRatings, modifier: number) {
 
-        let keys = Object.keys(ratings).filter(k => k != "contactProfile")
-
-        for (let key of keys) {
-
-            if (!Array.isArray(ratings[key])) {
-
-                if (Object.keys(ratings[key]).length > 0) {
-
-                    for (let k of Object.keys(ratings[key])) {
-                        ratings[key][k] *= modifier
-                    }
-
-                } else {
-                    ratings[key] *= modifier
-                }
-
-            } 
-
-        }
+        return this.playerSharedService.modifyRatings(ratings, modifier)
 
     }
 
