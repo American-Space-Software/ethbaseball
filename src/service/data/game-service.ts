@@ -2,23 +2,21 @@ import { inject, injectable } from "inversify"
 import { Game, GameTeam, GamePlayer as GP } from "../../dto/game.js"
 import {   GamePlayer, BaseRunners, LastPlay, Score, TeamInfo, UpcomingMatchup, Play,  HomeAway, OverallRecord, } from "../enums.js"
 
-import { RollService,  } from "../roll-service.js"
 import { GameRepository } from "../../repository/game-repository.js"
 import { SeedService } from "./seed-service.js"
 
-import { PlayerService } from "./player-service.js"
 import { Team } from "../../dto/team.js"
 import { League } from "../../dto/league.js"
 import { Season } from "../../dto/season.js"
 import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { GameTeamRepository } from "../../repository/game-team-repository.js"
-import { StatService } from "../stat-service.js"
 import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { GameSharedService } from "../shared/game-shared-service.js"
 import { SimSharedService } from "../shared/sim-shared-service.js"
 
+import { v4 as uuidv4 } from 'uuid';
 
 
 @injectable()
@@ -296,7 +294,7 @@ class GameService {
     getGameViewModel(game:Game) : GameViewModel {
 
         let linescore = this.simSharedService.getLineScore(game)
-        let baseRunners:BaseRunners = this.simSharedService.getBaserunners(game)
+        let baseRunners:BaseRunners = this.getBaserunners(game)
         let matchup:UpcomingMatchup = this.simSharedService.getUpcomingMatchup(game)
         let plays:LastPlay[] = this.simSharedService.getLastPlays(game)
 
@@ -310,10 +308,34 @@ class GameService {
 
     }
 
+
+    getBaserunners(game:Game) : BaseRunners {
+
+        if (game.isTopInning) {
+
+            return {
+                first: game.away.runner1BId ? this.simSharedService.buildGamePlayerBio( game.away.players.find(p => p._id == game.away.runner1BId) ) : undefined,
+                second: game.away.runner2BId ? this.simSharedService.buildGamePlayerBio( game.away.players.find(p => p._id == game.away.runner2BId) ) : undefined,
+                third: game.away.runner3BId ? this.simSharedService.buildGamePlayerBio( game.away.players.find(p => p._id == game.away.runner3BId) ) : undefined,
+            }
+
+
+        } else {
+
+            return {
+                first: game.home.runner1BId ? this.simSharedService.buildGamePlayerBio( game.home.players.find(p => p._id == game.home.runner1BId) ): undefined,
+                second: game.home.runner2BId ? this.simSharedService.buildGamePlayerBio( game.home.players.find(p => p._id == game.home.runner2BId) ) : undefined,
+                third: game.home.runner3BId ? this.simSharedService.buildGamePlayerBio( game.home.players.find(p => p._id == game.home.runner3BId) ) : undefined,
+            }
+
+        }
+
+    }    
+
     getGameSummaryViewModel(game:Game) : GameSummaryViewModel {
 
         let linescore = this.simSharedService.getLineScore(game)
-        let baseRunners:BaseRunners = this.simSharedService.getBaserunners(game)
+        let baseRunners:BaseRunners = this.getBaserunners(game)
         
         let matchup:UpcomingMatchup 
 
@@ -454,7 +476,7 @@ class GameService {
         
         let game:Game = new Game()
 
-        this.simSharedService.initGame(game)
+        this.initGame(game)
 
         //Set teams on game.
         game.away = this.buildTeamInfo(command.awayTLS, command.awayTLS.team.colors.color1, command.awayTLS.team.colors.color2, HomeAway.AWAY)            
@@ -483,6 +505,35 @@ class GameService {
 
         return game        
     }
+
+    initGame(game:Game) {
+
+        game._id = uuidv4()
+
+        game.currentInning = 1
+        game.isTopInning = true
+        game.isStarted = false
+        game.isComplete = false
+        game.isFinished = false
+        game.count = {
+            balls: 0,
+            strikes: 0,
+            outs: 0
+        }
+
+        game.score = {
+            away: 0,
+            home: 0
+        }
+
+        game.halfInnings = []
+
+        game.playIndex = 0
+        // game.level = command.level
+
+        return game
+    }
+
 
     createHitResult(game:Game, player:GamePlayer) : GameHitResult {
 

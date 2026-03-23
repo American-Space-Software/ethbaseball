@@ -284,7 +284,7 @@ html {
   background: #ffffff;
   margin-top: 15px;
   width: 1140px;
-  max-width: 100%;
+  max-width: 90%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
@@ -420,7 +420,7 @@ h1 {
 
 .fixed-width-content {
   width: 1140px;
-  max-width: 100%;
+  max-width: 90%;
 }
 
 

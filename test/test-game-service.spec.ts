@@ -120,7 +120,7 @@ describe('GameService', async () => {
         const homeTeam:TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
 
-        let game: Game = simSharedService.initGame(new Game()) as Game
+        let game: Game = service.initGame(new Game()) as Game
 
         game.seasonId = season._id
         game.leagueId = league._id
