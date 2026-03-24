@@ -178,11 +178,12 @@ describe('GameService', async () => {
 
         const defensiveCredits: any[] = []
 
-        const originalChance = (simSharedService as any).getChanceRunnerSafe
-        const originalThrow = (simSharedService as any).getThrowResult
+        const runnerActions = (simSharedService as any).runnerActions
+        const originalChance = runnerActions.getChanceRunnerSafe
+        const originalThrow = runnerActions.gameRolls.getThrowResult
 
-            ; (simSharedService as any).getChanceRunnerSafe = () => 95
-            ; (simSharedService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
+        runnerActions.getChanceRunnerSafe = () => 95
+        runnerActions.gameRolls.getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
 
         let inPlayRunnerEvents: any[] = []
         try {
@@ -206,8 +207,8 @@ describe('GameService', async () => {
                 0
             ) as any[]
         } finally {
-            ; (simSharedService as any).getChanceRunnerSafe = originalChance
-                ; (simSharedService as any).getThrowResult = originalThrow
+            runnerActions.getChanceRunnerSafe = originalChance
+            runnerActions.gameRolls.getThrowResult = originalThrow
         }
 
         const outs =
@@ -252,7 +253,6 @@ describe('GameService', async () => {
             scored: [],
         }
 
-        // already 2 outs
         const halfInningRunnerEvents: any[] = [
             { runner: { _id: "out1" }, movement: { isOut: true, start: BaseResult.HOME, end: BaseResult.FIRST } },
             { runner: { _id: "out2" }, movement: { isOut: true, start: BaseResult.HOME, end: BaseResult.FIRST } },
@@ -260,11 +260,12 @@ describe('GameService', async () => {
 
         const defensiveCredits: any[] = []
 
-        const originalChance = (simSharedService as any).getChanceRunnerSafe
-        const originalThrow = (simSharedService as any).getThrowResult
+        const runnerActions = (simSharedService as any).runnerActions
+        const originalChance = runnerActions.getChanceRunnerSafe
+        const originalThrow = runnerActions.gameRolls.getThrowResult
 
-            ; (simSharedService as any).getChanceRunnerSafe = () => 95
-            ; (simSharedService as any).getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
+        runnerActions.getChanceRunnerSafe = () => 95
+        runnerActions.gameRolls.getThrowResult = () => ({ roll: 100, result: ThrowResult.OUT })
 
         let inPlayRunnerEvents: any[] = []
         try {
@@ -288,11 +289,10 @@ describe('GameService', async () => {
                 2
             ) as any[]
         } finally {
-            ; (simSharedService as any).getChanceRunnerSafe = originalChance
-                ; (simSharedService as any).getThrowResult = originalThrow
+            runnerActions.getChanceRunnerSafe = originalChance
+            runnerActions.gameRolls.getThrowResult = originalThrow
         }
 
-        // Find the batter-runner event (HOME -> FIRST) and assert it ended as an out at 1B
         const batterEvent = inPlayRunnerEvents.find(e => e?.runner?._id === hitter._id)
         assert.ok(batterEvent, "Expected a runner event for the hitter")
 
@@ -301,8 +301,6 @@ describe('GameService', async () => {
         assert.equal(batterEvent.movement?.isOut, true)
         assert.equal(batterEvent.movement?.outBase, BaseResult.FIRST)
 
-        // If the fielder is not 1B, we should see a recorded throw to 1B.
-        // If the fielder IS 1B, it is an unassisted putout and it will not record a throw object.
         if (infielder.currentPosition !== Position.FIRST_BASE) {
             assert.ok(batterEvent.throw, "Expected a throw to be recorded (fielder != 1B)")
             assert.equal(batterEvent.throw.to.position, Position.FIRST_BASE)
@@ -311,13 +309,11 @@ describe('GameService', async () => {
             assert.equal(batterEvent.throw, undefined, "Unassisted putout at 1B should not record a throw object")
         }
 
-        // Total outs should be 3
         const outs =
             halfInningRunnerEvents.filter(e => e?.movement?.isOut).length +
             inPlayRunnerEvents.filter(e => e?.movement?.isOut).length
         assert.equal(outs, 3)
 
-        // Runner from 3B must NOT score
         const scored = inPlayRunnerEvents.some(e => e?.movement?.end === BaseResult.HOME && e?.movement?.isOut === false)
         assert.equal(scored, false)
     })
