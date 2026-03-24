@@ -21,9 +21,12 @@ class SimSharedService {
         private rollService:RollService,
         private rollChartService: RollChartService,
         private statService:StatService,
+        private playerSharedService:PlayerSharedService
+
     ) {
         this.pitchQuality = new PitchQuality(rollService)
         this.gameRolls = new GameRolls(rollService, rollChartService)
+        this.gamePlayers = new GamePlayers(rollChartService, playerSharedService, statService)
     }
 
     startGame(command:StartGameCommand) {
@@ -493,9 +496,7 @@ class SimSharedService {
         command.offense.runner3BId = command.play.runner?.result.end.third
 
         //Add result to line score and gamescore
-        this.updateLinescoreRuns(game, command.halfInning, command.play)
-        this.updateLinescoreHits(game, command.halfInning, command.play)
-        this.updateGameRuns(game, command.play)
+        this.updateLinescore(game, command.halfInning, command.play)
 
         //Make sure the play has the end count. Clone so we don't accidentally change them.
         command.play.count.end = JSON.parse(JSON.stringify(game.count))
@@ -703,8 +704,6 @@ class SimSharedService {
 
     }
 
-
-
     initHalfInning(num:number, top: boolean) : HalfInning {
 
         let halfInning:HalfInning = {
@@ -723,20 +722,9 @@ class SimSharedService {
 
     }
 
-    updateLinescoreHits(game:Game, halfInning:HalfInning, play:Play) {
+    updateLinescore(game:Game, halfInning:HalfInning, play:Play) {
 
-        if (AtBatInfo.isHit(play.result)) {
-            if (game.isTopInning) {
-                halfInning.linescore.hits++
-            } else {
-                halfInning.linescore.hits++
-            }
-        }
-
-    }
-
-    updateLinescoreRuns(game:Game, halfInning:HalfInning, play:Play) {
-
+        //Runs
         if (play.runner?.result?.end?.scored?.length > 0) {
 
             if (game.isTopInning) {
@@ -747,14 +735,16 @@ class SimSharedService {
 
         }
 
-    }
+        //Hits
+        if (AtBatInfo.isHit(play.result)) {
+            if (game.isTopInning) {
+                halfInning.linescore.hits++
+            } else {
+                halfInning.linescore.hits++
+            }
+        }        
 
-    updateLinescoreLOB(halfInning:HalfInning, lob:number) {
-        halfInning.linescore.leftOnBase += lob
-    }
-
-    updateGameRuns(game:Game, play:Play) {
-
+        //Runs
         if (play.runner?.result?.end?.scored?.length > 0) {
 
             if (game.isTopInning) {
@@ -763,8 +753,12 @@ class SimSharedService {
                 game.score.home += play.runner?.result?.end?.scored?.length
             }
 
-        }
+        }        
 
+    }
+
+    updateLinescoreLOB(halfInning:HalfInning, lob:number) {
+        halfInning.linescore.leftOnBase += lob
     }
 
     getUpcomingMatchup(game:Game) : UpcomingMatchup {
@@ -2159,7 +2153,7 @@ class SimSharedService {
             if (this.getThrowCount(command.runnerEvents) < 1) {
     
                 let throwTo:GamePlayer = command.defense.players.find( p => p.currentPosition == this.getPositionCoveringBase(command.throwFrom.currentPosition, command.end))
-                let throwRoll:ThrowRoll = this.gameRolls.getThrowResult(command.gameRNG, command.chanceRunnerSafe)
+                let throwRoll:ThrowRoll = this.getThrowResult(command.gameRNG, command.chanceRunnerSafe)
     
                 if (throwTo._id != command.throwFrom._id) {
                     command.runnerEvent.throw = {
@@ -2560,8 +2554,6 @@ class SimSharedService {
 
     }
 
-
-
     getOfficialPlayResult(playResult: PlayResult, contact: Contact, shallowDeep: ShallowDeep, fielder: Position, runnerEvents: RunnerEvent[]) {
 
         switch (playResult) {
@@ -2616,14 +2608,6 @@ class SimSharedService {
 
     }
 
-
-
-
-
-
-
-
-
     getActualZone(intentZone: PitchZone, locQ: number): PitchZone {
 
         // 67–99 => on target, 34–66 => off by 1 zone, 0–33 => off by 2 zones
@@ -2670,8 +2654,6 @@ class SimSharedService {
 
         return `${newVerticalText}_${newHorizontalText}` as PitchZone
     }
-
-
 
     logResults(offense:TeamInfo, defense:TeamInfo, hitter:GamePlayer, pitcher:GamePlayer, runner1BId:string, runner2BId:string, runner3BId:string, defensiveCredits:DefensiveCredit[], runnerEvents: RunnerEvent[], contact: Contact, officialPlayResult: OfficialPlayResult, playResult: PlayResult, pitchLog: PitchLog, isInningEndingEvent:boolean) {
 
@@ -2936,9 +2918,13 @@ class SimSharedService {
         return this.gamePlayers.buildGamePlayerBio(player)
     }
 
+    getThrowResult(gameRNG, overallSafeChance:number) : ThrowRoll {
+        return this.gameRolls.getThrowResult(gameRNG, overallSafeChance)
+    }
+
     //Exposed in tests.
     initGamePlayers(leagueAverage:LeagueAverage, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
-        return this.initGamePlayers(leagueAverage, players, startingPitcher, teamId, color1, color2, startingId)
+        return this.gamePlayers.initGamePlayers(leagueAverage, players, startingPitcher, teamId, color1, color2, startingId)
     }
     
 
@@ -3115,7 +3101,6 @@ class GameRolls {
 
     }    
 
-
     getThrowResult(gameRNG, overallSafeChance:number) : ThrowRoll {
 
         let roll = this.rollService.getRoll(gameRNG, 1, 100)
@@ -3141,7 +3126,8 @@ class GamePlayers {
 
     constructor(
         private rollChartService:RollChartService,
-        private playerSharedService:PlayerSharedService
+        private playerSharedService:PlayerSharedService,
+        private statService:StatService
     ) {}
 
     initGamePlayers(leagueAverage:LeagueAverage, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {

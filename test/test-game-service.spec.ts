@@ -302,7 +302,7 @@ describe('GameService', async () => {
         assert.equal(batterEvent.movement?.outBase, BaseResult.FIRST)
 
         // If the fielder is not 1B, we should see a recorded throw to 1B.
-        // If the fielder IS 1B, it is an unassisted putout and your code will not record a throw object.
+        // If the fielder IS 1B, it is an unassisted putout and it will not record a throw object.
         if (infielder.currentPosition !== Position.FIRST_BASE) {
             assert.ok(batterEvent.throw, "Expected a throw to be recorded (fielder != 1B)")
             assert.equal(batterEvent.throw.to.position, Position.FIRST_BASE)
