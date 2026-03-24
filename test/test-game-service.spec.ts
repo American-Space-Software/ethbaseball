@@ -113,11 +113,11 @@ describe('GameService', async () => {
         let laRatings = playerService.buildLeagueAverages()
 
         // Create the away TeamInfo object
-        const awayTeam:TeamInfo = buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const awayTeam:TeamInfo = simSharedService.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
 
 
         // Create the home TeamInfo object
-        const homeTeam:TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const homeTeam:TeamInfo = simSharedService.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
 
         let game: Game = service.initGame(new Game()) as Game
@@ -151,8 +151,8 @@ describe('GameService', async () => {
     it("inning can end during runner events; stop further processing but keep events", async () => {
         const laRatings = playerService.buildLeagueAverages()
 
-        const awayTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
-        const homeTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const awayTeam: TeamInfo = simSharedService.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const homeTeam: TeamInfo = simSharedService.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
         const pitcher = homeTeam.players.find(p => p._id === homeTeam.currentPitcherId)!
         const fielder =
@@ -225,8 +225,8 @@ describe('GameService', async () => {
     it("Ground ball to infielder with runner on 3B and 2 outs must record the batter out at 1B (throw if needed), no run", async () => {
         const laRatings = playerService.buildLeagueAverages()
 
-        const awayTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
-        const homeTeam: TeamInfo = buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
+        const awayTeam: TeamInfo = simSharedService.buildTeamInfoFromPlayers(laRatings, "Away", "", redTeam, "", "", 1)
+        const homeTeam: TeamInfo = simSharedService.buildTeamInfoFromPlayers(laRatings, "Home", "", blueTeam, "", "", 10)
 
         const pitcher = homeTeam.players.find(p => p._id === homeTeam.currentPitcherId)
         assert.ok(pitcher)
@@ -321,69 +321,3 @@ describe('GameService', async () => {
 
 })
 
-const buildTeamInfoFromPlayers = (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) => {
-
-    let startingPitcher = players.find( p => p.primaryPosition == "P")
-
-    let gamePlayer:GamePlayer[] = simSharedService.initGamePlayers(leagueAverage, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
-
-    let teamInfo:TeamInfo = {
-        finances: {},
-        logoId: undefined,
-        name: name,
-        abbrev: name,
-        players: gamePlayer,
-
-        seasonRating: {
-            before:1500
-        },
-    
-        longTermRating: {
-            before:1500
-        },
-    
-        overallRecord: {
-            before:{ 
-                wins: 0, 
-                losses: 0,
-                gamesBehind: 0,
-                resultLast10: [],
-                rank: 0,
-                runsAgainst: 0,
-                runsScored: 0,
-                winPercent: 0
-            }
-        },
-
-        lineupIds: players.map( p =>  p._id ),
-
-        currentHitterIndex: 0,
-        currentPitcherId: undefined,
-
-        runner1BId: undefined,
-        runner2BId: undefined,
-        runner3BId: undefined,
-
-        homeAway: undefined,
-
-        color1: color1,
-        color2: color2
-
-    }
-
-    //Sync players to the proper positions. Right now this is simple because 
-    //a player can only play one position but it's possible we'll need to pass
-    //this info in later.
-    teamInfo.lineupIds.forEach( (id, idx) => {
-
-        let player:GamePlayer = teamInfo.players.find( p => p._id == id)
-        //Set spot in lineup
-        if (player) player.lineupIndex = idx 
-
-    })
-
-    teamInfo.currentPitcherId = teamInfo.players.find( p => p.currentPosition == Position.PITCHER)._id
-
-    return teamInfo
-
-}

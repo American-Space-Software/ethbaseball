@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify"
 import { Game, GameTeam, GamePlayer as GP } from "../../dto/game.js"
-import {   GamePlayer, BaseRunners, LastPlay, Score, TeamInfo, UpcomingMatchup, Play,  HomeAway, OverallRecord, } from "../enums.js"
+import {   GamePlayer, BaseRunners, LastPlay, Score, TeamInfo, UpcomingMatchup, Play,  HomeAway, OverallRecord, STANDARD_INNINGS, } from "../enums.js"
 
 import { GameRepository } from "../../repository/game-repository.js"
 import { SeedService } from "./seed-service.js"
@@ -14,7 +14,7 @@ import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { GameSharedService } from "../shared/game-shared-service.js"
-import { SimSharedService } from "../shared/sim-shared-service.js"
+import { AtBatInfo, SimSharedService } from "../shared/sim-shared-service.js"
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -293,7 +293,7 @@ class GameService {
 
     getGameViewModel(game:Game) : GameViewModel {
 
-        let linescore = this.simSharedService.getLineScore(game)
+        let linescore = this.getLineScore(game)
         let baseRunners:BaseRunners = this.getBaserunners(game)
         let matchup:UpcomingMatchup = this.simSharedService.getUpcomingMatchup(game)
         let plays:LastPlay[] = this.simSharedService.getLastPlays(game)
@@ -304,6 +304,44 @@ class GameService {
             baseRunners: baseRunners,
             matchup: matchup,
             plays: plays
+        }
+
+    }
+
+
+    getLineScore(game:Game) {
+
+        let away = [game.away.name, '', '', '', '', '', '', '', '', '', 0, 0, 0]
+        let home = [game.home.name, '', '', '', '', '', '', '', '', '', 0, 0, 0]
+
+        //Set inning scores
+        for (let halfInning of game.halfInnings) {
+
+            if (halfInning.top) {
+
+                if (halfInning.num > STANDARD_INNINGS) {
+                    away.splice(halfInning.num, 0, 0)
+                    home.splice(halfInning.num, 0, 0)
+                }
+
+                away[halfInning.num] = halfInning?.linescore?.runs ? halfInning?.linescore?.runs : 0
+            } else {
+                home[halfInning.num] = halfInning?.linescore.runs ? halfInning?.linescore?.runs : 0
+            }
+
+        }
+
+        //Set total score
+        away[Math.max(game.currentInning + 1, 10)] = game.score.away
+        home[Math.max(game.currentInning + 1, 10)] = game.score.home
+
+        //Set hits
+        away[Math.max(game.currentInning + 2, 11)] = game.halfInnings.filter(i => i.top == true)?.map(i => i.plays.filter(p => AtBatInfo.isHit(p.result))?.length || 0)?.reduce((acc, num) => acc + num, 0)
+        home[Math.max(game.currentInning + 2, 11)] = game.halfInnings.filter(i => i.top == false)?.map(i => i.plays.filter(p => AtBatInfo.isHit(p.result))?.length || 0)?.reduce((acc, num) => acc + num, 0)
+
+        return {
+            away: away,
+            home: home 
         }
 
     }
@@ -334,7 +372,7 @@ class GameService {
 
     getGameSummaryViewModel(game:Game) : GameSummaryViewModel {
 
-        let linescore = this.simSharedService.getLineScore(game)
+        let linescore = this.getLineScore(game)
         let baseRunners:BaseRunners = this.getBaserunners(game)
         
         let matchup:UpcomingMatchup 

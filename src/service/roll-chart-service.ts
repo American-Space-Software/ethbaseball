@@ -4,7 +4,7 @@ import Big from 'big.js'
 
 import { RollChart } from "../dto/roll-chart.js"
 import { ContactTypeRollInput, FielderChanceRollInput, PowerRollInput, ShallowDeepRollInput } from "../dto/roll-input.js"
-import { Contact, Handedness, HitterChange, HittingRatings, LeagueAverage, PitcherChange, PitchRatings, PlayResult, Position, ShallowDeep } from "./enums.js"
+import { Contact, ContactProfile, Handedness, HitterChange, HittingRatings, LeagueAverage, PitcherChange, PitchRatings, PlayResult, Position, ShallowDeep } from "./enums.js"
 
 const MIN_CHANGE = -.5
 const MAX_CHANGE = .5
@@ -657,6 +657,40 @@ class RollChartService {
         input.lineDrive = result[2]
 
     }
+
+    getMatchupPowerRollChart(leagueAverage:LeagueAverage, hitterChange:HitterChange, pitcherChange:PitcherChange, applyPlayerChanges:boolean) : RollChart {
+
+        let leagueAvgChart: RollChart = this.getPowerRollChart(leagueAverage.powerRollInput)
+
+        if (!applyPlayerChanges) return leagueAvgChart
+
+        let hitter:RollChart = this.getPowerRollChart(this.buildHitterPowerRollInput(leagueAverage, hitterChange))
+        let pitcher:RollChart = this.getPowerRollChart(this.buildPitcherPowerRollInput(leagueAverage, pitcherChange))
+
+        let hitterDiffChart: RollChart = this.diffRollChart(leagueAvgChart, hitter)
+        let pitcherDiffChart: RollChart = this.diffRollChart(leagueAvgChart, pitcher)
+
+        return this.applyChartDiffs(hitterDiffChart, pitcherDiffChart, leagueAvgChart)
+
+    }
+
+    getMatchupContactRollChart(leagueAverage:LeagueAverage, hitterContactProfile:ContactProfile, pitcherContactProfile:ContactProfile, applyPlayerChanges:boolean): RollChart {
+
+        let leagueAvgChart: RollChart = this.getContactTypeRollChart(leagueAverage.contactTypeRollInput)
+
+        if (!applyPlayerChanges) return leagueAvgChart
+
+        let hitter:RollChart = this.getContactTypeRollChart(hitterContactProfile)
+        let pitcher:RollChart = this.getContactTypeRollChart(pitcherContactProfile)
+
+        let hitterDiffChart: RollChart = this.diffRollChart(leagueAvgChart, hitter)
+        let pitcherDiffChart: RollChart = this.diffRollChart(leagueAvgChart, pitcher)
+
+        return this.applyChartDiffs(hitterDiffChart, pitcherDiffChart, leagueAvgChart)
+
+    }
+
+
 
     applyChanges(base:number, changes:number[]) {
 
