@@ -98,7 +98,7 @@ class StatService {
     }
 
 
-    hitResultToHitterStatLine(hitResult: HitResult): HitterStatLine {
+    hitResultToHitterStatLine(hitResult: HitResult|HitResultCount): HitterStatLine {
 
         let obp = this.getOBP(hitResult.hits, hitResult.bb, hitResult.hbp, hitResult.pa)
         let slg = this.getSLG(hitResult.singles, hitResult.doubles, hitResult.triples, hitResult.homeRuns, hitResult.atBats)
@@ -300,7 +300,7 @@ class StatService {
 
     }
 
-    pitchResultToPitcherStatLine(pitchResult: PitchResult): PitcherStatLine {
+    pitchResultToPitcherStatLine(pitchResult: PitchResult|PitchResultCount): PitcherStatLine {
 
         return {
             saves: pitchResult.saves,

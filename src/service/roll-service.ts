@@ -10,8 +10,6 @@ class RollService {
         private rollChartService:RollChartService
     ) { }
 
-
-
     getRatingDistribution(playerRNG, numRatings): number[] {
 
         let nums: number[] = []

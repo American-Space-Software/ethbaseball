@@ -332,24 +332,46 @@ class LadderService {
 
         const avgOverallRating = activePlayers.reduce((sum, p) => sum + p.overallRating, 0) / activePlayers.length
 
+        const getTeamOptions = (teamBundle:TeamBundle) => {
+
+            return {
+
+                logoId: teamBundle.tls.logoId,
+                owner: {
+                    _id: teamBundle.team.userId,
+                },
+                finances: {},
+                cityName: teamBundle.tls?.city?.name,
+
+                seasonRating: {
+                    before:teamBundle.team.seasonRating.rating
+                },
+            
+                longTermRating: {
+                    before:teamBundle.team.longTermRating.rating
+                },
+            
+                overallRecord: {
+                    before:teamBundle.tls.overallRecord
+                }           
+            }
+        }
+
+
         this.simSharedService.startGame({
 
             game,
 
-            homeTLS: homeBundle.tls,
-            awayTLS: awayBundle.tls,
-
-            homeTLSPlain: homeBundle.tls.get({ plain: true }),
-            awayTLSPlain: awayBundle.tls.get({ plain: true }),
-
-            awayPlayers: awayBundle.plss,
-            homePlayers: homeBundle.plss,
-
-            awayPlssPlain: awayBundle.plss.map( pls => pls.get({ plain: true })),
-            homePlssPlain: homeBundle.plss.map( pls => pls.get({ plain: true })),
+            awayPlayers: awayBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player),
+            homePlayers: homeBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player),
 
             away: awayBundle.team,
+            awayTeamOptions: getTeamOptions(awayBundle),
+            awayLineup: JSON.parse(JSON.stringify(awayBundle.tls.lineups[0])),
+
             home: homeBundle.team,
+            homeTeamOptions: getTeamOptions(homeBundle),
+            homeLineup: JSON.parse(JSON.stringify(homeBundle.tls.lineups[0])),
 
             awayStartingPitcher: awayBundle.startingPitcher,
             homeStartingPitcher: homeBundle.startingPitcher,

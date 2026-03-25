@@ -418,6 +418,7 @@ interface PlayerPercentileRatings {
 interface HitResultCount {
 
     games:number
+    uniqueGames:number
 
     teamWins:number
     teamLosses:number
@@ -489,6 +490,7 @@ interface HitResultCount {
 interface PitchResultCount {
 
     games:number
+    uniqueGames:number
 
     teamWins:number
     teamLosses:number
@@ -566,12 +568,12 @@ interface HalfInning {
 interface TeamInfo {
 
     _id?:string
-    logoId:string
+    logoId?:string
     owner?:{
         _id:string
     }
 
-    finances:GameTeamFinance
+    finances?:GameTeamFinance
 
     cityName?:string
     name:string

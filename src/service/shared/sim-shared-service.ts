@@ -1,10 +1,9 @@
 import { inject, injectable } from "inversify"
-import { ALL_PITCH_ZONES, BaseResult, BaseRunners, Colors, Contact, ContactProfile, Count, DefenseCreditType, DefensiveCredit, DevelopmentStrategy, FinanceSeason, GamePlayer, GamePlayerBio, HalfInning, Handedness, HitResultCount, HitterChange, HittingProfile, HittingRatings, HomeAway, InningEndingEvent, LastPlay, LeagueAverage, Lineup, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, OverallRecord, PersonalityType, Pitch, PitcherChange, PitchingProfile, PitchLog, PitchRatings, PitchResult, PitchResultCount, PitchType, PitchZone, Play, PlayerPercentileRatings, PlayerStatLines, PlayResult, Position, PromotionRelegationLog, Rating, RotationPitcher, RunnerEvent, RunnerResult, Score, ShallowDeep,  SimPitchResult, STANDARD_INNINGS, SwingResult, TeamInfo, ThrowResult, ThrowRoll, UpcomingMatchup, WIN_EXPECTANCY_CHART, WPA, WPAReward } from "../enums.js"
+import { ALL_PITCH_ZONES, BaseResult,  Colors, Contact, Count, DefenseCreditType, DefensiveCredit,  GamePlayer, GamePlayerBio, HalfInning, Handedness, HitResultCount, HitterChange, HittingProfile, HittingRatings, HomeAway, InningEndingEvent, LastPlay, LeagueAverage, Lineup, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult,  PersonalityType, Pitch, PitcherChange, PitchingProfile, PitchLog, PitchRatings, PitchResult, PitchResultCount, PitchType, PitchZone, Play,  PlayerStatLines, PlayResult, Position,   RotationPitcher, RunnerEvent, RunnerResult, Score, ShallowDeep,  SimPitchResult, STANDARD_INNINGS, SwingResult,  ThrowResult, ThrowRoll, UpcomingMatchup, WIN_EXPECTANCY_CHART, WPA, WPAReward } from "../enums.js"
 import { RollService } from "../roll-service.js"
 import { RollChart } from "../../dto/roll-chart.js"
 import { RollChartService } from "../roll-chart-service.js";
 import { StatService } from "../stat-service.js";
-import dayjs from "dayjs";
 import { PlayerSharedService } from "./player-shared-service.js";
 
 const APPLY_PLAYER_CHANGES = true
@@ -13,14 +12,16 @@ const PLAYER_CHANGE_SCALE = 0.75
 @injectable()
 class SimSharedService {
 
+    private gameInfo:GameInfo    
     private gamePlayers:GamePlayers
-    private gameRolls:GameRolls
+
+    private sim:Sim
+    private simRolls:SimRolls  
+    
     private runnerActions:RunnerActions
     private matchup:Matchup
     private winExpectancy:WinExpectancy
-    private gameInfo:GameInfo
-    private sim:Sim
-
+    
     constructor(
         private rollService:RollService,
         private rollChartService: RollChartService,
@@ -28,12 +29,13 @@ class SimSharedService {
         private playerSharedService:PlayerSharedService
 
     ) {
-        this.gameRolls = new GameRolls(rollService, rollChartService)
+        this.simRolls = new SimRolls(rollService, rollChartService)
         this.gamePlayers = new GamePlayers(rollChartService, playerSharedService, statService)
-        this.runnerActions = new RunnerActions(rollChartService, this.gameRolls)
+        this.runnerActions = new RunnerActions(rollChartService, this.simRolls)
         this.matchup = new Matchup(this.gamePlayers)
         this.gameInfo = new GameInfo(this.gamePlayers)
-        this.sim = new Sim(rollService, rollChartService, this.gameRolls, this.matchup, this.runnerActions)
+        this.winExpectancy = new WinExpectancy(this.gamePlayers)
+        this.sim = new Sim(rollService, rollChartService, this.simRolls, this.matchup, this.runnerActions)
     }
 
     startGame(command:StartGameCommand) {
@@ -41,17 +43,13 @@ class SimSharedService {
         let game = command.game
 
         //Validate lineups
-        GameInfo.validateGameLineup(command.awayTLS.lineups[0], command.awayPlayers, command.awayStartingPitcher, command.date)
-        GameInfo.validateGameLineup(command.homeTLS.lineups[0], command.homePlayers, command.homeStartingPitcher, command.date)
-
-        let awayInfo = this.gameInfo.buildTeamInfoFromTeam(command.leagueAverages, command.awayTLS, command.awayTLSPlain,  command.awayPlayers, command.awayPlssPlain, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1)
-        let homeInfo = this.gameInfo.buildTeamInfoFromTeam(command.leagueAverages, command.homeTLS, command.homeTLSPlain, command.homePlayers, command.homePlssPlain, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length)
+        GameInfo.validateGameLineup(command.awayLineup, command.awayStartingPitcher)
+        GameInfo.validateGameLineup(command.homeLineup, command.homeStartingPitcher)
 
         game.leagueAverages = command.leagueAverages
 
-        //Set teams on game.
-        game.away = awayInfo            
-        game.home = homeInfo
+        game.away = this.gameInfo.buildTeamInfoFromTeam(command.leagueAverages, command.away, command.awayLineup,  command.awayPlayers, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1, command.awayTeamOptions)            
+        game.home = this.gameInfo.buildTeamInfoFromTeam(command.leagueAverages, command.home, command.homeLineup, command.homePlayers, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length, command.homeTeamOptions)
 
         game.startDate = command.date
         game.count = {
@@ -158,7 +156,7 @@ class SimSharedService {
     }
 
     getThrowResult(gameRNG, overallSafeChance:number) : ThrowRoll {
-        return this.gameRolls.getThrowResult(gameRNG, overallSafeChance)
+        return this.simRolls.getThrowResult(gameRNG, overallSafeChance)
     }
 
     getRunnerEvents(gameRNG, runnerResult:RunnerResult, halfInningRunnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], leagueAverages: LeagueAverage, playResult: PlayResult, 
@@ -191,7 +189,7 @@ class Sim {
     constructor(
         private rollService:RollService,
         private rollChartService:RollChartService,
-        private gameRolls:GameRolls,
+        private gameRolls:SimRolls,
         private matchup:Matchup,
         private runnerActions:RunnerActions
     ) {}
@@ -1116,7 +1114,7 @@ class RunnerActions {
 
     constructor(
         private rollChartService:RollChartService,
-        private gameRolls:GameRolls
+        private gameRolls:SimRolls
     ) {}
 
 
@@ -2488,7 +2486,7 @@ class RunnerActions {
 
 }
 
-class GameRolls {
+class SimRolls {
 
     constructor(
         private rollService:RollService,
@@ -2789,6 +2787,7 @@ class GamePlayers {
     
                 hitResult: {
                     games: 0,
+                    uniqueGames: 0,
                     teamWins: 0,
                     teamLosses: 0,
                     pa: 0,
@@ -2844,6 +2843,7 @@ class GamePlayers {
     
                 pitchResult: {
                     games: 0,
+                    uniqueGames: 0,
                     teamWins: 0,
                     teamLosses: 0,
                     outs: 0,
@@ -2932,7 +2932,6 @@ class GamePlayers {
                 
             _id: player._id,
             fullName: player.fullName,
-            // ratingBefore: player.ratingBefore,
 
             age: player.age,
             ownerId: player.ownerId,
@@ -2940,10 +2939,7 @@ class GamePlayers {
             throws: player.throws,
             hits: player.hits,
 
-            //@ts-ignore
             hitResult: this.statService.hitResultToHitterStatLine(player.hitResult),
-
-            //@ts-ignore
             pitchResult: this.statService.pitchResultToPitcherStatLine(player.pitchResult)
         }
 
@@ -3022,7 +3018,7 @@ class GameInfo {
         return game.halfInnings.map((inning) => inning.plays).reduce((accumulator, playsArray) => accumulator.concat(playsArray), []) // Flatten into a single array
     }
 
-    static validateGameLineup(lineup:Lineup, plss:PlayerLeagueSeason[], startingPitcher:RotationPitcher, gameDate:Date) {
+    static validateGameLineup(lineup:Lineup, startingPitcher:RotationPitcher) {
 
         //Make sure there are 9 spots in the order and 5 spots in the rotation
         if (lineup.order.length != 9) {
@@ -3041,21 +3037,16 @@ class GameInfo {
             throw new Error("Duplicate position players.")
         }
 
-        let sp = plss.find( p => p.playerId == startingPitcher._id)
 
-        if (!startingPitcher || !sp) {
-            throw new Error(`No valid starting pitcher for ${dayjs(gameDate).format('YYYY-MM-DD')}`)
+        if (!startingPitcher) {
+            throw new Error(`No valid starting pitcher`)
         }
 
     } 
 
-    buildTeamInfoFromTeam(leagueAverage:LeagueAverage, tls:TeamLeagueSeason, tlsPlain, plss:PlayerLeagueSeason[], plssPlain, startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number) : TeamInfo {
+    buildTeamInfoFromTeam(leagueAverage:LeagueAverage, team:Team, lineup:Lineup, players:Player[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number, teamOptions?:any) : TeamInfo {
 
-        let players = plssPlain.map( pls => pls.player)
-
-        let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(leagueAverage, players, startingPitcher, tls.teamId, color1, color2, startingId)
-
-        let lineup:Lineup = JSON.parse(JSON.stringify(tls.lineups[0]))
+        let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(leagueAverage, players, startingPitcher, team._id, color1, color2, startingId)
 
         if (!startingPitcher) throw new Error("No valid starting pitcher.")
 
@@ -3063,31 +3054,14 @@ class GameInfo {
 
         let pitcherGP = gamePlayer.find( gp => gp._id == startingPitcher._id)
 
-        
 
-        let teamInfo:TeamInfo = {
-            logoId: tlsPlain.logoId,
-            _id: tlsPlain.team._id,
-            owner: {
-                _id: tlsPlain.team.userId,
-            },            
-            finances: {},
-            name: tlsPlain.team.name,
-            abbrev: tlsPlain.team.abbrev,
-            cityName: tlsPlain.city?.name,
+        let teamInfo:TeamInfo = Object.assign({
+            _id: team._id,        
+
+            name: team.name,
+            abbrev: team.abbrev,
+
             players: gamePlayer,
-
-            seasonRating: {
-                before:tlsPlain.seasonRating.rating
-            },
-        
-            longTermRating: {
-                before:tlsPlain.longTermRating.rating
-            },
-        
-            overallRecord: {
-                before:tlsPlain.overallRecord
-            },
 
             lineupIds: lineup.order.map( op => op._id ),
 
@@ -3103,7 +3077,7 @@ class GameInfo {
             color1: color1,
             color2: color2
 
-        }
+        }, teamOptions)
 
         //Sync players to the proper positions. Right now this is simple because 
         //a player can only play one position but it's possible we'll need to pass
@@ -3120,39 +3094,17 @@ class GameInfo {
 
     }    
 
-    buildTeamInfoFromPlayers (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number)  {
+    buildTeamInfoFromPlayers (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number, teamOptions?:any)  {
 
-        let startingPitcher = players.find( p => p.primaryPosition == "P")
+        let startingPitcher = players.find( p => p.primaryPosition == Position.PITCHER)
 
         let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(leagueAverage, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
 
-        let teamInfo:TeamInfo = {
-            finances: {},
-            logoId: undefined,
+        let teamInfo:TeamInfo = Object.assign({
+
             name: name,
             abbrev: name,
             players: gamePlayer,
-
-            seasonRating: {
-                before:1500
-            },
-        
-            longTermRating: {
-                before:1500
-            },
-        
-            overallRecord: {
-                before:{ 
-                    wins: 0, 
-                    losses: 0,
-                    gamesBehind: 0,
-                    resultLast10: [],
-                    rank: 0,
-                    runsAgainst: 0,
-                    runsScored: 0,
-                    winPercent: 0
-                }
-            },
 
             lineupIds: players.map( p =>  p._id ),
 
@@ -3168,7 +3120,7 @@ class GameInfo {
             color1: color1,
             color2: color2
 
-        }
+        }, teamOptions)
 
         //Sync players to the proper positions. Right now this is simple because 
         //a player can only play one position but it's possible we'll need to pass
@@ -3219,9 +3171,6 @@ class GameInfo {
 }
 
 class Pitching {
-
-    constructor(
-    ) { }
 
     static getActualZone(intentZone: PitchZone, locQ: number): PitchZone {
 
@@ -3770,16 +3719,14 @@ class LogResult {
 interface StartGameCommand {
     game:Game, 
     home:Team, 
-    homeTLS:TeamLeagueSeason, 
-    homeTLSPlain,
-    homePlayers:PlayerLeagueSeason[], 
-    homePlssPlain,
+    homeTeamOptions:any,
+    homePlayers:Player[], 
+    homeLineup:Lineup
     homeStartingPitcher:RotationPitcher, 
     away:Team, 
-    awayTLS:TeamLeagueSeason, 
-    awayTLSPlain,
-    awayPlayers:PlayerLeagueSeason[], 
-    awayPlssPlain,
+    awayTeamOptions:any,   
+    awayLineup:Lineup 
+    awayPlayers:Player[], 
     awayStartingPitcher:RotationPitcher,
     leagueAverages:LeagueAverage
     date:Date
@@ -3856,12 +3803,6 @@ interface Game {
     isComplete: boolean
     isFinished: boolean
 
-    seasonId?: string
-    season?: Season
-
-    leagueId?: string
-    league?: League
-
     winningPitcherId?: string
     losingPitcherId?: string
 
@@ -3876,19 +3817,6 @@ interface Game {
     currentSimDate?: Date
     startDate?: Date
     gameDate?: Date
-
-    lastUpdated?: Date
-    dateCreated?: Date
-}
-
-interface Season {
-    _id: string
-
-    isComplete: boolean
-    isInitialized: boolean
-
-    startDate: Date
-    endDate?: Date
 
     lastUpdated?: Date
     dateCreated?: Date
@@ -3946,103 +3874,45 @@ interface Player {
     dateCreated?: Date
 }
 
-interface PlayerLeagueSeason {
-    _id: string
-
-    playerId?: string
-    player?: Player
-
-    leagueId?: string
-    league?: League
-
-    seasonId?: string
-    season?: Season
-
-    teamId?: string
-    team?: Team
-
-    seasonIndex: number
-
-    primaryPosition: Position
-    overallRating: number
-
-    pitchRatings: PitchRatings
-    hittingRatings: HittingRatings
-
-    potentialOverallRating: number
-    potentialPitchRatings: PitchRatings
-    potentialHittingRatings: HittingRatings
-
-    percentileRatings?: PlayerPercentileRatings
-    stats?: PlayerStatLines
-
-    age: number
-
-    startDate?: Date
-    endDate?: Date
-
-    lastUpdated?: Date
-    dateCreated?: Date
-}
-
-interface League {
-    _id: string
-
-    rank?: number
-    name?: string
-
-    lastUpdated?: Date
-    dateCreated?: Date
-}
-
 interface Team {
-    _id: string
 
-    mintKey?: string
+    _id: string
 
     name?: string
     abbrev?: string
 
-    userId?: string
-
     colors: Colors
-    longTermRating: Rating
-    seasonRating: Rating
-    developmentStrategy: DevelopmentStrategy
+    // longTermRating: Rating
+    // seasonRating: Rating
 
-    lastGamePlayed?: Date
+    lineups?: Lineup[]    
 
-    lastUpdated?: Date
-    dateCreated?: Date
+
 }
 
-interface TeamLeagueSeason {
-    _id: string
+interface TeamInfo {
 
-    teamId?: string
-    team?: Team
+    _id?:string
 
-    leagueId?: string
-    league?: League
+    name:string
+    abbrev:string
+    homeAway:HomeAway
+    
+    color1?:string
+    color2?:string
 
-    seasonId?: string
-    season?: Season
+    players?:GamePlayer[]
 
-    financeSeason: FinanceSeason
+    lineupIds?:string[]
 
-    longTermRating: Rating
-    seasonRating: Rating
-    overallRecord: OverallRecord
+    currentHitterIndex?:number
+    currentPitcherId?:string
 
-    fanInterestShortTerm?: number
-    fanInterestLongTerm?: number
+    //Runners
+    runner1BId?:string
+    runner2BId?:string
+    runner3BId?:string
 
-    hasValidLineup: boolean
-
-    lineups?: Lineup[]
-
-    lastUpdated?: Date
-    dateCreated?: Date
 }
 
 export {
