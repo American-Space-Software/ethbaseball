@@ -2,8 +2,9 @@ import { Table, Column, Model, DataType, AllowNull, Is, Length, ForeignKey, Belo
 import { Season } from './season.js'
 import { League } from './league.js'
 import { Player } from './player.js'
-import { HittingRatings, PitchRatings, PlayerPercentileRatings, PlayerStatLines, Position } from '../service/enums.js'
+import { PlayerPercentileRatings, PlayerStatLines } from '../service/enums.js'
 import { Team } from './team.js'
+import { HittingRatings, PitchRatings, Position } from '../service/shared/sim-shared-service.js'
 
 @Table({
     tableName: 'player_league_season',

@@ -1,9 +1,9 @@
 import { inject, injectable } from "inversify";
 import { LoginWebService } from "./login-web-service.js";
 import { TeamWebService } from "./team-web-service.js";
-import { Position } from "../../service/enums.js";
 import { LineupService } from "../../service/lineup-service.js";
 import { GameWebService } from "./game-web-service.js";
+import { Position } from "../../service/shared/sim-shared-service.js";
 
 
 @injectable()

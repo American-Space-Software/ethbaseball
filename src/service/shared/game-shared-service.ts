@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
-import { AtBatState, BaseResult, Contact, Count, DefensiveCredit, GamePlayer, GamePlayerBio, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Pitch, PitchResult, PitchType, PitchZone, Play, PlayDescription, PlayDescriptionType, PlayResult, Position, RunnerEvent, Score, ShallowDeep, WIN_EXPECTANCY_CHART, WPA, WPAReward } from "../enums.js";
+import { AtBatState, BaseResult,  PlayDescription, PlayDescriptionType} from "../enums.js";
 import { TeamSharedService } from "./team-shared-service.js";
-import { SimSharedService } from "./sim-shared-service.js";
+import { Contact, Count, GamePlayer, Handedness, MatchupHandedness, OfficialRunnerResult, Pitch, PitchCall, PitchType, PitchZone, Play, PlayResult, Position, RunnerEvent, ShallowDeep, SimSharedService, RunnerResult, OfficialPlayResult } from "./sim-shared-service.js";
 
 
 @injectable()
@@ -804,7 +804,7 @@ class GameSharedService {
         // - STRIKE/FOUL/IN_PLAY/etc => neutral zone location
         // - BALL => "off the plate" style location
         const zoneText =
-            pitch.result === PitchResult.BALL
+            pitch.result === PitchCall.BALL
             ? describeZoneOffPlate(pitch.actualZone)
             : describeZoneNeutral(pitch.actualZone)
 
@@ -818,23 +818,23 @@ class GameSharedService {
             outcomeSentence = pick(passedBallPhrases, seed + 7)
         } else {
             switch (pitch.result) {
-            case PitchResult.IN_PLAY:
+            case PitchCall.IN_PLAY:
                 outcomeSentence = pick(inPlayPhrases, seed + 9)
                 break
 
-            case PitchResult.FOUL:
+            case PitchCall.FOUL:
                 outcomeSentence = pick(foulPhrases, seed + 9)
                 break
 
-            case PitchResult.HBP:
+            case PitchCall.HBP:
                 outcomeSentence = pick(hbpPhrases, seed + 9)
                 break
 
-            case PitchResult.STRIKE:
+            case PitchCall.STRIKE:
                 outcomeSentence = pitch.swing ? pick(swingMissPhrases, seed + 11) : pick(strikeTakePhrases, seed + 11)
                 break
 
-            case PitchResult.BALL: {
+            case PitchCall.BALL: {
                 if (!pitch.swing) {
                 outcomeSentence = pick(ballTakePhrases, seed + 11)
                 break
@@ -846,15 +846,15 @@ class GameSharedService {
             }
         }
 
-        const isFinalStrikeoutPitch = pitch.result === PitchResult.STRIKE && (pitch.count?.strikes ?? 0) >= 2
-        const isFinalWalkPitch = pitch.result === PitchResult.BALL && (pitch.count?.balls ?? 0) >= 3
+        const isFinalStrikeoutPitch = pitch.result === PitchCall.STRIKE && (pitch.count?.strikes ?? 0) >= 2
+        const isFinalWalkPitch = pitch.result === PitchCall.BALL && (pitch.count?.balls ?? 0) >= 3
 
         const includeCount =
             !!pitch.count &&
             !isFinalStrikeoutPitch &&
             !isFinalWalkPitch &&
-            pitch.result !== PitchResult.IN_PLAY &&
-            pitch.result !== PitchResult.HBP
+            pitch.result !== PitchCall.IN_PLAY &&
+            pitch.result !== PitchCall.HBP
 
         const countSentence = includeCount ? getCountSentence() : ""
 
@@ -862,38 +862,38 @@ class GameSharedService {
     }
 
     getRunnerRecapDescription(game, play: Play): PlayDescription[] {
-    const descriptions: PlayDescription[] = []
-    const events = play.runner?.events ?? []
-    if (!events.length) return descriptions
+        const descriptions: PlayDescription[] = []
+        const events = play.runner?.events ?? []
+        if (!events.length) return descriptions
 
-    const pitchCount = play.pitchLog?.pitches?.length ?? 0
+        const pitchCount = play.pitchLog?.pitches?.length ?? 0
 
-    const isBatterRunnerPrimaryEvent = (e: RunnerEvent) =>
-        e.runner?._id === play.hitterId &&
-        e.movement?.start === BaseResult.HOME
+        const isBatterRunnerPrimaryEvent = (e: RunnerEvent) =>
+            e.runner?._id === play.hitterId &&
+            e.movement?.start === BaseResult.HOME
 
-    // If you printed runner events inline per pitchIndex, then ONLY recap
-    // events that can't be tied to a pitch in this at-bat.
-    const wasPrintedInline = (e: RunnerEvent) =>
-        typeof e.pitchIndex === "number" &&
-        e.pitchIndex >= 0 &&
-        e.pitchIndex < pitchCount
+        // If you printed runner events inline per pitchIndex, then ONLY recap
+        // events that can't be tied to a pitch in this at-bat.
+        const wasPrintedInline = (e: RunnerEvent) =>
+            typeof e.pitchIndex === "number" &&
+            e.pitchIndex >= 0 &&
+            e.pitchIndex < pitchCount
 
-    for (const e of events) {
-        if (isBatterRunnerPrimaryEvent(e)) continue
-        if (wasPrintedInline(e)) continue
+        for (const e of events) {
+            if (isBatterRunnerPrimaryEvent(e)) continue
+            if (wasPrintedInline(e)) continue
 
-        const text = this.getRunnerDescription(game, e)
-        if (!text) continue
+            const text = this.getRunnerDescription(game, e)
+            if (!text) continue
 
-        // IMPORTANT: getRunnerDescription() already includes the runner name
-        descriptions.push({
-        type: PlayDescriptionType.RECAP,
-        text
-        })
-    }
+            // IMPORTANT: getRunnerDescription() already includes the runner name
+            descriptions.push({
+            type: PlayDescriptionType.RECAP,
+            text
+            })
+        }
 
-    return descriptions
+        return descriptions
     }
 
     getRunnerDescription(game, runnerEvent: RunnerEvent) {

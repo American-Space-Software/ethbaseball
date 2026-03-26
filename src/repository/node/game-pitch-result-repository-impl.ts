@@ -1,11 +1,12 @@
 import {  inject, injectable } from "inversify"
 
 import { GamePitchResultRepository } from "../game-pitch-result-repository.js"
-import { GamePitchResult, PitchResult } from "../../dto/game-pitch-result.js"
+import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { Player } from "../../dto/player.js"
 import dayjs from "dayjs"
 import { Game } from "../../dto/game.js"
 import { Season } from "../../dto/season.js"
+import { PitchResult } from "../../service/shared/sim-shared-service.js"
 
 const SUM_QUERY_FIELDS = `
     SUM(atBats) atBats,

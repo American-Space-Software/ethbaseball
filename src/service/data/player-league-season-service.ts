@@ -6,9 +6,9 @@ import { PlayerLeagueSeason } from "../../dto/player-league-season.js";
 import { PlayerLeagueSeasonRepository } from "../../repository/player-league-season-repository.js";
 import { Player } from "../../dto/player.js";
 import { Team } from "../../dto/team.js";
-import { HitterPitcher,  Position } from "../enums.js";
-import { PlayerService } from "./player-service.js";
+
 import { v4 as uuidv4 } from 'uuid';
+import { Position } from "../shared/sim-shared-service.js";
 
 @injectable()
 class PlayerLeagueSeasonService {

@@ -2,7 +2,8 @@ import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryK
 
 import { DiamondMintPass } from './diamond-mint-pass.js'
 import { User } from './user.js'
-import { Colors, DevelopmentStrategy, Rating } from '../service/enums.js'
+import { DevelopmentStrategy, Rating } from '../service/enums.js'
+import { Colors } from '../service/shared/sim-shared-service.js'
 
 
 

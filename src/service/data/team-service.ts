@@ -6,7 +6,7 @@ import { TeamRepository } from "../../repository/team-repository.js";
 import { Player } from "../../dto/player.js";
 import {  PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import { Colors, ContractType, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, Position, Rating, RotationPitcher, TEAMS_PER_TIER } from "../enums.js";
+import {  ContractType, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, OverallRecord, Rating, TEAMS_PER_TIER } from "../enums.js";
 import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
@@ -29,6 +29,7 @@ import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
 import { TeamSharedService } from "../shared/team-shared-service.js";
+import { Colors, Lineup, Position, RotationPitcher } from "../shared/sim-shared-service.js";
 
 
 const MAX_ROSTER_SIZE = 13

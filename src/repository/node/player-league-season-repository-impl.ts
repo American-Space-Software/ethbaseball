@@ -7,7 +7,8 @@ import { PlayerLeagueSeason } from "../../dto/player-league-season.js"
 import { Player } from "../../dto/player.js"
 import { Team } from "../../dto/team.js"
 import { Op, QueryTypes } from "sequelize"
-import { HitterPitcher, PLAYER_STATS_SORT_EXPRESSION, Position } from "../../service/enums.js"
+import { PLAYER_STATS_SORT_EXPRESSION } from "../../service/enums.js"
+import { Position } from "../../service/shared/sim-shared-service.js"
 
 
 

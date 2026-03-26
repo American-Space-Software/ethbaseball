@@ -1,7 +1,8 @@
-import { GamePitchResult, PitchResult } from "../dto/game-pitch-result.js"
+import { GamePitchResult } from "../dto/game-pitch-result.js"
 import { Game } from "../dto/game.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
+import { PitchResult } from "../service/shared/sim-shared-service.js"
 
 interface GamePitchResultRepository {
     get(game:Game, player:Player, options?:any): Promise<GamePitchResult>

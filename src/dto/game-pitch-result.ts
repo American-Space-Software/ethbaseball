@@ -1,5 +1,5 @@
 import { Table, Column, Model, Index, PrimaryKey, ForeignKey, AllowNull, DataType, BelongsTo } from 'sequelize-typescript'
-import { PitcherStatLine, Rating } from '../service/enums.js'
+import { PitcherStatLine } from '../service/shared/sim-shared-service.js'
 
 @Table({
     tableName: 'game_pitch_result',
@@ -196,12 +196,8 @@ class GamePitchResult extends Model {
 }
 
 
-interface PitchResult extends GamePitchResult {
-    games?:number
-    uniqueGames?:number
-}
 
 
 export {
-    GamePitchResult, PitchResult
+    GamePitchResult
 }

@@ -4,7 +4,8 @@ import { Player } from '../dto/player.js'
 import Table from "cli-table3"
 import colors from "@colors/colors"
 import { GameViewModel, LastPlay } from './data/game-service.js'
-import { GamePlayer, PitchType, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from './enums.js'
+import { GamePlayer, PlayResult, Position, ShallowDeep } from './shared/sim-shared-service.js'
+import { TeamInfo } from './enums.js'
 
 @injectable()
 class UserIOService {
@@ -782,7 +783,7 @@ ${ratingsTable.toString()}
 
     }
 
-    getBaseRunnerDescription(baseNumber: number, runner: GamePlayer, throwResult: ThrowResult, result: number) {
+    getBaseRunnerDescription(baseNumber: number, runner: GamePlayer,  result: number) {
 
         // let throwInfo = throwResult ? `Throw from ${throwResult.from} to ${throwResult.to}` : ''
 

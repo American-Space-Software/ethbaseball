@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { AtBatState, BaseResult, Contact, Count, DefensiveCredit, GamePlayer, GamePlayerBio, Handedness, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult, Pitch, PitchResult, PitchZone, Play, PlayDescription, PlayResult, Position, RunnerEvent, RunnerResult, Score, ShallowDeep, ThrowResult, UpcomingMatchup, WIN_EXPECTANCY_CHART, WPA, WPAReward } from "../../service/enums.js";
+import { AtBatState, PlayDescription } from "../../service/enums.js";
 import dayjs from "dayjs";
 
 import { SocketWebService } from "./socket-web-service.js";
-import { PlayerWebService } from "./player-web-service.js";
-import { TeamWebService } from "./team-web-service.js";
+
 import { GameSharedService } from "../../service/shared/game-shared-service.js";
+import { Handedness, Play, GamePlayer } from "../../service/shared/sim-shared-service.js";
 
 
 @injectable()

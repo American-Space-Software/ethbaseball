@@ -235,6 +235,7 @@ dayjs.extend(localizedFormat)
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
 import { SimSharedService } from "../src/service/shared/sim-shared-service.js"
+import { WIN_EXPECTANCY_CHART } from "../src/service/enums.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -403,6 +404,7 @@ function getContainer(command?: GetContainerCommand) {
 
   container.bind("eta").toConstantValue(eta)
   container.bind('discord').toConstantValue({})
+  container.bind("winExpectancyChart").toConstantValue(WIN_EXPECTANCY_CHART)
 
 
   container.bind<PlayerRepository>("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()

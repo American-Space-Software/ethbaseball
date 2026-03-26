@@ -13,7 +13,6 @@
     <div class="page-content ptr-content" @ptr:refresh=${refreshPage}>
 
         ${vm ? $h`
-        
           <div class="fixed-width-content center">
 
             <div class="list media-list list-outline-ios list-strong">
@@ -48,7 +47,7 @@
                 <div class="block-title block-title-medium">In Progress</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
-                      <${InProgress} vm=${teamComponentService.inProgressGame} />
+                      ${renderComponent(InProgress, { vm: teamComponentService.inProgressGame })}
                     </ul>
                 </div>
             ` : $h` 
@@ -141,7 +140,7 @@
             `}
 
 
-            <${Roster} />
+            ${renderComponent(Roster)}
 
 
             ${teamComponentService.completedGames?.length > 0 ? $h`
@@ -149,9 +148,7 @@
                 <div class="block-title block-title-medium">Recent Games</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
-                        ${teamComponentService.completedGames?.map(game => $h`
-                            <${Result} game=${game} />
-                        `)}
+                        ${teamComponentService.completedGames?.map(game => renderComponent(Result, { game }))}
                     </ul>
                 </div>
 
@@ -175,7 +172,7 @@
             ${vm.teamInfo.eventsViewModel?.transactions?.length > 0 ? $h`
 
                 <div class="block-title block-title-medium">Recent Transactions</div>
-                <${OffChainEvents} model="${vm.teamInfo.eventsViewModel}" />
+                ${renderComponent(OffChainEvents, { model: vm.teamInfo.eventsViewModel })}
 
             ` : $h` `}
 
@@ -196,8 +193,6 @@
             </div>
 
           </div>
-
-
         ` : $h` `}
 
     </div>
@@ -565,6 +560,24 @@
     let minOpponentRating = myRating - selectedMaxRatingDiff
     let maxOpponentRating = myRating + selectedMaxRatingDiff
 
+    const renderComponent = (component, componentProps = {}) => {
+      const renderFn = component(
+        componentProps,
+        { $, $h, $on, $f7, $update }
+      )
+
+      return renderFn({
+        $,
+        $h,
+        $root: null,
+        $f7,
+        $f7route: $f7.views.main.router.currentRoute,
+        $f7router: $f7.views.main.router,
+        $theme: $f7.theme,
+        $update,
+        $store: $f7.store
+      })
+    }
 
     const formatRangeLabel = (value) => {
       return `${value}%`
@@ -590,8 +603,6 @@
       e.preventDefault()
 
       try {
-        // await gameWebService.queue(selectedMaxRatingDiff)
-        // $f7.popup.close('.development-budget-popup')
         $f7.views.main.router.refreshPage()
       } catch (ex) {
         $f7.dialog.alert(ex?.response?.data)
@@ -726,7 +737,7 @@
 
     $on('pageBeforeIn', async () => {
 
-      const range = $f7.range.create({
+      $f7.range.create({
         el: '.budget-slider',
         label: true,
         min: 0,
@@ -755,16 +766,12 @@
         }
       }))
 
-
-
       universeWebService.setMetadata(
         `Play a Baseball Game Online – Ethereum Baseball League`, 
         window.location.href, 
         `${env.WEB}/logo.png`, 
         "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine."
       ) 
-
-
 
       await $update()
 

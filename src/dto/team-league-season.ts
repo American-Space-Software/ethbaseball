@@ -5,8 +5,9 @@ import { Season } from './season.js'
 import { Team } from './team.js'
 import { City } from './city.js'
 import { Stadium } from './stadium.js'
-import { FinanceSeason, Lineup, OverallRecord, Rating } from '../service/enums.js'
+import { FinanceSeason, OverallRecord, Rating } from '../service/enums.js'
 import { Image } from './image.js'
+import { Lineup } from '../service/shared/sim-shared-service.js'
 
 
 @Table({

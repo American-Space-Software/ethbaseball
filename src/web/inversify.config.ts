@@ -116,6 +116,7 @@ import { PlayerSharedService } from "../service/shared/player-shared-service.js"
 import { SimSharedService } from "../service/shared/sim-shared-service.js";
 import { RollService } from "../service/roll-service.js";
 import { RollChartService } from "../service/roll-chart-service.js";
+import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -246,6 +247,7 @@ async function getContainer(env, footerRoutes, leagues) {
 
     container.bind("name").toConstantValue("")
     container.bind("discord").toConstantValue("https://discord.gg/wVxk6mNUDs")
+    container.bind("winExpectancyChart").toConstantValue(WIN_EXPECTANCY_CHART)
 
     container.bind(HomeController).toSelf().inSingletonScope()
     container.bind(PlayerController).toSelf().inSingletonScope()

@@ -44,7 +44,7 @@ import { PlayerLeagueSeasonService } from '../service/data/player-league-season-
 import { TeamLeagueSeasonService } from '../service/data/team-league-season-service.js'
 
 import { OffchainEventService } from '../service/data/offchain-event-service.js'
-import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, Position, RotationPitcher, SeasonInfo, TeamCost } from '../service/enums.js'
+import { ContractType, HitterPitcher, OwnerSorts, PLAYER_STATS_SORT_EXPRESSION, SeasonInfo } from '../service/enums.js'
 import { TeamLeagueSeason } from '../dto/team-league-season.js'
 import { ProcessedTransactionService } from '../service/data/processed-transaction-service.js'
 import { DiamondMintPassService } from '../service/data/diamond-mint-pass-service.js'
@@ -56,6 +56,7 @@ import http from 'http'
 import { SocketService } from '../service/socket-service.js'
 import { LadderService } from '../service/ladder-service.js'
 import { TeamQueueService } from '../service/data/team-queue-service.js'
+import { Position, RotationPitcher } from '../service/shared/sim-shared-service.js';
 
 
 const TWITTER = "@ethbaseball"

@@ -2,9 +2,7 @@ import { injectable } from "inversify"
 
 import Big from 'big.js'
 
-import { RollChart } from "../dto/roll-chart.js"
-import { ContactTypeRollInput, FielderChanceRollInput, PowerRollInput, ShallowDeepRollInput } from "../dto/roll-input.js"
-import { Contact, ContactProfile, Handedness, HitterChange, HittingRatings, LeagueAverage, PitcherChange, PitchRatings, PlayResult, Position, ShallowDeep } from "./enums.js"
+import { Contact, ContactProfile, ContactTypeRollInput, FielderChanceRollInput, Handedness, HitterChange, HittingRatings, LeagueAverage, PitcherChange, PitchRatings, PlayResult, Position, PowerRollInput, RollChart, ShallowDeep, ShallowDeepRollInput } from "../service/shared/sim-shared-service.js"
 
 const MIN_CHANGE = -.5
 const MAX_CHANGE = .5

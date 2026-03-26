@@ -4,7 +4,7 @@ import { PlayerService } from "./data/player-service.js"
 
 import { GameService } from "./data/game-service.js"
 import { Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, Position, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, GamePlayer, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, RotationPitcher, FinanceSeason } from "./enums.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -29,15 +29,15 @@ import { UniverseRepository } from "../repository/universe-repository.js"
 import { StatService } from "./stat-service.js"
 import { faker } from '@faker-js/faker'
 import { OffchainEventService } from "./data/offchain-event-service.js"
-import { GameHitResult, HitResult } from "../dto/game-hit-result.js"
-import { GamePitchResult, PitchResult } from "../dto/game-pitch-result.js"
+import { GameHitResult } from "../dto/game-hit-result.js"
+import { GamePitchResult } from "../dto/game-pitch-result.js"
 import { GameHitResultRepository } from "../repository/game-hit-result-repository.js"
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
 import { ethers } from "ethers"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { TeamQueueMatchup } from "../dto/team-queue.js"
 import { RollService } from "./roll-service.js"
-import { SimSharedService } from "./shared/sim-shared-service.js"
+import { GamePlayer, HitResult, PitchResult, Position, RotationPitcher, SimSharedService } from "./shared/sim-shared-service.js"
 
 
 @injectable()

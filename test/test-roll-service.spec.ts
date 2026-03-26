@@ -8,9 +8,9 @@ import { SeedService } from "../src/service/data/seed-service.js"
 import { PlayerService } from "../src/service/data/player-service.js"
 import { RollChartService } from "../src/service/roll-chart-service.js"
 import { SchemaService } from "../src/service/data/schema-service.js"
-import { GamePlayer, Handedness, HitterChange, HittingProfile, HittingRatings, HomeAway, LeagueAverage, MatchupHandedness, OfficialPlayResult, PitchRatings, PitchType, PitcherChange, PitchingProfile, Play, PlayResult, Position, RunnerResult } from "../src/service/enums.js"
 import { Player } from "../src/dto/player.js"
 import { GameService } from "../src/service/data/game-service.js"
+import { Handedness, HitterChange, HittingRatings, LeagueAverage, PitcherChange, PitchRatings, Position } from "../src/service/shared/sim-shared-service.js"
 
 let container = getContainer()
 

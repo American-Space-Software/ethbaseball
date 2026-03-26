@@ -1,9 +1,10 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { HitterPitcher, PitchType, PlayerGrade, Position } from "../../service/enums.js";
+import { HitterPitcher, PlayerGrade } from "../../service/enums.js";
 import { Player } from "../../dto/player.js";
 import { UniverseWebService } from "./universe-web-service.js";
 import { PlayerSharedService } from "../../service/shared/player-shared-service.js";
+import { PitchType, Position } from "../../service/shared/sim-shared-service.js";
 
 
 

@@ -9,15 +9,12 @@ import { Owner } from "../../dto/owner.js"
 import { SeedService } from "./seed-service.js"
 import { Image } from "../../dto/image.js"
 
-import { ContactTypeRollInput, PowerRollInput } from "../../dto/roll-input.js"
 
 import glicko2 from "glicko2"
 
-import { Animation } from "../../dto/animation.js"
-
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {  Handedness, Position, Rating, PitchingHandednessRatings, HittingHandednessRatings, BallSwingByCount, FielderChance, HittingRatings, InZoneByCount, LeagueAverage, PitchRatings, ShallowDeepChance, StrikeSwingByCount, PitchType, HitResultCount, PitchResultCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId, HitterPitcher, FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, HITTER_GAME_AVERAGE_XP, GLICKO_SETTINGS, HittingProfile, ContactProfile, PitchingProfile } from "../enums.js"
+import {   Rating, BallSwingByCount, InZoneByCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId,  FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, GLICKO_SETTINGS, HittingProfile, PitchingProfile } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -31,6 +28,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import dayjs from "dayjs"
 import { PlayerSharedService } from "../shared/player-shared-service.js"
+import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, LeagueAverage, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, ShallowDeepChance } from "../shared/sim-shared-service.js"
 
 
 const zodiac = zodiacFn("en")

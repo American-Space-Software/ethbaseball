@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { Lineup, Position } from "./enums.js";
+import { Lineup } from "./shared/sim-shared-service.js";
 
 @injectable()
 class LineupService {

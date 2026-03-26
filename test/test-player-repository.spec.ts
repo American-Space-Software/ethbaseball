@@ -12,7 +12,8 @@ import { Owner } from "../src/dto/owner.js"
 import { OwnerService } from "../src/service/data/owner-service.js"
 import { GameRepository } from "../src/repository/game-repository.js"
 import dayjs from "dayjs"
-import { Handedness, PersonalityType, PitchType, Position } from "../src/service/enums.js"
+import { PersonalityType,  } from "../src/service/enums.js"
+import { Handedness,PitchType, Position } from "../src/service/shared/sim-shared-service.js"
 
 
 let id1

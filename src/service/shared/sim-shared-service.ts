@@ -1,13 +1,13 @@
 import { inject, injectable } from "inversify"
-import { ALL_PITCH_ZONES, BaseResult,  Colors, Contact, Count, DefenseCreditType, DefensiveCredit,  GamePlayer, GamePlayerBio, HalfInning, Handedness, HitResultCount, HitterChange, HittingProfile, HittingRatings, HomeAway, InningEndingEvent, LastPlay, LeagueAverage, Lineup, MatchupHandedness, OfficialPlayResult, OfficialRunnerResult,  PersonalityType, Pitch, PitcherChange, PitchingProfile, PitchLog, PitchRatings, PitchResult, PitchResultCount, PitchType, PitchZone, Play,  PlayerStatLines, PlayResult, Position,   RotationPitcher, RunnerEvent, RunnerResult, Score, ShallowDeep,  SimPitchResult, STANDARD_INNINGS, SwingResult,  ThrowResult, ThrowRoll, UpcomingMatchup, WIN_EXPECTANCY_CHART, WPA, WPAReward } from "../enums.js"
 import { RollService } from "../roll-service.js"
-import { RollChart } from "../../dto/roll-chart.js"
 import { RollChartService } from "../roll-chart-service.js";
 import { StatService } from "../stat-service.js";
 import { PlayerSharedService } from "./player-shared-service.js";
 
 const APPLY_PLAYER_CHANGES = true
 const PLAYER_CHANGE_SCALE = 0.75
+const STANDARD_INNINGS = 9
+
 
 @injectable()
 class SimSharedService {
@@ -21,12 +21,14 @@ class SimSharedService {
     private runnerActions:RunnerActions
     private matchup:Matchup
     private winExpectancy:WinExpectancy
+
     
     constructor(
         private rollService:RollService,
         private rollChartService: RollChartService,
         private statService:StatService,
-        private playerSharedService:PlayerSharedService
+        private playerSharedService:PlayerSharedService,
+        @inject("winExpectancyChart") private winExpectancyChart:any[]
 
     ) {
         this.simRolls = new SimRolls(rollService, rollChartService)
@@ -34,7 +36,7 @@ class SimSharedService {
         this.runnerActions = new RunnerActions(rollChartService, this.simRolls)
         this.matchup = new Matchup(this.gamePlayers)
         this.gameInfo = new GameInfo(this.gamePlayers)
-        this.winExpectancy = new WinExpectancy(this.gamePlayers)
+        this.winExpectancy = new WinExpectancy(this.gamePlayers, this.winExpectancyChart)
         this.sim = new Sim(rollService, rollChartService, this.simRolls, this.matchup, this.runnerActions)
     }
 
@@ -176,13 +178,212 @@ class SimSharedService {
     }
     
 
-    
 }
 
 const _getAverage = (array: number[]) => {
     return array.reduce((a, b) => a + b) / array.length
 }
 
+
+enum PlayResult {
+
+    ERROR = "ERROR",
+    STRIKEOUT = "STRIKEOUT",
+    OUT = "OUT",
+    HIT_BY_PITCH = "HIT_BY_PITCH",
+    BB = "BB",
+    SINGLE = "SINGLE",
+    DOUBLE = "DOUBLE",
+    TRIPLE = "TRIPLE",
+    HR = "HR"
+
+}
+
+enum Contact {
+    GROUNDBALL = "GROUNDBALL",
+    LINE_DRIVE = "LINE_DRIVE",
+    FLY_BALL = "FLY_BALL"
+}
+
+enum ShallowDeep {
+    SHALLOW = "SHALLOW",
+    NORMAL = "NORMAL",
+    DEEP = "DEEP"
+}
+
+enum PitchZone {
+  LOW_AWAY    = "LOW_AWAY",
+  LOW_MIDDLE  = "LOW_MIDDLE",
+  LOW_INSIDE  = "LOW_INSIDE",
+
+  MID_AWAY    = "MID_AWAY",
+  MID_MIDDLE  = "MID_MIDDLE",
+  MID_INSIDE  = "MID_INSIDE",
+
+  HIGH_AWAY   = "HIGH_AWAY",
+  HIGH_MIDDLE = "HIGH_MIDDLE",
+  HIGH_INSIDE = "HIGH_INSIDE"
+}
+
+enum PitchCall {
+    BALL = "BALL",
+    STRIKE = "STRIKE",
+    FOUL = "FOUL",
+    IN_PLAY = "IN_PLAY",
+    HBP = "HIT_BY_PITCH",
+}
+
+enum PitchType {
+    FF = "FF",
+    CU = "CU",
+    CH = "CH",
+    FC = "FC",
+    FO = "FO",
+    KN = "KN",
+    KC = "KC",
+    SC = "SC",
+    SI = "SI",
+    SL = "SL",
+    SV = "SV",
+    FS = "FS",
+    ST = "ST"
+}
+
+enum BaseResult {
+
+    FIRST = "1B",
+    SECOND = "2B",
+    THIRD = "3B",
+    HOME = "home"
+}
+
+enum Handedness {
+    L = "L",
+    R = "R",
+    S = "S"
+}
+
+enum Position {
+    CATCHER = "C",
+    PITCHER = "P",
+    FIRST_BASE = "1B",
+    SECOND_BASE = "2B",
+    THIRD_BASE = "3B",
+    SHORTSTOP = "SS",
+    LEFT_FIELD = "LF",
+    CENTER_FIELD = "CF",
+    RIGHT_FIELD = "RF"
+}
+
+enum OfficialPlayResult {
+
+    //Don't count as AB
+    INTENT_WALK = "Intent Walk",
+    HIT_BY_PITCH = "Hit By Pitch",
+    SAC_FLY = "Sac Fly",
+    SAC_FLY_DP = "Sac Fly DP",
+    WALK = "Walk",
+    CATCHER_INTERFERENCE = "Catcher Interference",
+    RUNNER_OUT = "Runner Out",
+    EJECTION = "Ejection",
+
+    //Hits
+    SINGLE = "Single",
+    DOUBLE = "Double",
+    TRIPLE = "Triple",
+    HOME_RUN = "Home Run",
+
+    //Strikeouts
+    STRIKEOUT = "Strikeout",
+    STRIKEOUT_DP = "Strikeout - DP",
+
+    //Sacrifice
+    SAC_BUNT = 'Sac Bunt',
+    SAC_BUNT_DP = 'Sacrifice Bunt DP',
+
+    //Outs
+    BATTER_INTERFERENCE = 'Batter Interference',
+
+    BUNT_GROUNDOUT = 'Bunt Groundout',
+    BUNT_LINEOUT = 'Bunt Lineout',
+    BUNT_POPOUT = 'Bunt Pop Out',
+
+    FAN_INTERFERENCE = 'Fan Interference',
+
+    FIELDERS_CHOICE = 'Fielders Choice',
+
+    FLYOUT = 'Flyout',
+    POP_OUT = 'Pop Out',
+    FOURCEOUT = 'Forceout',
+    GROUNDOUT = 'Groundout',
+
+    GROUNDED_INTO_DP = 'Grounded Into DP',
+    TRIPLE_PLAY = 'Triple Play',
+
+    REACHED_ON_ERROR = "Reached on Error"
+
+
+}
+
+enum OfficialRunnerResult {
+
+    TAGGED_OUT = "Tagged out",
+    FORCE_OUT = "Force out",
+
+    HOME_TO_FIRST = "Advanced from home to 1B",
+    HOME_TO_SECOND = "Advanced from home to 2B",
+    HOME_TO_THIRD = "Advanced from home to 3B",
+    HOME_TO_SCORE = "Advanced from home to come around and score",
+
+
+    FIRST_TO_SECOND = "Advanced from 1B to 2B",
+    FIRST_TO_THIRD = "Advanced from 1B to 3B",
+    FIRST_TO_HOME = "Advanced from 1B to home",
+
+    SECOND_TO_THIRD = "Advanced from 2B to 3B",
+    SECOND_TO_HOME = "Advanced from 2B to home",
+    THIRD_TO_HOME = "Advanced from 3B to home",
+
+    TAGGED_FIRST_TO_SECOND = "Tagged up and moved from 1B to 2B",
+    TAGGED_SECOND_TO_THIRD = "Tagged up and moved from 2B to 3B",
+    TAGGED_THIRD_TO_HOME = "Tagged up and scored from 3B.",
+
+
+    STOLEN_BASE_2B = "Stolen Base 2B",
+    STOLEN_BASE_3B = "Stolen Base 3B",
+    STOLEN_BASE_HOME = "Stolen Base Home",
+
+    CAUGHT_STEALING_2B = "Caught Stealing 2B",
+    CAUGHT_STEALING_3B = "Caught Stealing 3B",
+    CAUGHT_STEALING_HOME = "Caught Stealing Home",
+
+}
+
+enum DefenseCreditType {
+    ASSIST = "ASSIST",
+    ERROR = "ERROR",
+    PUTOUT = "PUTOUT",
+    CAUGHT_STEALING = "CAUGHT_STEALING",
+    PASSED_BALL = "PASSED_BALL"
+}
+
+enum ThrowResult {
+    SAFE = "safe",
+    OUT = "out",
+    NO_THROW = "no throw"
+}
+
+enum SwingResult {
+    FAIR = "FAIR",
+    FOUL = "FOUL",
+    STRIKE = "STRIKE",
+    NO_SWING = "NO_SWING"
+}
+
+enum HomeAway {
+    HOME = "Home",
+    AWAY = "Away"
+}
 
 class Sim {
 
@@ -446,7 +647,7 @@ class Sim {
             powQ: powerQuality,
             swing: false,
             con: false,
-            result: inZone ? PitchResult.STRIKE : PitchResult.BALL,
+            result: inZone ? PitchCall.STRIKE : PitchCall.BALL,
             inZone,
             guess: guessPitch,
             isWP: false,
@@ -459,20 +660,20 @@ class Sim {
             //Passed ball
             pitch.isPB = true
             pitch.inZone = false
-            pitch.result = PitchResult.BALL
+            pitch.result = PitchCall.BALL
 
         } else if (locationQuality <= 0.25) {
 
             //HBP
             pitch.inZone = false
-            pitch.result = PitchResult.HBP
+            pitch.result = PitchCall.HBP
 
         } else if (locationQuality <= 0.50) {
 
             //Wild pitch
             pitch.isWP = true
             pitch.inZone = false
-            pitch.result = PitchResult.BALL
+            pitch.result = PitchCall.BALL
 
         } else {
 
@@ -496,41 +697,41 @@ class Sim {
             // Only set the pitch.result here. Count updates happen once below.
             switch (swingResult) {
                 case SwingResult.FAIR:
-                    pitch.result = PitchResult.IN_PLAY
+                    pitch.result = PitchCall.IN_PLAY
                     break
 
                 case SwingResult.FOUL:
-                    pitch.result = PitchResult.FOUL
+                    pitch.result = PitchCall.FOUL
                     break
 
                 case SwingResult.STRIKE:
-                    pitch.result = PitchResult.STRIKE
+                    pitch.result = PitchCall.STRIKE
                     break
 
                 case SwingResult.NO_SWING:
-                    pitch.result = inZone ? PitchResult.STRIKE : PitchResult.BALL
+                    pitch.result = inZone ? PitchCall.STRIKE : PitchCall.BALL
                     break
             }
         }
 
         switch (pitch.result) {
-            case PitchResult.FOUL:
+            case PitchCall.FOUL:
                 command.play.pitchLog.count.fouls++
                 if (command.play.pitchLog.count.strikes < 2) {
                     command.play.pitchLog.count.strikes++
                 }
                 break
 
-            case PitchResult.STRIKE:
+            case PitchCall.STRIKE:
                 command.play.pitchLog.count.strikes++
                 break
 
-            case PitchResult.BALL:
+            case PitchCall.BALL:
                 command.play.pitchLog.count.balls++
                 break
 
-            case PitchResult.HBP:
-            case PitchResult.IN_PLAY:
+            case PitchCall.HBP:
+            case PitchCall.IN_PLAY:
                 // no balls/strikes added
                 break
         }
@@ -541,13 +742,13 @@ class Sim {
         let continueAtBat = true
 
         //HBP
-        if (pitch.result == PitchResult.HBP) {
+        if (pitch.result == PitchCall.HBP) {
             command.play.result = PlayResult.HIT_BY_PITCH
             continueAtBat = false
         }
 
         //In play?
-        if (pitch.result == PitchResult.IN_PLAY) continueAtBat = false
+        if (pitch.result == PitchCall.IN_PLAY) continueAtBat = false
 
         //Strikeout or walk?
         if (command.play.pitchLog.count.balls == 4) {
@@ -579,7 +780,7 @@ class Sim {
 
         let fielderPlayer:GamePlayer
 
-        let ballInPlay:Pitch = command.play.pitchLog.pitches.find(p => p.result == PitchResult.IN_PLAY)
+        let ballInPlay:Pitch = command.play.pitchLog.pitches.find(p => p.result == PitchCall.IN_PLAY)
 
         let isFieldingError = false
 
@@ -872,7 +1073,8 @@ class Sim {
 class WinExpectancy {
 
     constructor(
-        private gamePlayers:GamePlayers
+        private gamePlayers:GamePlayers,
+        private winExpectancyChart:any[]
     ) {}
 
     generateWPA(game:Game) : WPAReward[] {
@@ -946,6 +1148,11 @@ class WinExpectancy {
 
     getWinExpectancy(inning:number, top:boolean, runner1B:boolean, runner2B:boolean, runner3B:boolean, outs:number, score:Score, isComplete:boolean) : number {
 
+        if (!this.winExpectancyChart) {
+            throw new Error("win expectancy chart not configured")
+        }
+
+
         if (isComplete) {
 
             if (score.home > score.away) return 1
@@ -968,7 +1175,7 @@ class WinExpectancy {
 
         if (inning > 9) inning = 9        
         
-        let weRow = WIN_EXPECTANCY_CHART.filter(r => r.inning == inning && r.top == (top == true ? 'Top' : 'Bottom') && r.basesit == baseSit && r.outs == outs)[0]
+        let weRow = this.winExpectancyChart.filter(r => r.inning == inning && r.top == (top == true ? 'Top' : 'Bottom') && r.basesit == baseSit && r.outs == outs)[0]
 
         let homeDiff = score.home - score.away
         
@@ -3657,7 +3864,7 @@ class LogResult {
         pitcher.pitchResult.swings += pitchLog.pitches.filter( p => p.swing == true).length || 0
         pitcher.pitchResult.swingAtBalls += pitchLog.pitches.filter( p => p.swing == true && p.inZone == false).length || 0
         pitcher.pitchResult.swingAtStrikes += pitchLog.pitches.filter( p => p.swing == true && p.inZone == true).length || 0
-        pitcher.pitchResult.ballsInPlay += pitchLog.pitches.filter( p => p.swing == true && p.result == PitchResult.IN_PLAY).length || 0
+        pitcher.pitchResult.ballsInPlay += pitchLog.pitches.filter( p => p.swing == true && p.result == PitchCall.IN_PLAY).length || 0
 
         pitcher.pitchResult.inZone += pitchLog.pitches.filter( p => p.inZone == true).length || 0
         pitcher.pitchResult.inZoneContact += pitchLog.pitches.filter( p => p.inZone == true && p.con == true  ).length || 0
@@ -3683,7 +3890,7 @@ class LogResult {
         hitter.hitResult.swings += pitchLog.pitches.filter( p => p.swing == true).length || 0
         hitter.hitResult.swingAtBalls += pitchLog.pitches.filter( p => p.swing == true && p.inZone == false).length || 0
         hitter.hitResult.swingAtStrikes += pitchLog.pitches.filter( p => p.swing == true && p.inZone == true).length || 0
-        hitter.hitResult.ballsInPlay += pitchLog.pitches.filter( p => p.swing == true && p.result == PitchResult.IN_PLAY).length || 0
+        hitter.hitResult.ballsInPlay += pitchLog.pitches.filter( p => p.swing == true && p.result == PitchCall.IN_PLAY).length || 0
 
         hitter.hitResult.inZone += pitchLog.pitches.filter( p => p.inZone == true).length || 0
         hitter.hitResult.inZoneContact += pitchLog.pitches.filter( p => p.inZone == true && p.con == true ).length || 0
@@ -3823,6 +4030,7 @@ interface Game {
 }
 
 interface Player {
+
     _id: string
 
     tokenId?: number
@@ -3836,19 +4044,13 @@ interface Player {
 
     primaryPosition: Position
     zodiacSign: string
-    personalityType: PersonalityType
 
     ownerId?: string
-
-    pitchingProfile: PitchingProfile
-    hittingProfile: HittingProfile
 
     throws: Handedness
     hits: Handedness
 
     isRetired: boolean
-
-    careerStats?: PlayerStatLines
 
     coverImageCid?: string
 
@@ -3915,7 +4117,883 @@ interface TeamInfo {
 
 }
 
+interface GamePlayerBio {
+
+    _id:string
+    fullName: string
+    // ratingBefore:Rating
+
+    age:number
+    ownerId:string 
+
+    throws:Handedness
+    hits:Handedness
+
+    hitResult:HitterStatLine
+    pitchResult:PitcherStatLine
+
+}
+
+const ALL_PITCH_ZONES: readonly PitchZone[] = [
+  PitchZone.LOW_AWAY, PitchZone.LOW_MIDDLE, PitchZone.LOW_INSIDE,
+  PitchZone.MID_AWAY, PitchZone.MID_MIDDLE, PitchZone.MID_INSIDE,
+  PitchZone.HIGH_AWAY, PitchZone.HIGH_MIDDLE, PitchZone.HIGH_INSIDE,
+] as const
+
+
+interface HitterStatLine {
+
+    teamWins:number
+    teamLosses:number
+
+    games: number
+    pa: number
+    atBats: number
+    runs: number
+    hits: number
+    singles: number
+    doubles: number
+    triples: number
+    homeRuns: number
+    hbp:number 
+
+    gidp:number
+    po:number
+    assists:number
+    outfieldAssists:number
+
+    e:number
+    passedBalls:number
+
+    csDefense:number
+    doublePlays:number
+
+    hbpPercent?:number
+    singlePercent?:number
+    doublePercent?:number
+    triplePercent?:number
+    homeRunPercent?:number
+    bbPercent?:number
+    soPercent?:number
+
+    strikePercent?:number
+    ballPercent?:number
+    swingPercent?:number
+    foulPercent?:number
+    swingAtBallsPercent?:number
+    swingAtStrikesPercent?:number
+    inZonePercent?:number
+    inZoneContactPercent?:number
+    outZoneContactPercent?:number
+    inPlayPercent?:number
+    babip?:number
+
+    groundBallPercent?:number
+    flyBallPercent?:number
+    ldPercent?:number
+    popupPercent?:number
+
+    rbi: number
+    sb: number
+    sbAttempts:number
+    cs: number
+    bb: number
+    so: number
+    avg?: number
+    obp?: number
+    slg?: number
+    ops?: number
+    wpa?:number
+
+    avgPitchQuality: number
+    avgPitchPowerQuality: number
+    avgPitchLocationQuality: number
+    avgPitchMovementQuality: number
+
+    runsPerGame?:number  
+    sbPerGame?:number  
+    sbAttemptsPerGame?:number
+    pitchesPerPA?:number
+}
+
+interface PitcherStatLine {
+    games: number
+    wins: number
+    losses: number
+    winPercent?:number
+    era?: number
+    starts: number
+    outs: number
+    cg: number
+    sho: number
+    saves: number
+    ip?: string
+    atBats: number
+    battersFaced: number
+    hits: number
+    runs: number
+    er: number
+    homeRuns: number
+    bb: number
+    so: number
+    hbp: number
+    wpa:number 
+    wildPitches:number
+
+    singlePercent?:number
+    doublePercent?:number
+    triplePercent?:number
+    homeRunPercent?:number
+
+    hbpPercent?:number
+    bbPercent?:number
+    soPercent?:number
+    strikePercent?:number
+    ballPercent?:number
+    swingPercent?:number
+    inPlayPercent?:number
+    foulPercent?:number
+    wildPitchPercent?:number
+    swingAtBallsPercent?:number
+    swingAtStrikesPercent?:number
+    inZonePercent?:number
+    inZoneContactPercent?:number
+    outZoneContactPercent?:number
+    babip?:number
+
+    groundBallPercent?:number
+    flyBallPercent?:number
+    ldPercent?:number
+    popupPercent?:number
+
+    avgPitchQuality: number
+    avgPitchPowerQuality: number
+    avgPitchLocationQuality: number
+    avgPitchMovementQuality: number
+
+    runsPerGame?:number
+    pitchesPerGame?:number
+    pitchesPerPA?:number
+
+}
+
+interface Colors {
+    color1:string
+    color2:string
+}
+
+interface SimPitchResult {
+    continueAtBat:boolean
+    pitch:Pitch
+}
+
+interface PitchLog {
+    pitches: Pitch[]
+    count: PitchCount
+}
+
+interface Pitch {
+    intentZone:PitchZone,
+    actualZone:PitchZone,
+    result: PitchCall,
+    count?: Count,
+    type: PitchType,
+    quality: number
+    powQ: number
+    locQ: number
+    movQ: number
+    swing: boolean
+    inZone:boolean
+    isWP:boolean
+    isPB:boolean
+    con:boolean
+    guess:boolean
+}
+
+interface PitchCount {
+    balls: number
+    strikes: number
+    fouls: number
+    pitches: number
+}
+
+interface ShallowDeepChance {
+    shallow: number
+    normal: number
+    deep: number
+}
+
+interface FielderChance {
+    first: number
+    second: number
+    third: number
+    catcher: number
+    shortstop: number
+    leftField: number
+    centerField: number
+    rightField: number
+    pitcher: number
+}
+
+interface LeagueAverage {
+
+    hittingRatings:HittingRatings
+    pitchRatings:PitchRatings
+
+    powerRollInput:PowerRollInput,
+    contactTypeRollInput:ContactTypeRollInput
+
+    foulRate:number,
+
+    inZoneRate:number
+    ballSwingRate:number
+    strikeSwingRate:number
+
+    zoneSwingContactRate:number
+    chaseSwingContactRate:number
+
+    pitchQuality:number,
+
+    fielderChanceR:FielderChance
+    fielderChanceL:FielderChance
+    shallowDeepChance:ShallowDeepChance
+
+}
+
+interface ContactProfile {
+    groundball:number
+    flyBall:number
+    lineDrive:number
+}
+
+interface PitchRatings {
+
+    power?:number
+
+    contactProfile?:ContactProfile
+
+    vsR?:PitchingHandednessRatings
+    vsL?:PitchingHandednessRatings
+
+    pitches?:PitchType[]
+}
+
+interface PitchingHandednessRatings {
+
+    control?:number
+    movement?:number 
+
+}
+
+interface HittingRatings {
+
+    defense?:number
+    arm?:number
+
+    speed?:number
+    steals?:number
+
+    contactProfile?:ContactProfile
+
+    vsR?:HittingHandednessRatings
+    vsL?:HittingHandednessRatings
+
+}
+
+interface HittingHandednessRatings {
+
+    plateDiscipline?:number
+    contact?:number 
+
+    gapPower?:number
+    homerunPower?:number
+
+}
+
+interface GamePlayer {
+    _id:string
+    coverImageCid:string
+    fullName: string
+    firstName:string
+    lastName:string
+    displayName: string
+
+    age:number
+
+    teamId?:string
+
+    overallRating: {
+        before:number
+    }
+
+    ownerId:string 
+    color1:string
+    color2:string
+
+    throws:Handedness
+    hits:Handedness
+
+    pitchRatings:PitchRatings
+    hittingRatings:HittingRatings
+
+    currentPosition?:Position
+    lineupIndex?:number
+
+    hitResult:HitResultCount
+    pitchResult:PitchResultCount
+
+    hitterChange: {
+        vsL: HitterChange
+        vsR: HitterChange
+    }
+
+    pitcherChange: {
+        vsL: PitcherChange
+        vsR: PitcherChange
+    }
+
+    isPitcherOfRecord?:boolean
+}
+
+interface MatchupHandedness {
+    throws: Handedness,
+    hits: Handedness,
+    vsSameHand: boolean
+}
+
+interface HitResultCount {
+
+    games:number
+    uniqueGames:number
+
+    teamWins:number
+    teamLosses:number
+    
+    pa:number
+    atBats:number 
+    hits:number 
+
+    singles:number 
+    doubles:number 
+    triples:number 
+    homeRuns:number
+
+    runs:number 
+    rbi:number 
+    bb:number 
+    sb:number
+    sbAttempts:number
+    cs:number
+    hbp:number 
+    so:number 
+    lob:number 
+    sacBunts:number 
+    sacFlys:number
+
+    groundOuts:number 
+    flyOuts:number
+    lineOuts:number
+    outs:number
+    
+    groundBalls:number
+    lineDrives:number
+    flyBalls:number
+
+    gidp:number
+    po:number
+    assists:number
+    outfieldAssists:number
+    e:number
+    passedBalls:number
+
+    csDefense:number
+    doublePlays:number
+
+    pitches:number
+    balls:number
+    strikes:number
+    fouls:number
+
+    swings:number
+    swingAtBalls:number
+    swingAtStrikes:number
+    inZoneContact:number
+    outZoneContact:number
+
+    inZone:number
+
+    ballsInPlay:number
+
+    totalPitchQuality: number
+    totalPitchPowerQuality: number
+    totalPitchLocationQuality: number
+    totalPitchMovementQuality: number
+
+    wpa:number
+
+}
+
+interface PitchResultCount {
+
+    games:number
+    uniqueGames:number
+
+    teamWins:number
+    teamLosses:number
+
+    starts:number
+    wins:number
+    losses:number
+    saves:number
+    bs:number
+
+    outs:number
+    er:number
+    so:number
+    hits:number
+    bb:number
+    sho:number
+    cg:number
+    hbp:number
+
+    singles:number
+    doubles:number
+    triples:number
+
+    battersFaced:number
+    atBats:number
+
+    runs:number
+    homeRuns:number
+
+    groundOuts:number
+    flyOuts:number
+
+    lineOuts:number
+    groundBalls:number
+    lineDrives:number
+    flyBalls:number
+
+    pitches:number
+    balls:number
+    strikes:number
+    fouls:number
+    wildPitches:number
+
+    swings:number
+    swingAtBalls:number
+    swingAtStrikes:number
+    inZoneContact:number
+    outZoneContact:number
+
+    ballsInPlay:number
+
+    inZone:number
+    ip:string
+
+    sacFlys:number
+
+    totalPitchQuality: number
+    totalPitchPowerQuality: number
+    totalPitchLocationQuality: number
+    totalPitchMovementQuality: number
+
+    wpa:number
+
+}
+
+interface PitcherChange {
+
+    powerChange: number
+    controlChange: number
+    movementChange: number
+
+    // pitchesChange:PitchChange[]
+
+}
+
+interface HitterChange {
+
+    plateDisiplineChange: number
+    contactChange: number
+
+    gapPowerChange: number
+    hrPowerChange: number
+
+    speedChange: number
+    stealsChange:number
+
+    defenseChange:number
+    armChange:number
+
+}
+
+interface DefensiveCredit { 
+    _id:string
+    type:DefenseCreditType
+}
+
+interface ThrowRoll {
+    roll:number
+    result:ThrowResult
+}
+
+interface RunnerEvent {
+
+    pitchIndex:number
+
+    pitcher: {
+        _id: string
+    }
+
+    runner?: {
+        _id: string
+    }
+
+    eventType?: PlayResult|OfficialRunnerResult
+
+    movement?: {
+        start?: BaseResult
+        end?: BaseResult
+        outBase?: BaseResult
+        isOut?:boolean
+        outNumber?:number
+    }
+
+
+    isUnearned?:boolean
+    isScoringEvent?:boolean
+    isForce?:boolean
+    isFC?:boolean
+    isWP?:boolean
+    isPB?:boolean
+    isError?:boolean
+
+    isSBAttempt?:boolean
+    isSB?:boolean
+    isCS?:boolean
+
+    throw?: {
+
+        result: ThrowResult
+
+        from?: {
+            _id?: string,
+            position?:Position
+        },
+
+        to?: {
+            _id?:string,
+            position:Position
+        }
+    }
+}
+
+interface RunnerResult {
+    first: string
+    second: string
+    third: string
+    scored: string[]
+    out: string[]
+}
+
+interface Count {
+    balls: number
+    strikes: number
+    outs: number
+}
+
+interface Score {
+    away:number
+    home:number
+}
+
+interface UpcomingMatchup {
+    hitter: GamePlayerBio
+    pitcher: GamePlayerBio
+}
+
+interface LastPlay {
+    hitter:GamePlayerBio
+    pitcher:GamePlayerBio
+    play: Play
+    inning: number
+    top: boolean
+    first:GamePlayerBio
+    second:GamePlayerBio
+    third:GamePlayerBio
+}
+
+interface Play {
+    index: number
+    pitchLog: PitchLog
+    result?: PlayResult
+    officialPlayResult?: OfficialPlayResult|OfficialRunnerResult
+
+    runner: {
+        events: RunnerEvent[]
+        result: {
+            start: RunnerResult
+            end: RunnerResult
+        }
+    }
+
+    credits:DefensiveCredit[]
+    contact?: Contact
+    shallowDeep?: ShallowDeep
+    fielder?: Position
+    fielderId?:string
+
+    matchupHandedness:MatchupHandedness
+
+    hitterId: string
+    pitcherId: string
+    catcherId:string
+
+    count: {
+        start: Count
+        end?: Count
+    }
+    score: {
+        start: Score
+        end?: Score
+    }
+    inningNum: number
+    inningTop: boolean
+}
+
+interface HalfInning {
+    num: number
+    top: boolean
+    linescore: LinescoreTeam
+    plays: Play[]
+}
+
+interface LinescoreTeam {
+    runs: number
+    hits: number
+    errors: number
+    leftOnBase: number
+}
+
+interface Lineup {
+    order?:LineupPlayer[]
+    rotation?:RotationPitcher[]
+    valid?:boolean
+}
+
+interface LineupPlayer {
+    _id?:string
+    position?:Position
+}
+
+interface RotationPitcher {
+    _id?:string
+    stamina?:number
+}
+
+interface WPA {
+
+    expectancyBefore?:number
+    expectancyAfter?:number
+
+    total?:number
+
+    rewards?:WPAReward[]
+
+}
+
+interface WPAReward {
+    playerId:string
+    reward:number
+    hitting:boolean
+}
+
+interface RollChart {
+    entries?: Map<number,string>
+}
+
+interface ContactTypeRollInput {
+    groundball: number
+    flyBall:number    
+    lineDrive:number
+}
+
+interface FielderChanceRollInput {
+    first:number
+    second:number
+    third:number
+    catcher:number
+    shortstop:number
+    leftField:number
+    centerField:number
+    rightField:number
+    pitcher:number
+}
+
+interface ShallowDeepRollInput {
+    shallow:number
+    normal: number
+    deep: number
+}
+
+interface HitterHandednessRollInput {
+    left:number
+    right: number
+    switch: number
+}
+
+interface PitcherHandednessRollInput {
+    left:number
+    right: number
+}
+
+interface PowerRollInput {
+    out:number
+    singles: number
+    doubles: number
+    triples: number
+    hr: number
+}
+
+class InningEndingEvent extends Error {}
+
+
+interface HitResult {
+
+    games?:number
+    uniqueGames?:number
+
+    playerId:string
+    age:number
+    teamWins:number
+    teamLosses:number
+    pa:number
+    atBats:number 
+    hits:number 
+    singles:number 
+    doubles:number 
+    triples:number 
+    homeRuns:number
+    runs:number 
+    rbi:number 
+    bb:number 
+    sbAttempts:number
+    sb:number
+    cs:number
+    hbp:number 
+    so:number 
+    lob:number 
+    sacBunts:number 
+    sacFlys:number
+    groundOuts:number 
+    flyOuts:number
+    lineOuts:number
+    outs:number
+    groundBalls:number
+    lineDrives:number
+    flyBalls:number
+    gidp:number
+    po:number
+    assists:number
+    outfieldAssists:number
+    csDefense:number
+    doublePlays:number
+    e:number
+    passedBalls:number
+    wpa:number
+    pitches:number
+    balls:number
+    strikes:number
+    fouls:number
+    inZone:number
+    swings:number
+    swingAtBalls:number
+    swingAtStrikes:number
+    ballsInPlay:number
+    inZoneContact:number
+    outZoneContact:number
+    totalPitchQuality: number
+    totalPitchPowerQuality: number
+    totalPitchLocationQuality: number
+    totalPitchMovementQuality: number
+    overallRatingBefore:number
+    overallRatingAfter:number
+    careerStats:{
+        before: HitterStatLine
+        after: HitterStatLine
+    }
+    startDate?:Date
+    lastUpdated?:Date 
+    dateCreated?:Date    
+}
+
+interface PitchResult  {
+    games?:number
+    uniqueGames?:number
+
+    playerId:string
+    age:number
+    teamWins:number
+    teamLosses:number
+    starts:number
+    wins:number
+    losses:number
+    saves:number
+    bs:number
+    outs:number
+    er:number
+    so:number
+    hits:number
+    bb:number
+    sho:number
+    cg:number
+    hbp:number
+    singles:number
+    doubles:number
+    triples:number
+    battersFaced:number
+    atBats:number
+    runs:number
+    homeRuns:number
+    groundOuts:number
+    flyOuts:number
+    lineOuts:number
+    groundBalls:number
+    lineDrives:number
+    flyBalls:number
+    sacFlys:number
+    wpa:number
+    wildPitches:number
+    pitches:number
+    strikes:number
+    balls:number
+    fouls:number
+    inZone:number
+    swings:number
+    swingAtBalls:number
+    swingAtStrikes:number
+    ballsInPlay:number
+    inZoneContact:number
+    outZoneContact:number
+    totalPitchQuality: number
+    totalPitchPowerQuality: number
+    totalPitchLocationQuality: number
+    totalPitchMovementQuality: number
+    overallRatingBefore:number
+    overallRatingAfter:number
+    careerStats:{
+            before: PitcherStatLine
+            after: PitcherStatLine
+        }
+
+    startDate?:Date
+    lastUpdated?:Date 
+    dateCreated?:Date    
+}
+
+
 export {
-    SimSharedService, AtBatInfo
+    SimSharedService, HitResult, PitchResult, RollChart, ContactTypeRollInput, FielderChanceRollInput, ShallowDeepRollInput, HitterHandednessRollInput, PitcherHandednessRollInput, PowerRollInput, ShallowDeepChance, ThrowResult, TeamInfo, FielderChance, LastPlay, UpcomingMatchup, WPA, WPAReward, InningEndingEvent, LeagueAverage, Lineup, LineupPlayer, RotationPitcher, HomeAway, HalfInning, RunnerResult, Score, Contact, PlayResult, OfficialRunnerResult, OfficialPlayResult,PitchType, ShallowDeep, PitchCall, Pitch, RunnerEvent, Play, Count, PitchZone, AtBatInfo, PitcherChange, HitterChange, PitchResultCount,HitResultCount, MatchupHandedness, Position, Handedness, GamePlayer, GamePlayerBio, HitterStatLine, PitcherStatLine, BaseResult, Colors, ContactProfile, PitchRatings, PitchingHandednessRatings, HittingRatings, HittingHandednessRatings
 }
 

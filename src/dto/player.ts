@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, AllowNull, Is, Length, ForeignKey, BelongsTo } from 'sequelize-typescript'
 import { Owner } from './owner.js'
-import { Handedness, HittingProfile, HittingRatings, PersonalityType, PitchRatings, PitchType, PitcherStatLine, PitchingProfile,  PlayerPercentileRatings, PlayerStatLines, Position, Rating } from '../service/enums.js'
+import { HittingProfile,  PersonalityType,  PitchingProfile,  PlayerStatLines } from '../service/enums.js'
+import { Handedness, HittingRatings, PitchRatings, Position } from '../service/shared/sim-shared-service.js'
 
 @Table({
     tableName: 'player',

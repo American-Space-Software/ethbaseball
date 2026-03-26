@@ -1,11 +1,12 @@
 import { Table, Column, Model, DataType, AllowNull, ForeignKey, BelongsTo, Index, BelongsToMany, PrimaryKey } from 'sequelize-typescript'
 import { Player } from './player.js'
-import { Count, HalfInning, LeagueAverage, Score, TeamInfo } from '../service/enums.js'
+import { TeamInfo } from '../service/enums.js'
 import { Team } from './team.js'
 import { BelongsToManyAddAssociationMixin, BelongsToManyRemoveAssociationMixin } from 'sequelize';
 import { Stadium } from './stadium.js';
 import { League } from './league.js';
 import { Season } from './season.js';
+import { Count, HalfInning, LeagueAverage, Score } from '../service/shared/sim-shared-service.js';
 
 
 

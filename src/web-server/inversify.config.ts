@@ -162,6 +162,7 @@ import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 import { PlayerSharedService } from "../service/shared/player-shared-service.js";
 import { SimSharedService } from "../service/shared/sim-shared-service.js";
+import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
 
 let _diamondsAddress:string
 let _universe:Universe
@@ -340,6 +341,9 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind("config").toConstantValue(() => {
         return _config
     })
+
+    container.bind("winExpectancyChart").toConstantValue(WIN_EXPECTANCY_CHART)
+
 
     container.bind(DiamondMintPassService).toSelf().inSingletonScope()
     container.bind(SocketService).toSelf().inSingletonScope()

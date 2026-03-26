@@ -6,12 +6,12 @@ import { Owner } from "../../dto/owner.js"
 import { Op, QueryTypes } from "sequelize"
 
 import dayjs from "dayjs"
-import { HittingRatings, PitchRatings, PitchType, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../../service/enums.js"
+import {  PlayerFinalContract, PlayerPercentileRatings, PlayerReport } from "../../service/enums.js"
 import { Team } from "../../dto/team.js"
 
-import { League } from "../../dto/league.js"
 import { City } from "../../dto/city.js"
 import { Season } from "../../dto/season.js"
+import { HittingRatings, PitchRatings, PitchType, Position } from "../../service/shared/sim-shared-service.js"
 
 const HIT_SUM_QUERY_FIELDS = `
     SUM(pa) pa,

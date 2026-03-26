@@ -13,7 +13,8 @@ import { OwnerService } from "../src/service/data/owner-service.js"
 // import { GameQueueService } from "../src/service/game-queue-service.js"
 import { SchemaService } from "../src/service/data/schema-service.js"
 
-import { BaseResult, Contact, GamePlayer, LeagueAverage, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from "../src/service/enums.js"
+import { BaseResult, Contact, GamePlayer, LeagueAverage, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from "../src/service/shared/sim-shared-service.js"
+
 import dayjs from "dayjs"
 import { SeasonService } from "../src/service/data/season-service.js"
 import { LeagueService } from "../src/service/data/league-service.js"

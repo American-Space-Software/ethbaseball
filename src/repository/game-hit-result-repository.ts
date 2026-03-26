@@ -1,7 +1,8 @@
-import { GameHitResult, HitResult } from "../dto/game-hit-result.js"
+import { GameHitResult } from "../dto/game-hit-result.js"
 import { Game } from "../dto/game.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
+import { HitResult } from "../service/shared/sim-shared-service.js"
 
 interface GameHitResultRepository {
     get(game:Game, player:Player, options?:any): Promise<GameHitResult>

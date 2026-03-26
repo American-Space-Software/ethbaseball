@@ -1,9 +1,8 @@
-import { League } from "../dto/league.js"
 import { Owner } from "../dto/owner.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
-import { Team } from "../dto/team.js"
-import {  HittingRatings, PitchRatings, PlayerFinalContract, PlayerPercentileRatings, PlayerReport, Position } from "../service/enums.js"
+import {   PlayerFinalContract, PlayerPercentileRatings, PlayerReport } from "../service/enums.js"
+import { Position } from "../service/shared/sim-shared-service.js"
 
 interface PlayerRepository {
     get(id:string, options?:any): Promise<Player>

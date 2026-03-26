@@ -1,7 +1,5 @@
 import { inject, injectable } from "inversify";
-import { HitResultCount, HitterStatLine, PitcherStatLine, PitchResultCount } from "./enums.js";
-import { PitchResult } from "../dto/game-pitch-result.js";
-import { HitResult } from "../dto/game-hit-result.js";
+import { HitResult, HitResultCount, HitterStatLine, PitcherStatLine, PitchResult, PitchResultCount } from "./shared/sim-shared-service.js";
 
 
 
