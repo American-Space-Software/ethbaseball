@@ -14,9 +14,10 @@ import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { GameSharedService } from "../shared/game-shared-service.js"
-import { AtBatInfo, HomeAway, LastPlay, SimSharedService, UpcomingMatchup, GamePlayer, Play, Score } from "../shared/sim-shared-service.js"
+import { AtBatInfo, HomeAway, LastPlay, UpcomingMatchup, GamePlayer, Play, Score } from "baseball-sim-engine"
 
 import { v4 as uuidv4 } from 'uuid';
+import { SimSharedService } from "../shared/sim-shared-service.js"
 
 
 @injectable()

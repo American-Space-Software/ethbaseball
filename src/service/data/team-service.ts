@@ -29,7 +29,7 @@ import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
 import { TeamSharedService } from "../shared/team-shared-service.js";
-import { Colors, Lineup, Position, RotationPitcher } from "../shared/sim-shared-service.js";
+import { Colors, Lineup, Position, RotationPitcher } from "baseball-sim-engine";
 
 
 const MAX_ROSTER_SIZE = 13

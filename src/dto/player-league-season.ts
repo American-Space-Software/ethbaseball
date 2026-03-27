@@ -4,7 +4,7 @@ import { League } from './league.js'
 import { Player } from './player.js'
 import { PlayerPercentileRatings, PlayerStatLines } from '../service/enums.js'
 import { Team } from './team.js'
-import { HittingRatings, PitchRatings, Position } from '../service/shared/sim-shared-service.js'
+import { HittingRatings, PitchRatings, Position } from 'baseball-sim-engine'
 
 @Table({
     tableName: 'player_league_season',

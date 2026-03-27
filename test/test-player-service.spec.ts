@@ -8,7 +8,7 @@ import assert from "assert"
 import { GameService } from "../src/service/data/game-service.js"
 import { HittingProfile, PitchingProfile } from "../src/service/enums.js"
 import dayjs from "dayjs"
-import { Position } from "../src/service/shared/sim-shared-service.js"
+import { Position } from "baseball-sim-engine"
 
 let container = getContainer()
 let simDate = new Date(new Date().toUTCString())
@@ -466,6 +466,10 @@ describe('PlayerService', async () => {
         })
 
     })
+
+
+
+
 
 
     // it("should update player ratings", async () => {

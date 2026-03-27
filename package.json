@@ -111,6 +111,8 @@
   },
   "dependencies": {
     
+    "baseball-sim-engine": "file:../baseball-sim-engine",
+
     "socket.io-client": "4.8.1",
     "socket.io": "4.8.1",
     "express": "5.1.0",

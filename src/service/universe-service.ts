@@ -22,7 +22,6 @@ import { TeamService } from "./data/team-service.js";
 import {  Team, TEAM_COLORS, TEAM_NAMES } from "../dto/team.js";
 import { CityService } from "./data/city-service.js";
 import { SeedService } from "./data/seed-service.js";
-import { RollService } from "./roll-service.js";
 import { Stadium } from "../dto/stadium.js";
 import { StadiumService } from "./data/stadium-service.js";
 import { LeagueService } from "./data/league-service.js";
@@ -37,6 +36,7 @@ import dayjs from "dayjs";
 
 import { FinanceService } from "./finance-service.js";
 import { FinanceSeason, GLICKO_SETTINGS } from "./enums.js";
+import { Rolls } from "baseball-sim-engine";
 
 const BASE_DIAMOND_REWARD = "100000000000000000000" //100 EBLD
 
@@ -58,7 +58,6 @@ class UniverseService {
         private teamService:TeamService,
         private cityService:CityService,
         private seedService:SeedService,
-        private rollService:RollService,
         private stadiumService:StadiumService,
         private leagueService:LeagueService,
         private seasonService:SeasonService,
@@ -412,7 +411,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             do {
                 //Random top 100 city
-                city = allCities[this.rollService.getRoll(rng, 0, 99)]
+                city = allCities[Rolls.getRoll(rng, 0, 99)]
             } while(maxxedCities.filter( c => c.id == city._id).length > 0)
 
             chosenCities.push(city)
@@ -435,7 +434,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
             }
 
             //Name the team
-            let name =  Array.from(TEAM_NAMES)[this.rollService.getRoll(rng, 0, TEAM_NAMES.size - 1)]
+            let name =  Array.from(TEAM_NAMES)[Rolls.getRoll(rng, 0, TEAM_NAMES.size - 1)]
 
             team.name = `${pluralize(name)}`
             team.abbrev = city.name[0] + team.name.split(' ').map(word => word[0].toUpperCase()).join("")

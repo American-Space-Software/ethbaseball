@@ -4,7 +4,6 @@ import { PlayerRepository } from "../../repository/player-repository.js"
 import { Player } from "../../dto/player.js"
 
 import { faker } from '@faker-js/faker'
-import { RollService } from "../roll-service.js"
 import { Owner } from "../../dto/owner.js"
 import { SeedService } from "./seed-service.js"
 import { Image } from "../../dto/image.js"
@@ -28,7 +27,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import dayjs from "dayjs"
 import { PlayerSharedService } from "../shared/player-shared-service.js"
-import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, LeagueAverage, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, ShallowDeepChance } from "../shared/sim-shared-service.js"
+import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, LeagueAverage, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange } from "baseball-sim-engine"
 
 
 const zodiac = zodiacFn("en")
@@ -44,7 +43,6 @@ class PlayerService {
     private playerRepository: PlayerRepository
 
     constructor(
-        private rollService: RollService,
         private seedService: SeedService,
         private imageService: ImageService,
         private statService: StatService,
@@ -192,7 +190,7 @@ class PlayerService {
         let rng = await this.seedService.getRNG()
 
         //Generate 9 distributed ratings
-        let nums = this.rollService.getRatingDistribution(rng, 9)
+        let nums = this.getRatingDistribution(rng, 9)
 
         let lowestIndex = 0;
         let lowestAbs = Math.abs(nums[0])
@@ -260,13 +258,13 @@ class PlayerService {
             let numPitches
 
             if (isPitcher) {
-                numPitches = this.rollService.weightedRandom(rng, [2, 3, 4, 5], [20, 20, 40, 20])
+                numPitches = Rolls.weightedRandom(rng, [2, 3, 4, 5], [20, 20, 40, 20])
             } else {
                 numPitches = 1
             }
 
             //Generate distributed ratings
-            nums = this.rollService.getRatingDistribution(rng, 4)
+            nums = this.getRatingDistribution(rng, 4)
 
 
             let lowestIndex = 0;
@@ -326,7 +324,7 @@ class PlayerService {
 
             //Generate numRatings number of ratings
             for (let i = 0; i < 3; i++) {
-                nums.push(this.rollService.getRoll(playerRNG, 0, 1000))
+                nums.push(Rolls.getRoll(playerRNG, 0, 1000))
             }
 
             //Get the total
@@ -384,7 +382,7 @@ class PlayerService {
         if (pitchNum == 1) {
             type = PitchType.FF
         } else {
-            type = this.rollService.weightedRandom(playerRNG, available, available.map(p => 1))
+            type = Rolls.weightedRandom(playerRNG, available, available.map(p => 1))
         }
 
 
@@ -1103,7 +1101,7 @@ class PlayerService {
 
         const weights = [13.8, 12.3, 11.6, 8.8, 8.7, 8.5, 8.1, 5.4, 4.4, 4.3, 3.3, 3.2, 2.5, 2.1, 1.8, 1.5]
 
-        return this.rollService.weightedRandom(rng, mbtiOrder, weights) as PersonalityType
+        return Rolls.weightedRandom(rng, mbtiOrder, weights) as PersonalityType
 
     }
 
@@ -1169,6 +1167,51 @@ class PlayerService {
 
     }
     
+    getRatingDistribution(playerRNG, numRatings): number[] {
+
+        let nums: number[] = []
+
+        //Generate until we get an array that adds up to 100
+        while (nums.length == 0) {
+
+            //Generate numRatings number of ratings
+            for (let i = 0; i < numRatings; i++) {
+                nums.push(Rolls.getRoll(playerRNG, 20, 100))
+            }
+
+            //Get the total
+            let total = nums.reduce((acc, num) => acc + num, 0)
+
+            //Divide each one by the total and round.
+            for (let i = 0; i < nums.length; i++) {
+                nums[i] = Math.round((nums[i] / total) * 100)
+            }
+
+            let newTotal = nums.reduce((acc, num) => acc + num, 0)
+
+            //If we don't equal 100 start over.
+            if (newTotal != 100) {
+                nums.length = 0//try again
+                continue
+            }
+
+            //Now turn them into the % better than average. Average being equally distributed.
+            let overallAverage = 100 / numRatings
+            for (let i = 0; i < nums.length; i++) {
+
+                nums[i] = PlayerChange.getChange(overallAverage, nums[i])
+
+                //Make sure we're between -1 and 1
+                if (nums[i] > 1 || nums[i] < -1) {
+                    nums.length = 0 //try again
+                } 
+            }
+
+        }
+        return nums
+
+    }
+
     // async updateAllPercentileRatings() {
 
     //     //Make sure that players have percentile ratings. 

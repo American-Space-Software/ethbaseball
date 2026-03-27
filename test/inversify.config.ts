@@ -20,8 +20,7 @@ import { CityService } from "../src/service/data/city-service.js";
 
 import { SchemaService } from "../src/service/data/schema-service.js";
 import { GameService } from "../src/service/data/game-service.js";
-import { RollService } from "../src/service/roll-service.js";
-import { RollChartService } from "../src/service/roll-chart-service.js";
+
 import { SeedService } from "../src/service/data/seed-service.js";
 import { LineupService } from "../src/service/lineup-service.js";
 import { AirdropService } from "../src/service/airdrop-service.js";
@@ -452,7 +451,6 @@ function getContainer(command?: GetContainerCommand) {
 
   container.bind(UserService).toSelf().inSingletonScope()
 
-  container.bind(RollChartService).toSelf().inSingletonScope()
 
   container.bind("WalletService").to(NodeWalletServiceImpl).inSingletonScope()
   container.bind(LeagueService).toSelf().inSingletonScope()
@@ -461,7 +459,6 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(TeamMintPassService).toSelf().inSingletonScope()
 
   container.bind(DiamondService).toSelf().inSingletonScope()
-  container.bind(RollService).toSelf().inSingletonScope()
   container.bind(GameService).toSelf().inSingletonScope()
   container.bind(PlayerService).toSelf().inSingletonScope()
   container.bind(OwnerService).toSelf().inSingletonScope()

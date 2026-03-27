@@ -8,7 +8,7 @@ import { Player } from "../../dto/player.js";
 import { Team } from "../../dto/team.js";
 
 import { v4 as uuidv4 } from 'uuid';
-import { Position } from "../shared/sim-shared-service.js";
+import { Position } from "baseball-sim-engine";
 
 @injectable()
 class PlayerLeagueSeasonService {

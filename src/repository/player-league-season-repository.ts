@@ -4,7 +4,7 @@ import { PlayerLeagueSeason } from "../dto/player-league-season.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
 import { Team } from "../dto/team.js"
-import { Position } from "../service/shared/sim-shared-service.js"
+import { Position } from "baseball-sim-engine"
 
 interface PlayerLeagueSeasonRepository {
     getById(_id: string, options?: any): Promise<PlayerLeagueSeason>

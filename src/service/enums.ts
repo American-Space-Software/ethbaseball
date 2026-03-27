@@ -1,9 +1,7 @@
 
-import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RunnerResult, Score } from "./shared/sim-shared-service.js"
+import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RunnerResult, Score } from "baseball-sim-engine"
 
 const DIAMONDS_PER_DAY = 1000 
-
-
 
 
 enum HitterPitcher {

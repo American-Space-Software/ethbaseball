@@ -36,8 +36,8 @@ import { GamePitchResultRepository } from "../repository/game-pitch-result-repos
 import { ethers } from "ethers"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { TeamQueueMatchup } from "../dto/team-queue.js"
-import { RollService } from "./roll-service.js"
-import { GamePlayer, HitResult, PitchResult, Position, RotationPitcher, SimSharedService } from "./shared/sim-shared-service.js"
+import { GamePlayer, HitResult, PitchResult, Position, Rolls, RotationPitcher } from "baseball-sim-engine"
+import { SimSharedService } from "./shared/sim-shared-service.js"
 
 
 @injectable()
@@ -68,7 +68,6 @@ class LadderService {
         private statService:StatService,
         private offchainEventService:OffchainEventService,
         private teamQueueService:TeamQueueService,
-        private rollService:RollService,
         private simSharedService:SimSharedService
     ) {}
 
@@ -263,7 +262,7 @@ class LadderService {
             let team2 = await this.teamService.get(pair.team2.teamId, options)
             let team2Bundle = await this.getTeamBundle(team2, season, options)
 
-            const [home, away] = this.rollService.getRoll(rng, 0, 1) === 0 ? [team1Bundle, team2Bundle] : [team2Bundle, team1Bundle]
+            const [home, away] = Rolls.getRoll(rng, 0, 1) === 0 ? [team1Bundle, team2Bundle] : [team2Bundle, team1Bundle]
 
 
             //Clear teams from queue

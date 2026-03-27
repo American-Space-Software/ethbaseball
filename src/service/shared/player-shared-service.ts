@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { HITTER_GAME_AVERAGE_XP, PlayerGrade } from "../enums.js";
-import { HittingRatings, PitchRatings } from "./sim-shared-service.js";
+import { HittingRatings, PitchRatings } from "baseball-sim-engine";
 
 const BASE_RATING = 70
 const BASE_XP = 720

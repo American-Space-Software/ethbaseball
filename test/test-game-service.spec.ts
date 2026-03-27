@@ -4,7 +4,6 @@ import fs from 'fs'
 import { getContainer } from "./inversify.config.js"
 
 
-import { RollService } from '../src/service/roll-service.js'
 import { GameService, SimGameCommand } from "../src/service/data/game-service.js"
 import { Game } from "../src/dto/game.js"
 import { PlayerService } from "../src/service/data/player-service.js"
@@ -13,7 +12,7 @@ import { OwnerService } from "../src/service/data/owner-service.js"
 // import { GameQueueService } from "../src/service/game-queue-service.js"
 import { SchemaService } from "../src/service/data/schema-service.js"
 
-import { BaseResult, Contact, GamePlayer, LeagueAverage, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult } from "../src/service/shared/sim-shared-service.js"
+import { BaseResult, Contact, GamePlayer, LeagueAverage, PlayResult, Position, ShallowDeep, TeamInfo, ThrowResult, simService } from "baseball-sim-engine"
 
 import dayjs from "dayjs"
 import { SeasonService } from "../src/service/data/season-service.js"
@@ -37,7 +36,6 @@ let simSharedService:SimSharedService
 describe('GameService', async () => {
 
     let service: GameService
-    let rollService:RollService
     let seasonService:SeasonService
     let leagueService:LeagueService
     let stadiumService:StadiumService
@@ -56,7 +54,6 @@ describe('GameService', async () => {
 
         service = container.get(GameService)
         // gameQueueService = container.get(GameQueueService)
-        rollService = container.get(RollService)
         playerService = container.get(PlayerService)
         ownerService = container.get(OwnerService)
         schemaService = container.get(SchemaService)
@@ -179,7 +176,7 @@ describe('GameService', async () => {
 
         const defensiveCredits: any[] = []
 
-        const runnerActions = (simSharedService as any).runnerActions
+        const runnerActions = (simService as any).runnerActions
         const originalChance = runnerActions.getChanceRunnerSafe
         const originalThrow = runnerActions.gameRolls.getThrowResult
 
@@ -188,7 +185,7 @@ describe('GameService', async () => {
 
         let inPlayRunnerEvents: any[] = []
         try {
-            inPlayRunnerEvents = simSharedService.getRunnerEvents(
+            inPlayRunnerEvents = simService.getRunnerEvents(
                 () => 0.5,
                 runnerResult,
                 halfInningRunnerEvents,
@@ -211,6 +208,7 @@ describe('GameService', async () => {
             runnerActions.getChanceRunnerSafe = originalChance
             runnerActions.gameRolls.getThrowResult = originalThrow
         }
+
 
         const outs =
             halfInningRunnerEvents.filter(e => e?.movement?.isOut).length +
@@ -261,7 +259,7 @@ describe('GameService', async () => {
 
         const defensiveCredits: any[] = []
 
-        const runnerActions = (simSharedService as any).runnerActions
+        const runnerActions = (simService as any).runnerActions
         const originalChance = runnerActions.getChanceRunnerSafe
         const originalThrow = runnerActions.gameRolls.getThrowResult
 
@@ -270,7 +268,7 @@ describe('GameService', async () => {
 
         let inPlayRunnerEvents: any[] = []
         try {
-            inPlayRunnerEvents = simSharedService.getRunnerEvents(
+            inPlayRunnerEvents = simService.getRunnerEvents(
                 () => 0.5,
                 runnerResult,
                 halfInningRunnerEvents,

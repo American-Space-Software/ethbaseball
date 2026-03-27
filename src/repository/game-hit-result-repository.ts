@@ -2,7 +2,7 @@ import { GameHitResult } from "../dto/game-hit-result.js"
 import { Game } from "../dto/game.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
-import { HitResult } from "../service/shared/sim-shared-service.js"
+import { HitResult } from "baseball-sim-engine"
 
 interface GameHitResultRepository {
     get(game:Game, player:Player, options?:any): Promise<GameHitResult>

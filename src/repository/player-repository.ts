@@ -2,7 +2,7 @@ import { Owner } from "../dto/owner.js"
 import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
 import {   PlayerFinalContract, PlayerPercentileRatings, PlayerReport } from "../service/enums.js"
-import { Position } from "../service/shared/sim-shared-service.js"
+import { Position } from "baseball-sim-engine"
 
 interface PlayerRepository {
     get(id:string, options?:any): Promise<Player>

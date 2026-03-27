@@ -7,15 +7,10 @@ import { Player } from "../dto/player.js";
 import { FinanceSeason, GameTeamFinance, Revenue, RewardPerTeam} from "./enums.js";
 
 import { LineupService } from "./lineup-service.js";
-import { ethers } from "ethers";
-import { RollChartService } from "./roll-chart-service.js";
 import { Season } from "../dto/season.js";
 import { TeamLeagueSeason } from "../dto/team-league-season.js";
 import { PlayerLeagueSeason } from "../dto/player-league-season.js";
-import { League } from "../dto/league.js";
-import { Stadium } from "../dto/stadium.js";
-import { City } from "../dto/city.js";
-import { Position } from "./shared/sim-shared-service.js";
+import { PlayerChange, Position } from "baseball-sim-engine";
 
 
 const MIN_TICKET_PRICE = 1
@@ -46,7 +41,6 @@ const MAX_LOCAL_MEDIA_REVENUE_PER_GAME = 225000 //65,000 per game
 class FinanceService {
 
     constructor(
-        private rollChartService:RollChartService,
         private lineupService:LineupService,
         @inject("getFees") private fees:Function
     ) {}
@@ -105,18 +99,18 @@ class FinanceService {
         return tls.fanInterestShortTerm * .5 + tls.fanInterestLongTerm * .5
     }
 
-    calculateTicketPrice(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number) : bigint {
+    // calculateTicketPrice(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number) : bigint {
 
-        let demandChange = this.getDemandChange(leagueRank,fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
+    //     let demandChange = this.getDemandChange(leagueRank,fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
 
-        let avgPrice = this.rollChartService.applyChange(AVG_TICKET_PRICE, demandChange)
+    //     let avgPrice = this.rollChartService.applyChange(AVG_TICKET_PRICE, demandChange)
 
-        if (avgPrice < MIN_TICKET_PRICE) avgPrice = MIN_TICKET_PRICE
-        if (avgPrice > MAX_TICKET_PRICE) avgPrice = MAX_TICKET_PRICE
+    //     if (avgPrice < MIN_TICKET_PRICE) avgPrice = MIN_TICKET_PRICE
+    //     if (avgPrice > MAX_TICKET_PRICE) avgPrice = MAX_TICKET_PRICE
 
-        return ethers.parseUnits( avgPrice.toString()  , 'ether')
+    //     return ethers.parseUnits( avgPrice.toString()  , 'ether')
 
-    }
+    // }
 
     getDemandChange(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number) {
 
@@ -132,34 +126,34 @@ class FinanceService {
 
         
         //Is there more or less demand than average?
-        return this.rollChartService.getChange(1, (1 * leagueRankFactor * interestFactor * populationFactor))
+        return PlayerChange.getChange(1, (1 * leagueRankFactor * interestFactor * populationFactor))
 
     }
 
-    calculateSeasonTicketSales(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number) : number {
+    // calculateSeasonTicketSales(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number) : number {
 
-        //Is there more or less demand than average?
-        let demandChange = this.getDemandChange(leagueRank, fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
+    //     //Is there more or less demand than average?
+    //     let demandChange = this.getDemandChange(leagueRank, fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
 
-        let seasonTicketPercent = this.rollChartService.applyChange(AVG_SEASON_TICKET_PERCENT, demandChange)
+    //     let seasonTicketPercent = this.rollChartService.applyChange(AVG_SEASON_TICKET_PERCENT, demandChange)
 
-        if (seasonTicketPercent < MIN_SEASON_TICKET_PERCENT) seasonTicketPercent = MIN_SEASON_TICKET_PERCENT
-        if (seasonTicketPercent > MAX_SEASON_TICKET_PERCENT) seasonTicketPercent = MAX_SEASON_TICKET_PERCENT
+    //     if (seasonTicketPercent < MIN_SEASON_TICKET_PERCENT) seasonTicketPercent = MIN_SEASON_TICKET_PERCENT
+    //     if (seasonTicketPercent > MAX_SEASON_TICKET_PERCENT) seasonTicketPercent = MAX_SEASON_TICKET_PERCENT
 
-        let ticketsSold = Math.floor(seasonTicketPercent * stadiumCapacity)
+    //     let ticketsSold = Math.floor(seasonTicketPercent * stadiumCapacity)
 
-        if (ticketsSold < 0) {
-            throw new Error("Season ticket sales can not be negative.")
-        }
+    //     if (ticketsSold < 0) {
+    //         throw new Error("Season ticket sales can not be negative.")
+    //     }
 
-        if (ticketsSold > stadiumCapacity) {
-            throw new Error("Season ticket sales can not be more than stadium capacity.")
-        }
+    //     if (ticketsSold > stadiumCapacity) {
+    //         throw new Error("Season ticket sales can not be more than stadium capacity.")
+    //     }
 
 
-        return ticketsSold
+    //     return ticketsSold
 
-    }
+    // }
 
     calculateGateRevenuePerGame(ticketPrice: bigint, tickets:number) : bigint {
         return ticketPrice * BigInt(tickets)
@@ -169,37 +163,37 @@ class FinanceService {
         return ticketPrice * BigInt(tickets)
     }
 
-    calculateSingleGameTicketSales(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number, seasonTicketsSold:number) : number {
+    // calculateSingleGameTicketSales(leagueRank:number, fanInterestShortTerm:number, fanInterestLongTerm:number, cityPopulation:number, stadiumCapacity:number, seasonTicketsSold:number) : number {
 
-        let availableTickets = stadiumCapacity - seasonTicketsSold
+    //     let availableTickets = stadiumCapacity - seasonTicketsSold
 
-        if (availableTickets < 0) {
-            throw new Error("Available tickets can not be negative.")
-        }
+    //     if (availableTickets < 0) {
+    //         throw new Error("Available tickets can not be negative.")
+    //     }
 
-        let minTicketsSold = Math.floor(MIN_GATE_TICKET_PERCENT * stadiumCapacity)
-        let maxTicketsSold = Math.min(availableTickets, Math.floor(MAX_GATE_TICKET_PERCENT * stadiumCapacity))
+    //     let minTicketsSold = Math.floor(MIN_GATE_TICKET_PERCENT * stadiumCapacity)
+    //     let maxTicketsSold = Math.min(availableTickets, Math.floor(MAX_GATE_TICKET_PERCENT * stadiumCapacity))
 
-        let demandChange = this.getDemandChange(leagueRank, fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
+    //     let demandChange = this.getDemandChange(leagueRank, fanInterestShortTerm, fanInterestLongTerm, cityPopulation, stadiumCapacity)
 
-        let gateTicketsPercent = this.rollChartService.applyChange(AVG_GATE_TICKET_PERCENT, demandChange)
+    //     let gateTicketsPercent = this.rollChartService.applyChange(AVG_GATE_TICKET_PERCENT, demandChange)
 
-        if (gateTicketsPercent < MIN_GATE_TICKET_PERCENT) gateTicketsPercent = MIN_GATE_TICKET_PERCENT
-        if (gateTicketsPercent > MAX_GATE_TICKET_PERCENT) gateTicketsPercent = MAX_GATE_TICKET_PERCENT
+    //     if (gateTicketsPercent < MIN_GATE_TICKET_PERCENT) gateTicketsPercent = MIN_GATE_TICKET_PERCENT
+    //     if (gateTicketsPercent > MAX_GATE_TICKET_PERCENT) gateTicketsPercent = MAX_GATE_TICKET_PERCENT
 
 
-        let ticketsSold = Math.floor(gateTicketsPercent * stadiumCapacity)
+    //     let ticketsSold = Math.floor(gateTicketsPercent * stadiumCapacity)
 
-        if (ticketsSold < minTicketsSold) ticketsSold = minTicketsSold 
-        if (ticketsSold > maxTicketsSold) ticketsSold = maxTicketsSold
+    //     if (ticketsSold < minTicketsSold) ticketsSold = minTicketsSold 
+    //     if (ticketsSold > maxTicketsSold) ticketsSold = maxTicketsSold
 
-        if (ticketsSold < 0) {
-            throw new Error("Ticket sales can not be negative.")
-        }
+    //     if (ticketsSold < 0) {
+    //         throw new Error("Ticket sales can not be negative.")
+    //     }
 
-        return ticketsSold
+    //     return ticketsSold
         
-    }
+    // }
 
     getLeagueRankModifier(leagueRank:number) {
 

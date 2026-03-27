@@ -6,7 +6,7 @@ import { PlayerService } from '../../service/data/player-service.js';
 import { SchemaService } from '../../service/data/schema-service.js';
 import { OwnerService } from '../../service/data/owner-service.js';
 import { Owner } from '../../dto/owner.js';
-import { Position } from '../../service/shared/sim-shared-service.js';
+import { Position } from 'baseball-sim-engine';
 
 
 
