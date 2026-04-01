@@ -3,7 +3,7 @@ import { LoginWebService } from "./login-web-service.js";
 import { TeamWebService } from "./team-web-service.js";
 import { LineupService } from "../../service/lineup-service.js";
 import { GameWebService } from "./game-web-service.js";
-import { Position } from "baseball-sim-engine";
+import { Position } from '../../baseball-sim-engine/index.js';
 
 
 @injectable()

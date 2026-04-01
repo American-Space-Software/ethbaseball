@@ -1,5 +1,5 @@
 
-import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RunnerResult, Score } from "baseball-sim-engine"
+import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RunnerResult, Score }  from '../baseball-sim-engine/index.js';
 
 const DIAMONDS_PER_DAY = 1000 
 

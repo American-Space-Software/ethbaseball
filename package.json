@@ -1,6 +1,6 @@
 {
   "name": "ethbaseball",
-  "version": "1.3.2",
+  "version": "1.4.3",
   "description": "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage players, watch games live, and compete in a persistent season.",
   "repository": {
     "type": "git",
@@ -111,8 +111,6 @@
   },
   "dependencies": {
     
-    "baseball-sim-engine": "file:../baseball-sim-engine",
-
     "socket.io-client": "4.8.1",
     "socket.io": "4.8.1",
     "express": "5.1.0",

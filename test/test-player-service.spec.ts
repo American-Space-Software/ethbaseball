@@ -8,7 +8,7 @@ import assert from "assert"
 import { GameService } from "../src/service/data/game-service.js"
 import { HittingProfile, PitchingProfile } from "../src/service/enums.js"
 import dayjs from "dayjs"
-import { Position } from "baseball-sim-engine"
+import { Position } from '../src/baseball-sim-engine/index.js';
 
 let container = getContainer()
 let simDate = new Date(new Date().toUTCString())

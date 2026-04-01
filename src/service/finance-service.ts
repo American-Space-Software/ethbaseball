@@ -10,7 +10,7 @@ import { LineupService } from "./lineup-service.js";
 import { Season } from "../dto/season.js";
 import { TeamLeagueSeason } from "../dto/team-league-season.js";
 import { PlayerLeagueSeason } from "../dto/player-league-season.js";
-import { PlayerChange, Position } from "baseball-sim-engine";
+import { PlayerChange, Position }  from '../baseball-sim-engine/index.js';
 
 
 const MIN_TICKET_PRICE = 1

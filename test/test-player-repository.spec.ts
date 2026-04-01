@@ -13,7 +13,7 @@ import { OwnerService } from "../src/service/data/owner-service.js"
 import { GameRepository } from "../src/repository/game-repository.js"
 import dayjs from "dayjs"
 import { PersonalityType,  } from "../src/service/enums.js"
-import { Handedness,PitchType, Position } from "baseball-sim-engine"
+import { Handedness,PitchType, Position } from '../src/baseball-sim-engine/index.js';
 
 
 let id1

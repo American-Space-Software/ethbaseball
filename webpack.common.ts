@@ -24,8 +24,6 @@ const configPath = join(
 );
 const packageConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
 
-
-
 const VERSION = JSON.stringify(packageConfig.version)
 const BUILD_ID = JSON.stringify(process.env.BUILD_ID ?? Date.now().toString())
 
@@ -280,7 +278,6 @@ let serviceWorkerConfig = {
     minimizer: [new TerserPlugin()],
   }
 }
-
 
 let engineConfig = {
   entry: "./src/engine/index.ts",
@@ -567,10 +564,6 @@ let deployCommandsConfig = {
       fetch: ['node-fetch', 'default'],
     }),
 
-
-
-    
-
   ]
 }
 
@@ -599,9 +592,6 @@ function createContractsJSON() {
   fs.writeFileSync('./contracts.json', JSON.stringify(contractJSON))
 }
 
-
-
-
 let web = () => { return [browserConfig, webServerConfig, serviceWorkerConfig] }
 let discord = () => { return [engineConfig] }
 
@@ -612,4 +602,3 @@ export {
 export default () => {
   return [deployCommandsConfig, browserConfig, webServerConfig, engineConfig, indexConfig, createCarConfig, serviceWorkerConfig]
 }
-

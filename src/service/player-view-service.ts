@@ -18,7 +18,7 @@ import { GameHitResultRepository } from "../repository/game-hit-result-repositor
 import { GamePitchResultRepository } from "../repository/game-pitch-result-repository.js"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { LeagueService } from "./data/league-service.js"
-import { Handedness, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, Position } from "baseball-sim-engine"
+import { Handedness, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, Position }  from '../baseball-sim-engine/index.js';
 
 
 

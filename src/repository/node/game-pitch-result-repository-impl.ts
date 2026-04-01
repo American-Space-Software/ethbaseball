@@ -6,7 +6,7 @@ import { Player } from "../../dto/player.js"
 import dayjs from "dayjs"
 import { Game } from "../../dto/game.js"
 import { Season } from "../../dto/season.js"
-import { PitchResult } from "baseball-sim-engine"
+import { PitchResultCount }  from '../../baseball-sim-engine/index.js';
 
 const SUM_QUERY_FIELDS = `
     SUM(atBats) atBats,
@@ -147,7 +147,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
         return gamePitchResult
     }
 
-    async getPlayersCareerPitchResults(playerIds: string[], options?: any): Promise<PitchResult[]> {
+    async getPlayersCareerPitchResults(playerIds: string[], options?: any): Promise<PitchResultCount[]> {
 
         const s = await this.sequelize()
 
@@ -169,11 +169,11 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
             GROUP BY gpr.playerId
         `, Object.assign(queryOptions, options))
 
-        return (rows || []) as PitchResult[]
+        return (rows || []) as PitchResultCount[]
 
     }
 
-    async getPlayersSeasonPitchResults(playerIds: string[], seasonId: string, options?: any): Promise<PitchResult[]> {
+    async getPlayersSeasonPitchResults(playerIds: string[], seasonId: string, options?: any): Promise<PitchResultCount[]> {
 
         const s = await this.sequelize()
 
@@ -197,13 +197,13 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
             GROUP BY gpr.playerId
         `, Object.assign(queryOptions, options))
 
-        return (rows || []) as PitchResult[]
+        return (rows || []) as PitchResultCount[]
     }
 
 
 
     
-    async getPlayerCareerPitchResult(player:Player, options?:any) : Promise<PitchResult> {
+    async getPlayerCareerPitchResult(player:Player, options?:any) : Promise<PitchResultCount> {
 
         let s = await this.sequelize()
 
@@ -238,7 +238,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
 
     }
 
-    async getPlayerSeasonPitchResult(player: Player, season: Season, options?: any): Promise<PitchResult | undefined> {
+    async getPlayerSeasonPitchResult(player: Player, season: Season, options?: any): Promise<PitchResultCount | undefined> {
 
         const s = await this.sequelize()
 
@@ -273,7 +273,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
 
     }
 
-    async getGlobalPitchResult(options?:any) : Promise<PitchResult> {
+    async getGlobalPitchResult(options?:any) : Promise<PitchResultCount> {
 
         let s = await this.sequelize()
 
@@ -299,7 +299,7 @@ class GamePitchResultRepositoryNodeImpl implements GamePitchResultRepository {
 
     }
 
-    async getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<PitchResult> {
+    async getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<PitchResultCount> {
 
         let s = await this.sequelize()
 

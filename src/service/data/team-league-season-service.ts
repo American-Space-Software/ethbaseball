@@ -10,7 +10,7 @@ import { City } from "../../dto/city.js";
 import { FinanceSeason, TeamSeasonId } from "../enums.js";
 import { v4 as uuidv4 } from 'uuid';
 import { User } from "../../dto/user.js";
-import { Position } from "baseball-sim-engine";
+import { Position } from '../../baseball-sim-engine/index.js';
 
 @injectable()
 class TeamLeagueSeasonService {

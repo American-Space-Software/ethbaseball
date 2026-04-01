@@ -14,7 +14,7 @@ import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { GameSharedService } from "../shared/game-shared-service.js"
-import { AtBatInfo, HomeAway, LastPlay, UpcomingMatchup, GamePlayer, Play, Score } from "baseball-sim-engine"
+import { AtBatInfo, HomeAway, LastPlay, UpcomingMatchup, GamePlayer, Play, Score } from '../../baseball-sim-engine/index.js';
 
 import { v4 as uuidv4 } from 'uuid';
 import { SimSharedService } from "../shared/sim-shared-service.js"
@@ -515,7 +515,11 @@ class GameService {
         
         let game:Game = new Game()
 
-        this.initGame(game)
+        game._id = uuidv4()
+
+
+        this.simSharedService.initGame(game)
+
 
         //Set teams on game.
         game.away = this.buildTeamInfo(command.awayTLS, command.awayTLS.team.colors.color1, command.awayTLS.team.colors.color2, HomeAway.AWAY)            
@@ -545,33 +549,7 @@ class GameService {
         return game        
     }
 
-    initGame(game:Game) {
-
-        game._id = uuidv4()
-
-        game.currentInning = 1
-        game.isTopInning = true
-        game.isStarted = false
-        game.isComplete = false
-        game.isFinished = false
-        game.count = {
-            balls: 0,
-            strikes: 0,
-            outs: 0
-        }
-
-        game.score = {
-            away: 0,
-            home: 0
-        }
-
-        game.halfInnings = []
-
-        game.playIndex = 0
-        // game.level = command.level
-
-        return game
-    }
+    
 
 
     createHitResult(game:Game, player:GamePlayer) : GameHitResult {
@@ -622,32 +600,6 @@ class GameService {
 
         await this.gamePlayerRepository.insertAll(gamePlayers, options)
 
-    }
-
-    // //*used in testing*/
-    async simGame(game:Game): Promise<Game> {
-
-
-        while (!game.isComplete) {
-
-            let rng = await this.seedService.getRNG()
-            this.simSharedService.simPitch(game, rng)
-        }        
-
-
-        for (let player of [].concat(game.away.players).concat(game.home.players)) {
-
-            // //Hit
-            // await this.updateHitResult(game, player)
-
-            // //Pitch
-            // await this.updatePitchResult(game, player)
-
-        }
-
-        // await this.finishGame(game)
-
-        return game
     }
 
 

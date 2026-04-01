@@ -6,7 +6,7 @@ import { BelongsToManyAddAssociationMixin, BelongsToManyRemoveAssociationMixin }
 import { Stadium } from './stadium.js';
 import { League } from './league.js';
 import { Season } from './season.js';
-import { Count, HalfInning, LeagueAverage, Score } from 'baseball-sim-engine';
+import { Count, HalfInning, LeagueAverage, Score } from '../baseball-sim-engine/index.js';
 
 
 

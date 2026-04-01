@@ -29,7 +29,7 @@ import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
 import { TeamSharedService } from "../shared/team-shared-service.js";
-import { Colors, Lineup, Position, RotationPitcher } from "baseball-sim-engine";
+import { Colors, Lineup, Position, RotationPitcher } from '../../baseball-sim-engine/index.js';
 
 
 const MAX_ROSTER_SIZE = 13
@@ -872,9 +872,6 @@ n
 
                 // this.playerService.createRookieContract(player)
                 await this.playerService.put(player, options)
-
-                //Fetch again so we have tokenId
-                player = await this.playerService.get(player._id, options)
 
                 pls = await this.playerLeagueSeasonService.createPlayerLeagueSeason(player, season, 1, options)
 

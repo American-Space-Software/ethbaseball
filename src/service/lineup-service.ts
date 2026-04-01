@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { Lineup } from "baseball-sim-engine";
+import { Lineup }  from '../baseball-sim-engine/index.js';
 
 @injectable()
 class LineupService {

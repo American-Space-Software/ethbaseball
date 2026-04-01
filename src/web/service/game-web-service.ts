@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { SocketWebService } from "./socket-web-service.js";
 
 import { GameSharedService } from "../../service/shared/game-shared-service.js";
-import { Handedness, Play, GamePlayer } from "baseball-sim-engine";
+import { Handedness, Play, GamePlayer } from '../../baseball-sim-engine/index.js';
 
 
 @injectable()
@@ -348,34 +348,34 @@ class GameWebService {
     }
 
     async moveElPct(el: HTMLElement, from: PointPct, to: PointPct, durationMs: number) {
-    const dx = to.right - from.right
-    const dy = to.top - from.top
-    const dist = Math.hypot(dx, dy)
+        const dx = to.right - from.right
+        const dy = to.top - from.top
+        const dist = Math.hypot(dx, dy)
 
-    if (!dist) {
-        el.style.top = `${to.top}%`
-        el.style.right = `${to.right}%`
-        return
-    }
-
-    const ux = dx / dist
-    const uy = dy / dist
-    const speed = dist / (durationMs / 1000)
-    const start = performance.now()
-
-    await new Promise(resolve => {
-        const frame = now => {
-        const t = (now - start) / 1000
-        const travelled = Math.min(t * speed, dist)
-
-        el.style.top = `${from.top + uy * travelled}%`
-        el.style.right = `${from.right + ux * travelled}%`
-
-        if (travelled < dist) requestAnimationFrame(frame)
-        else resolve(null)
+        if (!dist) {
+            el.style.top = `${to.top}%`
+            el.style.right = `${to.right}%`
+            return
         }
-        requestAnimationFrame(frame)
-    })
+
+        const ux = dx / dist
+        const uy = dy / dist
+        const speed = dist / (durationMs / 1000)
+        const start = performance.now()
+
+        await new Promise(resolve => {
+            const frame = now => {
+            const t = (now - start) / 1000
+            const travelled = Math.min(t * speed, dist)
+
+            el.style.top = `${from.top + uy * travelled}%`
+            el.style.right = `${from.right + ux * travelled}%`
+
+            if (travelled < dist) requestAnimationFrame(frame)
+            else resolve(null)
+            }
+            requestAnimationFrame(frame)
+        })
     }
 
 
@@ -450,13 +450,9 @@ class GameWebService {
       return this.gameSharedService.getAtBatState(vm)
     }
 
-
-
     getMessagesFromPlayDescriptions(descriptions) {
         return descriptions?.map( d => {  return { text: d.text, type: "received", name: "Gamelog" } })
-
     }
-
 
     getPlayByPlay(game) {
         return this.gameSharedService.getPlayByPlay(game)
@@ -464,7 +460,6 @@ class GameWebService {
 
     gamePlayers(game) {
         return this.gameSharedService.gamePlayers(game)
-
     }
 
 }

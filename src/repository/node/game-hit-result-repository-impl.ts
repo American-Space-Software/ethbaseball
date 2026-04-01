@@ -6,7 +6,7 @@ import { Player } from "../../dto/player.js"
 import dayjs from "dayjs"
 import { Game } from "../../dto/game.js"
 import { Season } from "../../dto/season.js"
-import { HitResult } from "baseball-sim-engine"
+import { HitResultCount }  from '../../baseball-sim-engine/index.js';
 
 const SUM_QUERY_FIELDS = `
     SUM(pa) pa,
@@ -118,7 +118,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
         return gameHitResult
     }
 
-    async getPlayersCareerHitResults(playerIds: string[], options?: any): Promise<HitResult[]> {
+    async getPlayersCareerHitResults(playerIds: string[], options?: any): Promise<HitResultCount[]> {
 
         const s = await this.sequelize()
 
@@ -140,11 +140,11 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
             GROUP BY ghr.playerId
         `, Object.assign(queryOptions, options))
 
-        return (rows || []) as HitResult[]
+        return (rows || []) as HitResultCount[]
 
     }
 
-    async getPlayersSeasonHitResults(playerIds: string[], seasonId: string, options?: any): Promise<HitResult[]> {
+    async getPlayersSeasonHitResults(playerIds: string[], seasonId: string, options?: any): Promise<HitResultCount[]> {
 
         const s = await this.sequelize()
 
@@ -168,10 +168,10 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
             GROUP BY ghr.playerId
         `, Object.assign(queryOptions, options))
 
-        return (rows || []) as HitResult[]
+        return (rows || []) as HitResultCount[]
     }
 
-    async getPlayerCareerHitResult(player:Player, options?:any) : Promise<HitResult> {
+    async getPlayerCareerHitResult(player:Player, options?:any) : Promise<HitResultCount> {
 
         let s = await this.sequelize()
 
@@ -205,7 +205,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
 
     }
 
-    async getPlayerSeasonHitResult(player: Player, season: Season, options?: any): Promise<HitResult | undefined> {
+    async getPlayerSeasonHitResult(player: Player, season: Season, options?: any): Promise<HitResultCount | undefined> {
 
         const s = await this.sequelize()
 
@@ -240,7 +240,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
 
     }
 
-    async getGlobalHitResult(options?:any) : Promise<HitResult> {
+    async getGlobalHitResult(options?:any) : Promise<HitResultCount> {
 
         let s = await this.sequelize()
 
@@ -267,7 +267,7 @@ class GameHitResultRepositoryNodeImpl implements GameHitResultRepository {
 
     }
 
-    async getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<HitResult> {
+    async getSumsByPlayerAndDate(player:Player, date:Date, options?:any) : Promise<HitResultCount> {
 
         let s = await this.sequelize()
 

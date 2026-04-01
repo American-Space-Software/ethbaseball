@@ -2,9 +2,9 @@ import { inject, injectable } from "inversify"
 import { StatService } from "../stat-service.js";
 import { PlayerSharedService } from "./player-shared-service.js";
 
-import { StartGameCommand, Game, RotationPitcher, LeagueAverage, TeamInfo, Player, Play, LastPlay, GamePlayerBio, UpcomingMatchup, GamePlayer, ThrowRoll, RunnerResult, RunnerEvent, PlayResult, DefensiveCredit, ShallowDeep, Contact, Score, HalfInning } from "baseball-sim-engine"
+import { StartGameCommand, Game, RotationPitcher, LeagueAverage, TeamInfo, Player, Play, LastPlay, GamePlayerBio, UpcomingMatchup, GamePlayer, ThrowRoll, RunnerResult, RunnerEvent, PlayResult, DefensiveCredit, ShallowDeep, Contact, Score, HalfInning } from '../../baseball-sim-engine/index.js';
 
-import { simService } from "baseball-sim-engine";
+import { simService } from '../../baseball-sim-engine/index.js';
 
 @injectable()
 class SimSharedService {
@@ -24,6 +24,10 @@ class SimSharedService {
         this.gameInfo = new GameInfo(this.gamePlayers)
     }
 
+    initGame(game:Game) : void {
+        return simService.initGame(game)
+    }
+
     startGame(command:StartGameCommand) {
         return simService.startGame(command)
     }
@@ -33,11 +37,14 @@ class SimSharedService {
     }
 
 
-
     /*
     Passthrough/public stuff. 
 
     */
+
+    generateWPA(game:Game) : WPAReward[] {
+        return this.winExpectancy.generateWPA(game)
+    }
 
     simPitch(game:Game, rng:any) {
         return simService.simPitch(game, rng)
@@ -307,7 +314,6 @@ class GamePlayers {
             fullName: player.fullName,
 
             age: player.age,
-            ownerId: player.ownerId,
 
             throws: player.throws,
             hits: player.hits,
@@ -338,6 +344,6 @@ interface WPAReward {
 
 
 export {
-    SimSharedService
+    SimSharedService, WPAReward
 }
 

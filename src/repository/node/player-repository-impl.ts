@@ -11,7 +11,7 @@ import { Team } from "../../dto/team.js"
 
 import { City } from "../../dto/city.js"
 import { Season } from "../../dto/season.js"
-import { HittingRatings, PitchRatings, PitchType, Position } from "baseball-sim-engine"
+import { HittingRatings, PitchRatings, PitchType, Position }  from '../../baseball-sim-engine/index.js';
 
 const HIT_SUM_QUERY_FIELDS = `
     SUM(pa) pa,

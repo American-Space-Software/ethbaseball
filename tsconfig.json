@@ -1,13 +1,18 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "lib": [ "ES6", "dom" ],
+    "lib": ["ES6", "dom"],
     "target": "ES2022",
     "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "baseUrl": ".",
+    "paths": {
+      "baseball-sim-engine": ["src/baseball-sim-engine/index.ts"],
+      "baseball-sim-engine/*": ["src/baseball-sim-engine/*"]
+    },
     "types": ["reflect-metadata", "node", "mocha"],
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "moduleResolution": "nodenext",
     "declaration": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
@@ -16,5 +21,5 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }

@@ -36,7 +36,7 @@ import dayjs from "dayjs";
 
 import { FinanceService } from "./finance-service.js";
 import { FinanceSeason, GLICKO_SETTINGS } from "./enums.js";
-import { Rolls } from "baseball-sim-engine";
+import { Rolls }  from '../baseball-sim-engine/index.js';
 
 const BASE_DIAMOND_REWARD = "100000000000000000000" //100 EBLD
 

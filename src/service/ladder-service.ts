@@ -36,8 +36,9 @@ import { GamePitchResultRepository } from "../repository/game-pitch-result-repos
 import { ethers } from "ethers"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { TeamQueueMatchup } from "../dto/team-queue.js"
-import { GamePlayer, HitResult, PitchResult, Position, Rolls, RotationPitcher } from "baseball-sim-engine"
-import { SimSharedService } from "./shared/sim-shared-service.js"
+import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher }  from '../baseball-sim-engine/index.js';
+import { SimSharedService, WPAReward } from "./shared/sim-shared-service.js"
+import { PlayerSharedService } from "./shared/player-shared-service.js"
 
 
 @injectable()
@@ -68,7 +69,8 @@ class LadderService {
         private statService:StatService,
         private offchainEventService:OffchainEventService,
         private teamQueueService:TeamQueueService,
-        private simSharedService:SimSharedService
+        private simSharedService:SimSharedService,
+        private playerSharedService:PlayerSharedService
     ) {}
 
 
@@ -357,12 +359,32 @@ class LadderService {
         }
 
 
+        //Parse just to make sure we don't accidentally change actual ratings. Which shouldn't really be a problem but eh
+        let awayPlayers = JSON.parse(JSON.stringify(awayBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player)))
+        let homePlayers = JSON.parse(JSON.stringify(homeBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player)))
+
+        let allPlayers:Player[] = [].concat(awayPlayers).concat(homePlayers)
+
+        //Look for the pitchers and set their effectiveness/ratings based on stamina
+        for (let p of allPlayers.filter( p => p.primaryPosition == Position.PITCHER)) {
+
+            if (p.stamina != 1) {
+
+                let modifier = Math.max(.25, p.stamina) // minimium of .25 effective
+                
+                this.playerSharedService.modifyRatings(p.hittingRatings, modifier)
+                this.playerSharedService.modifyRatings(p.pitchRatings, modifier)
+            }
+
+        }
+
+
         this.simSharedService.startGame({
 
             game,
 
-            awayPlayers: awayBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player),
-            homePlayers: homeBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player),
+            awayPlayers: awayPlayers,
+            homePlayers: homePlayers,
 
             away: awayBundle.team,
             awayTeamOptions: getTeamOptions(awayBundle),
@@ -375,9 +397,7 @@ class LadderService {
             awayStartingPitcher: awayBundle.startingPitcher,
             homeStartingPitcher: homeBundle.startingPitcher,
 
-            date,
-
-            leagueAverages: this.playerService.buildLeagueAverages(avgOverallRating)
+            date
 
         })
 
@@ -450,6 +470,23 @@ class LadderService {
         let plss = await this.playerLeagueSeasonService.getMostRecentByPlayersSeason(players, season, options)
 
         this.simSharedService.finishGame(game)
+
+
+        //WPA rewards
+        let rewards:WPAReward[] = this.simSharedService.generateWPA(game)
+
+        let gamePlayers:GamePlayer[] = [].concat(game.away.players).concat(game.home.players)
+
+        for (let gamePlayer of gamePlayers) {
+
+            let hittingRewards = rewards.find(r => r.hitting == true && r.playerId == gamePlayer._id)
+            let pitchingRewards = rewards.find(r => r.hitting == false && r.playerId == gamePlayer._id)
+
+            gamePlayer.hitResult.wpa = hittingRewards?.reward || 0
+            gamePlayer.pitchResult.wpa = pitchingRewards?.reward || 0
+            
+        }
+
 
 
         game.changed('home', true)
@@ -529,14 +566,14 @@ class LadderService {
         const careerHitRows = await this.gameHitResultRepository.getPlayersCareerHitResults(playerIds, options)
         const seasonHitRows = await this.gameHitResultRepository.getPlayersSeasonHitResults(playerIds, season._id, options)
 
-        const careerPitchRows = await this.gamePitchResultRepository.getPlayersCareerPitchResults(playerIds, options)
+        const careerPitchRows = await this.gamePitchResultRepository.getPlayersCareerPitchResults(playerIds, options) 
         const seasonPitchRows = await this.gamePitchResultRepository.getPlayersSeasonPitchResults(playerIds, season._id, options)
 
-        const careerHitByPlayerId = new Map(careerHitRows.map(r => [r.playerId, r]))
-        const seasonHitByPlayerId = new Map(seasonHitRows.map(r => [r.playerId, r]))
+        const careerHitByPlayerId = new Map( (careerHitRows as any) .map(r => [r.playerId, r]))
+        const seasonHitByPlayerId = new Map( (seasonHitRows as any).map(r => [r.playerId, r]))
 
-        const careerPitchByPlayerId = new Map(careerPitchRows.map(r => [r.playerId, r]))
-        const seasonPitchByPlayerId = new Map(seasonPitchRows.map(r => [r.playerId, r]))
+        const careerPitchByPlayerId = new Map((careerPitchRows as any).map(r => [r.playerId, r]))
+        const seasonPitchByPlayerId = new Map((seasonPitchRows as any).map(r => [r.playerId, r]))
 
         const gamePlayers = [].concat(game.home.players).concat(game.away.players)
 
@@ -544,11 +581,11 @@ class LadderService {
 
             let pls = plss.find( p => p.playerId == player._id)
 
-            const careerHitResult:HitResult = careerHitByPlayerId.get(player._id)
-            const seasonHitResult:HitResult = seasonHitByPlayerId.get(player._id)
+            const careerHitResult:HitResultCount = careerHitByPlayerId.get(player._id) as HitResultCount
+            const seasonHitResult:HitResultCount = seasonHitByPlayerId.get(player._id) as HitResultCount
 
-            const careerPitchResult:PitchResult = careerPitchByPlayerId.get(player._id)
-            const seasonPitchResult:PitchResult = seasonPitchByPlayerId.get(player._id)
+            const careerPitchResult:PitchResultCount = careerPitchByPlayerId.get(player._id) as PitchResultCount
+            const seasonPitchResult:PitchResultCount = seasonPitchByPlayerId.get(player._id) as PitchResultCount
 
             player.careerStats = {
                 hitting: this.statService.hitResultToHitterStatLine(careerHitResult),

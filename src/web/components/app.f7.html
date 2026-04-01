@@ -175,7 +175,7 @@
 
 
     const leagueChange = (e) => {
-        console.log("here")
+
         universeWebService.rank = $(e.target).val()
 
         let url = `/l/standings/${universeWebService.rank}?startDate=${universeWebService.getStartDate()}`

@@ -27,7 +27,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import dayjs from "dayjs"
 import { PlayerSharedService } from "../shared/player-shared-service.js"
-import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, LeagueAverage, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange } from "baseball-sim-engine"
+import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, LeagueAverage, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange } from '../../baseball-sim-engine/index.js';
 
 
 const zodiac = zodiacFn("en")
@@ -599,65 +599,7 @@ class PlayerService {
 
     }
 
-    buildLeagueAverages(laRating?:number): LeagueAverage {
 
-        if (!laRating) laRating = PLAYER_LEAGUE_AVERAGE_RATING
-
-        let la: LeagueAverage = {
-
-            hittingRatings: {
-                speed: laRating,
-                steals: laRating,
-                arm: laRating,
-                defense: laRating,
-                vsL: {
-                    contact: laRating,
-                    gapPower: laRating,
-                    homerunPower: laRating,
-                    plateDiscipline: laRating
-                },
-                vsR: {
-                    contact: laRating,
-                    gapPower: laRating,
-                    homerunPower: laRating,
-                    plateDiscipline: laRating
-                }
-            },
-
-            pitchRatings: {
-                power: laRating,
-                vsL: {
-                    control: laRating,
-                    movement: laRating
-                },
-                vsR: {
-                    control: laRating,
-                    movement: laRating
-                }
-            },
-
-            foulRate: LEAGUE_AVERAGE_FOUL_RATE,
-
-            inZoneRate: LEAGUE_AVERAGE_IN_ZONE_RATE,
-            strikeSwingRate: LEAGUE_AVERAGE_STRIKE_SWING_RATE,
-            ballSwingRate: LEAGUE_AVERAGE_BALL_SWING_RATE,
-
-            zoneSwingContactRate: LEAGUE_AVERAGE_ZONE_SWING_CONTACT_RATE,
-            chaseSwingContactRate: LEAGUE_AVERAGE_CHASE_SWING_CONTACT_RATE,
-
-            fielderChanceR: LEAGUE_AVERAGE_FIELDER_CHANCE_R,
-            fielderChanceL: LEAGUE_AVERAGE_FIELDER_CHANCE_L,
-            shallowDeepChance: LEAGUE_AVERAGE_SHALLOW_DEEP_CHANCE,
-
-            pitchQuality: LEAGUE_AVERAGE_PITCH_QUALITY,
-
-            powerRollInput: LEAGUE_AVERAGE_POWER_ROLL_INPUT,
-            contactTypeRollInput: LEAGUE_AVERAGE_CONTACT_TYPE_INPUT
-        }
-
-        return la
-
-    }
 
     modifyRatings(ratings: HittingRatings | PitchRatings, modifier: number) {
 
@@ -1295,121 +1237,6 @@ interface PlayerRowViewModel {
 
 }
 
-
-
-
-
-// const LEAGUE_AVERAGE_CONTACT_TYPE: ContactType = {
-//     groundball: 43,
-//     lineDrive: 21,
-//     flyBall: 36
-// }
-
-const LEAGUE_AVERAGE_FIELDER_CHANCE_R: FielderChance = {
-    first: 8,
-    second: 13,
-    third: 10,
-    catcher: 2,
-    shortstop: 14,
-    leftField: 17,
-    centerField: 18,
-    rightField: 13,
-    pitcher: 5
-}
-
-const LEAGUE_AVERAGE_FIELDER_CHANCE_L: FielderChance = {
-    first: 10,
-    second: 15,
-    third: 8,
-    catcher: 2,
-    shortstop: 12,
-    leftField: 13,
-    centerField: 18,
-    rightField: 17,
-    pitcher: 5
-}
-
-const LEAGUE_AVERAGE_SHALLOW_DEEP_CHANCE: ShallowDeepChance = {
-    shallow: 20,
-    normal: 60,
-    deep: 20
-}
-
-const LEAGUE_AVERAGE_RATING: number = 40
-
-//Based on 0-99 average. Adjusted from 2023 pitch data.
-const LEAGUE_AVERAGE_IN_ZONE_BY_COUNT: InZoneByCount[] = [
-    { balls: 0, strikes: 0, inZone: 52 },
-    { balls: 0, strikes: 1, inZone: 44 },
-    { balls: 0, strikes: 2, inZone: 32 },
-    { balls: 1, strikes: 0, inZone: 54 },
-    { balls: 1, strikes: 1, inZone: 48 },
-    { balls: 1, strikes: 2, inZone: 37 },
-    { balls: 2, strikes: 0, inZone: 57 },
-    { balls: 2, strikes: 1, inZone: 54 },
-    { balls: 2, strikes: 2, inZone: 45 },
-    { balls: 3, strikes: 0, inZone: 61 },
-    { balls: 3, strikes: 1, inZone: 59 },
-    { balls: 3, strikes: 2, inZone: 56 }
-]
-
-const LEAGUE_AVERAGE_BALL_SWING_BY_COUNT: BallSwingByCount[] = [
-    { balls: 0, strikes: 0, swing: 16 },
-    { balls: 0, strikes: 1, swing: 28 },
-    { balls: 0, strikes: 2, swing: 34 },
-    { balls: 1, strikes: 0, swing: 23 },
-    { balls: 1, strikes: 1, swing: 32 },
-    { balls: 1, strikes: 2, swing: 38 },
-    { balls: 2, strikes: 0, swing: 22 },
-    { balls: 2, strikes: 1, swing: 33 },
-    { balls: 2, strikes: 2, swing: 43 },
-    { balls: 3, strikes: 0, swing: 3 },
-    { balls: 3, strikes: 1, swing: 27 },
-    { balls: 3, strikes: 2, swing: 45 }
-] 
-
-// const LEAGUE_AVERAGE_STRIKE_SWING_BY_COUNT: StrikeSwingByCount[] = [
-//     { balls: 0, strikes: 0, swing: 64 },
-//     { balls: 0, strikes: 1, swing: 81 },
-//     { balls: 0, strikes: 2, swing: 88 },
-//     { balls: 1, strikes: 0, swing: 71 },
-//     { balls: 1, strikes: 1, swing: 83 },
-//     { balls: 1, strikes: 2, swing: 91 },
-//     { balls: 2, strikes: 0, swing: 70 },
-//     { balls: 2, strikes: 1, swing: 82 },
-//     { balls: 2, strikes: 2, swing: 91 },
-//     { balls: 3, strikes: 0, swing: 53 },
-//     { balls: 3, strikes: 1, swing: 78 },
-//     { balls: 3, strikes: 2, swing: 90 }
-// ]
-
-const LEAGUE_AVERAGE_IN_ZONE_RATE: number = 49.6
-
-const LEAGUE_AVERAGE_STRIKE_SWING_RATE: number = 67.6
-const LEAGUE_AVERAGE_BALL_SWING_RATE: number = 28.5
-
-
-const LEAGUE_AVERAGE_ZONE_SWING_CONTACT_RATE: number = 82.2
-const LEAGUE_AVERAGE_CHASE_SWING_CONTACT_RATE: number = 56
-
-const LEAGUE_AVERAGE_FOUL_RATE = 50
-
-
-const LEAGUE_AVERAGE_PITCH_QUALITY = 50
-
-const LEAGUE_AVERAGE_POWER_ROLL_INPUT: PowerRollInput = {
-    out: 649,
-    singles: 200,
-    doubles: 75,
-    triples: 8,
-    hr: 68
-}
-
-const LEAGUE_AVERAGE_CONTACT_TYPE_INPUT: ContactTypeRollInput = {
-    groundball: 44,
-    flyBall: 35,
-    lineDrive: 21
-}
 
 
 interface RatingPlayer {

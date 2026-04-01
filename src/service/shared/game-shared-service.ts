@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { AtBatState, BaseResult,  PlayDescription, PlayDescriptionType} from "../enums.js";
 import { TeamSharedService } from "./team-shared-service.js";
-import { Contact, Count, GamePlayer, Handedness, MatchupHandedness, OfficialRunnerResult, Pitch, PitchCall, PitchType, PitchZone, Play, PlayResult, Position, RunnerEvent, ShallowDeep, RunnerResult, OfficialPlayResult } from "baseball-sim-engine";
+import { Contact, Count, GamePlayer, Handedness, MatchupHandedness, OfficialRunnerResult, Pitch, PitchCall, PitchType, PitchZone, Play, PlayResult, Position, RunnerEvent, ShallowDeep, RunnerResult, OfficialPlayResult } from '../../baseball-sim-engine/index.js';
 import { SimSharedService } from "./sim-shared-service.js";
 
 

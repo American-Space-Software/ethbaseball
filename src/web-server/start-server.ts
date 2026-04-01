@@ -56,7 +56,7 @@ import http from 'http'
 import { SocketService } from '../service/socket-service.js'
 import { LadderService } from '../service/ladder-service.js'
 import { TeamQueueService } from '../service/data/team-queue-service.js'
-import { Position, RotationPitcher } from 'baseball-sim-engine';
+import { Position, RotationPitcher } from '../baseball-sim-engine/index.js';
 
 
 const TWITTER = "@ethbaseball"
