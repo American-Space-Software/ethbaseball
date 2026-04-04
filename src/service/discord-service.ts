@@ -1,16 +1,31 @@
 import { inject, injectable } from 'inversify';
-import { SchemaService } from './data/schema-service.js';
-import { Owner } from '../dto/owner.js';
 
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder,  Events,  InteractionResponse,  Message,  TextChannel,  bold } from 'discord.js';
-import { OwnerService } from './data/owner-service.js';
-import { ConnectService } from './connect-service.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, ChatInputCommandInteraction, Client, EmbedBuilder,  Events,  InteractionResponse,  Message,  TextChannel,  bold } from 'discord.js';
+
 import { Player } from '../dto/player.js';
-import { PlayerService } from './data/player-service.js';
 import { ASCIIService } from './ascii-service.js';
-import { DiamondService } from './diamond-service.js';
 import { ethers } from 'ethers';
 import commands from "../engine/commands/commands.js"
+import { UserService } from './data/user-service.js';
+import { OffchainEventService } from './data/offchain-event-service.js';
+import { TeamService } from './data/team-service.js';
+import { SeasonService } from './data/season-service.js';
+import { GameService } from './data/game-service.js';
+import { TeamQueueService } from './data/team-queue-service.js';
+import { UniverseService } from './universe-service.js';
+import { LeagueService } from './data/league-service.js';
+import { Universe } from '../dto/universe.js';
+import { PlayerLeagueSeasonService } from './data/player-league-season-service.js';
+import { TeamLeagueSeasonService } from './data/team-league-season-service.js';
+import { User } from '../dto/user.js';
+import { ContractType, SeasonInfo } from './enums.js';
+import { Team } from '../dto/team.js';
+import { TeamLeagueSeason } from 'src/dto/team-league-season.js';
+import { PlayerLeagueSeason } from 'src/dto/player-league-season.js';
+import { Season } from '../dto/season.js';
+import { League } from '../dto/league.js';
+import { RotationPitcher } from 'baseball-sim-engine/service/interfaces.js';
+import { Game } from '../dto/game.js';
 
 
 
@@ -20,28 +35,35 @@ const NO_WALLET = "Not connected to wallet."
 @injectable()
 class DiscordService {
 
-    hostname:string
+    public isStarted = false
+    private playChannelId:string
+    private web:string
+
+    private latestGameUpdateSentAt:Date = new Date(new Date().toUTCString())
 
     constructor(
-        private schemaService:SchemaService,
-        private ownerService:OwnerService,
-        private playerService:PlayerService,
+        private userService:UserService,
+        private offChainEventService:OffchainEventService,
         private asciiService:ASCIIService,
-        private diamondService:DiamondService,
-        @inject("config") private _config:Function,
-        @inject("discord") private discord:Client
+        private teamService:TeamService,
+        private seasonSevice:SeasonService,
+        private gameService:GameService,
+        private seasonService:SeasonService,
+        private teamQueueService:TeamQueueService,
+        private universeService:UniverseService,
+        private leagueService:LeagueService,
+        @inject("discord") private discord:Client,
+        @inject("universe") private universe:Universe,
+        private playerLeagueSeasonService:PlayerLeagueSeasonService,
+        private teamLeagueSeasonService:TeamLeagueSeasonService,    
     ) {}
 
-    async init(hostname:string) {
-        this.hostname = hostname
-        await this.schemaService.load()
-    }
+    async start(discordToken:string, playChannelId:string, web:string, onReady?:Function) {
 
-    async start(onReady?) {
+        if (!discordToken || !playChannelId) return
 
-        const TOKEN = process.env.DISCORD
-
-        if (!TOKEN) return
+        this.playChannelId = playChannelId
+        this.web = web
 
         //Start discord bot
         this.discord.on('ready', async () => {
@@ -49,7 +71,7 @@ class DiscordService {
                 await onReady()
             }
             
-            console.log(`Logged in as ${this.discord.user.tag}!`)
+            console.log(`Logged in as ${this.discord?.user?.tag}!`)
         })
         
         this.discord.on(Events.InteractionCreate, async interaction => {
@@ -66,6 +88,7 @@ class DiscordService {
             //Call method with interaction name on controller. Pass in the interaction.
             try {
 
+                // @ts-ignore - this is  
                 await this[interaction.commandName](interaction)
 
             } catch (error) {
@@ -81,50 +104,57 @@ class DiscordService {
         })
 
 
-        await this.discord.login(TOKEN)
+        await this.discord.login(discordToken)
+
+        this.isStarted = true
 
     }
 
-    async help(interaction) {
+    async help(interaction:ChatInputCommandInteraction) {
 
          await interaction.reply({ content: this.asciiService.getHelp(), ephemeral: true });
     }
 
-    async balance(interaction) {
+    async balance(interaction:ChatInputCommandInteraction) {
 
         try {
 
-            let owner:Owner = await this.validateWallet(interaction)
-            
-            await interaction.reply({ content: `Wallet:   ${owner._id}
-Balance: ${ethers.formatUnits((await this.diamondService.getBalance(owner._id)).toString())} 💎`, ephemeral: true });
+            let user:User = await this.validateUser(interaction)
 
-        } catch(ex) {
+            let balance = await this.offChainEventService.getBalanceByPlayerIdAndContractType(ContractType.DIAMONDS, user._id)
+            
+            await interaction.reply({ content: `Balance: ${displayDiamonds(balance)}`, ephemeral: true });
+
+        } catch(ex:any) {
             await interaction.reply({ content: ex.message, ephemeral: true })
 
         }
 
     }
 
+    async validateUser(interaction:ChatInputCommandInteraction) : Promise<User> {
 
+        let user = await this.userService.getByDiscordId(interaction.user.id)  //this.ownerService.getByUserId(interaction.user.id)
 
-    async validateWallet(interaction) : Promise<Owner> {
-
-        let owner = await this.ownerService.getByUserId(interaction.user.id)
-
-        if (!owner) {
-            throw new Error(NO_WALLET)
+        if (!user) {
+            throw new Error("Visit https://playebl.com to start playing.")
         }
 
-        return owner
+        return user
     }
 
-    async roster(interaction) {
+    async roster(interaction:ChatInputCommandInteraction) {
 
         try {
 
-            //Make sure they have a valid wallet
-            let owner:Owner = await this.validateWallet(interaction)
+            //Make sure they have a team
+            let user:User = await this.validateUser(interaction)
+
+            let teams: Team[] = await this.teamService.getByUser(user)
+            let team = teams[0]
+
+            let season = await this.seasonSevice.getMostRecent()
+            let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
 
             let pageNumber = interaction.options.getInteger('page')
     
@@ -137,19 +167,26 @@ Balance: ${ethers.formatUnits((await this.diamondService.getBalance(owner._id)).
             let limit = 20
             let offset = pageNumber * limit
 
-            let players:Player[] = await this.playerService.getByOwner(owner, { 
-                limit: limit,
-                offset: offset
-            })
+            let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season)
+            let plssPlain = plss.map(p => p.get({ plain: true }))
+
+
+            let players:Player[] = plssPlain.map(p => p.player)
         
+            //Sort so it matches ids order
+
+            //@ts-ignore
+            let orderedIds:string[] = tls.lineups[0].order?.map( o => o._id)?.concat(tls.lineups[0].rotation?.map( o => o._id))
+
+            players.sort(function(a,b) {
+                return orderedIds.indexOf( a._id ) - orderedIds.indexOf( b._id )
+            })
 
             if (players?.length > 0) {
-
-                let total = await this.playerService.countByOwner(owner)
     
                 //Show confirm?
                 const response:InteractionResponse = await interaction.reply({ 
-                    content: this.asciiService.getRoster(players, offset, total),
+                    content: this.asciiService.getRoster(players, offset, players.length),
                     ephemeral: true
                 })
 
@@ -159,13 +196,207 @@ Balance: ${ethers.formatUnits((await this.diamondService.getBalance(owner._id)).
 
             }
 
-        } catch(ex) {
+        } catch(ex:any) {
             console.log(ex)
             await interaction.reply({ content: ex.message, ephemeral: true })
         }
 
 
 
+    }
+
+    async joinqueue(interaction:ChatInputCommandInteraction) {
+
+        try {
+
+            const expandRange = interaction.options.getBoolean('expand')
+
+            let universe:Universe = await this.universeService.getActive()
+
+            let user:User = await this.validateUser(interaction)
+
+            let season:Season = await this.seasonService.getMostRecent()
+
+            let teams:Team[] = await this.teamService.getByUser(user)
+            let team = teams[0]
+
+            if (!team) {
+                throw new Error("Team not found.")
+            }
+
+            let isQueued = await this.teamQueueService.isTeamQueued(team)
+
+            if (isQueued) {
+                throw new Error("Team is already queued.")
+            }
+
+            let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
+
+            if (!tls) {
+                throw new Error("Team season not found.")
+            }
+
+
+            let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, universe.currentDate)
+            let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses 
+
+            const inProgressGames = await this.gameService.getInProgressByTeam(team)
+
+            if (inProgressGames?.length > 0) {
+                throw new Error("Can not join queue while team has a game in progress.")
+            }
+
+            if (gamesPlayed >= seasonInfo.dayNumber) {
+                throw new Error("All caught up on games. Join the queue again at 9:30AM eastern time.")
+            }
+
+
+            let league:League = await this.leagueService.get(tls.leagueId)
+
+            let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season)
+            let startingPitcher:RotationPitcher = this.teamService.getStartingPitcherFromPLS(tls.lineups[0].rotation, plss)
+
+            this.teamService.validateLineup(team, tls.lineups[0], plss.map( pls => pls.get({ plain: true})), startingPitcher)
+
+
+            let teamRating = (team.longTermRating.rating + team.seasonRating.rating) / 2
+
+
+            await this.teamQueueService.queueTeam(team, league, teamRating, 25, expandRange)
+
+            
+            await interaction.reply({
+                content: `✅ ${interaction.user} has successfully joined the queue (Rating: ${team.longTermRating.rating.toFixed(0)}).`,
+                ephemeral: false
+            })
+
+        } catch(ex:any) {
+            await interaction.reply({ content: ex.message, ephemeral: true })
+
+        }
+
+    }
+
+    async leavequeue(interaction:ChatInputCommandInteraction) {
+
+        let user:User = await this.validateUser(interaction)
+
+        let teams:Team[] = await this.teamService.getByUser(user)
+        let team = teams[0]
+
+        if (!team) {
+            throw new Error("Team not found.")
+        }
+
+        let isQueued = await this.teamQueueService.isTeamQueued(team)
+
+        if (!isQueued) {
+            throw new Error("Team is not queued.")
+        }
+
+        await this.teamQueueService.dequeueTeam(team)
+
+        await interaction.reply({
+            content: `You have left the queue.`,
+            ephemeral: true
+        })
+
+
+    }
+
+
+
+    async processNewGameNotifications() {
+
+        const games = await this.gameService.getCreatedSince(this.latestGameUpdateSentAt)
+
+        for (const game of games) {
+
+            const awayTeam: Team = await this.teamService.get(game.away._id)
+            const homeTeam: Team = await this.teamService.get(game.home._id)
+
+            const awayUser: User = await this.userService.get(awayTeam.userId)
+            const homeUser: User = await this.userService.get(homeTeam.userId)
+
+
+            if (game.isStarted && !game.isFinished) {
+                await this.notifyGameStarted(
+                    game,
+                    { team: awayTeam, user: awayUser },
+                    { team: homeTeam, user: homeUser }
+                )
+            }
+
+            if (game.isFinished) {
+                await this.notifyGameFinished(
+                    game,
+                    { team: awayTeam, user: awayUser },
+                    { team: homeTeam, user: homeUser }
+                )
+            }
+
+        }
+
+        this.latestGameUpdateSentAt = new Date(new Date().toUTCString())
+
+    }
+
+
+
+    async notifyGameStarted(game: Game, away: { team: Team, user: User }, home: { team: Team, user: User }) {
+
+        const channel = await this.discord.channels.fetch(this.playChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Play channel not found or is not a text channel')
+        }
+
+        const gameUrl = `${this.web}/g/${game._id}`
+
+        const awayDisplay = await this.getDiscordDisplay(channel, away)
+        const homeDisplay = await this.getDiscordDisplay(channel, home)
+
+        await channel.send({
+            content: `⚾ ${awayDisplay} vs ${homeDisplay} has started. [Watch live](${gameUrl})`
+        })
+    }
+
+    async notifyGameFinished(game: Game, away: { team: Team, user: User }, home: { team: Team, user: User }) {
+
+        const channel = await this.discord.channels.fetch(this.playChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Play channel not found or is not a text channel')
+        }
+
+        const gameUrl = `${this.web}/g/${game._id}`
+
+        const awayDisplay = await this.getDiscordDisplay(channel, away)
+        const homeDisplay = await this.getDiscordDisplay(channel, home)
+
+        let winningTeamDisplay = game.winningTeamId == away.team._id ? awayDisplay : homeDisplay
+        let losingTeamDisplay = game.winningTeamId == away.team._id ? homeDisplay : awayDisplay
+
+        let winningRuns = game.winningTeamId == away.team._id ? game.score.away : game.score.home
+        let losingRuns = game.winningTeamId == away.team._id ? game.score.home : game.score.away
+
+
+        await channel.send({
+            content: `⚾ ${winningTeamDisplay} vs ${losingTeamDisplay} by a score of ${winningRuns} to ${losingRuns}. [View recap](${gameUrl})`
+        })
+    }
+
+
+    async getDiscordDisplay(channel: TextChannel, info: { team: Team, user: User }): Promise<string> {
+
+        const teamUrl = `${this.web}/t/${info.team._id}`
+
+        try {
+            await channel.guild.members.fetch(info.user.discordId)
+            return `<@${info.user.discordId}>`
+        } catch {
+            return `[${info.team.name}](${teamUrl})`
+        }
     }
 
     // async player(interaction) {
@@ -201,7 +432,7 @@ Balance: ${ethers.formatUnits((await this.diamondService.getBalance(owner._id)).
 
     // }
 
-    async generateImage(animationPath) {
+    async generateImage(animationPath:ChatInputCommandInteraction) {
 
         // const pngPath = animationPath.replace(".html", ".png")
 
@@ -213,6 +444,66 @@ Balance: ${ethers.formatUnits((await this.diamondService.getBalance(owner._id)).
     }
 
 }
+
+
+const formatDiamondValue = (value:string) => {
+
+    if (value == null) return
+
+    const trimZeros = (s) => s.replace(/\.?0+$/, '')
+
+    const diamonds = ethers.formatUnits(value)
+    const num = Number(diamonds)
+    if (!Number.isFinite(num)) return diamonds
+
+    if (num === 0) return "0"
+
+    const abs = Math.abs(num)
+
+    const fitPlain = (n) => {
+        const intLen = Math.floor(Math.abs(n)).toString().length
+        const remaining = 7 - intLen - 1
+        let decimals = 1
+        if (remaining > 0) decimals = Math.min(remaining, 6)
+        let s = n.toFixed(decimals)
+        if (s.length > 7 && decimals > 1) s = n.toFixed(decimals - 1)
+        if (s.length > 7) s = n.toFixed(1)
+        return s.length <= 7 ? s : null
+    }
+
+    const plain = fitPlain(num)
+    if (plain) return trimZeros(plain)
+
+    const formatAbbrev = (n, suffix, div) => {
+        const v = n / div
+        const intLen = Math.floor(v).toString().length
+        const remaining = 7 - intLen - 1
+        let decimals = 1
+        if (remaining > 0) decimals = Math.min(remaining, 6)
+        let s = v.toFixed(decimals)
+        if (s.length > 7 && decimals > 1) s = v.toFixed(decimals - 1)
+        if (s.length > 7) s = v.toFixed(1)
+        if (s.length > 7) s = v.toFixed(0)
+        return `${trimZeros(s)}${suffix}`
+    }
+
+    if (abs >= 1e9) return formatAbbrev(abs, 'B', 1e9)
+    if (abs >= 1e6) return formatAbbrev(abs, 'M', 1e6)
+    return formatAbbrev(abs, 'K', 1e3)
+}
+
+const displayDiamonds = (value) => {
+    const formatted = formatDiamondValue(value)
+    if (formatted == null) return
+    return `${formatted} 🔷`
+}
+
+const displayDiamondsNoSymbol = (value) => {
+    return formatDiamondValue(value)
+}
+
+
+
 
 export { DiscordService }
 

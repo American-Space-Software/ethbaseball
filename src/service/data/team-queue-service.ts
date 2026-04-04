@@ -130,6 +130,8 @@ class TeamQueueService {
     }
 
 
+
+
     private getEffectiveMaxRatingDiff(teamQueue: TeamQueue): number {
 
         if (!teamQueue.expandRange) {

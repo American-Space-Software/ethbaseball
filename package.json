@@ -33,8 +33,9 @@
     "create-car:dev": "node --env-file=.env.start.development  dist/create-car.js",
 
 
-    "deploy-commands": "node --env-file=.env.production dist/deploy-commands.js",
-    
+    "deploy-commands": "node --env-file=.env.web.production dist/deploy-commands.js",
+    "deploy-commands:dev": "node --env-file=.env.web.development dist/deploy-commands.js",
+
 
     "docker:build": "sudo NODE_ENV=production docker compose build",
 

@@ -14,7 +14,7 @@ class Universe extends Model {
 
     @AllowNull(true)
     @Column(DataType.STRING)
-    declare diamondAddress:string
+    declare diamondAddress:string | null | undefined
 
     @AllowNull(false)
     @Column(DataType.STRING)

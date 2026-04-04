@@ -278,6 +278,7 @@ async function getContainer() {
             user,
             password,
             {
+               timezone: '+00:00',
                logging: false,
                host: host,
                port: port,
@@ -285,7 +286,8 @@ async function getContainer() {
                dialectOptions: {
                 decimalNumbers: true,
                 connectTimeout: process.env.MYSQL_TIMEOUT,
-                multipleStatements: true        
+                multipleStatements: true,
+                timezone: 'Z'    
                },
                models: [TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
                  DiamondMintPass, Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,

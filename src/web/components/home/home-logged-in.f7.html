@@ -231,24 +231,7 @@
                   </div>
                 </li>
 
-                <!-- <li>
-                  <div class="item-content">
-                    <div class="item-inner">
-                      <div class="item-input-wrap">
-                        <div
-                          class="range-slider range-slider-init"
-                          data-label="true"
-                          data-min="25"
-                          data-max="250"
-                          data-step="1"
-                          data-scale="true"
-                          data-value="${selectedMaxRatingDiff}"
-                          @range:change="${rangeChange}">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </li> -->
+
 
                 <li>
                   <div class="item-content">
@@ -553,12 +536,11 @@
 
     let baseDiamondReward = leagues.find(l => l._id == authInfo.leagueId)?.baseDiamondReward
 
-    let selectedMaxRatingDiff =  25
-    let projectedReward = teamWebService.calculateProjectedReward(baseDiamondReward, selectedMaxRatingDiff) 
+    let projectedReward = teamWebService.calculateProjectedReward(baseDiamondReward, 25) 
 
     let myRating = vm.teamInfo.team.longTermRating.rating
-    let minOpponentRating = myRating - selectedMaxRatingDiff
-    let maxOpponentRating = myRating + selectedMaxRatingDiff
+    let minOpponentRating = myRating - 25
+    let maxOpponentRating = myRating + 25
 
     const renderComponent = (component, componentProps = {}) => {
       const renderFn = component(
@@ -669,7 +651,7 @@
 
         let toggle = $f7.toggle.get('.expand-range')
 
-        await gameWebService.queue(selectedMaxRatingDiff, toggle.checked)
+        await gameWebService.queue(toggle.checked)
         $f7.views.main.router.refreshPage()
       } catch (ex) {
         $f7.dialog.alert(ex?.response?.data)

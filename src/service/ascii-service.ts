@@ -13,15 +13,21 @@ class ASCIIService {
     
     getHelp() {
 
-        return`### Wallet
+        return`### Diamonds
 \`\`\`
 Balance:           /balance
 \`\`\`
 ### Players
 \`\`\`
 Show Full Roster:  /roster
-Show Player:       /player *id*
 \`\`\`
+### Queue
+\`\`\`
+Join Queue:        /joinqueue
+Leave Queue:       /leavequeue
+\`\`\`
+
+
 `
 
     }
@@ -119,8 +125,8 @@ Show Player:       /player *id*
         const table = new Table()
         
         for (let player of players) {
-            table.cell('ID', player._id)
-            table.cell('Name', `${player.primaryPosition} ${player.lastName}, ${player.firstName.substring(0,1).toUpperCase()}.`)
+            table.cell('POS', player.primaryPosition)
+            table.cell('Name', `${player.firstName} ${player.lastName}`)
             table.newRow()
         }
 

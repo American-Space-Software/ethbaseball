@@ -1,5 +1,4 @@
 import { getContainer, setConfig, setDiamondsAddress, setFees, setUniverse } from "./inversify.config.js"
-// import { DiscordService } from "../service/discord-service.js"
 
 import { ProcessConfig } from "../process-config.js"
 
@@ -18,6 +17,7 @@ import { SchemaService } from "../service/data/schema-service.js"
 
 
 import { v4 as uuidv4 } from 'uuid';
+import { DiscordService } from "../service/discord-service.js"
 
 
 
@@ -26,8 +26,12 @@ let startEngine = async () => {
   const SIM_DATE = process.env.SIM_DATE ? dayjs(process.env.SIM_DATE).toDate() : new Date(new Date().toUTCString())
   const SECONDS_BETWEEN_INDEXES = process.env.SECONDS_BETWEEN_INDEXES ?  parseInt(process.env.SECONDS_BETWEEN_INDEXES) : 30
   const SECONDS_BETWEEN_MINT_PASS_SIGNINGS = process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS  ? parseInt(process.env.SECONDS_BETWEEN_MINT_PASS_SIGNINGS) : 5
+  const SECONDS_BETWEEN_DISCORD_NOTIFICATIONS = process.env.SECONDS_BETWEEN_DISCORD_NOTIFICATIONS ? parseInt(process.env.SECONDS_BETWEEN_DISCORD_NOTIFICATIONS) : 5
   const BLOCK_CONFIRMATIONS = process.env.BLOCK_CONFIRMATIONS  ? parseInt(process.env.BLOCK_CONFIRMATIONS) : 35
-  
+  const DISCORD_TOKEN = process.env.DISCORD
+  const DISCORD_PLAY_CHANNEL_ID = process.env.DISCORD_PLAY_CHANNEL_ID
+  const WEB = process.env.WEB
+
   //@ts-ignore
   const version = VERSION
 
@@ -53,9 +57,7 @@ let startEngine = async () => {
 
   let s = await sequelize()
 
-  // //Start and load schema
-  // let discordService = container.get(DiscordService)
-  // await discordService.init(config.web)
+  let discordService:DiscordService = container.get(DiscordService)
 
   await schemaService.load()
 
@@ -150,13 +152,23 @@ let startEngine = async () => {
   }
 
 
-  //Start discord bot
-  // discordService.start()
+
 
 
   //Start a sync process. 
   await universeIndexerService.init(diamondService.diamondsContract, BLOCK_CONFIRMATIONS)
   
+
+  const discordGameNotificationLoop = async () => {
+  
+      await discordService.processNewGameNotifications()
+
+      console.log(`Discord game notification loop complete...waiting...`)
+
+
+      setTimeout(async () => { await discordGameNotificationLoop() }, SECONDS_BETWEEN_DISCORD_NOTIFICATIONS*1000)
+
+  }
 
   const mintPassLoop = async () => {
 
@@ -264,9 +276,24 @@ let startEngine = async () => {
 
   
   await startupTasks()
-  // await gameSummaryLoop()
+  // await gameSummaryLoop() 
   await indexerLoop()
   await mintPassLoop()
+
+
+
+
+
+  //Start discord bot
+  if (DISCORD_TOKEN && DISCORD_PLAY_CHANNEL_ID) {
+
+    discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => {
+      await discordGameNotificationLoop()
+    })
+    
+  }
+
+
 
   console.log(`
     *******************************************

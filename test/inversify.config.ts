@@ -296,6 +296,7 @@ function getContainer(command?: GetContainerCommand) {
       user,
       password,
       {
+         timezone: '+00:00',
          logging: false,
          host: host,
          port: port,
@@ -303,7 +304,8 @@ function getContainer(command?: GetContainerCommand) {
          dialectOptions: {
           decimalNumbers: true,
           connectTimeout: process.env.MYSQL_TIMEOUT,
-          multipleStatements: true        
+          multipleStatements: true   ,   
+          timezone: 'Z'  
          },
          models: [ TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
           DiamondMintPass, Universe, Animation, Image, ConnectLink,

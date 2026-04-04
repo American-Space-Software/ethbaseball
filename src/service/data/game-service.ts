@@ -75,6 +75,23 @@ class GameService {
 
     }
 
+    async getCreatedSince(date:Date, options?:any) : Promise<Game[]> {
+
+        let ids = await this.gameRepository.getIdsCreatedSince(date, options)
+        if (ids.length == 0) return []
+
+        let games:Game[] = await this.gameRepository.getByIds(ids, options)
+        
+        //Sort so it matches ids order
+        games.sort(function(a,b) {
+            return ids.indexOf( a._id ) - ids.indexOf( b._id )
+        })
+
+        return games
+
+    }
+
+
     async getRecentScheduledDate(options?:any) : Promise<Date> {
         return this.gameRepository.getRecentScheduledDate(options)
     }

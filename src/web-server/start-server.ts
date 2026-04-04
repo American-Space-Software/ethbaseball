@@ -93,7 +93,7 @@ let startWebServer = async () => {
   const PROVIDER_CHAIN_RPC_URL = process.env.PROVIDER_CHAIN_RPC_URL ? process.env.PROVIDER_CHAIN_RPC_URL : "http://127.0.0.1:8545/"
   const PROVIDER_CHAIN_BLOCK_EXPLORER = process.env.PROVIDER_CHAIN_BLOCK_EXPLORER
   const FOOTER_ROUTES:{ link:string, content:string, linkText:string}[] = process.env.FOOTER_ROUTES ? JSON.parse(process.env.FOOTER_ROUTES) : []
-  const FOOTER_SCRIPT:string = process.env.FOOTER_SCRIPT
+  const FOOTER_SCRIPT:string|undefined = process.env.FOOTER_SCRIPT
 
   const OPENSEA_COLLECTION_URL = process.env.OPENSEA_COLLECTION_URL
 
@@ -202,7 +202,9 @@ let startWebServer = async () => {
     universe = await universeService.get(universe._id)
   }
 
-  const parseIntWithException = (theStr) => {
+  const parseIntWithException = (theStr:string|undefined) => {
+
+    if (theStr == undefined) throw new Error("Missing input.")
 
     let result = parseInt(theStr)
 
@@ -212,7 +214,7 @@ let startWebServer = async () => {
 
   }
 
-  const parseBoolean = (theStr) => {
+  const parseBoolean = (theStr:string|undefined) => {
     return (theStr === 'true')
   }  
 
@@ -1748,14 +1750,8 @@ let startWebServer = async () => {
           return res.send("Not authorized.")
         }
 
-        const expandRange = parseBoolean(req.query.expandRange)
+        const expandRange = parseBoolean(req.query.expandRange as string)
 
-
-        const maxRatingDiff = req.query.maxRatingDiff != undefined ? parseIntWithException(String(req.query.maxRatingDiff)) : 25
-
-        if (maxRatingDiff < 25 || maxRatingDiff > 250) {
-          throw new Error("Invalid maxRatingDiff.")
-        }
 
 
         await refreshUniverse()
@@ -1814,7 +1810,7 @@ let startWebServer = async () => {
         let teamRating = (team.longTermRating.rating + team.seasonRating.rating) / 2
 
 
-        await teamQueueService.queueTeam(team, league, teamRating, maxRatingDiff, expandRange)
+        await teamQueueService.queueTeam(team, league, teamRating, 25, expandRange)
 
         return res.send("success")
 

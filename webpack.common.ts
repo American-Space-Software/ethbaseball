@@ -351,26 +351,26 @@ let engineConfig = {
   ]
 }
 
-let createCarConfig = Object.assign(Object.assign({}, engineConfig), {
-    entry: "./src/engine/create-car.ts",
+// let createCarConfig = Object.assign(Object.assign({}, engineConfig), {
+//     entry: "./src/engine/create-car.ts",
 
-    output: {
-      filename: 'create-car.js',
-      libraryTarget: "module",
-      library: {
-        type: "module"
-      },
-      chunkFormat: 'module',
-      path: path.resolve(__dirname, 'dist'),
-    },
+//     output: {
+//       filename: 'create-car.js',
+//       libraryTarget: "module",
+//       library: {
+//         type: "module"
+//       },
+//       chunkFormat: 'module',
+//       path: path.resolve(__dirname, 'dist'),
+//     },
 
-    plugins: [
-      new webpack.DefinePlugin({
-        VERSION: VERSION      
-      }),
-    ]
-  }
-)
+//     plugins: [
+//       new webpack.DefinePlugin({
+//         VERSION: VERSION      
+//       }),
+//     ]
+//   }
+// )
 
 let webServerConfig = {
   entry: "./src/web-server/index.ts",
@@ -600,5 +600,5 @@ export {
 }
 
 export default () => {
-  return [deployCommandsConfig, browserConfig, webServerConfig, engineConfig, indexConfig, createCarConfig, serviceWorkerConfig]
+  return [deployCommandsConfig, browserConfig, webServerConfig, engineConfig, indexConfig, serviceWorkerConfig]
 }

@@ -74,6 +74,29 @@ class GameRepositoryNodeImpl implements GameRepository {
 
     }
 
+    async getIdsCreatedSince(dateCreated: Date, options?: any): Promise<string[]> {
+        const s = await this.sequelize()
+
+        const utcDate = dateCreated.toISOString().slice(0, 19).replace('T', ' ')
+
+        const queryOptions = {
+            type: s.QueryTypes.SELECT,
+            replacements: {
+                dateCreated: utcDate
+            }
+        }
+
+        const queryResults: any[] = await s.query(`
+            select 
+                g._id
+            from game g
+            where g.dateCreated > :dateCreated
+            order by g.dateCreated desc
+        `, Object.assign({}, queryOptions, options))
+
+        return queryResults.map(r => r._id)
+    }
+
     async getLastUpdate(options?:any) : Promise<Date> {
 
         let s = await this.sequelize()

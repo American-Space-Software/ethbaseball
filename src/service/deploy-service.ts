@@ -26,6 +26,10 @@ class DeployService {
         //Deploy contract
         let receipt = await this._deployDiamonds(defaultAdminAddress, minterAddress)
 
+
+        if (!receipt) throw new Error('Failed to deploy Diamonds')
+
+
         //Update address locally
         return receipt.contractAddress
         
