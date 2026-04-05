@@ -39,7 +39,6 @@ class DiscordService {
     private playChannelId:string
     private web:string
 
-    private latestGameUpdateSentAt:Date = new Date(new Date().toUTCString())
 
     constructor(
         private userService:UserService,
@@ -304,42 +303,6 @@ class DiscordService {
 
     }
 
-
-
-    async processNewGameNotifications() {
-
-        const games = await this.gameService.getCreatedSince(this.latestGameUpdateSentAt)
-
-        for (const game of games) {
-
-            const awayTeam: Team = await this.teamService.get(game.away._id)
-            const homeTeam: Team = await this.teamService.get(game.home._id)
-
-            const awayUser: User = await this.userService.get(awayTeam.userId)
-            const homeUser: User = await this.userService.get(homeTeam.userId)
-
-
-            if (game.isStarted && !game.isFinished) {
-                await this.notifyGameStarted(
-                    game,
-                    { team: awayTeam, user: awayUser },
-                    { team: homeTeam, user: homeUser }
-                )
-            }
-
-            if (game.isFinished) {
-                await this.notifyGameFinished(
-                    game,
-                    { team: awayTeam, user: awayUser },
-                    { team: homeTeam, user: homeUser }
-                )
-            }
-
-        }
-
-        this.latestGameUpdateSentAt = new Date(new Date().toUTCString())
-
-    }
 
 
 

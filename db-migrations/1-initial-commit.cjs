@@ -3,7 +3,7 @@
 const fs = require("fs")
 const path = require("path")
 
-let INITIAL_DATABASE = fs.readFileSync(path.resolve(__dirname, "initial-commit.sql"), "utf-8").toString()
+let INITIAL_DATABASE = fs.readFileSync(path.resolve(__dirname, "sql/initial-commit.sql"), "utf-8").toString()
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

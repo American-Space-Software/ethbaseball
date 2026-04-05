@@ -1,9 +1,9 @@
 import { Routes, REST } from 'discord.js';
 
-import { getContainer } from "./inversify.config.js"
+// import { getContainer } from "./inversify.config.js"
 
 import commands from "./commands/commands.js";
-let container = await getContainer()
+// let container = await getContainer()
 
 
 const TOKEN = process.env.DISCORD

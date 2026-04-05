@@ -166,6 +166,9 @@ import { TeamSharedService } from "../service/shared/team-shared-service.js"
 import { PlayerSharedService } from "../service/shared/player-shared-service.js"
 import { SimSharedService } from "../service/shared/sim-shared-service.js"
 import { WIN_EXPECTANCY_CHART } from "../service/enums.js"
+import { GameNotificationService } from "../service/data/game-notification-service.js"
+import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository.js"
+import { GameNotifications } from "../dto/game-notifications.js"
 
 
 const client = new Client({ intents: [
@@ -289,7 +292,7 @@ async function getContainer() {
                 multipleStatements: true,
                 timezone: 'Z'    
                },
-               models: [TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
+               models: [GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
                  DiamondMintPass, Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ],
@@ -418,6 +421,7 @@ async function getContainer() {
     container.bind(FinanceService).toSelf().inSingletonScope()
     container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
     container.bind(PlayerLeagueSeasonService).toSelf().inSingletonScope()
+    container.bind(GameNotificationService).toSelf().inSingletonScope()
 
     container.bind(ChatGPTService).toSelf().inSingletonScope()
     container.bind(OffchainEventService).toSelf().inSingletonScope()
@@ -439,6 +443,7 @@ async function getContainer() {
     container.bind("UniverseRepository").to(UniverseRepositoryNodeImpl).inSingletonScope()
     container.bind("ConnectLinkRepository").to(ConnectLinkRepositoryNodeImpl).inSingletonScope()
     container.bind("LeagueRepository").to(LeagueRepositoryNodeImpl).inSingletonScope()
+    container.bind("GameNotificationsRepository").to(GameNotificationsRepositoryNodeImpl).inSingletonScope()
 
     container.bind("BlockRepository").to(BlockRepositoryNodeImpl).inSingletonScope()
     container.bind("ContractStateRepository").to(ContractStateRepositoryNodeImpl).inSingletonScope()

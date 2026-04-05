@@ -18,6 +18,7 @@ import { SchemaService } from "../service/data/schema-service.js"
 
 import { v4 as uuidv4 } from 'uuid';
 import { DiscordService } from "../service/discord-service.js"
+import { GameNotificationService } from "../service/data/game-notification-service.js"
 
 
 
@@ -51,6 +52,7 @@ let startEngine = async () => {
   let universeService: UniverseService = container.get(UniverseService)
   let mintPassIndexerService: MintPassIndexerService = container.get(MintPassIndexerService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
+  let gameNotificationService:GameNotificationService = container.get(GameNotificationService)
   let minterWalletAddress: string = container.get("minterWalletAddress")
   let adminWalletAddress:string = container.get("adminWalletAddress")
   let sequelize = container.get("sequelize")
@@ -159,14 +161,14 @@ let startEngine = async () => {
   await universeIndexerService.init(diamondService.diamondsContract, BLOCK_CONFIRMATIONS)
   
 
-  const discordGameNotificationLoop = async () => {
+  const gameNotificationLoop = async () => {
   
-      await discordService.processNewGameNotifications()
+      await gameNotificationService.processGameNotifications()
 
-      console.log(`Discord game notification loop complete...waiting...`)
+      console.log(`Game notification loop complete...waiting...`)
 
 
-      setTimeout(async () => { await discordGameNotificationLoop() }, SECONDS_BETWEEN_DISCORD_NOTIFICATIONS*1000)
+      setTimeout(async () => { await gameNotificationLoop() }, SECONDS_BETWEEN_DISCORD_NOTIFICATIONS*1000)
 
   }
 
@@ -194,6 +196,93 @@ let startEngine = async () => {
 
     setTimeout(async () => { await indexerLoop() }, SECONDS_BETWEEN_INDEXES*1000)
   }
+
+
+
+
+  const startupTasks = async () => {
+
+    //Make sure that players have percentile ratings. 
+    // await playerService.updateAllPercentileRatings()
+
+    // console.log(`Updated player percentile ratings`)
+
+    //Make sure owner off-chain balances are up to date
+    // await ownerService.syncOffChainBalances()
+
+    // console.log(`Sync offchain diamond balances`)
+
+  }
+
+  
+  await startupTasks()
+  // await gameSummaryLoop() 
+  await indexerLoop()
+  await mintPassLoop()
+
+
+
+
+
+  //Start discord bot
+  if (DISCORD_TOKEN && DISCORD_PLAY_CHANNEL_ID) {
+
+    console.log(`Starting discord service.`)
+
+    discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => {
+      await gameNotificationLoop()
+    })
+    
+  } else {
+        console.log(`Discord not configured. Skipping.`)
+  }
+
+
+
+  console.log(`
+    *******************************************
+    * EBL engine started ${version}             *
+    * *****************************************`)
+
+}
+
+
+let createCar = async () => {
+
+  let config = await ProcessConfig.getConfig()
+
+  let container = await getContainer()
+
+  
+  let universeService: UniverseService = container.get(UniverseService)
+  let schemaService: SchemaService = container.get(SchemaService)
+  let ipfsService:IPFSService = container.get(IPFSService)
+
+  await schemaService.load()
+  await ipfsService.init()
+
+
+  let universe:Universe = await universeService.get(config.universe)
+
+  let cid = await universeService.syncMetadata(universe, config)
+
+  console.log(cid)
+
+}
+
+
+export {
+    startEngine, createCar
+}
+
+
+
+
+
+
+
+
+
 
 
   // const gameSummaryLoop = async () => {
@@ -258,75 +347,3 @@ let startEngine = async () => {
   //   setTimeout(async () => { await gameSummaryLoop() }, SECONDS_BETWEEN_INDEXES*1000)
 
   // }
-
-
-  const startupTasks = async () => {
-
-    //Make sure that players have percentile ratings. 
-    // await playerService.updateAllPercentileRatings()
-
-    // console.log(`Updated player percentile ratings`)
-
-    //Make sure owner off-chain balances are up to date
-    // await ownerService.syncOffChainBalances()
-
-    // console.log(`Sync offchain diamond balances`)
-
-  }
-
-  
-  await startupTasks()
-  // await gameSummaryLoop() 
-  await indexerLoop()
-  await mintPassLoop()
-
-
-
-
-
-  //Start discord bot
-  if (DISCORD_TOKEN && DISCORD_PLAY_CHANNEL_ID) {
-
-    discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => {
-      await discordGameNotificationLoop()
-    })
-    
-  }
-
-
-
-  console.log(`
-    *******************************************
-    * EBL engine started ${version}             *
-    * *****************************************`)
-
-}
-
-
-let createCar = async () => {
-
-  let config = await ProcessConfig.getConfig()
-
-  let container = await getContainer()
-
-  
-  let universeService: UniverseService = container.get(UniverseService)
-  let schemaService: SchemaService = container.get(SchemaService)
-  let ipfsService:IPFSService = container.get(IPFSService)
-
-  await schemaService.load()
-  await ipfsService.init()
-
-
-  let universe:Universe = await universeService.get(config.universe)
-
-  let cid = await universeService.syncMetadata(universe, config)
-
-  console.log(cid)
-
-}
-
-
-export {
-    startEngine, createCar
-}
