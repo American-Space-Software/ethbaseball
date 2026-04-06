@@ -162,7 +162,7 @@ import { PlayerSharedService } from "../service/shared/player-shared-service.js"
 import { SimSharedService } from "../service/shared/sim-shared-service.js";
 import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
 import { GameNotificationService } from "../service/data/game-notification-service.js";
-import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository.js";
+import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository-impl.js";
 import { GameNotifications } from "../dto/game-notifications.js"
 
 let _diamondsAddress:string

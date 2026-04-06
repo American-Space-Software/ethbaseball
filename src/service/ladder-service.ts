@@ -39,6 +39,9 @@ import { TeamQueueMatchup } from "../dto/team-queue.js"
 import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher }  from '../baseball-sim-engine/index.js';
 import { SimSharedService, WPAReward } from "./shared/sim-shared-service.js"
 import { PlayerSharedService } from "./shared/player-shared-service.js"
+import { GameNotificationService } from "./data/game-notification-service.js"
+import { GameNotifications } from "../dto/game-notifications.js"
+import { GameNotificationsRepository } from "../repository/game-notifications-repository.js"
 
 
 @injectable()
@@ -55,6 +58,9 @@ class LadderService {
 
     @inject("GamePitchResultRepository")
     private gamePitchResultRepository:GamePitchResultRepository
+
+    @inject("GameNotificationsRepository")
+    private gameNotificationsRepository:GameNotificationsRepository //just need to get around a circular dependency issue. not great.
 
     constructor(
         private playerService:PlayerService,
@@ -297,6 +303,17 @@ class LadderService {
             game.changed('away', true)
 
             await this.gameService.put(game, options)
+
+            let gn:GameNotifications = Object.assign(new GameNotifications(), {
+                _id: uuidv4(),
+                gameId: game._id,
+                updatesSent: {
+                    discordStarted: false,
+                    discordEnded: false
+                }
+            })
+
+            await this.gameNotificationsRepository.put(gn, options)
 
             await this.teamLeagueSeasonService.put(team1Bundle.tls, options)
             await this.teamLeagueSeasonService.put(team2Bundle.tls, options)

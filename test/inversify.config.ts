@@ -128,7 +128,7 @@ import { BlockRepository } from "../src/repository/block-repository.js";
 import { BlockRepositoryNodeImpl } from "../src/repository/node/block-repository-impl.js"
 import { ContractStateRepositoryNodeImpl } from "../src/repository/node/contract-state-repository-impl.js"
 import { ContractStateRepository } from "../src/repository/contract-state-repository.js";
-import { GameNotificationsRepositoryNodeImpl } from "../src/repository/node/game-notifications-repository.js"
+import { GameNotificationsRepositoryNodeImpl } from "../src/repository/node/game-notifications-repository-impl.js"
 import { GameNotificationsRepository } from "../src/repository/game-notifications-repository.js";
 
 import { ProcessedTransactionRepositoryNodeImpl } from "../src/repository/node/processed-transaction-repository-impl.js"

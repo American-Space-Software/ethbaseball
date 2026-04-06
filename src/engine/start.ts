@@ -214,28 +214,57 @@ let startEngine = async () => {
 
   }
 
-  
+  const discordStartLoop = async () => {
+
+    if (!DISCORD_TOKEN || !DISCORD_PLAY_CHANNEL_ID) {
+      console.log(`Discord not configured. Skipping.`)
+      return
+    }
+
+    let waitMs = 60*1000
+
+    try {
+
+      console.log(`Starting discord service.`)
+
+      await discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => {
+        await gameNotificationLoop()
+      })
+
+    } catch(ex:any) {
+
+      const resetMs = discordService.getDiscordSessionResetMs(ex)
+
+      if (resetMs) {
+        waitMs = Math.max(0, resetMs - Date.now()) + 5000
+        console.log( `Discord session limit hit. Waiting until ${new Date(resetMs).toISOString()}` )
+      } else {
+        console.log(`Discord failed to start: ${ex?.message ?? ex}`)
+      }
+
+    }
+
+
+    if (!discordService.isStarted) {
+      setTimeout(async () => { await discordStartLoop() }, waitMs)
+    }
+
+
+    
+
+  }
+
+
   await startupTasks()
   // await gameSummaryLoop() 
   await indexerLoop()
   await mintPassLoop()
+  await discordStartLoop()
 
 
 
 
 
-  //Start discord bot
-  if (DISCORD_TOKEN && DISCORD_PLAY_CHANNEL_ID) {
-
-    console.log(`Starting discord service.`)
-
-    discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => {
-      await gameNotificationLoop()
-    })
-    
-  } else {
-        console.log(`Discord not configured. Skipping.`)
-  }
 
 
 

@@ -345,7 +345,7 @@ class DiscordService {
 
 
         await channel.send({
-            content: `⚾ ${winningTeamDisplay} vs ${losingTeamDisplay} by a score of ${winningRuns} to ${losingRuns}. [View recap](${gameUrl})`
+            content: `⚾ ${winningTeamDisplay} defeated ${losingTeamDisplay} by a score of ${winningRuns} to ${losingRuns}. [View recap](${gameUrl})`
         })
     }
 
@@ -361,6 +361,21 @@ class DiscordService {
             return `[${info.team.name}](${teamUrl})`
         }
     }
+
+
+
+    getDiscordSessionResetMs(error: unknown) {
+
+      const message = error instanceof Error ? error.message : String(error ?? "")
+      const match = message.match(/resets at ([0-9T:\-.]+Z)/i)
+
+      if (!match) return null
+
+      const resetMs = Date.parse(match[1])
+      return Number.isNaN(resetMs) ? null : resetMs
+      
+    }
+
 
     // async player(interaction) {
 
