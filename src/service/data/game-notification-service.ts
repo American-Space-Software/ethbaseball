@@ -30,7 +30,7 @@ class GameNotificationService {
 
     async processGameNotifications() {
 
-        const gameNotifications:GameNotifications[] = await this.getUpdatedSince(this.latestGameUpdateSentAt)
+        const gameNotifications:GameNotifications[] = await this.gameNotificationsRepository.getNotComplete(this.latestGameUpdateSentAt)
 
         if (gameNotifications?.length > 0) {
 
@@ -81,7 +81,9 @@ class GameNotificationService {
             )
 
             gameNotifications.updatesSent.discordEnded = true
+            gameNotifications.isComplete = true
             gameNotifications.changed("updatesSent", true)
+            gameNotifications.changed("isComplete", true)
 
             await this.gameNotificationsRepository.put(gameNotifications)
 
@@ -93,25 +95,15 @@ class GameNotificationService {
 
     }
 
-    async getUpdatedSince(date:Date, options?:any) : Promise<GameNotifications[]> {
-
-        let ids = await this.gameNotificationsRepository.getIdsUpdatedSince(date, options)
-        if (ids.length == 0) return []
-
-        let gns:GameNotifications[] = await this.gameNotificationsRepository.getByIds(ids, options)
-        
-        //Sort so it matches ids order
-        gns.sort(function(a,b) {
-            return ids.indexOf( a._id ) - ids.indexOf( b._id )
-        })
-
-        return gns
-
+    async getNotComplete(options?:any) {
+        return this.gameNotificationsRepository.getNotComplete(options)
     }
 
     async put(gn: GameNotifications, options?: any): Promise<GameNotifications> {
         return this.gameNotificationsRepository.put(gn, options)
     }
+
+
     
 }
 

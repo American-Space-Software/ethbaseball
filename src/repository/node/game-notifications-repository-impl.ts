@@ -78,6 +78,17 @@ class GameNotificationsRepositoryNodeImpl implements GameNotificationsRepository
 
     }
 
+    async getNotComplete(options?: any): Promise<GameNotifications[]> {
+        
+        const query = {
+            where: {
+                isComplete: false
+            }
+        }
+
+        return GameNotifications.findAll(Object.assign(query, options))
+    }
+
 
 }
 

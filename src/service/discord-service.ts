@@ -120,9 +120,16 @@ class DiscordService {
 
             let user:User = await this.validateUser(interaction)
 
-            let balance = await this.offChainEventService.getBalanceByPlayerIdAndContractType(ContractType.DIAMONDS, user._id)
+
+            let teams: Team[] = await this.teamService.getByUser(user)
+            let team = teams[0]
+
+            if (!team) throw new Error("Team not found.")
+
+
+            let diamondBalance = await this.offChainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
             
-            await interaction.reply({ content: `Balance: ${displayDiamonds(balance)}`, ephemeral: true });
+            await interaction.reply({ content: `Balance: ${displayDiamonds(diamondBalance)}`, ephemeral: true });
 
         } catch(ex:any) {
             await interaction.reply({ content: ex.message, ephemeral: true })
@@ -302,9 +309,6 @@ class DiscordService {
 
 
     }
-
-
-
 
     async notifyGameStarted(game: Game, away: { team: Team, user: User }, home: { team: Team, user: User }) {
 

@@ -197,9 +197,6 @@ let startEngine = async () => {
     setTimeout(async () => { await indexerLoop() }, SECONDS_BETWEEN_INDEXES*1000)
   }
 
-
-
-
   const startupTasks = async () => {
 
     //Make sure that players have percentile ratings. 
@@ -227,9 +224,9 @@ let startEngine = async () => {
 
       console.log(`Starting discord service.`)
 
-      await discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => {
-        await gameNotificationLoop()
-      })
+      await discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => { })
+
+      await gameNotificationLoop()
 
     } catch(ex:any) {
 
@@ -260,12 +257,6 @@ let startEngine = async () => {
   await indexerLoop()
   await mintPassLoop()
   await discordStartLoop()
-
-
-
-
-
-
 
 
   console.log(`

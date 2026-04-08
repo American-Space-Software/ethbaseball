@@ -969,7 +969,9 @@ n
 
     }
 
-    async createForUser(user:User, league:League, season:Season, financeSeason:FinanceSeason, options?:any) {
+    async createForUser(user:User, league:League, season:Season, options?:any) {
+
+        let financeSeason:FinanceSeason = this.financeService.getDefaultFinanceSeason()
 
         let team:Team = new Team()
         team._id = uuidv4()
@@ -998,10 +1000,10 @@ n
 
         await this.teamLeagueSeasonService.put(tls, options)
 
-        return {
-            team: team,
-            tls: tls
-        }
+
+        await this.fillAndValidateRoster(tls, [], season, undefined, true, options)
+
+
 
     }
 

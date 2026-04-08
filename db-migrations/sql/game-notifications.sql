@@ -6,6 +6,7 @@ CREATE TABLE `game_notifications` (
   `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `gameId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `updatesSent` json DEFAULT NULL,
+  `isComplete` tinyint(1) DEFAULT NULL,
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
 

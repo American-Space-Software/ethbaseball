@@ -11,6 +11,7 @@ interface GameNotificationsRepository {
     getByGame(game: Game, options?: any): Promise<GameNotifications>
 
     getIdsUpdatedSince(lastUpdated:Date, options?: any) : Promise<string[]>
+    getNotComplete(options?:any) : Promise<GameNotifications[]>
     getByIds(ids: string[], options?: any): Promise<GameNotifications[]>
 
 }

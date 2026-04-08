@@ -106,7 +106,8 @@ describe("GameNotificationsRepository", async () => {
             updatesSent: {
                 discordStarted: false,
                 discordEnded: false
-            }
+            },
+            isComplete: false
         })
 
         await repository.put(gn)
@@ -122,6 +123,19 @@ describe("GameNotificationsRepository", async () => {
 
     })
 
+    it("should get game notifications that are not complete", async () => {
+
+        let fetched = await repository.getNotComplete()
+
+        assert.equal(fetched?.length, 1)
+
+        
+
+    })
+
+
+
+
     it("should update game notifications", async () => {
 
         let gn: GameNotifications = await repository.get(id1)
@@ -131,6 +145,8 @@ describe("GameNotificationsRepository", async () => {
             discordEnded: false
         }
 
+        gn.isComplete = true
+
         await repository.put(gn)
 
         let fetched = await repository.get(id1)
@@ -138,6 +154,7 @@ describe("GameNotificationsRepository", async () => {
         assert.equal(fetched._id, id1)
         assert.equal(fetched.updatesSent?.discordStarted, true)
         assert.equal(fetched.updatesSent?.discordEnded, false)
+        assert.equal(fetched.isComplete, true)
 
     })
 

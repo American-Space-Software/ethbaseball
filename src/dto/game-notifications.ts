@@ -30,6 +30,9 @@ class GameNotifications extends Model {
     @Column(DataType.JSON)
     declare updatesSent?: GameUpdatesSent
 
+    @Column(DataType.BOOLEAN)
+    declare isComplete:boolean   
+
     @Column(DataType.DATE)
     declare lastUpdated?: Date
 

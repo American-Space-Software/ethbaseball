@@ -494,11 +494,8 @@ async function getContainer(command?:GetContainerCommand) {
                         let season:Season = await seasonService.getMostRecent(options)
                         let league:League = await leagueService.getByRank(1, options)
 
-                        let financeSeason = financeService.getDefaultFinanceSeason()
+                        await teamService.createForUser(existingUser, league, season, options)
 
-                        let teamResult = await teamService.createForUser(existingUser, league, season, financeSeason, options)
-
-                        await teamService.fillAndValidateRoster(teamResult.tls, [], season, undefined, true, options)
 
                     }
 
