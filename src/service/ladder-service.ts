@@ -310,7 +310,8 @@ class LadderService {
                 updatesSent: {
                     discordStarted: false,
                     discordEnded: false
-                }
+                },
+                isComplete: false
             })
 
             await this.gameNotificationsRepository.put(gn, options)
