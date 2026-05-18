@@ -97,6 +97,13 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
 
     }
 
+    async getByTeamSeasonId( teamSeasonId:TeamSeasonId, options?: any): Promise<TeamLeagueSeason> {
+
+        let queryResult = await this.getByTeamSeasonIds([teamSeasonId], options)
+
+        return queryResult[0]
+        
+    }
 
     async getByTeamSeasonIds( teamSeasonIds:TeamSeasonId[], options?: any): Promise<TeamLeagueSeason[]> {
 

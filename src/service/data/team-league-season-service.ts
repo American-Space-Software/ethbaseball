@@ -159,6 +159,10 @@ class TeamLeagueSeasonService {
         return this.teamLeagueSeasonRepository.listByUserAndSeason(user, season, options)
     }
 
+    async getByTeamSeasonId(tokenSeasonId:TeamSeasonId, options?: any): Promise<TeamLeagueSeason> {
+        return this.teamLeagueSeasonRepository.getByTeamSeasonId(tokenSeasonId, options)
+    }
+
     async getByTeamSeasonIds(tokenSeasonIds:TeamSeasonId[], options?: any): Promise<TeamLeagueSeason[]> {
         return this.teamLeagueSeasonRepository.getByTeamSeasonIds(tokenSeasonIds, options)
     }

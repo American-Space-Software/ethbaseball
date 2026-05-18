@@ -50,8 +50,11 @@ class LeagueController {
 
             return {
                 viewModel: viewModel,
-                discord: this.discord
+                discord: this.discord,
+                currentURL: routeTo.url,
+                setStartDate: () => this.universeWebService.setStartDate(currentStartDate, routeTo)
             }
+
         }, LeagueStandingsComponent)
 
     }

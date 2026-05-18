@@ -234,6 +234,9 @@
 
     $on('pageBeforeIn', async (e) => {
 
+        props.setStartDate()
+
+
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
             detail: { tabLink: "/players/", breadcrumbs:[
                 { text: "Home", path: "/"},

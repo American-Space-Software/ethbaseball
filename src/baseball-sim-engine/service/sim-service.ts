@@ -1,46 +1,64 @@
-import { BaseResult, Contact, DefenseCreditType, Handedness, HomeAway, OfficialPlayResult, OfficialRunnerResult, PitchCall, PitchType, PitchZone, PlayResult, Position, ShallowDeep, SwingResult, ThrowResult } from "./enums.js";
-import {  ContactTypeRollInput, Count, DefensiveCredit, FielderChance, Game, GamePlayer, HalfInning, HitResultCount, HitterChange, HittingRatings, InningEndingEvent, InZoneByCount, LeagueAverage, Lineup, MatchupHandedness, Pitch, PITCH_ENVIRONMENT_TARGETS, PitchCount, PitchEnvironmentTarget, PitcherChange, PitchLog, PitchRatings, PitchResultCount, Play, Player, PowerRollInput, RollChart, RotationPitcher, RunnerEvent, RunnerResult, RunnerThrowCommand, Score, ShallowDeepChance, SimPitchCommand, SimPitchResult, StartGameCommand, StolenBaseByCount, Team, TeamInfo, ThrowRoll, UpcomingMatchup } from "./interfaces.js";
-import { RollChartService } from "./roll-chart-service.js";
+import { asNumber, clamp } from "../util.js"
+import { HomeAway, Position, Handedness, PitchType, PitchCall, SwingResult, PlayResult, Contact, ShallowDeep, OfficialPlayResult, BaseResult, DefenseCreditType, OfficialRunnerResult, PitchZone, ThrowResult } from "./enums.js"
+import { StartGameCommand, GamePlayer, MatchupHandedness, Score, RunnerResult, DefensiveCredit, PitchLog, HalfInning, UpcomingMatchup, RunnerEvent, HitterChange, PitcherChange, SimPitchCommand, SimPitchResult, InningEndingEvent, Pitch, RollChart, Game, HitResultCount, HittingRatings,  Lineup, PitchCount, PitchRatings, PitchResultCount, Play, Player, RotationPitcher, RunnerThrowCommand, StolenBaseByCount, Team, TeamInfo, ThrowRoll, PitchEnvironmentTarget, ContactQuality, PitchQuality } from "./interfaces.js"
+import { RollChartService } from "./roll-chart-service.js"
 
 
 const APPLY_PLAYER_CHANGES = true
 const PLAYER_CHANGE_SCALE = 0.75
 const STANDARD_INNINGS = 9
+const AVG_PITCH_QUALITY = 50
 
 const MIN_CHANGE = -.5
 const MAX_CHANGE = .5
 
+const PITCH_QUALITY_WEIGHTS = {
+    velocity: 33.3,
+    movement: 33.4,
+    control: 33.3
+} 
 
-const DEFAULT_SEASON = 2025
+const DEFAULT_FULL_PITCH_QUALITY_BONUS = 500
+const DEFAULT_FULL_TEAM_DEFENSE_BONUS = 75
+const DEFAULT_FULL_FIELDER_DEFENSE_BONUS = 75
+
+
 
 class SimService {
 
-    private gameInfo:GameInfo    
-    private gamePlayers:GamePlayers
-
-    private sim:Sim
-    private simRolls:SimRolls  
-    
-    private runnerActions:RunnerActions
-    private matchup:Matchup
-
-    
     constructor(
-        private rollChartService: RollChartService
-    ) {
-        this.simRolls = new SimRolls(rollChartService)
-        this.gamePlayers = new GamePlayers(rollChartService)
-        this.runnerActions = new RunnerActions(rollChartService, this.simRolls)
-        this.matchup = new Matchup(this.gamePlayers)
-        this.gameInfo = new GameInfo(this.gamePlayers)
-        this.sim = new Sim(rollChartService, this.simRolls, this.matchup, this.runnerActions)
+        private rollChartService:RollChartService,
+        private gameRolls:SimRolls,
+        private runnerActions:RunnerActions,
+        private gameInfo:GameInfo,
+        private defaultPitchEnvironmentTarget:PitchEnvironmentTarget
+    ) {}
+
+    public initGame(game:Game) {
+
+        game.currentInning = 1
+        game.isTopInning = true
+        game.isStarted = false
+        game.isComplete = false
+        game.isFinished = false
+        game.count = {
+            balls: 0,
+            strikes: 0,
+            outs: 0
+        }
+
+        game.score = {
+            away: 0,
+            home: 0
+        }
+
+        game.halfInnings = []
+
+        game.playIndex = 0
+
     }
 
-    initGame(game:Game) {
-        return this.sim.initGame(game)
-    }
-
-    startGame(command:StartGameCommand) : Game {
+    public startGame(command:StartGameCommand) : Game {
 
         let game = command.game
 
@@ -49,10 +67,14 @@ class SimService {
         GameInfo.validateGameLineup(command.homeLineup, command.homeStartingPitcher)
 
         //Use what gets passed in or just use default config
-        game.leagueAverages = command.leagueAverages ?? this.pitchEnvironmentTargetToLeagueAverage(this.getPitchEnvironmentTargetForSeason(DEFAULT_SEASON))
+        game.pitchEnvironmentTarget = JSON.parse(JSON.stringify(command.pitchEnvironmentTarget ?? this.defaultPitchEnvironmentTarget))
 
-        game.away = this.gameInfo.buildTeamInfoFromTeam(game.leagueAverages, command.away, command.awayLineup,  command.awayPlayers, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1, command.awayTeamOptions)            
-        game.home = this.gameInfo.buildTeamInfoFromTeam(game.leagueAverages, command.home, command.homeLineup, command.homePlayers, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length, command.homeTeamOptions)
+        if (!game.pitchEnvironmentTarget) {
+            throw new Error("No league averages provided to start game.")
+        }
+
+        game.away = this.gameInfo.buildTeamInfoFromTeam(game.pitchEnvironmentTarget, command.away, command.awayLineup,  command.awayPlayers, command.awayStartingPitcher, command.away.colors.color1, command.away.colors.color2, HomeAway.AWAY, 1, command.awayTeamOptions)            
+        game.home = this.gameInfo.buildTeamInfoFromTeam(game.pitchEnvironmentTarget, command.home, command.homeLineup, command.homePlayers, command.homeStartingPitcher, command.home.colors.color1, command.home.colors.color2, HomeAway.HOME, 1 + command.awayPlayers.length, command.homeTeamOptions)
 
         game.startDate = command.date
         game.count = {
@@ -66,7 +88,7 @@ class SimService {
         return game 
     }
 
-    finishGame(game:Game) : void {
+    public finishGame(game:Game) : void {
 
         let homeWin = game.score.home > game.score.away
 
@@ -105,166 +127,68 @@ class SimService {
         //Mark game as finished
         game.isFinished = true
 
-    }
+    }    
 
-    buildLeagueAverageRatings(laRating: number) {
-        return {
-            hittingRatings: {
-                speed: laRating,
-                steals: laRating,
-                arm: laRating,
-                defense: laRating,
-                vsL: {
-                    contact: laRating,
-                    gapPower: laRating,
-                    homerunPower: laRating,
-                    plateDiscipline:  laRating
-                },
-                vsR: {
-                    contact:  laRating,
-                    gapPower:  laRating,
-                    homerunPower:  laRating,
-                    plateDiscipline:  laRating
-                }
-            },
+    public simPitch(game:Game, rng:any) {
 
-            pitchRatings: {
-                power:  laRating,
-                vsL: {
-                    control:  laRating,
-                    movement:  laRating
-                },
-                vsR: {
-                    control:  laRating,
-                    movement:  laRating
-                }
-            }
+        let command:SimPitchCommand = this.createSimPitchCommand(game, rng)
 
-        }
-    }
 
-    pitchEnvironmentTargetToLeagueAverage(target: PitchEnvironmentTarget): LeagueAverage {
+        if (!command.play) {
 
-        return {
+            let runner1B = command.offense.players.find( p => p._id == command.offense.runner1BId)
+            let runner2B = command.offense.players.find( p => p._id == command.offense.runner2BId)
+            let runner3B = command.offense.players.find( p => p._id == command.offense.runner3BId)
 
-            ...this.buildLeagueAverageRatings(100),
+            command.play = this.createPlay(
+                game.playIndex, 
+                command.hitter, 
+                command.pitcher, 
+                command.catcher, 
+                runner1B, 
+                runner2B, 
+                runner3B, 
+                command.matchupHandedness, 
+                game.count.outs, 
+                game.score, 
+                game.currentInning, 
+                game.isTopInning
+          )
 
-            foulRate: target.pitch.foulContactPercent,
+          //Add play to half inning
+          command.halfInning.plays.push(command.play)
 
-            zoneSwingContactRate: target.swing.inZoneContactPercent,
-            chaseSwingContactRate: target.swing.outZoneContactPercent,
-
-            pitchQuality: 50,
-
-            contactTypeRollInput: target.battedBall.contactRollInput,
-
-            powerRollInput: target.battedBall.powerRollInput,
-
-            fielderChanceL: target.fielderChance.vsL,
-            fielderChanceR: target.fielderChance.vsR,
-
-            shallowDeepChance: target.fielderChance.shallowDeep,
-
-            inZoneByCount: target.pitch.inZoneByCount,
-
-            steal: target.steal,
-
-            tuning: target.tuning
+          //Just add the play.
+          return
 
         }
-    }
 
-    getPitchEnvironmentTargetForSeason(season: number): PitchEnvironmentTarget {
 
-        const target = PITCH_ENVIRONMENT_TARGETS[season]
+        let result:SimPitchResult
 
-        if (!target) {
-            throw new Error(`No PitchEnvironmentTarget found for season ${season}`)
+        let continueAtBat = true
+        let isInningEndingEvent = false
+
+        //Do matchup
+        try {
+            result = this.simPitchRolls(command, command.play.pitchLog.pitches?.length || 0)
+            continueAtBat = result.continueAtBat
+        } catch(ex) {
+            //Ignore inning ending events errors.
+            if (!(ex instanceof InningEndingEvent)) throw ex
+            continueAtBat = false
+            isInningEndingEvent = true
         }
 
-        return target
-    }
 
-
-
-    /*
-    Passthrough/public stuff for tests.
-
-    */
-
-    simPitch(game:Game, rng:any) {
-        return this.sim.simPitch(game, rng)
-    }
-
-    buildTeamInfoFromPlayers (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) {
-        return this.gameInfo.buildTeamInfoFromPlayers(leagueAverage, name, teamId, players, color1, color2, startingId)
-    }
-
-    getThrowResult(gameRNG, overallSafeChance:number) : ThrowRoll {
-        return this.simRolls.getThrowResult(gameRNG, overallSafeChance)
-    }
-
-    getRunnerEvents(gameRNG, runnerResult:RunnerResult, halfInningRunnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], leagueAverages: LeagueAverage, playResult: PlayResult, 
-                    contact: Contact|undefined, shallowDeep: ShallowDeep|undefined, hitter:GamePlayer, fielderPlayer: GamePlayer|undefined, 
-                    runner1B:GamePlayer|undefined, runner2B:GamePlayer|undefined, runner3B:GamePlayer|undefined, offense:TeamInfo, defense:TeamInfo, pitcher:GamePlayer, pitchIndex:number) : RunnerEvent[] {
-
-                    return this.runnerActions.getRunnerEvents(gameRNG, runnerResult, halfInningRunnerEvents, defensiveCredits, leagueAverages, playResult, contact, shallowDeep, hitter, fielderPlayer, runner1B, runner2B, runner3B, offense, defense, pitcher, pitchIndex)
-    }
-
-    getChanceRunnerSafe(leagueAverages: LeagueAverage, armRating:number, runnerSpeed:number, defaultSuccess:number) {
-        return this.runnerActions.getChanceRunnerSafe(leagueAverages, armRating, runnerSpeed, defaultSuccess)
-    }
-    
-    getUpcomingMatchup(game:Game) : UpcomingMatchup {
-        return this.sim.getUpcomingMatchup(game)
-    }
-
-    //Exposed in tests.
-    initGamePlayers(leagueAverage:LeagueAverage, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
-        return this.gamePlayers.initGamePlayers(leagueAverage, players, startingPitcher, teamId, color1, color2, startingId)
-    }
-    
-
-}
-
-const _getAverage = (array: number[]) => {
-    return array.reduce((a, b) => a + b) / array.length
-}
-
-class Sim {
-
-    constructor(
-        private rollChartService:RollChartService,
-        private gameRolls:SimRolls,
-        private matchup:Matchup,
-        private runnerActions:RunnerActions
-    ) {}
-
-    initGame(game:Game) {
-
-        game.currentInning = 1
-        game.isTopInning = true
-        game.isStarted = false
-        game.isComplete = false
-        game.isFinished = false
-        game.count = {
-            balls: 0,
-            strikes: 0,
-            outs: 0
+        if (!continueAtBat) {
+            this.finishPlay(game, command, isInningEndingEvent)
         }
-
-        game.score = {
-            away: 0,
-            home: 0
-        }
-
-        game.halfInnings = []
-
-        game.playIndex = 0
+        
 
     }
 
-    createPlay(playIndex:number,
+    private createPlay(playIndex:number,
                hitter:GamePlayer, 
                pitcher:GamePlayer, 
                catcher:GamePlayer, 
@@ -342,7 +266,7 @@ class Sim {
 
     }
 
-    createSimPitchCommand(game:Game, rng:any) {
+    private createSimPitchCommand(game:Game, rng:any) : SimPitchCommand {
         
         let halfInning:HalfInning = game.halfInnings.find(i => i.num == game.currentInning && i.top == game.isTopInning)
 
@@ -404,7 +328,8 @@ class Sim {
 
             halfInningRunnerEvents:halfInningRunnerEvents,
             halfInning: halfInning,
-            leagueAverages: game.leagueAverages,
+
+            pitchEnvironmentTarget: game.pitchEnvironmentTarget,
 
             matchupHandedness:matchupHandedness,
 
@@ -413,147 +338,140 @@ class Sim {
         }
     }
 
-    simPitch(game:Game, rng:any) {
-
-        let command:SimPitchCommand = this.createSimPitchCommand(game, rng)
-
-
-        if (!command.play) {
-
-            let runner1B = command.offense.players.find( p => p._id == command.offense.runner1BId)
-            let runner2B = command.offense.players.find( p => p._id == command.offense.runner2BId)
-            let runner3B = command.offense.players.find( p => p._id == command.offense.runner3BId)
-
-            command.play = this.createPlay(
-                game.playIndex, 
-                command.hitter, 
-                command.pitcher, 
-                command.catcher, 
-                runner1B, 
-                runner2B, 
-                runner3B, 
-                command.matchupHandedness, 
-                game.count.outs, 
-                game.score, 
-                game.currentInning, 
-                game.isTopInning
-          )
-
-          //Add play to half inning
-          command.halfInning.plays.push(command.play)
-
-          //Just add the play.
-          return
-
-        }
-
-
-        let result:SimPitchResult
-
-        let continueAtBat = true
-        let isInningEndingEvent = false
-
-        //Do matchup
-        try {
-            result = this.simPitchRolls(command, command.play.pitchLog.pitches?.length || 0)
-            continueAtBat = result.continueAtBat
-        } catch(ex) {
-            //Ignore inning ending events errors.
-            if (!(ex instanceof InningEndingEvent)) throw ex
-            continueAtBat = false
-            isInningEndingEvent = true
-        }
-
-
-        if (!continueAtBat) {
-            this.finishPlay(game, command, isInningEndingEvent)
-        }
-        
-
-    }
-
-    simPitchRolls(command: SimPitchCommand, pitchIndex: number): SimPitchResult {
-
+    private simPitchRolls(command: SimPitchCommand, pitchIndex: number): SimPitchResult {
         const pitches = command.pitcher.pitchRatings.pitches
         const weights = [50, 25, 15, 5, 5]
 
         const pitchType: PitchType = Rolls.weightedRandom(command.rng, pitches, weights.slice(0, pitches.length))
+        const hitterPitchGuess: PitchType = pitches[Rolls.getRoll(command.rng, 0, pitches.length - 1)]
+        const guessPitch = hitterPitchGuess === pitchType
 
-        const hitterPitchGuess: PitchType =
-            command.pitcher.pitchRatings.pitches[Rolls.getRoll(command.rng, 0, pitches.length - 1)]
-        const guessPitch: boolean = hitterPitchGuess == pitchType
+        const sampleMoment = (stat: any): number => {
+            const avg = asNumber(stat?.avg)
+            const sd = _getStdDev(stat)
+            if (!Number.isFinite(sd) || sd <= 0) return avg
+            return avg + Rolls.getRollUnrounded(command.rng, -sd, sd)
+        }
 
-        const powerQuality = this.gameRolls.getPowerQuality(command.rng, command.pitcherChange.powerChange)
-        const locationQuality = this.gameRolls.getLocationQuality(command.rng, command.pitcherChange.controlChange)
-        const movementQuality = this.gameRolls.getMovementQuality(command.rng, command.pitcherChange.movementChange)
+        const pitcherPhysics = command.pitchEnvironmentTarget.importReference.pitcher.physics
+        const pitchTypePhysics = pitcherPhysics.byPitchType?.[pitchType]
 
-        const pitchQuality = Pitching.getPitchQuality(powerQuality, locationQuality, movementQuality)
+        const leagueVelocity = pitchTypePhysics
+            ? sampleMoment({ count: pitchTypePhysics.count, total: pitchTypePhysics.totalVelocity, totalSquared: pitchTypePhysics.totalVelocitySquared, avg: pitchTypePhysics.avgVelocity })
+            : sampleMoment(pitcherPhysics.velocity)
 
-        let inZoneRate = command.leagueAverages.inZoneByCount.find(
+        const leagueHorizontalBreak = pitchTypePhysics
+            ? sampleMoment({ count: pitchTypePhysics.count, total: pitchTypePhysics.totalHorizontalBreak, totalSquared: pitchTypePhysics.totalHorizontalBreakSquared, avg: pitchTypePhysics.avgHorizontalBreak })
+            : sampleMoment(pitcherPhysics.horizontalBreak)
+
+        const leagueVerticalBreak = pitchTypePhysics
+            ? sampleMoment({ count: pitchTypePhysics.count, total: pitchTypePhysics.totalVerticalBreak, totalSquared: pitchTypePhysics.totalVerticalBreakSquared, avg: pitchTypePhysics.avgVerticalBreak })
+            : sampleMoment(pitcherPhysics.verticalBreak)
+
+        const velocityStdDev = _getStdDev(pitcherPhysics.velocity)
+        const horizontalBreakStdDev = _getStdDev(pitcherPhysics.horizontalBreak)
+        const verticalBreakStdDev = _getStdDev(pitcherPhysics.verticalBreak)
+
+        const handedPitchRatings = command.matchupHandedness.hits === Handedness.L
+            ? command.pitcher.pitchRatings.vsL
+            : command.pitcher.pitchRatings.vsR
+
+        const powerChange = clamp(PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, command.pitcher.pitchRatings.power), MIN_CHANGE, MAX_CHANGE)
+        const movementChange = clamp(PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, handedPitchRatings.movement), MIN_CHANGE, MAX_CHANGE)
+        const controlChange = clamp(PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, handedPitchRatings.control), MIN_CHANGE, MAX_CHANGE)
+
+        const velocity = Math.max(0, leagueVelocity + (velocityStdDev * powerChange))
+        const horizontalBreak = leagueHorizontalBreak + (horizontalBreakStdDev * movementChange)
+        const verticalBreak = leagueVerticalBreak + (verticalBreakStdDev * movementChange)
+
+        const velocityWeight = Math.max(0, asNumber(PITCH_QUALITY_WEIGHTS.velocity))
+        const movementWeight = Math.max(0, asNumber(PITCH_QUALITY_WEIGHTS.movement))
+        const controlWeight = Math.max(0, asNumber(PITCH_QUALITY_WEIGHTS.control))
+        const weightTotal = velocityWeight + movementWeight + controlWeight
+
+        if (weightTotal <= 0) {
+            throw new Error("Pitch quality weights must total more than zero.")
+        }
+
+        const pitchQualityChange = clamp(
+            (powerChange * (velocityWeight / weightTotal)) +
+            (movementChange * (movementWeight / weightTotal)) +
+            (controlChange * (controlWeight / weightTotal)),
+            MIN_CHANGE,
+            MAX_CHANGE
+        )
+
+        const powQ = clamp(Math.round(50 + (powerChange * 99)), 0, 99)
+        const movQ = clamp(Math.round(50 + (movementChange * 99)), 0, 99)
+        const locQ = clamp(Math.round(50 + (controlChange * 99)), 0, 99)
+        const overallQuality = clamp(Math.round(50 + (pitchQualityChange * 99)), 0, 99)
+
+        const countInZoneRate = command.pitchEnvironmentTarget.pitch.inZoneByCount.find(
             r => r.balls === command.play.pitchLog.count.balls && r.strikes === command.play.pitchLog.count.strikes
         )?.inZone
 
-        const inZone = this.gameRolls.isInZone(command.rng, locationQuality, inZoneRate)
+        const walkRateScale = clamp(Number(command.pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.swing?.walkRateScale ?? 0), -1, 1)
+        const inZoneRate = clamp(Number(countInZoneRate ?? command.pitchEnvironmentTarget.pitch.inZonePercent ?? 0) - (walkRateScale * 100), 0, 100)
+        const inZone = this.gameRolls.isInZone(command.rng, locQ, inZoneRate)
 
         const intentZone = this.gameRolls.getIntentZone(command.rng)
-        const actualZone = Pitching.getActualZone(intentZone, locationQuality)
+        const actualZone = Pitching.getActualZone(intentZone, locQ)
 
         const pitch: Pitch = {
             intentZone,
             actualZone,
             type: pitchType,
-            quality: pitchQuality,
-            locQ: locationQuality,
-            movQ: movementQuality,
-            powQ: powerQuality,
+            quality: {
+                velocity,
+                horizontalBreak,
+                verticalBreak
+            },
+            overallQuality,
+            powQ,
+            movQ,
+            locQ,
             swing: false,
             con: false,
             result: inZone ? PitchCall.STRIKE : PitchCall.BALL,
             inZone,
             guess: guessPitch,
             isWP: false,
-            isPB: false,
+            isPB: false
         }
 
-        const anomaly = this.getPitchAnomalyResult(command.rng, locationQuality)
+        const anomaly = this.getPitchAnomalyResult(command.rng, locQ, command.pitchEnvironmentTarget)
 
         if (anomaly) {
-
             pitch.inZone = false
             pitch.result = anomaly.result
             pitch.isWP = anomaly.isWP ?? false
             pitch.isPB = anomaly.isPB ?? false
-
         } else {
-
             const swingResult = this.gameRolls.getSwingResult(
                 command.rng,
                 command.hitterChange,
-                command.leagueAverages,
-                inZone,
-                pitchQuality,
+                command.pitchEnvironmentTarget,
+                pitch.inZone,
+                pitch.overallQuality,
                 guessPitch,
                 command.play.pitchLog.count
             )
 
-            pitch.swing = (swingResult != SwingResult.NO_SWING)
-            pitch.con = (swingResult == SwingResult.FAIR || swingResult == SwingResult.FOUL)
+            pitch.swing = swingResult !== SwingResult.NO_SWING
+            pitch.con = swingResult === SwingResult.FAIR || swingResult === SwingResult.FOUL
 
             switch (swingResult) {
                 case SwingResult.FAIR:
                     pitch.result = PitchCall.IN_PLAY
                     break
-
                 case SwingResult.FOUL:
                     pitch.result = PitchCall.FOUL
                     break
-
                 case SwingResult.STRIKE:
                     pitch.result = PitchCall.STRIKE
                     break
-
                 case SwingResult.NO_SWING:
-                    pitch.result = inZone ? PitchCall.STRIKE : PitchCall.BALL
+                    pitch.result = pitch.inZone ? PitchCall.STRIKE : PitchCall.BALL
                     break
             }
         }
@@ -565,15 +483,12 @@ class Sim {
                     command.play.pitchLog.count.strikes++
                 }
                 break
-
             case PitchCall.STRIKE:
                 command.play.pitchLog.count.strikes++
                 break
-
             case PitchCall.BALL:
                 command.play.pitchLog.count.balls++
                 break
-
             case PitchCall.HBP:
             case PitchCall.IN_PLAY:
                 break
@@ -584,26 +499,28 @@ class Sim {
 
         let continueAtBat = true
 
-        if (pitch.result == PitchCall.HBP) {
+        if (pitch.result === PitchCall.HBP) {
             command.play.result = PlayResult.HIT_BY_PITCH
             continueAtBat = false
         }
 
-        if (pitch.result == PitchCall.IN_PLAY) continueAtBat = false
+        if (pitch.result === PitchCall.IN_PLAY) {
+            continueAtBat = false
+        }
 
-        if (command.play.pitchLog.count.balls == 4) {
+        if (command.play.pitchLog.count.balls === 4) {
             command.play.result = PlayResult.BB
             continueAtBat = false
         }
 
-        if (command.play.pitchLog.count.strikes == 3) {
+        if (command.play.pitchLog.count.strikes === 3) {
             command.play.result = PlayResult.STRIKEOUT
             continueAtBat = false
         }
 
         const result: SimPitchResult = {
             continueAtBat,
-            pitch,
+            pitch
         }
 
         this.runnerActions.generateRunnerEventsFromPitch(command, pitchIndex, result)
@@ -616,147 +533,91 @@ class Sim {
         return result
     }
 
-    private getPitchAnomalyResult(  gameRNG, locationQuality: number ): { result: PitchCall, isWP?: boolean, isPB?: boolean } | null {
+    private getPitchAnomalyResult(gameRNG: () => number, locationQuality: number, pitchEnvironmentTarget: PitchEnvironmentTarget): { result: PitchCall, isWP?: boolean, isPB?: boolean } | null {
+        const baselineHbpPerPitch = pitchEnvironmentTarget.outcome.hbpPercent / pitchEnvironmentTarget.pitch.pitchesPerPA
+        const locationBadness = Math.max(0, (50 - locationQuality) / 50)
+        const hbpRoll = Rolls.getRollUnrounded(gameRNG, 0, 1)
 
-        // Only truly bad location can trigger anomalies
-        if (locationQuality >= 5) return null
-
-        const badness = (5 - locationQuality) / 5
-        const rareRoll = Rolls.getRollUnrounded(gameRNG, 0, 1)
-
-        if (locationQuality < 0.5 && rareRoll < 0.01 * badness) {
-            return { result: PitchCall.BALL, isPB: true }
-        }
-
-        if (rareRoll < 0.08 * badness) {
+        if (hbpRoll < baselineHbpPerPitch * (1 + locationBadness)) {
             return { result: PitchCall.HBP }
         }
 
-        if (rareRoll < 0.18 * badness) {
+        if (locationQuality >= 5) return null
+
+        const extremeBadness = (5 - locationQuality) / 5
+        const anomalyRoll = Rolls.getRollUnrounded(gameRNG, 0, 1)
+
+        if (locationQuality < 0.5 && anomalyRoll < 0.01 * extremeBadness) {
+            return { result: PitchCall.BALL, isPB: true }
+        }
+
+        if (anomalyRoll < 0.10 * extremeBadness) {
             return { result: PitchCall.BALL, isWP: true }
         }
 
         return null
     }
 
-    finishPlay(game:Game, command:SimPitchCommand, isInningEndingEvent:boolean) {
-
-        let fielderPlayer:GamePlayer
-
-        let ballInPlay:Pitch = command.play.pitchLog.pitches.find(p => p.result == PitchCall.IN_PLAY)
-
+    private finishPlay(game:Game, command:SimPitchCommand, isInningEndingEvent:boolean) {
+        let fielderPlayer: GamePlayer | undefined
         let isFieldingError = false
 
+        const ballInPlay = command.play.pitchLog.pitches.find(p => p.result == PitchCall.IN_PLAY)
+
         if (!isInningEndingEvent) {
-            
             if (ballInPlay) {
+                const pitch = ballInPlay
+                const pitchQualityChange = PlayerChange.getChange(AVG_PITCH_QUALITY, pitch.overallQuality)
 
-                //In play
-                let pitch = ballInPlay
+                command.play.result = this.getTunedMatchupPowerResult(command)
+                command.play.contact = this.getMatchupContactForPlayResult(command, command.play.result)
 
-                //How much better than average?
-                let pitchQualityChange = PlayerChange.getChange(command.leagueAverages.pitchQuality, pitch.quality)
+                const hitQuality = this.gameRolls.getHitQuality(
+                    command.rng,
+                    command.pitchEnvironmentTarget,
+                    pitchQualityChange,
+                    pitch.guess,
+                    command.play.contact,
+                    command.play.result
+                )
 
-                let contactRollChart:RollChart = this.rollChartService.getMatchupContactRollChart(command.leagueAverages, command.hitter.hittingRatings.contactProfile, command.pitcher.pitchRatings.contactProfile, APPLY_PLAYER_CHANGES)
+                const fieldingResult = this.pickFielderFromLocation(
+                    command,
+                    command.play.contact,
+                    hitQuality
+                )
 
-                const pickFielder = (contact:Contact) => {
+                command.play.fielder = fieldingResult.fielder
+                command.play.shallowDeep = fieldingResult.shallowDeep
+                fielderPlayer = fieldingResult.fielderPlayer
 
-                    let ignoreList = []
-                    
-                    switch(contact) {
-                        case Contact.LINE_DRIVE:
-                            //No line drives to the catcher. 
-                            ignoreList.push(Position.CATCHER)
-                            break
-                        
-                    }
+                command.play.result = this.applyDefenseToPlayResult(
+                    command,
+                    command.play.result,
+                    fielderPlayer
+                )
 
-                    //Who did it get hit towards?
-                    fielderPlayer = undefined
+                pitch.contactQuality = hitQuality
+                pitch.overallContactQuality = clamp(Math.round((this.getExpectedBasesForPlayResult(command.play.result) / 4) * 999), 0, 999)
 
-                    command.play.fielder = this.gameRolls.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
-
-                    //If we match on the ignore list get fielders until we don't.
-                    while (ignoreList.includes(command.play.fielder)) {
-                        command.play.fielder = this.gameRolls.getFielder(command.rng, command.leagueAverages, command.play.matchupHandedness.hits)
-                    }
-
-                    fielderPlayer = command.defense.players.find(p => p.currentPosition == command.play.fielder)
-
-
-                }
-
-                let hitQuality:number
-
-                //What kind of contact? 
-                command.play.contact = contactRollChart.entries.get(Rolls.getRoll(command.rng, 0, 99)) as Contact
-
-                pickFielder(command.play.contact)
-
-                //Calculate team defense. We're going to use this overall average to simulate being slightly better or worse at positioning.
-                let teamDefenseChange:number = PlayerChange.getChange(command.leagueAverages.hittingRatings.defense, GameInfo.getTeamDefense(command.defense))
-                let fielderDefenseChange:number = PlayerChange.getChange(command.leagueAverages.hittingRatings.defense, fielderPlayer.hittingRatings.defense)
-
-
-                let powerRollChart:RollChart = this.rollChartService.getMatchupPowerRollChart(command.leagueAverages, command.hitterChange, command.pitcherChange, APPLY_PLAYER_CHANGES)
-
-
-                //Was it high quality contact? 1-1000
-                hitQuality = this.gameRolls.getHitQuality(command.rng, command.leagueAverages, pitchQualityChange, teamDefenseChange, fielderDefenseChange, command.play.contact, pitch.guess, powerRollChart)
-
-
-                //O, 1B, 2B, 3B, or HR
-                command.play.result = powerRollChart.entries.get(hitQuality) as PlayResult
-
-                //No pop up/line drive hits to IF. 
-                while (AtBatInfo.isInAir(command.play.contact) && !AtBatInfo.isToOF(command.play.fielder) && command.play.result != PlayResult.OUT) {
-                    pickFielder(command.play.contact)
-                }
-
-                //No ground ball outs to the OF. Redirect to infielder.
-                while (command.play.contact == Contact.GROUNDBALL && AtBatInfo.isToOF(command.play.fielder) && command.play.result == PlayResult.OUT) {
-                    pickFielder(command.play.contact)
-                }
-
-                //No doubles or triples to infielders
-                while ( (command.play.result == PlayResult.DOUBLE || command.play.result == PlayResult.TRIPLE) && AtBatInfo.isToInfielder(command.play.fielder)) {
-                    pickFielder(command.play.contact)
-                }
-
-
-                if (!fielderPlayer) {
-                   throw new Error(`No fielder found at position ${command.play.fielder}`)
-                }
-
-                if (AtBatInfo.isToOF(command.play.fielder)) {
-                    command.play.shallowDeep = this.gameRolls.getShallowDeep(command.rng, command.leagueAverages)
-                } 
-
-                if (command.play.result == PlayResult.HR) {
-                    if (command.play.contact == Contact.GROUNDBALL) {
-                        command.play.contact = hitQuality > 70 ? Contact.LINE_DRIVE : Contact.FLY_BALL
-                    }
-
+                if (command.play.result === PlayResult.HR) {
                     command.play.shallowDeep = ShallowDeep.DEEP
-                } 
-
-                if (command.play.result == PlayResult.TRIPLE) {
-                    command.play.shallowDeep = ShallowDeep.DEEP //Triples always deep for now.
-                } 
-
-            } else {
-
-                //If the ball isn't in play let's make sure it's a legit reason.
-                if (command.play.result != PlayResult.STRIKEOUT && command.play.result != PlayResult.BB &&  command.play.result != PlayResult.HIT_BY_PITCH && !isInningEndingEvent) {
-                    throw new Error("Error with pitchlog")
                 }
 
+                if (command.play.result === PlayResult.TRIPLE && AtBatInfo.isToOF(command.play.fielder)) {
+                    command.play.shallowDeep = ShallowDeep.DEEP
+                }
+            } else if (
+                command.play.result != PlayResult.STRIKEOUT &&
+                command.play.result != PlayResult.BB &&
+                command.play.result != PlayResult.HIT_BY_PITCH
+            ) {
+                throw new Error("Error with pitchlog")
             }
 
-            //Players could have moved. Grab the correct base runners.
-            let runner1B: GamePlayer = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
-            let runner2B: GamePlayer = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
-            let runner3B: GamePlayer = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
+            const runner1B: GamePlayer = command.offense.players.find(p => p._id == command.play.runner.result.end.first)
+            const runner2B: GamePlayer = command.offense.players.find(p => p._id == command.play.runner.result.end.second)
+            const runner3B: GamePlayer = command.offense.players.find(p => p._id == command.play.runner.result.end.third)
 
             if (command.play.runner.result.end.first && !runner1B) {
                 throw new Error("Missing 1B runner.")
@@ -770,99 +631,116 @@ class Sim {
                 throw new Error("Missing 3B runner.")
             }
 
-            //Add in-play runner events
-            let inPlayRunnerEvents: RunnerEvent[] = this.runnerActions.getRunnerEvents(command.rng, command.play.runner.result.end, command.halfInningRunnerEvents, command.play.credits, 
-                                command.leagueAverages, command.play.result, command.play.contact, command.play.shallowDeep, command.hitter, fielderPlayer, runner1B, runner2B, runner3B, 
-                                command.offense, command.defense, command.pitcher, command.play.pitchLog.count.pitches - 1)
+            const inPlayRunnerEvents: RunnerEvent[] = this.runnerActions.getRunnerEvents(
+                command.rng,
+                command.play.runner.result.end,
+                command.halfInningRunnerEvents,
+                command.play.credits,
+                command.pitchEnvironmentTarget,
+                command.play.result,
+                command.play.contact,
+                command.play.shallowDeep,
+                command.hitter,
+                fielderPlayer,
+                runner1B,
+                runner2B,
+                runner3B,
+                command.offense,
+                command.defense,
+                command.pitcher,
+                command.play.pitchLog.count.pitches - 1
+            )
 
-
-            isFieldingError = inPlayRunnerEvents.filter( re => re.isError)?.length > 0
+            isFieldingError = inPlayRunnerEvents.filter(re => re.isError)?.length > 0
 
             command.play.runner.events.push(...inPlayRunnerEvents)
-
         }
 
-        
         this.runnerActions.validateRunnerResult(command.play.runner.result.end)
 
-        //If playResult was OUT and there was an error change playResult to ERROR.
-        if (command.play.result == PlayResult.OUT && isFieldingError) {
+        if (command.play.result === PlayResult.OUT && isFieldingError) {
             command.play.result = PlayResult.ERROR
         }
 
-        command.play.officialPlayResult = this.getOfficialPlayResult(command.play.result, command.play.contact, command.play.shallowDeep, command.play.fielder,command.play.runner.events)
+        command.play.officialPlayResult = this.getOfficialPlayResult(
+            command.play.result,
+            command.play.contact,
+            command.play.shallowDeep,
+            command.play.fielder,
+            command.play.runner.events
+        )
 
         command.play.fielderId = fielderPlayer?._id
 
+        const runner1B: GamePlayer = command.offense.players.find(p => p._id == command.play.runner.result.end.first)
+        const runner2B: GamePlayer = command.offense.players.find(p => p._id == command.play.runner.result.end.second)
+        const runner3B: GamePlayer = command.offense.players.find(p => p._id == command.play.runner.result.end.third)
 
+        LogResult.logPlayResults(
+            command.offense,
+            command.defense,
+            command.hitter,
+            command.pitcher,
+            runner1B?._id,
+            runner2B?._id,
+            runner3B?._id,
+            command.play.credits,
+            command.play.runner.events,
+            command.play.contact,
+            command.play.officialPlayResult,
+            command.play.result,
+            command.play.pitchLog,
+            isInningEndingEvent
+        )
 
-
-        //Players could have moved. Grab the correct base runners.
-        let runner1B: GamePlayer = command.offense.players.find( p => p._id == command.play.runner.result.end.first)
-        let runner2B: GamePlayer = command.offense.players.find( p => p._id == command.play.runner.result.end.second)
-        let runner3B: GamePlayer = command.offense.players.find( p => p._id == command.play.runner.result.end.third)
-
-
-        LogResult.logPlayResults(command.offense, command.defense, command.hitter, command.pitcher, runner1B?._id, runner2B?._id, runner3B?._id, command.play.credits, command.play.runner.events, command.play.contact, command.play.officialPlayResult, command.play.result, command.play.pitchLog, isInningEndingEvent)
-
-        //Reset count
         game.count.balls = 0
         game.count.strikes = 0
 
-        //Increase outs
-        game.count.outs += command.play.runner?.events.filter( re => re.movement.isOut).length
+        game.count.outs += command.play.runner?.events.filter(re => re.movement.isOut).length
 
         game.playIndex++
 
-        //Set runners
         command.offense.runner1BId = command.play.runner?.result.end.first
         command.offense.runner2BId = command.play.runner?.result.end.second
         command.offense.runner3BId = command.play.runner?.result.end.third
 
-        //Add result to line score and gamescore
         LinescoreActions.updateLinescore(game, command.halfInning, command.play)
 
-        //Make sure the play has the end count. Clone so we don't accidentally change them.
         command.play.count.end = JSON.parse(JSON.stringify(game.count))
         command.play.score.end = JSON.parse(JSON.stringify(game.score))
 
-        //Move lineup to next hitter except on failed stolen bases that end an inning.
-        //@ts-ignore
-        if (command.play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_2B && command.play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_3B) {
-
-            //Move to next hitter.
+        if (
+            //@ts-ignore
+            command.play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_2B &&
+            //@ts-ignore
+            command.play.officialPlayResult != OfficialRunnerResult.CAUGHT_STEALING_3B
+        ) {
             if (command.offense.currentHitterIndex >= 8) {
                 command.offense.currentHitterIndex = 0
             } else {
                 command.offense.currentHitterIndex++
             }
-
         }
 
-        const isWalkoff = (game.currentInning >=STANDARD_INNINGS && !game.isTopInning && game.score.home > game.score.away)
+        this.validateNextHitterIsNotOnBase(command.offense, game, command.play)
 
-        if (game.count.outs >= 3 || isWalkoff ) {
+        const isWalkoff = (game.currentInning >= STANDARD_INNINGS && !game.isTopInning && game.score.home > game.score.away)
 
-            //Update linescore LOB
-            let leftOnBase = [command.offense.runner1BId, command.offense.runner2BId, command.offense.runner3BId ].filter( r => r != undefined).length
+        if (game.count.outs >= 3 || isWalkoff) {
+            const leftOnBase = [command.offense.runner1BId, command.offense.runner2BId, command.offense.runner3BId]
+                .filter(r => r != undefined).length
 
             if (leftOnBase > 0) {
                 LinescoreActions.updateLinescoreLOB(command.halfInning, leftOnBase)
             }
 
-            //Clear runners
             RunnerActions.clearRunners(command.offense)
 
-            //Clear outs
             game.count.outs = 0
 
-            //Check if game over
             game.isComplete = GameInfo.isGameOver(game)
 
             if (!game.isComplete) {
-
-                const from = { inning: game.currentInning, isTop: game.isTopInning }
-
                 if (game.isTopInning) {
                     game.isTopInning = false
                 } else {
@@ -870,16 +748,318 @@ class Sim {
                     game.isTopInning = true
                 }
 
-                const to = { inning: game.currentInning, isTop: game.isTopInning }
-
-                //Init next half inning
                 game.halfInnings.push(GameInfo.initHalfInning(game.currentInning, game.isTopInning))
-            } 
+            }
         }
-
     }
 
-    getOfficialPlayResult(playResult: PlayResult, contact: Contact, shallowDeep: ShallowDeep, fielder: Position, runnerEvents: RunnerEvent[]) {
+    private getTunedMatchupPowerResult(command: SimPitchCommand): PlayResult {
+        const powerRollChart: RollChart = this.rollChartService.getMatchupPowerRollChart(
+            command.pitchEnvironmentTarget,
+            command.hitterChange,
+            command.pitcherChange,
+            APPLY_PLAYER_CHANGES
+        )
+
+        let result = powerRollChart.entries.get(Rolls.getRoll(command.rng, 0, 999)) as PlayResult
+
+        const tuning = command.pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.contactQuality
+        const outOutcomeScale = Number(tuning?.outOutcomeScale ?? 0)
+        const doubleOutcomeScale = Number(tuning?.doubleOutcomeScale ?? 0)
+        const tripleOutcomeScale = Number(tuning?.tripleOutcomeScale ?? 0)
+        const homeRunOutcomeScale = Number(tuning?.homeRunOutcomeScale ?? 0)
+
+        const isHit = (playResult: PlayResult): boolean => {
+            return playResult === PlayResult.SINGLE ||
+                playResult === PlayResult.DOUBLE ||
+                playResult === PlayResult.TRIPLE ||
+                playResult === PlayResult.HR
+        }
+
+        const rollScale = (scale: number): boolean => {
+            return scale > 0 && Rolls.getRollUnrounded(command.rng, 0, 1) < Math.min(1, scale)
+        }
+
+        if (outOutcomeScale > 0 && isHit(result) && rollScale(outOutcomeScale)) {
+            result = PlayResult.OUT
+        } else if (outOutcomeScale < 0 && result === PlayResult.OUT && rollScale(Math.abs(outOutcomeScale))) {
+            result = PlayResult.SINGLE
+        }
+
+        if (homeRunOutcomeScale > 0 && (result === PlayResult.SINGLE || result === PlayResult.DOUBLE || result === PlayResult.TRIPLE) && rollScale(homeRunOutcomeScale)) {
+            result = PlayResult.HR
+        } else if (homeRunOutcomeScale < 0 && result === PlayResult.HR && rollScale(Math.abs(homeRunOutcomeScale))) {
+            result = PlayResult.SINGLE
+        }
+
+        if (tripleOutcomeScale > 0 && (result === PlayResult.SINGLE || result === PlayResult.DOUBLE) && rollScale(tripleOutcomeScale)) {
+            result = PlayResult.TRIPLE
+        } else if (tripleOutcomeScale < 0 && result === PlayResult.TRIPLE && rollScale(Math.abs(tripleOutcomeScale))) {
+            result = PlayResult.SINGLE
+        }
+
+        if (doubleOutcomeScale > 0 && result === PlayResult.SINGLE && rollScale(doubleOutcomeScale)) {
+            result = PlayResult.DOUBLE
+        } else if (doubleOutcomeScale < 0 && result === PlayResult.DOUBLE && rollScale(Math.abs(doubleOutcomeScale))) {
+            result = PlayResult.SINGLE
+        }
+
+        return result
+    }
+
+    private getMatchupContactForPlayResult(command: SimPitchCommand, playResult: PlayResult): Contact {
+        const contactRollChart: RollChart = this.rollChartService.getMatchupContactRollChart(
+            command.pitchEnvironmentTarget,
+            command.hitter.hittingRatings.contactProfile,
+            command.pitcher.pitchRatings.contactProfile,
+            APPLY_PLAYER_CHANGES
+        )
+
+        const allowedContacts =
+            playResult === PlayResult.HR ? [Contact.LINE_DRIVE, Contact.FLY_BALL] :
+            playResult === PlayResult.TRIPLE ? [Contact.LINE_DRIVE, Contact.FLY_BALL] :
+            [Contact.GROUNDBALL, Contact.LINE_DRIVE, Contact.FLY_BALL]
+
+        const entries = [...contactRollChart.entries.entries()]
+            .filter(([, contact]) => allowedContacts.includes(contact as Contact))
+
+        if (entries.length === 0) {
+            throw new Error(`No compatible contact entries for playResult ${playResult}`)
+        }
+
+        const selected = entries[Rolls.getRoll(command.rng, 0, entries.length - 1)]
+
+        return selected[1] as Contact
+    }    
+
+    private getExpectedBasesForPlayResult(playResult: PlayResult): number {
+        switch (playResult) {
+            case PlayResult.SINGLE:
+                return 1
+            case PlayResult.DOUBLE:
+                return 2
+            case PlayResult.TRIPLE:
+                return 3
+            case PlayResult.HR:
+                return 4
+            default:
+                return 0
+        }
+    }
+
+    private validateNextHitterIsNotOnBase(offense: TeamInfo, game: Game, play: Play): void {
+        const nextHitterId = offense.lineupIds[offense.currentHitterIndex]
+        const baseRunnerIds = [offense.runner1BId, offense.runner2BId, offense.runner3BId].filter(id => id != undefined)
+
+        if (baseRunnerIds.includes(nextHitterId)) {
+            const halfInning = game.halfInnings.find(i => i.num === game.currentInning && i.top === game.isTopInning)
+            const history = (halfInning?.plays ?? []).map(p => ({
+                index: p.index,
+                hitterId: p.hitterId,
+                result: p.result,
+                officialPlayResult: p.officialPlayResult,
+                contact: p.contact,
+                shallowDeep: p.shallowDeep,
+                fielder: p.fielder,
+                start: p.runner?.result?.start,
+                end: p.runner?.result?.end,
+                events: (p.runner?.events ?? []).map(e => ({
+                    runnerId: e.runner?._id,
+                    start: e.movement?.start,
+                    end: e.movement?.end,
+                    isOut: e.movement?.isOut,
+                    eventType: e.eventType,
+                    isScoringEvent: e.isScoringEvent,
+                    isForce: e.isForce,
+                    isError: e.isError,
+                    isSB: e.isSB,
+                    isCS: e.isCS
+                }))
+            }))
+
+            throw new Error(`Next hitter is already on base nextHitter=${nextHitterId} first=${offense.runner1BId} second=${offense.runner2BId} third=${offense.runner3BId} playIndex=${play.index} inning=${game.currentInning} top=${game.isTopInning} playResult=${play.result} officialPlayResult=${play.officialPlayResult} runnerResult=${JSON.stringify(play.runner.result.end)} history=${JSON.stringify(history)}`)
+        }
+    }
+
+    private applyDefenseToPlayResult(command: SimPitchCommand, playResult: PlayResult, fielderPlayer: GamePlayer): PlayResult {
+        if (playResult === PlayResult.HR) {
+            return playResult
+        }
+
+        const meta = command.pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.meta
+        const teamDefense = GameInfo.getTeamDefense(command.defense)
+
+        const teamDefenseChange = clamp(
+            PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, teamDefense),
+            MIN_CHANGE,
+            MAX_CHANGE
+        )
+
+        const fielderDefenseChange = clamp(
+            PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, fielderPlayer.hittingRatings.defense),
+            MIN_CHANGE,
+            MAX_CHANGE
+        )
+
+        const fullChange = Math.max(Math.abs(MIN_CHANGE), Math.abs(MAX_CHANGE))
+
+        if (fullChange <= 0) {
+            return playResult
+        }
+
+        const teamDefenseBonus =
+            DEFAULT_FULL_TEAM_DEFENSE_BONUS +
+            Number(meta?.fullTeamDefenseBonus ?? 0)
+
+        const fielderDefenseBonus =
+            DEFAULT_FULL_FIELDER_DEFENSE_BONUS +
+            Number(meta?.fullFielderDefenseBonus ?? 0)
+
+        const teamDefenseShare = teamDefenseChange / fullChange
+        const fielderDefenseShare = fielderDefenseChange / fullChange
+
+        const defenseShift = clamp(
+            ((teamDefenseBonus / 1000) * teamDefenseShare) +
+            ((fielderDefenseBonus / 1000) * fielderDefenseShare),
+            -1,
+            1
+        )
+
+        if (defenseShift > 0 && playResult !== PlayResult.OUT) {
+            return Rolls.getRollUnrounded(command.rng, 0, 1) < defenseShift ? PlayResult.OUT : playResult
+        }
+
+        if (defenseShift < 0 && playResult === PlayResult.OUT) {
+            return Rolls.getRollUnrounded(command.rng, 0, 1) < Math.abs(defenseShift) ? PlayResult.SINGLE : playResult
+        }
+
+        return playResult
+    }    
+
+
+    private getFielderWeights(command:SimPitchCommand): Record<Position, number> {
+        const chart = command.play.matchupHandedness.hits == Handedness.R
+            ? command.pitchEnvironmentTarget.fielderChance.vsR
+            : command.pitchEnvironmentTarget.fielderChance.vsL
+
+        return {
+            [Position.PITCHER]: chart.pitcher ?? 0,
+            [Position.CATCHER]: chart.catcher ?? 0,
+            [Position.FIRST_BASE]: chart.first ?? 0,
+            [Position.SECOND_BASE]: chart.second ?? 0,
+            [Position.THIRD_BASE]: chart.third ?? 0,
+            [Position.SHORTSTOP]: chart.shortstop ?? 0,
+            [Position.LEFT_FIELD]: chart.leftField ?? 0,
+            [Position.CENTER_FIELD]: chart.centerField ?? 0,
+            [Position.RIGHT_FIELD]: chart.rightField ?? 0,
+            [Position.DESIGNATED_HITTER]: 0
+        }
+    }
+
+    private weightedPickPosition(command:SimPitchCommand, allowed:Position[]): Position {
+        const weights = this.getFielderWeights(command)
+        const candidates = allowed
+            .map(position => ({
+                position,
+                weight: Math.max(1, weights[position] ?? 1)
+            }))
+            .filter(item => item.weight > 0)
+
+        if (candidates.length === 0) {
+            return allowed[0]
+        }
+
+        const total = candidates.reduce((sum, item) => sum + item.weight, 0)
+        const roll = Rolls.getRollUnrounded(command.rng, 0, total)
+
+        let running = 0
+        for (const candidate of candidates) {
+            running += candidate.weight
+            if (roll <= running) return candidate.position
+        }
+
+        return candidates[candidates.length - 1].position
+    }
+
+    private getShallowDeepFromY(coordY:number, fielder:Position): ShallowDeep | undefined {
+        if (!AtBatInfo.isToOF(fielder)) return undefined
+        if (coordY < 180) return ShallowDeep.SHALLOW
+        if (coordY > 260) return ShallowDeep.DEEP
+        return ShallowDeep.NORMAL
+    }
+
+    private pickFielderFromLocation(command:SimPitchCommand, contact:Contact, hitQuality:ContactQuality): { fielder:Position, shallowDeep:ShallowDeep | undefined, fielderPlayer:GamePlayer } {
+        const x = hitQuality.coordX
+        const y = hitQuality.coordY
+
+        const leftSide = x <= -20
+        const rightSide = x >= 20
+        const middle = !leftSide && !rightSide
+        const shallow = y < 140
+        const medium = y >= 140 && y < 220
+        const deep = y >= 220
+
+        let allowed:Position[] = []
+
+        if (contact === Contact.GROUNDBALL) {
+            if (y < 40) {
+                allowed = middle ? [Position.PITCHER, Position.CATCHER] : leftSide ? [Position.THIRD_BASE, Position.SHORTSTOP] : [Position.FIRST_BASE, Position.SECOND_BASE]
+            } else if (middle) {
+                allowed = y >= 160 ? [Position.CENTER_FIELD, Position.SECOND_BASE, Position.SHORTSTOP] : [Position.PITCHER, Position.SECOND_BASE, Position.SHORTSTOP]
+            } else if (leftSide) {
+                allowed = shallow ? [Position.THIRD_BASE, Position.SHORTSTOP] : [Position.LEFT_FIELD, Position.SHORTSTOP]
+            } else {
+                allowed = shallow ? [Position.FIRST_BASE, Position.SECOND_BASE] : [Position.RIGHT_FIELD, Position.SECOND_BASE]
+            }
+        } else if (contact === Contact.LINE_DRIVE) {
+            if (shallow) {
+                if (leftSide) allowed = [Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD]
+                else if (rightSide) allowed = [Position.FIRST_BASE, Position.SECOND_BASE, Position.RIGHT_FIELD]
+                else allowed = [Position.SECOND_BASE, Position.SHORTSTOP, Position.CENTER_FIELD]
+            } else if (medium) {
+                if (leftSide) allowed = [Position.LEFT_FIELD, Position.CENTER_FIELD]
+                else if (rightSide) allowed = [Position.RIGHT_FIELD, Position.CENTER_FIELD]
+                else allowed = [Position.CENTER_FIELD]
+            } else {
+                if (leftSide) allowed = [Position.LEFT_FIELD]
+                else if (rightSide) allowed = [Position.RIGHT_FIELD]
+                else allowed = [Position.CENTER_FIELD]
+            }
+        } else {
+            if (shallow) {
+                if (leftSide) allowed = [Position.LEFT_FIELD, Position.THIRD_BASE, Position.SHORTSTOP]
+                else if (rightSide) allowed = [Position.RIGHT_FIELD, Position.FIRST_BASE, Position.SECOND_BASE]
+                else allowed = [Position.CENTER_FIELD, Position.SECOND_BASE, Position.SHORTSTOP, Position.PITCHER, Position.CATCHER]
+            } else if (leftSide) {
+                allowed = deep ? [Position.LEFT_FIELD] : [Position.LEFT_FIELD, Position.CENTER_FIELD]
+            } else if (rightSide) {
+                allowed = deep ? [Position.RIGHT_FIELD] : [Position.RIGHT_FIELD, Position.CENTER_FIELD]
+            } else {
+                allowed = [Position.CENTER_FIELD]
+            }
+        }
+
+        const fielder = this.weightedPickPosition(command, allowed)
+        let shallowDeep = this.getShallowDeepFromY(y, fielder)
+
+        if (!shallowDeep && AtBatInfo.isInAir(contact)) {
+            shallowDeep = y < 180 ? ShallowDeep.SHALLOW : y > 260 ? ShallowDeep.DEEP : ShallowDeep.NORMAL
+        }
+
+        const fielderPlayer = command.defense.players.find(p => p.currentPosition == fielder)
+
+        if (!fielderPlayer) {
+            throw new Error(`No fielder found at position ${fielder}`)
+        }
+
+        return {
+            fielder,
+            shallowDeep,
+            fielderPlayer
+        }
+    }
+
+    private getOfficialPlayResult(playResult: PlayResult, contact: Contact, shallowDeep: ShallowDeep, fielder: Position, runnerEvents: RunnerEvent[]) {
 
         switch (playResult) {
 
@@ -933,8 +1113,7 @@ class Sim {
 
     }
 
-
-    getUpcomingMatchup(game:Game) : UpcomingMatchup {
+    public getUpcomingMatchup(game:Game) : UpcomingMatchup {
 
         if (game.isTopInning) {
 
@@ -957,11 +1136,11 @@ class Sim {
 
 }
 
+
+
+
 class Matchup {
 
-    constructor(
-        private gamePlayers:GamePlayers
-    ) {}
 
     static getMatchupHandedness(hitter:GamePlayer, pitcher:GamePlayer): MatchupHandedness {
 
@@ -984,48 +1163,6 @@ class Matchup {
     }
 
 
-}
-
-class LinescoreActions {
-
-    static updateLinescore(game:Game, halfInning:HalfInning, play:Play) {
-
-        //Runs
-        if (play.runner?.result?.end?.scored?.length > 0) {
-
-            if (game.isTopInning) {
-                halfInning.linescore.runs += play.runner?.result?.end?.scored?.length
-            } else {
-                halfInning.linescore.runs += play.runner?.result?.end?.scored?.length
-            }
-
-        }
-
-        //Hits
-        if (AtBatInfo.isHit(play.result)) {
-            if (game.isTopInning) {
-                halfInning.linescore.hits++
-            } else {
-                halfInning.linescore.hits++
-            }
-        }        
-
-        //Runs
-        if (play.runner?.result?.end?.scored?.length > 0) {
-
-            if (game.isTopInning) {
-                game.score.away += play.runner?.result?.end?.scored?.length
-            } else {
-                game.score.home += play.runner?.result?.end?.scored?.length
-            }
-
-        }        
-
-    }
-
-    static updateLinescoreLOB(halfInning:HalfInning, lob:number) {
-        halfInning.linescore.leftOnBase += lob
-    }
 }
 
 class RunnerActions {
@@ -1065,10 +1202,10 @@ class RunnerActions {
     
     initRunnerEvents(pitcher:GamePlayer, hitter:GamePlayer, runner1B:GamePlayer, runner2B:GamePlayer, runner3B:GamePlayer, pitchIndex:number) {
 
-        let hitterRA: RunnerEvent 
-        let runner1bRA:RunnerEvent
-        let runner2bRA:RunnerEvent
-        let runner3bRA:RunnerEvent
+        let hitterRA: RunnerEvent|undefined
+        let runner1bRA:RunnerEvent|undefined
+        let runner2bRA:RunnerEvent|undefined
+        let runner3bRA:RunnerEvent|undefined
 
         if (hitter) {
             hitterRA = {
@@ -1244,19 +1381,17 @@ class RunnerActions {
 
     }
 
-    runnerToBase(runnerResult:RunnerResult, runnerEvent:RunnerEvent, start:BaseResult, end:BaseResult, eventType: PlayResult|OfficialRunnerResult, isForce:boolean) {
-        
-        let isScoringEvent = end == BaseResult.HOME
+    runnerToBase(runnerResult: RunnerResult, runnerEvent: RunnerEvent, start: BaseResult, end: BaseResult, eventType: PlayResult | OfficialRunnerResult, isForce: boolean) {
+        const isScoringEvent = end == BaseResult.HOME
 
         if (runnerEvent) {
-            
             runnerEvent.movement.start = start
             runnerEvent.movement.end = end
             runnerEvent.eventType = eventType
-            runnerEvent.isScoringEvent = isScoringEvent        
+            runnerEvent.isScoringEvent = isScoringEvent
             runnerEvent.isForce = isForce
 
-            switch(start) {
+            switch (start) {
                 case BaseResult.FIRST:
                     runnerResult.first = undefined
                     break
@@ -1268,8 +1403,7 @@ class RunnerActions {
                     break
             }
 
-
-            switch(end) {
+            switch (end) {
                 case BaseResult.FIRST:
                     runnerResult.first = runnerEvent.runner._id
                     break
@@ -1282,12 +1416,14 @@ class RunnerActions {
             }
 
             if (isScoringEvent) {
+                if (runnerResult.scored.includes(runnerEvent.runner._id)) {
+                    throw new Error(`Runner recorded scored twice runner=${runnerEvent.runner._id} start=${start} end=${end} eventType=${eventType} bases=${JSON.stringify(runnerResult)}`)
+                }
+
                 runnerResult.scored.push(runnerEvent.runner._id)
             }
 
-
         }
-
     }
 
     runnerOutAtBase(runnerEvent:RunnerEvent, end:BaseResult, isForce:boolean, isFieldersChoice:boolean, defense:TeamInfo, throwFrom:GamePlayer, outs:number) {
@@ -1310,7 +1446,7 @@ class RunnerActions {
 
     }
 
-    runnersTagWithThrow(gameRNG, runnerResult:RunnerResult, leagueAverages:LeagueAverage, allEvents:RunnerEvent[], runnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], defense:TeamInfo, offense:TeamInfo, pitcher:GamePlayer, fielderPlayer:GamePlayer, runner1bRA:RunnerEvent, runner2bRA:RunnerEvent, runner3bRA:RunnerEvent, chanceRunnerSafe:number, pitchIndex:number ) {
+    runnersTagWithThrow(gameRNG: () => number, runnerResult:RunnerResult, pitchEnvironmentTarget:PitchEnvironmentTarget, allEvents:RunnerEvent[], runnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], defense:TeamInfo, offense:TeamInfo, pitcher:GamePlayer, fielderPlayer:GamePlayer, runner1bRA:RunnerEvent, runner2bRA:RunnerEvent, runner3bRA:RunnerEvent, chanceRunnerSafe:number, pitchIndex:number ) {
 
         let hitterRA = runnerEvents.find(re => re.movement.start == BaseResult.HOME)
 
@@ -1328,7 +1464,7 @@ class RunnerActions {
                 end: BaseResult.HOME,
                 eventType: OfficialRunnerResult.TAGGED_THIRD_TO_HOME,
                 eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                leagueAverage: leagueAverages,
+                pitchEnvironmentTarget: pitchEnvironmentTarget,
                 pitcher: pitcher,
                 offense: offense,
                 pitchIndex: pitchIndex,
@@ -1355,7 +1491,7 @@ class RunnerActions {
                 end: BaseResult.THIRD,
                 eventType: OfficialRunnerResult.TAGGED_SECOND_TO_THIRD,
                 eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                leagueAverage: leagueAverages,
+                pitchEnvironmentTarget: pitchEnvironmentTarget,
                 pitcher: pitcher,
                 offense: offense,
                 pitchIndex: pitchIndex,
@@ -1382,7 +1518,7 @@ class RunnerActions {
                 end: BaseResult.SECOND,
                 eventType: OfficialRunnerResult.TAGGED_FIRST_TO_SECOND,
                 eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                leagueAverage: leagueAverages,
+                pitchEnvironmentTarget: pitchEnvironmentTarget,
                 pitcher: pitcher,
                 offense: offense,
                 pitchIndex: pitchIndex,
@@ -1448,8 +1584,8 @@ class RunnerActions {
                         //Was it on the throw or on the catch?
                         if (APPLY_PLAYER_CHANGES) {
 
-                            let armChange = PlayerChange.getChange(command.leagueAverage.hittingRatings.arm, _getAverage([command.throwFrom.hittingRatings.arm, command.throwFrom.hittingRatings.defense]))
-                            let receivingChange = PlayerChange.getChange(command.leagueAverage.hittingRatings.defense, command.throwFrom.hittingRatings.defense)
+                            let armChange = PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, _getAverage([command.throwFrom.hittingRatings.arm, command.throwFrom.hittingRatings.defense]))
+                            let receivingChange = PlayerChange.getChange(command.pitchEnvironmentTarget.avgRating, command.throwFrom.hittingRatings.defense)
     
                             roll = throwRoll.roll + (throwRoll.roll * (armChange * PLAYER_CHANGE_SCALE)) - (throwRoll.roll * (receivingChange * PLAYER_CHANGE_SCALE))
                         }
@@ -1551,14 +1687,13 @@ class RunnerActions {
 
     }    
 
-    stealBases(runner1B: GamePlayer, runner2B: GamePlayer, runner3B: GamePlayer, gameRNG, runnerResult: RunnerResult, allEvents: RunnerEvent[], runnerEvents: RunnerEvent[], defensiveCredits: DefensiveCredit[], leagueAverages: LeagueAverage, catcher: GamePlayer, defense: TeamInfo, offense: TeamInfo, pitcher: GamePlayer, pitchIndex: number, pitchCount: PitchCount) {
-
+    stealBases(runner1B: GamePlayer, runner2B: GamePlayer, runner3B: GamePlayer, gameRNG: () => number, runnerResult: RunnerResult, allEvents: RunnerEvent[], runnerEvents: RunnerEvent[], defensiveCredits: DefensiveCredit[], pitchEnvironmentTarget: PitchEnvironmentTarget, catcher: GamePlayer, defense: TeamInfo, offense: TeamInfo, pitcher: GamePlayer, pitchIndex: number, pitchCount: PitchCount) {
         let runners = [runner1B, runner2B, runner3B].filter(r => r != undefined)
+        const stealAttemptAggressionScale = pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.running?.stealAttemptAggressionScale ?? 0
+        const stealAttemptAggressionMultiplier = Math.max(0, 1 + stealAttemptAggressionScale)
 
         if (runnerEvents.length > 0) {
-
             for (let re of runnerEvents) {
-
                 if (re.movement.isOut) continue
                 if (re.movement.end != undefined) continue
                 if (re.isSBAttempt) continue
@@ -1579,28 +1714,44 @@ class RunnerActions {
                 if (re.movement.start == BaseResult.FIRST && runnerEvents.find(re => re.movement.start == BaseResult.SECOND)?.isSBAttempt == false) continue
 
                 if (re.movement.start == BaseResult.FIRST && runnerEvents.find(re => re?.movement?.start == BaseResult.SECOND)?.isSBAttempt) {
-
                     this.runnerToBase(runnerResult, re, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.STOLEN_BASE_2B, false)
 
                     re.isSBAttempt = true
                     re.isSB = true
                     re.pitchIndex = pitchIndex
-
                 } else {
-
                     let runner = runners.find(r => r._id == re.runner._id)
 
-                    const stealSettings = this.getStealSettingsForState(
-                        leagueAverages,
-                        pitchCount
+                    if (!runner) continue
+
+                    const stealSettings = this.getStealSettingsForState(pitchEnvironmentTarget, pitchCount)
+
+                    const isStealOfThird = re.movement.start == BaseResult.SECOND
+
+                    const effectiveAttempt = Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            Math.round(isStealOfThird ? stealSettings.attempt3BChance : stealSettings.attempt2BChance)
+                        )
                     )
 
+                    const effectiveSuccess = Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            Math.round(isStealOfThird ? stealSettings.attempt3BSuccess : stealSettings.attempt2BSuccess)
+                        )
+                    )
+
+                    if (effectiveAttempt <= 0 || effectiveSuccess <= 0) continue
+
                     let chanceRunnerSafe = this.getStolenBaseSafe(
-                        leagueAverages,
+                        pitchEnvironmentTarget,
                         catcher.hittingRatings.arm,
                         runner.hittingRatings.speed,
                         runner.hittingRatings.steals,
-                        stealSettings.success
+                        effectiveSuccess
                     )
 
                     const MIN_SUCCESS = 55
@@ -1609,10 +1760,10 @@ class RunnerActions {
                     let successScale = (chanceRunnerSafe - MIN_SUCCESS) / (GREEN_LIGHT_SUCCESS - MIN_SUCCESS)
                     successScale = Math.max(0, Math.min(1, successScale))
 
-                    let effectiveAttempt = stealSettings.attempt * successScale
-                    effectiveAttempt = Math.max(0, Math.min(100, Math.round(effectiveAttempt)))
+                    let greenLightAttempt = effectiveAttempt * successScale * stealAttemptAggressionMultiplier
+                    greenLightAttempt = Math.max(0, Math.min(100, Math.round(greenLightAttempt)))
 
-                    if (effectiveAttempt <= 0) continue
+                    if (greenLightAttempt <= 0) continue
 
                     let jumpRoll = Rolls.getRoll(gameRNG, 1, 100)
 
@@ -1620,8 +1771,7 @@ class RunnerActions {
                     let eventType
                     let eventTypeOut
 
-                    if (jumpRoll <= effectiveAttempt) {
-
+                    if (jumpRoll <= greenLightAttempt) {
                         if (re.movement.start == BaseResult.SECOND) {
                             endBase = BaseResult.THIRD
                             eventType = OfficialRunnerResult.STOLEN_BASE_3B
@@ -1648,7 +1798,7 @@ class RunnerActions {
                             end: endBase,
                             eventType: eventType,
                             eventTypeOut: eventTypeOut,
-                            leagueAverage: leagueAverages,
+                            pitchEnvironmentTarget: pitchEnvironmentTarget,
                             defense: defense,
                             offense: offense,
                             pitcher: pitcher,
@@ -1660,29 +1810,40 @@ class RunnerActions {
                         })
 
                         if (re.movement.isOut) {
-
                             re.isCS = true
 
                             defensiveCredits.push({
                                 _id: catcher._id,
                                 type: DefenseCreditType.CAUGHT_STEALING
                             })
-
                         } else {
                             re.isSB = true
                         }
                     }
                 }
             }
-
         }
     }
 
-    getStolenBaseSafe(leagueAverages: LeagueAverage, armRating:number, runnerSpeed:number, runnerSteals:number, defaultSuccess:number) {
+    private getStealSettingsForState(pitchEnvironmentTarget: PitchEnvironmentTarget, pitchCount?: PitchCount): StolenBaseByCount {
+        const table: StolenBaseByCount[] = pitchEnvironmentTarget.running?.steal ?? []
 
-        let fielderChange = PlayerChange.getChange(leagueAverages.hittingRatings.arm, armRating)
-        let runnerSpeedChange = PlayerChange.getChange(leagueAverages.hittingRatings.speed, runnerSpeed)
-        let runnerStealsChange = PlayerChange.getChange(leagueAverages.hittingRatings.steals, runnerSteals)
+        return table.find(r => r.balls === pitchCount?.balls && r.strikes === pitchCount?.strikes)
+            ?? {
+                balls: pitchCount?.balls ?? 0,
+                strikes: pitchCount?.strikes ?? 0,
+                attempt2BChance: 0,
+                attempt2BSuccess: 0,
+                attempt3BChance: 0,
+                attempt3BSuccess: 0
+            }
+    }
+
+    getStolenBaseSafe(pitchEnvironmentTarget:PitchEnvironmentTarget, armRating:number, runnerSpeed:number, runnerSteals:number, defaultSuccess:number) {
+
+        let fielderChange = PlayerChange.getChange(pitchEnvironmentTarget.avgRating, armRating)
+        let runnerSpeedChange = PlayerChange.getChange(pitchEnvironmentTarget.avgRating, runnerSpeed)
+        let runnerStealsChange = PlayerChange.getChange(pitchEnvironmentTarget.avgRating, runnerSteals)
 
         //Take the default success rate and apply the fielder and runner's changes.
         //Return the % chance that the runner is out.
@@ -1694,10 +1855,10 @@ class RunnerActions {
 
     }
 
-    getChanceRunnerSafe(leagueAverages: LeagueAverage, armRating:number, runnerSpeed:number, defaultSuccess:number) {
+    getChanceRunnerSafe(pitchEnvironmentTarget:PitchEnvironmentTarget, armRating:number, runnerSpeed:number, defaultSuccess:number) {
 
-        let fielderChange = PlayerChange.getChange(leagueAverages.hittingRatings.arm, armRating)
-        let runnerChange = PlayerChange.getChange(leagueAverages.hittingRatings.speed, runnerSpeed)
+        let fielderChange = PlayerChange.getChange(pitchEnvironmentTarget.avgRating, armRating)
+        let runnerChange = PlayerChange.getChange(pitchEnvironmentTarget.avgRating, runnerSpeed)
 
         //Take the default success rate and apply the fielder and runner's changes.
         //Return the % chance that the runner is out.
@@ -1711,10 +1872,7 @@ class RunnerActions {
 
     }    
 
-    getRunnerEvents(gameRNG, runnerResult:RunnerResult, halfInningRunnerEvents:RunnerEvent[], defensiveCredits:DefensiveCredit[], leagueAverages: LeagueAverage, playResult: PlayResult, 
-                    contact: Contact|undefined, shallowDeep: ShallowDeep|undefined, hitter:GamePlayer, fielderPlayer: GamePlayer|undefined, 
-                    runner1B:GamePlayer|undefined, runner2B:GamePlayer|undefined, runner3B:GamePlayer|undefined, offense:TeamInfo, defense:TeamInfo, pitcher:GamePlayer, pitchIndex:number) : RunnerEvent[] {
-        
+    getRunnerEvents(gameRNG: () => number, runnerResult: RunnerResult, halfInningRunnerEvents: RunnerEvent[], defensiveCredits: DefensiveCredit[], pitchEnvironmentTarget: PitchEnvironmentTarget, playResult: PlayResult, contact: Contact | undefined, shallowDeep: ShallowDeep | undefined, hitter: GamePlayer, fielderPlayer: GamePlayer | undefined, runner1B: GamePlayer | undefined, runner2B: GamePlayer | undefined, runner3B: GamePlayer | undefined, offense: TeamInfo, defense: TeamInfo, pitcher: GamePlayer, pitchIndex: number): RunnerEvent[] {
         const requiresFielder =
             playResult === PlayResult.OUT ||
             playResult === PlayResult.SINGLE ||
@@ -1737,134 +1895,217 @@ class RunnerActions {
             throw new Error(`${playResult} requires contact`)
         }
 
+        let events: RunnerEvent[] = this.initRunnerEvents(pitcher, hitter, runner1B, runner2B, runner3B, pitchIndex)
 
-        let events:RunnerEvent[] = this.initRunnerEvents(pitcher, hitter, runner1B, runner2B, runner3B, pitchIndex)
-
-        let hitterRA = events.find( e => e.runner._id == hitter?._id)
-        let runner1bRA = events.find( e => e.runner._id == runner1B?._id)
-        let runner2bRA = events.find( e => e.runner._id == runner2B?._id)
-        let runner3bRA = events.find( e => e.runner._id == runner3B?._id)
+        let hitterRA = events.find(e => e.runner._id == hitter?._id)
+        let runner1bRA = events.find(e => e.runner._id == runner1B?._id)
+        let runner2bRA = events.find(e => e.runner._id == runner2B?._id)
+        let runner3bRA = events.find(e => e.runner._id == runner3B?._id)
 
         hitterRA.eventType = playResult
 
         let allEvents = [].concat(halfInningRunnerEvents).concat(events)
 
+        const advancement = pitchEnvironmentTarget.running?.advancement
+        const advancementAggressionScale = pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.running?.advancementAggressionScale ?? 0
+        const advancementMultiplier = Math.max(0, 1 + advancementAggressionScale)
+
+        const clampRate = (value: number | undefined): number => {
+            return Math.max(0, Math.min(1, value ?? 0))
+        }
+
+        const shouldAdvance = (rate: number | undefined): boolean => {
+            return Rolls.getRollUnrounded(gameRNG, 0, 1) < clampRate(clampRate(rate) * advancementMultiplier)
+        }
+
+        const getMinimumSafeChance = (minimumSafeChance: number): number => {
+            const adjusted = minimumSafeChance - (advancementAggressionScale * 5)
+            return Math.max(60, Math.min(99, Math.round(adjusted)))
+        }
+
+        const shouldRiskAdvance = (rate: number | undefined, chanceRunnerSafe: number, minimumSafeChance: number): boolean => {
+            if (!shouldAdvance(rate)) return false
+
+            const adjustedMinimum = getMinimumSafeChance(minimumSafeChance)
+
+            if (chanceRunnerSafe < adjustedMinimum) {
+                const desperationRate = Math.max(0, Math.min(1, (chanceRunnerSafe / adjustedMinimum) * 0.5))
+                return Rolls.getRollUnrounded(gameRNG, 0, 1) <= desperationRate
+            }
+
+            return true
+        }
+
+        const DEFAULT_SUCCESS = 95
+
         try {
-
-            const DEFAULT_SUCCESS = 95
-
             switch (playResult) {
-    
                 case PlayResult.STRIKEOUT:
-                    this.runnerIsOut(runnerResult, allEvents, defensiveCredits, defense.players.find( p => p.currentPosition == Position.CATCHER), hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
+                    this.runnerIsOut(runnerResult, allEvents, defensiveCredits, defense.players.find(p => p.currentPosition == Position.CATCHER), hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
                     break
-    
+
                 case PlayResult.OUT:
-    
                     if (!contact) throw new Error("OUT requires contact")
                     if (!fielderPlayer) throw new Error("OUT requires fielderPlayer")
 
-                    //Fly balls. Tag up. 99% success
-                    //Deep fly ball
                     if (AtBatInfo.isInAir(contact) && AtBatInfo.isToOF(fielderPlayer?.currentPosition) && (shallowDeep == ShallowDeep.DEEP)) {
                         this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
-                        this.runnersTagWithThrow(gameRNG, runnerResult, leagueAverages, allEvents, events, defensiveCredits, defense,offense, pitcher,  fielderPlayer, runner1bRA, runner2bRA, runner3bRA, 99, pitchIndex)
-                        break
-                    }
-    
-                    //Normal fly ball. 95% runner success rate. Roll for throw.
-                    if (AtBatInfo.isInAir(contact) && AtBatInfo.isToOF(fielderPlayer?.currentPosition) && (shallowDeep == ShallowDeep.NORMAL)) {
-                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
-                        this.runnersTagWithThrow(gameRNG, runnerResult, leagueAverages, allEvents, events, defensiveCredits, defense, offense, pitcher, fielderPlayer, runner1bRA, runner2bRA, runner3bRA, 95, pitchIndex)
-                        break
-                    }
-    
-                    //Shallow fly ball. Roll for throw. Only run from 3B. Only if good chance to succeed.
-                    if (contact == Contact.FLY_BALL && AtBatInfo.isToOF(fielderPlayer?.currentPosition) && shallowDeep == ShallowDeep.SHALLOW) {
-    
-                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer,hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
-    
-                        if (runnerResult.third) {
-    
-                            //Unless a 90% chance to succeed don't even run.
-                            let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, DEFAULT_SUCCESS - 30)
-    
-                            if (chanceRunnerSafe > 90) {
-    
-                                //Runners from 1B and 2B move forward 
-                                this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, false)
-                                this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, false)
-    
-                                this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
-                                    runnerEvents: events,
-                                    runnerEvent: runner3bRA,
-                                    hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
-                                    start: BaseResult.THIRD,
-                                    end: BaseResult.HOME,
-                                    eventType: OfficialRunnerResult.THIRD_TO_HOME,
-                                    eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
-                                    throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
-                                    isForce: false,
-                                    isFieldersChoice: false
-                                })
-    
-                            }
-    
-                        }
-    
-                        break
-                    }
 
-                    //Fly ball to infielder
-                    if (AtBatInfo.isInAir(contact) && AtBatInfo.isToInfielder(fielderPlayer.currentPosition) ) {
-                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
-                        break
-                    }
-    
-                    //If it's a ground ball go for the force out. 
-                    if (contact == Contact.GROUNDBALL) {
-                
-                        // If 2 outs already, always take the out at 1B first.
-                        const outsBeforePlay = RunnerActions.getTotalOuts(allEvents)
-                        if (outsBeforePlay >= 2) {
-
-                            // batter-runner force at 1B
-                            const chanceRunnerSafe = this.getChanceRunnerSafe(
-                                leagueAverages,
-                                fielderPlayer.hittingRatings.arm,
-                                hitter.hittingRatings.speed,
-                                1 //super low chance of being safe
-                            )
+                        if (runnerResult.third && runner3bRA && shouldAdvance(advancement?.runnerOnThirdToHomeOnFlyBallDeep)) {
+                            let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, DEFAULT_SUCCESS)
 
                             this.runnerToBaseWithThrow({
-                                gameRNG: gameRNG,
-                                runnerResult: runnerResult,
-                                allEvents: allEvents,
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
+                                runnerEvents: events,
+                                runnerEvent: runner3bRA,
+                                hitterEvent: hitterRA,
+                                defensiveCredits,
+                                start: BaseResult.THIRD,
+                                end: BaseResult.HOME,
+                                eventType: OfficialRunnerResult.THIRD_TO_HOME,
+                                eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                pitchEnvironmentTarget,
+                                pitcher,
+                                offense,
+                                pitchIndex,
+                                defense,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe,
+                                isForce: false,
+                                isFieldersChoice: false
+                            })
+                        }
+
+                        if (runnerResult.second && runner2bRA) {
+                            this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, false)
+                        }
+
+                        if (runnerResult.first && runner1bRA) {
+                            this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, false)
+                        }
+
+                        break
+                    }
+
+                    if (AtBatInfo.isInAir(contact) && AtBatInfo.isToOF(fielderPlayer?.currentPosition) && (shallowDeep == ShallowDeep.NORMAL)) {
+                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
+
+                        if (runnerResult.third && runner3bRA && shouldAdvance(advancement?.runnerOnThirdToHomeOnFlyBallNormal)) {
+                            let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, DEFAULT_SUCCESS - 5)
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
+                                runnerEvents: events,
+                                runnerEvent: runner3bRA,
+                                hitterEvent: hitterRA,
+                                defensiveCredits,
+                                start: BaseResult.THIRD,
+                                end: BaseResult.HOME,
+                                eventType: OfficialRunnerResult.THIRD_TO_HOME,
+                                eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                pitchEnvironmentTarget,
+                                pitcher,
+                                offense,
+                                pitchIndex,
+                                defense,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe,
+                                isForce: false,
+                                isFieldersChoice: false
+                            })
+                        }
+
+                        if (runnerResult.second && runner2bRA) {
+                            this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, false)
+                        }
+
+                        if (runnerResult.first && runner1bRA) {
+                            this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, false)
+                        }
+
+                        break
+                    }
+
+                    if (contact == Contact.FLY_BALL && AtBatInfo.isToOF(fielderPlayer?.currentPosition) && shallowDeep == ShallowDeep.SHALLOW) {
+                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
+
+                        if (runnerResult.third && runner3bRA && shouldAdvance(advancement?.runnerOnThirdToHomeOnFlyBallShallow)) {
+                            let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, DEFAULT_SUCCESS - 30)
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
+                                runnerEvents: events,
+                                runnerEvent: runner3bRA,
+                                hitterEvent: hitterRA,
+                                defensiveCredits,
+                                start: BaseResult.THIRD,
+                                end: BaseResult.HOME,
+                                eventType: OfficialRunnerResult.THIRD_TO_HOME,
+                                eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                pitchEnvironmentTarget,
+                                pitcher,
+                                offense,
+                                pitchIndex,
+                                defense,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe,
+                                isForce: false,
+                                isFieldersChoice: false
+                            })
+                        }
+
+                        if (runnerResult.second && runner2bRA) {
+                            this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, false)
+                        }
+
+                        if (runnerResult.first && runner1bRA) {
+                            this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, false)
+                        }
+
+                        break
+                    }
+
+                    if (AtBatInfo.isInAir(contact) && AtBatInfo.isToOF(fielderPlayer?.currentPosition)) {
+                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
+                        break
+                    }
+
+                    if (AtBatInfo.isInAir(contact) && AtBatInfo.isToInfielder(fielderPlayer.currentPosition)) {
+                        this.runnerIsOut(runnerResult, allEvents, defensiveCredits, fielderPlayer, hitterRA, RunnerActions.getTotalOuts(allEvents) + 1, BaseResult.HOME)
+                        break
+                    }
+
+                    if (contact == Contact.GROUNDBALL) {
+                        const outsBeforePlay = RunnerActions.getTotalOuts(allEvents)
+
+                        if (outsBeforePlay >= 2) {
+                            const chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, hitter.hittingRatings.speed, 1)
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
                                 runnerEvents: events,
                                 runnerEvent: hitterRA,
                                 hitterEvent: hitterRA,
-                                defensiveCredits: defensiveCredits,
+                                defensiveCredits,
                                 start: BaseResult.HOME,
                                 end: BaseResult.FIRST,
                                 eventType: OfficialRunnerResult.HOME_TO_FIRST,
                                 eventTypeOut: OfficialRunnerResult.FORCE_OUT,
-                                leagueAverage: leagueAverages,
-                                defense: defense,
-                                pitcher: pitcher,
-                                offense: offense,
-                                pitchIndex: pitchIndex,
+                                pitchEnvironmentTarget,
+                                defense,
+                                pitcher,
+                                offense,
+                                pitchIndex,
                                 throwFrom: fielderPlayer,
-                                chanceRunnerSafe: chanceRunnerSafe,
+                                chanceRunnerSafe,
                                 isForce: true,
                                 isFieldersChoice: false
                             })
@@ -1872,462 +2113,387 @@ class RunnerActions {
                             break
                         }
 
-                        //Handle runner on third. 
                         if (runner3B != undefined) {
-    
                             runner3bRA.isForce = (runner2B != undefined && runner1B != undefined)
-    
+
                             if (runner3bRA.isForce) {
-    
-                                let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, 1) //low chance
-    
-                                //Force at home. Other runners advance.
+                                let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, 1)
+
                                 this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
+                                    gameRNG,
+                                    runnerResult,
+                                    allEvents,
                                     runnerEvents: events,
                                     runnerEvent: runner3bRA,
                                     hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
+                                    defensiveCredits,
                                     start: BaseResult.THIRD,
                                     end: BaseResult.HOME,
                                     eventType: OfficialRunnerResult.THIRD_TO_HOME,
                                     eventTypeOut: OfficialRunnerResult.FORCE_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
+                                    pitchEnvironmentTarget,
+                                    pitcher,
+                                    offense,
+                                    pitchIndex,
+                                    defense,
                                     throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
+                                    chanceRunnerSafe,
                                     isForce: true,
                                     isFieldersChoice: true
                                 })
-    
-                            } else {
-    
-                                //Unless a 90% chance to succeed don't even run. Saying an average speed player has a 65% success rate. So many won't run.
-                                let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, DEFAULT_SUCCESS - 30)
-    
-                                if (chanceRunnerSafe > 90) {
-    
-                                    this.runnerToBaseWithThrow({
-                                        gameRNG: gameRNG,
-                                        runnerResult: runnerResult,
-                                        allEvents: allEvents,
-                                        runnerEvents: events,
-                                        runnerEvent: runner3bRA,
-                                        hitterEvent: hitterRA,
-                                        defensiveCredits: defensiveCredits,
-                                        start: BaseResult.THIRD,
-                                        end: BaseResult.HOME,
-                                        eventType: OfficialRunnerResult.THIRD_TO_HOME,
-                                        eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                                        leagueAverage: leagueAverages,
-                                        pitcher: pitcher,
-                                        offense: offense,
-                                        pitchIndex: pitchIndex,
-                                        defense: defense,
-                                        throwFrom: fielderPlayer,
-                                        chanceRunnerSafe: chanceRunnerSafe,
-                                        isForce: false,
-                                        isFieldersChoice: true
-                                    })
-    
-                                }
-                            }
+                            } else if (shouldAdvance(advancement?.runnerOnThirdToHomeOnGroundBall)) {
+                                let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner3B.hittingRatings.speed, DEFAULT_SUCCESS - 30)
 
-                        }
-    
-                        //Handle runner on second
-                        if (runner2B != undefined) {
-    
-                            runner2bRA.isForce = (runner1B != undefined)
-    
-                            if (runner2bRA.isForce) {
-    
-                                let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner2B.hittingRatings.speed, 1) //low chance
-    
                                 this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
+                                    gameRNG,
+                                    runnerResult,
+                                    allEvents,
+                                    runnerEvents: events,
+                                    runnerEvent: runner3bRA,
+                                    hitterEvent: hitterRA,
+                                    defensiveCredits,
+                                    start: BaseResult.THIRD,
+                                    end: BaseResult.HOME,
+                                    eventType: OfficialRunnerResult.THIRD_TO_HOME,
+                                    eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                    pitchEnvironmentTarget,
+                                    pitcher,
+                                    offense,
+                                    pitchIndex,
+                                    defense,
+                                    throwFrom: fielderPlayer,
+                                    chanceRunnerSafe,
+                                    isForce: false,
+                                    isFieldersChoice: true
+                                })
+                            }
+                        }
+
+                        if (runner2B != undefined) {
+                            runner2bRA.isForce = (runner1B != undefined)
+
+                            if (runner2bRA.isForce) {
+                                let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner2B.hittingRatings.speed, 1)
+
+                                this.runnerToBaseWithThrow({
+                                    gameRNG,
+                                    runnerResult,
+                                    allEvents,
                                     runnerEvents: events,
                                     runnerEvent: runner2bRA,
                                     hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
+                                    defensiveCredits,
                                     start: BaseResult.SECOND,
                                     end: BaseResult.THIRD,
                                     eventType: OfficialRunnerResult.SECOND_TO_THIRD,
                                     eventTypeOut: OfficialRunnerResult.FORCE_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
+                                    pitchEnvironmentTarget,
+                                    pitcher,
+                                    offense,
+                                    pitchIndex,
+                                    defense,
                                     throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
+                                    chanceRunnerSafe,
                                     isForce: true,
                                     isFieldersChoice: true
                                 })
-    
-                            } else {
-    
-                                //If there's a runner on third or it's hit to the right side of the infield then go without a throw 
-                                if (runner3bRA || (fielderPlayer.currentPosition == Position.SECOND_BASE || fielderPlayer.currentPosition == Position.FIRST_BASE || fielderPlayer.currentPosition == Position.CATCHER) ) {
-                                    //If hit to right side of infield then go without a throw
-                                    this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, false)
-                                }
-    
-                                //Otherwise just stay there
+                            } else if (shouldAdvance(advancement?.runnerOnSecondToThirdOnGroundBall)) {
+                                this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, false)
                             }
-    
                         }
-    
-                        //Handle runner on 1B
-                        if (runner1B != undefined) {
-    
-                            runner1bRA.isForce = true
-    
-                            if (RunnerActions.getThrowCount(events) < 1) {
 
-                                let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner1B.hittingRatings.speed, 1) //low chance
+                        if (runner1B != undefined) {
+                            runner1bRA.isForce = true
+
+                            if (RunnerActions.getThrowCount(events) < 1) {
+                                let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner1B.hittingRatings.speed, 1)
 
                                 this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
+                                    gameRNG,
+                                    runnerResult,
+                                    allEvents,
                                     runnerEvents: events,
                                     runnerEvent: runner1bRA,
                                     hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
+                                    defensiveCredits,
                                     start: BaseResult.FIRST,
                                     end: BaseResult.SECOND,
                                     eventType: OfficialRunnerResult.FIRST_TO_SECOND,
                                     eventTypeOut: OfficialRunnerResult.FORCE_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
+                                    pitchEnvironmentTarget,
+                                    pitcher,
+                                    offense,
+                                    pitchIndex,
+                                    defense,
                                     throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
+                                    chanceRunnerSafe,
                                     isForce: true,
                                     isFieldersChoice: true
                                 })
-
                             } else {
-
-                                //Throw already made. Just advance.
                                 this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, true)
-
                             }
-
                         }
 
-                        //Handle hitter
                         if (RunnerActions.getThrowCount(events) > 0) {
-                            //We've already made a throw
+                            let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, hitter.hittingRatings.speed, 75)
 
-                            //Try for double play. Always go for hitter for now.
-                            let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, hitter.hittingRatings.speed, 75) //high chance they are safe
-    
                             this.runnerToBaseWithThrow({
-                                gameRNG: gameRNG,
-                                runnerResult: runnerResult,
-                                allEvents: allEvents,
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
                                 runnerEvents: events,
                                 runnerEvent: hitterRA,
                                 hitterEvent: hitterRA,
-                                defensiveCredits: defensiveCredits,
+                                defensiveCredits,
                                 start: BaseResult.HOME,
                                 end: BaseResult.FIRST,
                                 eventType: OfficialRunnerResult.HOME_TO_FIRST,
                                 eventTypeOut: OfficialRunnerResult.FORCE_OUT,
-                                leagueAverage: leagueAverages,
-                                defense: defense,
-                                pitcher: pitcher,
-                                offense: offense,
-                                pitchIndex: pitchIndex,
+                                pitchEnvironmentTarget,
+                                defense,
+                                pitcher,
+                                offense,
+                                pitchIndex,
                                 throwFrom: fielderPlayer,
-                                chanceRunnerSafe: chanceRunnerSafe,
+                                chanceRunnerSafe,
                                 isForce: true,
                                 isFieldersChoice: true
                             })
-
-
                         } else {
+                            let chanceRunnerSafe = this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, hitter.hittingRatings.speed, 1)
 
-                            //Throw is to 1B
-                            let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, hitter.hittingRatings.speed, 1) //low chance
-        
                             this.runnerToBaseWithThrow({
-                                gameRNG: gameRNG,
-                                runnerResult: runnerResult,
-                                allEvents: allEvents,
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
                                 runnerEvents: events,
                                 runnerEvent: hitterRA,
                                 hitterEvent: hitterRA,
-                                defensiveCredits: defensiveCredits,
+                                defensiveCredits,
                                 start: BaseResult.HOME,
                                 end: BaseResult.FIRST,
                                 eventType: OfficialRunnerResult.HOME_TO_FIRST,
                                 eventTypeOut: OfficialRunnerResult.FORCE_OUT,
-                                leagueAverage: leagueAverages,
-                                pitcher: pitcher,
-                                offense: offense,
-                                pitchIndex: pitchIndex,
-                                defense: defense,
+                                pitchEnvironmentTarget,
+                                defense,
+                                pitcher,
+                                offense,
+                                pitchIndex,
                                 throwFrom: fielderPlayer,
-                                chanceRunnerSafe: chanceRunnerSafe,
+                                chanceRunnerSafe,
                                 isForce: true,
                                 isFieldersChoice: false
                             })
                         }
-    
+
                         break
-    
                     }
-        
+
                     break
-    
+
                 case PlayResult.BB:
-    
-                    //Move runners
                     if (runnerResult.third != undefined && runnerResult.second != undefined && runnerResult.first != undefined) {
                         this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, true)
                     }
-    
+
                     if (runnerResult.second != undefined && runnerResult.first != undefined) {
                         this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, true)
                     }
-    
+
                     if (runnerResult.first != undefined) {
                         this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, true)
                     }
-    
+
                     this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.FIRST, PlayResult.BB, true)
-    
                     break
-    
+
                 case PlayResult.HIT_BY_PITCH:
-    
-                    //Move runners
                     if (runnerResult.third != undefined && runnerResult.second != undefined && runnerResult.first != undefined) {
                         this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, true)
                     }
-    
+
                     if (runnerResult.second != undefined && runnerResult.first != undefined) {
                         this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, true)
                     }
-    
+
                     if (runnerResult.first != undefined) {
                         this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, true)
                     }
-    
+
                     this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.FIRST, PlayResult.HIT_BY_PITCH, true)
-    
                     break
-    
-                case PlayResult.SINGLE:
-    
-                    //Move runners
+
+                case PlayResult.SINGLE: {
+                    const outsBeforePlay = RunnerActions.getTotalOuts(allEvents)
+
                     if (runnerResult.third != undefined) {
-                        this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, (runnerResult.first != undefined && runnerResult.second != undefined) )
+                        this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, (runnerResult.first != undefined && runnerResult.second != undefined))
                     }
-    
+
                     if (runnerResult.second != undefined) {
-    
-                        //Runner on 2nd moves 1 base by default.
-                        //score if hit to outfield. not shallow outfield unless fast runner. roll for outfield throw.
-                        this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, runnerResult.first != undefined )
-    
-                        if (AtBatInfo.isToOF(fielderPlayer?.currentPosition) && shallowDeep != ShallowDeep.SHALLOW) {
-    
-                            let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner2B.hittingRatings.speed, 75) //high chance they are safe
-    
-                            if (chanceRunnerSafe > 90) {
-    
-                                //Add new event for throw result.
-                                let clone:RunnerEvent = JSON.parse(JSON.stringify(runner2bRA))
-    
-                                clone.movement.start = BaseResult.THIRD
-                                clone.movement.end = undefined
+                        this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.THIRD, OfficialRunnerResult.SECOND_TO_THIRD, runnerResult.first != undefined)
 
-                                events.push(clone)
-    
-                                this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
-                                    runnerEvents: events,
-                                    runnerEvent: clone,
-                                    hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
-                                    start: BaseResult.THIRD,
-                                    end: BaseResult.HOME,
-                                    eventType: OfficialRunnerResult.THIRD_TO_HOME,
-                                    eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
-                                    throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
-                                    isForce: false,
-                                    isFieldersChoice: false
-                                })
-        
-                            }
-    
+                        const chanceRunnerSafe = AtBatInfo.isToOF(fielderPlayer?.currentPosition) && shallowDeep != ShallowDeep.SHALLOW
+                            ? this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner2B.hittingRatings.speed, 75)
+                            : 0
+
+                        const sendRunnerHome =
+                            AtBatInfo.isToOF(fielderPlayer?.currentPosition) &&
+                            shallowDeep != ShallowDeep.SHALLOW &&
+                            (outsBeforePlay >= 2 || shouldRiskAdvance(advancement?.runnerOnSecondToHomeOnSingle, chanceRunnerSafe, 90))
+
+                        if (sendRunnerHome) {
+                            let clone: RunnerEvent = JSON.parse(JSON.stringify(runner2bRA))
+                            clone.movement.start = BaseResult.THIRD
+                            clone.movement.end = undefined
+
+                            events.push(clone)
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
+                                runnerEvents: events,
+                                runnerEvent: clone,
+                                hitterEvent: hitterRA,
+                                defensiveCredits,
+                                start: BaseResult.THIRD,
+                                end: BaseResult.HOME,
+                                eventType: OfficialRunnerResult.THIRD_TO_HOME,
+                                eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                pitchEnvironmentTarget,
+                                pitcher,
+                                offense,
+                                pitchIndex,
+                                defense,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe,
+                                isForce: false,
+                                isFieldersChoice: false
+                            })
                         }
                     }
-    
+
                     if (runnerResult.first != undefined) {
-    
-                        //Advance to 2B by default
-                        this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, true )
-    
-                        //go to third if fast runner. roll for outfield throw. 
-                        if (fielderPlayer.currentPosition == Position.RIGHT_FIELD || fielderPlayer.currentPosition == Position.CENTER_FIELD) {
-    
-                            let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner1B.hittingRatings.speed, 75) //high chance they are safe
-    
-                            if (chanceRunnerSafe > 90) {
-    
-                                //Add new event for throw result.
-                                let clone:RunnerEvent = JSON.parse(JSON.stringify(runner1bRA))
-    
-                                clone.movement.start = BaseResult.SECOND
-                                clone.movement.end = undefined
+                        this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.SECOND, OfficialRunnerResult.FIRST_TO_SECOND, true)
 
-                                events.push(clone)
-    
-                                this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
-                                    runnerEvents: events,
-                                    runnerEvent: clone,
-                                    hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
-                                    start: BaseResult.SECOND,
-                                    end: BaseResult.THIRD,
-                                    eventType: OfficialRunnerResult.SECOND_TO_THIRD,
-                                    eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
-                                    throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
-                                    isForce: false,
-                                    isFieldersChoice: false
-                                })
-        
-                            }
-    
+                        const chanceRunnerSafe = (fielderPlayer.currentPosition == Position.RIGHT_FIELD || fielderPlayer.currentPosition == Position.CENTER_FIELD)
+                            ? this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner1B.hittingRatings.speed, 75)
+                            : 0
+
+                        const sendRunnerToThird =
+                            (fielderPlayer.currentPosition == Position.RIGHT_FIELD || fielderPlayer.currentPosition == Position.CENTER_FIELD) &&
+                            shouldRiskAdvance(advancement?.runnerOnFirstToThirdOnSingle, chanceRunnerSafe, outsBeforePlay === 1 ? 90 : 95)
+
+                        if (sendRunnerToThird) {
+                            let clone: RunnerEvent = JSON.parse(JSON.stringify(runner1bRA))
+                            clone.movement.start = BaseResult.SECOND
+                            clone.movement.end = undefined
+
+                            events.push(clone)
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
+                                runnerEvents: events,
+                                runnerEvent: clone,
+                                hitterEvent: hitterRA,
+                                defensiveCredits,
+                                start: BaseResult.SECOND,
+                                end: BaseResult.THIRD,
+                                eventType: OfficialRunnerResult.SECOND_TO_THIRD,
+                                eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                pitchEnvironmentTarget,
+                                pitcher,
+                                offense,
+                                pitchIndex,
+                                defense,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe,
+                                isForce: false,
+                                isFieldersChoice: false
+                            })
                         }
-    
                     }
-    
-                    //Hitter goes to 1B
+
                     this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.FIRST, PlayResult.SINGLE, true)
-    
                     break
-    
-                case PlayResult.DOUBLE:
-    
-                    //Move runners. Third and second score.
+                }
+
+                case PlayResult.DOUBLE: {
+                    const outsBeforePlay = RunnerActions.getTotalOuts(allEvents)
+
                     this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, (runnerResult.first != undefined && runnerResult.second != undefined))
                     this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.HOME, OfficialRunnerResult.SECOND_TO_HOME, false)
-    
-                    if (runnerResult.first != undefined) {
-    
-                        //Advance to 3B by default
-                        this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.THIRD, OfficialRunnerResult.FIRST_TO_THIRD, false)
-    
-                        //Score unless hit to shallow OF. roll for outfield throw. 
-                        if (shallowDeep != ShallowDeep.SHALLOW) {
-    
-                            let chanceRunnerSafe = this.getChanceRunnerSafe(leagueAverages, fielderPlayer.hittingRatings.arm, runner1B.hittingRatings.speed, 60) //kinda high chance they are safe
-    
-                            if (chanceRunnerSafe > 90) {
-    
-                                //Add new event for throw result.
-                                let clone:RunnerEvent = JSON.parse(JSON.stringify(runner1bRA))
-    
-                                clone.movement.start = BaseResult.THIRD
-                                clone.movement.end = undefined
-                                
-                                events.push(clone)
-    
-                                this.runnerToBaseWithThrow({
-                                    gameRNG: gameRNG,
-                                    runnerResult: runnerResult,
-                                    allEvents: allEvents,
-                                    runnerEvents: events,
-                                    runnerEvent: clone,
-                                    hitterEvent: hitterRA,
-                                    defensiveCredits: defensiveCredits,
-                                    start: BaseResult.THIRD,
-                                    end: BaseResult.HOME,
-                                    eventType: OfficialRunnerResult.THIRD_TO_HOME,
-                                    eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
-                                    leagueAverage: leagueAverages,
-                                    pitcher: pitcher,
-                                    offense: offense,
-                                    pitchIndex: pitchIndex,
-                                    defense: defense,
-                                    throwFrom: fielderPlayer,
-                                    chanceRunnerSafe: chanceRunnerSafe,
-                                    isForce: false,
-                                    isFieldersChoice: false
-                                })
-        
-                            }
-    
-                        }
-    
-                    }
-    
-                    this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.SECOND, PlayResult.DOUBLE, true)
-    
-                    break
-    
-                case PlayResult.TRIPLE:
-    
-                    //Move runners
-                    this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, true)
-                    this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.HOME, OfficialRunnerResult.SECOND_TO_HOME, true)
-                    this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.HOME, OfficialRunnerResult.FIRST_TO_HOME, true)
-    
-                    this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.THIRD, PlayResult.TRIPLE, true)
-    
-                    break
-    
-                case PlayResult.HR:
-    
-                    this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, true)
-                    this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.HOME, OfficialRunnerResult.SECOND_TO_HOME, true)
-                    this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.HOME, OfficialRunnerResult.FIRST_TO_HOME, true)
-    
-                    this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.HOME, PlayResult.HR, true)
-    
-                    break
-    
-            }
 
-        } catch(ex) {
+                    if (runnerResult.first != undefined) {
+                        this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.THIRD, OfficialRunnerResult.FIRST_TO_THIRD, false)
+
+                        const chanceRunnerSafe = shallowDeep != ShallowDeep.SHALLOW
+                            ? this.getChanceRunnerSafe(pitchEnvironmentTarget, fielderPlayer.hittingRatings.arm, runner1B.hittingRatings.speed, 60)
+                            : 0
+
+                        const sendRunnerHome =
+                            shallowDeep != ShallowDeep.SHALLOW &&
+                            shouldRiskAdvance(advancement?.runnerOnFirstToHomeOnDouble, chanceRunnerSafe, outsBeforePlay >= 2 ? 95 : 90)
+
+                        if (sendRunnerHome) {
+                            let clone: RunnerEvent = JSON.parse(JSON.stringify(runner1bRA))
+                            clone.movement.start = BaseResult.THIRD
+                            clone.movement.end = undefined
+
+                            events.push(clone)
+
+                            this.runnerToBaseWithThrow({
+                                gameRNG,
+                                runnerResult,
+                                allEvents,
+                                runnerEvents: events,
+                                runnerEvent: clone,
+                                hitterEvent: hitterRA,
+                                defensiveCredits,
+                                start: BaseResult.THIRD,
+                                end: BaseResult.HOME,
+                                eventType: OfficialRunnerResult.THIRD_TO_HOME,
+                                eventTypeOut: OfficialRunnerResult.TAGGED_OUT,
+                                pitchEnvironmentTarget,
+                                pitcher,
+                                offense,
+                                pitchIndex,
+                                defense,
+                                throwFrom: fielderPlayer,
+                                chanceRunnerSafe,
+                                isForce: false,
+                                isFieldersChoice: false
+                            })
+                        }
+                    }
+
+                    this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.SECOND, PlayResult.DOUBLE, true)
+                    break
+                }
+
+                case PlayResult.TRIPLE:
+                    this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, true)
+                    this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.HOME, OfficialRunnerResult.SECOND_TO_HOME, true)
+                    this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.HOME, OfficialRunnerResult.FIRST_TO_HOME, true)
+                    this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.THIRD, PlayResult.TRIPLE, true)
+                    break
+
+                case PlayResult.HR:
+                    this.runnerToBase(runnerResult, runner3bRA, BaseResult.THIRD, BaseResult.HOME, OfficialRunnerResult.THIRD_TO_HOME, true)
+                    this.runnerToBase(runnerResult, runner2bRA, BaseResult.SECOND, BaseResult.HOME, OfficialRunnerResult.SECOND_TO_HOME, true)
+                    this.runnerToBase(runnerResult, runner1bRA, BaseResult.FIRST, BaseResult.HOME, OfficialRunnerResult.FIRST_TO_HOME, true)
+                    this.runnerToBase(runnerResult, hitterRA, BaseResult.HOME, BaseResult.HOME, PlayResult.HR, true)
+                    break
+            }
+        } catch (ex) {
             if (!(ex instanceof InningEndingEvent)) throw ex
         }
 
         return RunnerActions.filterNonEvents(events, hitter)
-
-
     }
 
     generateRunnerEventsFromPitch(command:SimPitchCommand, pitchIndex:number, result:SimPitchResult) {
@@ -2391,7 +2557,7 @@ class RunnerActions {
                 command.halfInningRunnerEvents,
                 pitchEvents,
                 command.play.credits,
-                command.leagueAverages,
+                command.pitchEnvironmentTarget,
                 command.catcher,
                 command.defense,
                 command.offense,
@@ -2431,15 +2597,6 @@ class RunnerActions {
         this.validateRunners(runnerResult.first, runnerResult.second, runnerResult.third)
     }
 
-    private getStealSettingsForState( leagueAverages: LeagueAverage, pitchCount?: PitchCount ): StolenBaseByCount {
-
-        let table: StolenBaseByCount[] = leagueAverages.steal
-
-        return table.find(r => r.balls === pitchCount.balls && r.strikes === pitchCount.strikes)
-    }
-
-
-
     applyMinMaxToNumber(num, min, max) {
 
         num = Math.round(num)
@@ -2461,124 +2618,192 @@ class SimRolls {
         private rollChartService:RollChartService
     ) {}
 
-    getIntentZone(rng) {
+    getIntentZone(rng: () => number) {
         const index = Math.floor(rng() * ALL_PITCH_ZONES.length)
         return ALL_PITCH_ZONES[index]
     }
 
-    getHitQuality(gameRNG, leagueAverages: LeagueAverage, pitchQualityChange: number, teamDefenseChange: number, fielderDefenseChange: number, contact: Contact, guessPitch: boolean, powerRollChart: RollChart): number {
+    getHitQuality(gameRNG: () => number, pitchEnvironmentTarget: PitchEnvironmentTarget, pitchQualityChange: number, guessPitch: boolean, contact: Contact, playResult?: PlayResult): ContactQuality {
+        const tuning = pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.contactQuality
+        const hitterPhysics = pitchEnvironmentTarget.importReference.hitter.physics
 
-        const singleStart = this.rollChartService.getFirstRollIndex(powerRollChart, PlayResult.SINGLE)
-        const doubleStart = this.rollChartService.getFirstRollIndex(powerRollChart, PlayResult.DOUBLE)
-        const tripleStart = this.rollChartService.getFirstRollIndex(powerRollChart, PlayResult.TRIPLE)
+        const getTrajectory = (): "groundBall" | "lineDrive" | "flyBall" | "popup" => {
+            if (playResult === PlayResult.HR) return "flyBall"
+            if (playResult === PlayResult.TRIPLE && contact === Contact.GROUNDBALL) return "lineDrive"
+            if (contact === Contact.GROUNDBALL) return "groundBall"
+            if (contact === Contact.LINE_DRIVE) return "lineDrive"
 
-        const doubleBandSize = Math.max(1, tripleStart - doubleStart)
-        const lowDoubleTarget = doubleStart + Math.floor(doubleBandSize * 0.33)
+            const flyBalls = asNumber(pitchEnvironmentTarget.importReference?.hitter?.flyBalls, 0)
+            const popups = asNumber(pitchEnvironmentTarget.importReference?.hitter?.popups, 0)
+            const popupShare = (flyBalls + popups) > 0 ? popups / (flyBalls + popups) : 0
 
-        const base = Rolls.getRoll(gameRNG, 0, 999)
-
-        let roll = base
-
-        roll += leagueAverages.tuning.fullPitchQualityBonus * pitchQualityChange
-        roll += leagueAverages.tuning.fullTeamDefenseBonus * teamDefenseChange
-        roll += leagueAverages.tuning.fullFielderDefenseBonus * fielderDefenseChange
-
-        switch (contact) {
-            case Contact.GROUNDBALL:
-                roll += leagueAverages.tuning.groundballOutcomeBoost
-                break
-
-            case Contact.FLY_BALL:
-                roll += leagueAverages.tuning.flyballOutcomeBoost
-                break
-
-            case Contact.LINE_DRIVE:
-                roll += leagueAverages.tuning.lineDriveOutcomeBoost
-                break
+            return gameRNG() < popupShare ? "popup" : "flyBall"
         }
 
-        roll = Math.max(0, Math.min(999, roll))
+        const getOutcomeKey = (): "out" | "single" | "double" | "triple" | "hr" | undefined => {
+            switch (playResult) {
+                case PlayResult.OUT:
+                    return "out"
+                case PlayResult.SINGLE:
+                    return "single"
+                case PlayResult.DOUBLE:
+                    return "double"
+                case PlayResult.TRIPLE:
+                    return "triple"
+                case PlayResult.HR:
+                    return "hr"
+            }
 
-        const currentResult = powerRollChart.entries.get(Math.round(roll))
-
-        switch (contact) {
-            case Contact.GROUNDBALL:
-                if (currentResult === PlayResult.DOUBLE) {
-                    roll -= leagueAverages.tuning.groundballDoublePenalty
-                } else if (currentResult === PlayResult.TRIPLE) {
-                    roll -= leagueAverages.tuning.groundballTriplePenalty
-                } else if (currentResult === PlayResult.HR) {
-                    roll -= leagueAverages.tuning.groundballHRPenalty
-                }
-                break
-
-            case Contact.FLY_BALL:
-                if (currentResult === PlayResult.HR) {
-                    roll -= leagueAverages.tuning.flyballHRPenalty
-                }
-                break
-
-            case Contact.LINE_DRIVE:
-                if (currentResult === PlayResult.OUT) {
-                    if (roll >= singleStart - leagueAverages.tuning.lineDriveOutToSingleWindow) {
-                        roll += leagueAverages.tuning.lineDriveOutToSingleBoost
-                    }
-                }
-
-                if (currentResult === PlayResult.SINGLE) {
-                    roll += (lowDoubleTarget - roll) * leagueAverages.tuning.lineDriveSingleToDoubleFactor
-                }
-                break
+            return undefined
         }
 
-        return Math.max(0, Math.min(999, Math.round(roll)))
+        const trajectory = getTrajectory()
+        const evLaModel = (pitchEnvironmentTarget.battedBall as any)?.evLaModel?.[trajectory]
+        const outcomeKey = getOutcomeKey()
+        const outcomeKernel = outcomeKey ? (pitchEnvironmentTarget.battedBall as any)?.outcomeModel?.[trajectory]?.[outcomeKey] : undefined
+        const sourceModel = outcomeKernel ?? evLaModel
+
+        if (!sourceModel) {
+            throw new Error(`Missing battedBall model for trajectory ${trajectory}`)
+        }
+
+        const trajectoryPhysics: any = (hitterPhysics.byTrajectory as any)?.[trajectory]
+
+        if (!trajectoryPhysics) {
+            throw new Error(`Missing hitter physics for trajectory ${trajectory}`)
+        }
+
+        const normal = (): number => {
+            const u1 = Math.max(Number.MIN_VALUE, gameRNG())
+            const u2 = Math.max(Number.MIN_VALUE, gameRNG())
+            return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+        }
+
+        const getStat = (trajectoryPhysics: any, key: "exitVelocity" | "launchAngle" | "distance"): { count: number, total: number, totalSquared: number, avg: number } => {
+            const direct = trajectoryPhysics?.[key]
+
+            if (direct) {
+                return {
+                    count: asNumber(direct.count, 0),
+                    total: asNumber(direct.total, 0),
+                    totalSquared: asNumber(direct.totalSquared, 0),
+                    avg: asNumber(direct.avg, 0)
+                }
+            }
+
+            if (key === "exitVelocity") {
+                return {
+                    count: asNumber(trajectoryPhysics.count, 0),
+                    total: asNumber(trajectoryPhysics.totalExitVelocity, 0),
+                    totalSquared: asNumber(trajectoryPhysics.totalExitVelocitySquared, 0),
+                    avg: asNumber(trajectoryPhysics.avgExitVelocity, hitterPhysics.exitVelocity?.avg ?? 0)
+                }
+            }
+
+            if (key === "launchAngle") {
+                return {
+                    count: asNumber(trajectoryPhysics.count, 0),
+                    total: asNumber(trajectoryPhysics.totalLaunchAngle, 0),
+                    totalSquared: asNumber(trajectoryPhysics.totalLaunchAngleSquared, 0),
+                    avg: asNumber(trajectoryPhysics.avgLaunchAngle, hitterPhysics.launchAngle?.avg ?? 0)
+                }
+            }
+
+            return {
+                count: asNumber(trajectoryPhysics.count, 0),
+                total: asNumber(trajectoryPhysics.totalDistance, 0),
+                totalSquared: asNumber(trajectoryPhysics.totalDistanceSquared, 0),
+                avg: asNumber(trajectoryPhysics.avgDistance, hitterPhysics.distance?.avg ?? 0)
+            }
+        }
+
+        const sampleMoment = (stat: { count: number, total: number, totalSquared: number, avg: number }): number => {
+            const sd = _getStdDev(stat)
+            if (!Number.isFinite(sd) || sd <= 0) return stat.avg
+            return stat.avg + Rolls.getRollUnrounded(gameRNG, -sd, sd)
+        }
+
+        const corr = clamp(asNumber(sourceModel.evLaCorrelation, 0), -0.95, 0.95)
+        const evZ = normal()
+        const rawLaZ = normal()
+        const laZ = (corr * evZ) + (Math.sqrt(1 - (corr * corr)) * rawLaZ)
+
+        const pitchEffect = clamp(pitchQualityChange * -1, -1, 1)
+        const guessEffect = guessPitch ? Math.max(0, pitchEffect) : 0
+
+        let exitVelocity = asNumber(sourceModel.evMean, evLaModel?.evMean ?? 0) + (Math.max(Number.EPSILON, asNumber(sourceModel.evStdDev, evLaModel?.evStdDev ?? 1)) * evZ)
+        let launchAngle = asNumber(sourceModel.laMean, evLaModel?.laMean ?? 0) + (Math.max(Number.EPSILON, asNumber(sourceModel.laStdDev, evLaModel?.laStdDev ?? 1)) * laZ)
+        let distance = sampleMoment(getStat(trajectoryPhysics, "distance"))
+
+        exitVelocity += (asNumber(tuning?.evScale, 0) * (pitchEffect + guessEffect))
+        launchAngle += (asNumber(tuning?.laScale, 0) * pitchEffect)
+        distance += (asNumber(tuning?.distanceScale, 0) * (pitchEffect + guessEffect))
+
+        exitVelocity = Math.max(0, exitVelocity)
+        distance = Math.max(0, distance)
+
+        const coordY =
+            contact === Contact.GROUNDBALL ? clamp(distance * 0.6, 20, 190) :
+            trajectory === "popup" ? clamp(distance * 0.65, 70, 210) :
+            contact === Contact.LINE_DRIVE ? clamp(distance, 130, 320) :
+            clamp(distance, 170, 360)
+
+        const sprayModel = (pitchEnvironmentTarget.battedBall as any)?.sprayModel?.[trajectory]
+
+        let coordX = 0
+
+        if (sprayModel) {
+            const pullShare = Math.max(0, asNumber(sprayModel.pullShare, 0.33))
+            const centerShare = Math.max(0, asNumber(sprayModel.centerShare, 0.34))
+            const oppoShare = Math.max(0, asNumber(sprayModel.oppoShare, 0.33))
+            const totalShare = pullShare + centerShare + oppoShare
+            const roll = Rolls.getRollUnrounded(gameRNG, 0, totalShare > 0 ? totalShare : 1)
+
+            const mean =
+                roll < pullShare ? asNumber(sprayModel.pullMean, -45) :
+                roll < pullShare + centerShare ? asNumber(sprayModel.centerMean, 0) :
+                asNumber(sprayModel.oppoMean, 45)
+
+            coordX = mean + (normal() * asNumber(sprayModel.stdDev, 35))
+        }
+
+        return {
+            launchAngle,
+            exitVelocity,
+            distance,
+            coordX,
+            coordY
+        }
     }
+    
+    getSwingResult(gameRNG: () => number, hitterChange: HitterChange, pitchEnvironmentTarget: PitchEnvironmentTarget, inZone: boolean, pitchQuality: number, guessPitch: boolean, pitchCount: PitchCount): SwingResult {
+        let pitchQualityChange = PlayerChange.getChange(AVG_PITCH_QUALITY, pitchQuality)
 
-    getSwingResult(gameRNG, hitterChange: HitterChange, leagueAverage: LeagueAverage, inZone: boolean, pitchQuality: number, guessPitch: boolean, pitchCount: PitchCount): SwingResult {
+        const t = pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning
+        const swingTuning = t?.swing
+        const contactTuning = t?.contact
+        const behavior = pitchEnvironmentTarget.swing.behaviorByCount.find(b => b.balls === pitchCount.balls && b.strikes === pitchCount.strikes)
 
-        let pitchQualityChange = PlayerChange.getChange(leagueAverage.pitchQuality, pitchQuality)
+        if (!behavior) {
+            throw new Error(`Missing swing behavior for count ${pitchCount.balls}-${pitchCount.strikes}`)
+        }
 
-        const t = leagueAverage.tuning
-
-        const isTwoStrike = pitchCount.strikes >= 2
-        const isThreeBall = pitchCount.balls >= 3
-
-        let swingRate = 0
+        let swingRate = inZone
+            ? behavior.zoneSwingPercent
+            : behavior.chaseSwingPercent
 
         if (inZone) {
-
-            swingRate = t.zoneSwingBase
-
-            swingRate += pitchCount.strikes * t.zoneSwingPerStrike
-            swingRate += pitchCount.balls * t.zoneSwingPerBall
-
-            if (isThreeBall) {
-                swingRate -= t.threeBallZoneSwingPenalty
-            }
-
-            swingRate += pitchQualityChange * t.pitchQualityZoneSwingEffect * -1
+            swingRate += pitchQualityChange * (swingTuning?.pitchQualityZoneSwingEffect ?? 0) * -1
 
             if (APPLY_PLAYER_CHANGES) {
-                swingRate += hitterChange.plateDisiplineChange * t.disciplineZoneSwingEffect
+                swingRate += hitterChange.plateDisiplineChange * (swingTuning?.disciplineZoneSwingEffect ?? 0)
             }
-
         } else {
-
-            swingRate = t.chaseSwingBase
-
-            swingRate += pitchCount.strikes * t.chaseSwingPerStrike
-            swingRate += pitchCount.balls * t.chaseSwingPerBall
-
-            if (isThreeBall) {
-                swingRate -= t.threeBallChaseSwingPenalty
-            }
-
-            swingRate += pitchQualityChange * t.pitchQualityChaseSwingEffect
+            swingRate += pitchQualityChange * (swingTuning?.pitchQualityChaseSwingEffect ?? 0)
 
             if (APPLY_PLAYER_CHANGES) {
-                swingRate += hitterChange.plateDisiplineChange * t.disciplineChaseSwingEffect * -1
+                swingRate += hitterChange.plateDisiplineChange * (swingTuning?.disciplineChaseSwingEffect ?? 0) * -1
             }
-
         }
 
         swingRate = Math.max(0, Math.min(100, swingRate))
@@ -2586,25 +2811,14 @@ class SimRolls {
         let die = Rolls.getRollUnrounded(gameRNG, 0, 100)
 
         if (die < swingRate) {
+            let swingContactRate = inZone
+                ? behavior.zoneContactPercent
+                : behavior.chaseContactPercent
 
-            let swingContactRate = inZone ? t.zoneContactBase : t.chaseContactBase
-
-            if (inZone) {
-                swingContactRate += pitchCount.strikes * t.zoneContactPerStrike
-                swingContactRate += pitchCount.balls * t.zoneContactPerBall
-            } else {
-                swingContactRate += pitchCount.strikes * t.chaseContactPerStrike
-                swingContactRate += pitchCount.balls * t.chaseContactPerBall
-            }
-
-            if (isTwoStrike) {
-                swingContactRate += inZone ? t.twoStrikeZoneContactBonus : t.twoStrikeChaseContactBonus
-            }
-
-            swingContactRate += pitchQualityChange * t.pitchQualityContactEffect * -1
+            swingContactRate += pitchQualityChange * (contactTuning?.pitchQualityContactEffect ?? 0) * -1
 
             if (APPLY_PLAYER_CHANGES) {
-                swingContactRate += hitterChange.contactChange * t.contactSkillEffect * -1
+                swingContactRate += hitterChange.contactChange * (contactTuning?.contactSkillEffect ?? 0) * -1
             }
 
             swingContactRate = Math.max(0, Math.min(100, swingContactRate))
@@ -2612,34 +2826,23 @@ class SimRolls {
             let die2 = Rolls.getRollUnrounded(gameRNG, 0, 100)
 
             if (die2 < swingContactRate) {
+                const foulContactRate = Math.max(0, Math.min(100, behavior.foulContactPercent))
+                let die3 = Rolls.getRollUnrounded(gameRNG, 0, 100)
 
-                let foulRate = t.foulRateBase
-
-                if (isTwoStrike) {
-                    foulRate += t.twoStrikeFoulBonus
-                }
-
-                foulRate = Math.max(0, Math.min(100, foulRate))
-
-                let die3 = Rolls.getRoll(gameRNG, 0, 99)
-
-                if (die3 > 99 - foulRate) {
+                if (die3 < foulContactRate) {
                     return SwingResult.FOUL
-                } else {
-                    return SwingResult.FAIR
                 }
 
-            } else {
-                return SwingResult.STRIKE
+                return SwingResult.FAIR
             }
 
-        } else {
-            return SwingResult.NO_SWING
+            return SwingResult.STRIKE
         }
 
+        return SwingResult.NO_SWING
     }
-
-    isInZone(gameRNG, locationQuality:number, inZoneRate:number) {
+    
+    isInZone(gameRNG: () => number, locationQuality:number, inZoneRate:number) {
 
         //90% of the chance should be a coin-flip (better location doesn't necessarily mean a strike)
         //and also with pitchers with poor location skills they'll walk like 80% of players making it unplayable.
@@ -2650,23 +2853,23 @@ class SimRolls {
         return chance >= (99 - inZoneRate)
     }
 
-    getFielder(gameRNG, leagueAverages: LeagueAverage, hitterHandedness:Handedness): Position {
+    getFielder(gameRNG: () => number, pitchEnvironmentTarget:PitchEnvironmentTarget, hitterHandedness:Handedness): Position {
 
-        let rollChart = this.rollChartService.getFielderChanceRollChart(hitterHandedness == Handedness.R ? leagueAverages.fielderChanceR : leagueAverages.fielderChanceL)
+        let rollChart = this.rollChartService.getFielderChanceRollChart(hitterHandedness == Handedness.R ? pitchEnvironmentTarget.fielderChance.vsR : pitchEnvironmentTarget.fielderChance.vsL)
 
         return rollChart.entries.get(Rolls.getRoll(gameRNG, 0, 99)) as Position
 
     }
 
-    getShallowDeep(gameRNG: any, leagueAverages: LeagueAverage): ShallowDeep {
+    getShallowDeep(gameRNG: any, pitchEnvironmentTarget:PitchEnvironmentTarget): ShallowDeep {
 
-        let rollChart = this.rollChartService.getShallowDeepRollChart(leagueAverages.shallowDeepChance)
+        let rollChart = this.rollChartService.getShallowDeepRollChart(pitchEnvironmentTarget.fielderChance.shallowDeep)
 
         return rollChart.entries.get(Rolls.getRoll(gameRNG, 0, 99)) as ShallowDeep
 
     }    
 
-    getThrowResult(gameRNG, overallSafeChance:number) : ThrowRoll {
+    getThrowResult(gameRNG: () => number, overallSafeChance:number) : ThrowRoll {
 
         let roll = Rolls.getRoll(gameRNG, 1, 100)
 
@@ -2686,61 +2889,41 @@ class SimRolls {
         }
     }    
 
-    getStealResult(gameRNG) {
+    getStealResult(gameRNG: () => number) {
 
         //Don't steal every time. 
         return Rolls.getRoll(gameRNG, 0, 999)
 
     }
 
+    getPitchQuality(gameRNG: () => number, pitcherChange: PitcherChange, pitchEnvironmentTarget: PitchEnvironmentTarget): PitchQuality {
 
-    getPowerQuality(gameRNG, powerChange: number): number {
+        const physics = pitchEnvironmentTarget.importReference.pitcher.physics
 
-        let roll =  Rolls.getRollUnrounded(gameRNG, 0, 100)
+        const velocityAvg = physics.velocity.avg
+        const velocityStdDev = _getStdDev(physics.velocity)
 
-        if (APPLY_PLAYER_CHANGES) {
-            roll += (roll * powerChange * PLAYER_CHANGE_SCALE)
+        const horizontalBreakAvg = physics.horizontalBreak.avg
+        const horizontalBreakStdDev = _getStdDev(physics.horizontalBreak)
+
+        const verticalBreakAvg = physics.verticalBreak.avg
+        const verticalBreakStdDev = _getStdDev(physics.verticalBreak)
+
+        const velocityRandom = Rolls.getRollUnrounded(gameRNG, -velocityStdDev, velocityStdDev)
+        const horizontalBreakRandom = Rolls.getRollUnrounded(gameRNG, -horizontalBreakStdDev, horizontalBreakStdDev)
+        const verticalBreakRandom = Rolls.getRollUnrounded(gameRNG, -verticalBreakStdDev, verticalBreakStdDev)
+
+        const velocity = Math.max(0, velocityAvg + velocityRandom + (velocityAvg * pitcherChange.powerChange * PLAYER_CHANGE_SCALE))
+        const horizontalBreak = horizontalBreakAvg + horizontalBreakRandom + (horizontalBreakAvg * pitcherChange.movementChange * PLAYER_CHANGE_SCALE)
+        const verticalBreak = verticalBreakAvg + verticalBreakRandom + (verticalBreakAvg * pitcherChange.movementChange * PLAYER_CHANGE_SCALE)
+
+        return {
+            velocity: Number(velocity.toFixed(3)),
+            horizontalBreak: Number(horizontalBreak.toFixed(3)),
+            verticalBreak: Number(verticalBreak.toFixed(3))
         }
-
-
-        if (roll < 0) roll = 0
-        if (roll > 100) roll = 100
-
-        return parseFloat(roll.toFixed(2))
-
     }
 
-    getLocationQuality(gameRNG, controlChange: number): number {
-
-        let roll = Rolls.getRollUnrounded(gameRNG, 0, 100)
-
-        if (APPLY_PLAYER_CHANGES) {
-            roll += (roll * controlChange * PLAYER_CHANGE_SCALE) 
-        }
-
-        if (roll < 0) roll = 0
-        if (roll > 100) roll = 100
-
-        return parseFloat(roll.toFixed(2))
-
-    }
-
-    getMovementQuality(gameRNG, movementChange: number): number {
-        
-        let roll =  Rolls.getRollUnrounded(gameRNG, 0, 100)
-
-
-        if (APPLY_PLAYER_CHANGES) {
-            roll += (roll * movementChange * PLAYER_CHANGE_SCALE)
-        }
-
-
-        if (roll < 0) roll = 0
-        if (roll > 100) roll = 100
-
-        return parseFloat(roll.toFixed(2))
-
-    }
 
 }
 
@@ -2750,7 +2933,7 @@ class GamePlayers {
         private rollChartService:RollChartService
     ) {}
 
-    initGamePlayers(leagueAverage:LeagueAverage, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
+    initGamePlayers(pitchEnvironmentTarget:PitchEnvironmentTarget, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
 
         let gamePlayers:GamePlayer[] = []
         
@@ -2900,13 +3083,13 @@ class GamePlayers {
                 },
 
                 hitterChange: {
-                    vsL: PlayerChange.getHitterChange(p.hittingRatings, leagueAverage.hittingRatings, Handedness.L),
-                    vsR: PlayerChange.getHitterChange(p.hittingRatings, leagueAverage.hittingRatings, Handedness.R),
+                    vsL: PlayerChange.getHitterChange(p.hittingRatings, pitchEnvironmentTarget.avgRating, Handedness.L),
+                    vsR: PlayerChange.getHitterChange(p.hittingRatings, pitchEnvironmentTarget.avgRating, Handedness.R),
                 },
 
                 pitcherChange: {
-                    vsL: PlayerChange.getPitcherChange(p.pitchRatings, leagueAverage.pitchRatings, Handedness.L),
-                    vsR: PlayerChange.getPitcherChange(p.pitchRatings, leagueAverage.pitchRatings, Handedness.R),
+                    vsL: PlayerChange.getPitcherChange(p.pitchRatings, pitchEnvironmentTarget.avgRating, Handedness.L),
+                    vsR: PlayerChange.getPitcherChange(p.pitchRatings, pitchEnvironmentTarget.avgRating, Handedness.R),
                 },
     
                 lineupIndex: undefined,
@@ -3033,9 +3216,9 @@ class GameInfo {
 
     } 
 
-    buildTeamInfoFromTeam(leagueAverage:LeagueAverage, team:Team, lineup:Lineup, players:Player[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number, teamOptions?:any) : TeamInfo {
+    buildTeamInfoFromTeam(pitchEnvironmentTarget:PitchEnvironmentTarget, team:Team, lineup:Lineup, players:Player[], startingPitcher:RotationPitcher, color1:string, color2:string, homeAway:HomeAway, startingId:number, teamOptions?:any) : TeamInfo {
 
-        let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(leagueAverage, players, startingPitcher, team._id, color1, color2, startingId)
+        let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(pitchEnvironmentTarget, players, startingPitcher, team._id, color1, color2, startingId)
 
         if (!startingPitcher) throw new Error("No valid starting pitcher.")
 
@@ -3083,11 +3266,11 @@ class GameInfo {
 
     }    
 
-    buildTeamInfoFromPlayers (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number, teamOptions?:any)  {
+    buildTeamInfoFromPlayers (pitchEnvironmentTarget:PitchEnvironmentTarget, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number, teamOptions?:any)  {
 
         let startingPitcher = players.find( p => p.primaryPosition == Position.PITCHER)
 
-        let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(leagueAverage, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
+        let gamePlayer:GamePlayer[] = this.gamePlayers.initGamePlayers(pitchEnvironmentTarget, players, { _id: startingPitcher._id, stamina: 1}, teamId, color1, color2, startingId)
 
         let teamInfo:TeamInfo = Object.assign({
 
@@ -3180,9 +3363,7 @@ class Pitching {
         return `${newVerticalText}_${newHorizontalText}` as PitchZone
     }
 
-    static getPitchQuality(powerQuality: number, locationQuality: number, movementQuality: number) {
-        return Math.round(_getAverage([powerQuality, locationQuality, movementQuality]))
-    }
+
 
 }
 
@@ -3637,7 +3818,7 @@ class LogResult {
         pitcher.pitchResult.ip = LogResult.getIP(pitcher.pitchResult.outs)
 
 
-        pitcher.pitchResult.totalPitchQuality += pitchLog.pitches.map( p => p.quality).reduce((prev, curr) => prev + curr)
+        pitcher.pitchResult.totalPitchQuality += pitchLog.pitches.map( p => p.overallQuality).reduce((prev, curr) => prev + curr)
         pitcher.pitchResult.totalPitchLocationQuality += pitchLog.pitches.map( p => p.locQ).reduce((prev, curr) => prev + curr)
         pitcher.pitchResult.totalPitchMovementQuality += pitchLog.pitches.map( p => p.movQ).reduce((prev, curr) => prev + curr)
         pitcher.pitchResult.totalPitchPowerQuality += pitchLog.pitches.map( p => p.powQ).reduce((prev, curr) => prev + curr)
@@ -3665,7 +3846,7 @@ class LogResult {
         hitter.hitResult.inZoneContact += pitchLog.pitches.filter( p => p.inZone == true && p.con == true ).length || 0
         hitter.hitResult.outZoneContact += pitchLog.pitches.filter( p => p.inZone == false && p.con == true  ).length || 0
 
-        hitter.hitResult.totalPitchQuality += pitchLog.pitches.map( p => p.quality).reduce((prev, curr) => prev + curr)
+        hitter.hitResult.totalPitchQuality += pitchLog.pitches.map( p => p.overallQuality).reduce((prev, curr) => prev + curr)
         hitter.hitResult.totalPitchLocationQuality += pitchLog.pitches.map( p => p.locQ).reduce((prev, curr) => prev + curr)
         hitter.hitResult.totalPitchMovementQuality += pitchLog.pitches.map( p => p.movQ).reduce((prev, curr) => prev + curr)
         hitter.hitResult.totalPitchPowerQuality += pitchLog.pitches.map( p => p.powQ).reduce((prev, curr) => prev + curr)
@@ -3706,7 +3887,7 @@ class Rolls {
 
         //Source 
     // https://github.com/trekhleb/javascript-algorithms/blob/master/src/algorithms/statistics/weighted-random/weightedRandom.js
-    static weightedRandom(gameRNG, items, weights) {
+    static weightedRandom(gameRNG: () => number, items, weights) {
 
         if (items.length !== weights.length) {
             throw new Error('Items and weights must be of the same size')
@@ -3758,41 +3939,37 @@ class PlayerChange {
         return ((b / a * 100) - 100) / 100
     }
 
-    static getPitcherChange(pitchRatings: PitchRatings, laPitchRatings:PitchRatings, hits:Handedness): PitcherChange {
+    static getPitcherChange(pitchRatings: PitchRatings, laRating:number, hits:Handedness): PitcherChange {
 
         let handednessRatings = hits == Handedness.R ? pitchRatings.vsR : pitchRatings.vsL
-        let laHandednessRatings = hits == Handedness.R ? laPitchRatings.vsR : laPitchRatings.vsL
 
         return {
 
-            controlChange: PlayerChange.clamp(PlayerChange.getChange(laHandednessRatings.control, handednessRatings.control), MIN_CHANGE, MAX_CHANGE),
-            movementChange: PlayerChange.clamp(PlayerChange.getChange(laHandednessRatings.movement, handednessRatings.movement), MIN_CHANGE, MAX_CHANGE),
-            powerChange: PlayerChange.clamp(PlayerChange.getChange(laPitchRatings.power, pitchRatings.power), MIN_CHANGE, MAX_CHANGE),
+            controlChange: PlayerChange.clamp(PlayerChange.getChange(laRating, handednessRatings.control), MIN_CHANGE, MAX_CHANGE),
+            movementChange: PlayerChange.clamp(PlayerChange.getChange(laRating, handednessRatings.movement), MIN_CHANGE, MAX_CHANGE),
+            powerChange: PlayerChange.clamp(PlayerChange.getChange(laRating, pitchRatings.power), MIN_CHANGE, MAX_CHANGE),
 
 
             // pitchesChange: pitchesChange
         }
     }
 
-    static getHitterChange(hittingRatings: HittingRatings, laHittingRatings:HittingRatings, throws:Handedness): HitterChange {
+    static getHitterChange(hittingRatings: HittingRatings, laRating:number, throws:Handedness): HitterChange {
 
         let handednessRatings = throws == Handedness.R ? hittingRatings.vsR : hittingRatings.vsL
-        let laHandednessRatings = throws == Handedness.R ? laHittingRatings.vsR : laHittingRatings.vsL
-
-
 
         return {
-            plateDisiplineChange: PlayerChange.clamp(PlayerChange.getChange(laHandednessRatings.plateDiscipline, handednessRatings.plateDiscipline), MIN_CHANGE, MAX_CHANGE),
-            contactChange: PlayerChange.clamp(PlayerChange.getChange(laHandednessRatings.contact, handednessRatings.contact), MIN_CHANGE, MAX_CHANGE),
+            plateDisiplineChange: PlayerChange.clamp(PlayerChange.getChange(laRating, handednessRatings.plateDiscipline), MIN_CHANGE, MAX_CHANGE),
+            contactChange: PlayerChange.clamp(PlayerChange.getChange(laRating, handednessRatings.contact), MIN_CHANGE, MAX_CHANGE),
 
-            gapPowerChange: PlayerChange.clamp(PlayerChange.getChange(laHandednessRatings.gapPower, handednessRatings.gapPower), MIN_CHANGE, MAX_CHANGE),
-            hrPowerChange: PlayerChange.clamp(PlayerChange.getChange(laHandednessRatings.homerunPower, handednessRatings.homerunPower), MIN_CHANGE, MAX_CHANGE),
+            gapPowerChange: PlayerChange.clamp(PlayerChange.getChange(laRating, handednessRatings.gapPower), MIN_CHANGE, MAX_CHANGE),
+            hrPowerChange: PlayerChange.clamp(PlayerChange.getChange(laRating, handednessRatings.homerunPower), MIN_CHANGE, MAX_CHANGE),
 
-            speedChange: PlayerChange.clamp(PlayerChange.getChange(laHittingRatings.speed, hittingRatings.speed), MIN_CHANGE, MAX_CHANGE),
-            stealsChange: PlayerChange.clamp(PlayerChange.getChange(laHittingRatings.speed, hittingRatings.steals), MIN_CHANGE, MAX_CHANGE),
+            speedChange: PlayerChange.clamp(PlayerChange.getChange(laRating, hittingRatings.speed), MIN_CHANGE, MAX_CHANGE),
+            stealsChange: PlayerChange.clamp(PlayerChange.getChange(laRating, hittingRatings.steals), MIN_CHANGE, MAX_CHANGE),
 
-            defenseChange: PlayerChange.clamp(PlayerChange.getChange(laHittingRatings.defense, hittingRatings.defense), MIN_CHANGE, MAX_CHANGE),
-            armChange: PlayerChange.clamp(PlayerChange.getChange(laHittingRatings.arm, hittingRatings.arm), MIN_CHANGE, MAX_CHANGE)
+            defenseChange: PlayerChange.clamp(PlayerChange.getChange(laRating, hittingRatings.defense), MIN_CHANGE, MAX_CHANGE),
+            armChange: PlayerChange.clamp(PlayerChange.getChange(laRating, hittingRatings.arm), MIN_CHANGE, MAX_CHANGE)
 
         }
 
@@ -3827,13 +4004,69 @@ class PlayerChange {
 
 }
 
+class LinescoreActions {
+
+    static updateLinescore(game:Game, halfInning:HalfInning, play:Play) {
+
+        //Runs
+        if (play.runner?.result?.end?.scored?.length > 0) {
+
+            if (game.isTopInning) {
+                halfInning.linescore.runs += play.runner?.result?.end?.scored?.length
+            } else {
+                halfInning.linescore.runs += play.runner?.result?.end?.scored?.length
+            }
+
+        }
+
+        //Hits
+        if (AtBatInfo.isHit(play.result)) {
+            if (game.isTopInning) {
+                halfInning.linescore.hits++
+            } else {
+                halfInning.linescore.hits++
+            }
+        }        
+
+        //Runs
+        if (play.runner?.result?.end?.scored?.length > 0) {
+
+            if (game.isTopInning) {
+                game.score.away += play.runner?.result?.end?.scored?.length
+            } else {
+                game.score.home += play.runner?.result?.end?.scored?.length
+            }
+
+        }        
+
+    }
+
+    static updateLinescoreLOB(halfInning:HalfInning, lob:number) {
+        halfInning.linescore.leftOnBase += lob
+    }
+}
+
+
 const ALL_PITCH_ZONES: readonly PitchZone[] = [
   PitchZone.LOW_AWAY, PitchZone.LOW_MIDDLE, PitchZone.LOW_INSIDE,
   PitchZone.MID_AWAY, PitchZone.MID_MIDDLE, PitchZone.MID_INSIDE,
   PitchZone.HIGH_AWAY, PitchZone.HIGH_MIDDLE, PitchZone.HIGH_INSIDE,
 ] as const
 
-export {
-    SimService, PlayerChange, Rolls, AtBatInfo
+const _getStdDev = (stat: { count: number, total: number, totalSquared: number, avg: number }): number => {
+
+    if (!stat || stat.count <= 1) return 0
+
+    const mean = stat.avg
+    const variance = Math.max(0, (stat.totalSquared / stat.count) - (mean * mean))
+    return Math.sqrt(variance)
 }
 
+const _getAverage = (array: number[]) => {
+    return array.reduce((a, b) => a + b) / array.length
+}
+
+
+export {
+    SimService, PlayerChange, Rolls, AtBatInfo, SimRolls, Matchup, RunnerActions, GameInfo, GamePlayers
+}

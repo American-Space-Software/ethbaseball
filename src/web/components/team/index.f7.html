@@ -374,6 +374,9 @@
 
     $on('pageBeforeIn', async () => {
 
+        props.setStartDate()
+
+
         $f7.off('roster-refresh-lineup')
         $f7.on('roster-refresh-lineup', () => {
             $update()

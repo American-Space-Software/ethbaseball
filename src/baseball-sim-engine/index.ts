@@ -1,18 +1,25 @@
 import { BaseResult, Contact, Handedness, HomeAway, OfficialPlayResult, OfficialRunnerResult, PitchCall, PitchType, PitchZone, PlayResult, Position, ShallowDeep, ThrowResult } from "./service/enums.js"
-import { InningEndingEvent } from "./service/interfaces.js"
+import { InningEndingEvent, PitchEnvironmentTarget } from "./service/interfaces.js"
 import { RollChartService } from "./service/roll-chart-service.js"
-import {
-  SimService,
+import { GameInfo, GamePlayers, Matchup, RunnerActions, SimRolls, SimService } from "./service/sim-service.js"
 
-  AtBatInfo,
-  Rolls,
-  PlayerChange
-} from "./service/sim-service.js"
 import { StatService } from "./service/stat-service.js"
 
-let rollChartService = new RollChartService()
 
-let simService = new SimService(rollChartService)
+import defaultPitchEnvironmentTargetJson from "./_pitch_environment_target.json" with { type: "json" }
+
+let rollChartService = new RollChartService()
+let statService = new StatService()
+
+
+let simRolls = new SimRolls(rollChartService)
+let gamePlayers = new GamePlayers(rollChartService)
+let runnerActions = new RunnerActions(rollChartService, simRolls)
+let gameInfo = new GameInfo(gamePlayers)
+        
+
+let defaultPitchEnvironmentTarget = defaultPitchEnvironmentTargetJson as unknown as PitchEnvironmentTarget
+let simService = new SimService(rollChartService, simRolls, runnerActions, gameInfo, defaultPitchEnvironmentTarget)
 
 
 export {
@@ -33,12 +40,15 @@ export {
   OfficialRunnerResult,
   ThrowResult,
   HomeAway,
-  AtBatInfo,
   InningEndingEvent,
-  Rolls,
-  PlayerChange,
-
 }
+
+export {
+  AtBatInfo,
+  Rolls,
+  PlayerChange
+} from "./service/sim-service.js"
+
 
 export type {
   StartGameCommand,
@@ -51,7 +61,6 @@ export type {
   Team,  
   LastPlay,
   UpcomingMatchup,
-  LeagueAverage,
   Lineup,
   LineupPlayer,
   RotationPitcher,
@@ -85,5 +94,16 @@ export type {
   PitcherHandednessRollInput,
   PowerRollInput,
   ShallowDeepChance,
-  FielderChance
+  FielderChance,
+  PlayerFromStatsCommand,
+  PlayerHittingStats,
+  PlayerPitchingStats,
+  PlayerFieldingStats,
+  PlayerRunningStats,
+  PlayerSplitsStats,
+  PlayerHittingSplitStats,
+  PlayerPitchingSplitStats,
+  // PlayerImportBaseline,
+  PlayerImportRaw,
+  PitchEnvironmentTuning,
 } from "./service/interfaces.js"

@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify"
 import { StatService } from "../stat-service.js";
 import { PlayerSharedService } from "./player-shared-service.js";
 
-import { StartGameCommand, Game, RotationPitcher, LeagueAverage, TeamInfo, Player, Play, LastPlay, GamePlayerBio, UpcomingMatchup, GamePlayer, ThrowRoll, RunnerResult, RunnerEvent, PlayResult, DefensiveCredit, ShallowDeep, Contact, Score, HalfInning } from '../../baseball-sim-engine/index.js';
+import { StartGameCommand, Game, RotationPitcher, TeamInfo, Player, Play, LastPlay, GamePlayerBio, UpcomingMatchup, GamePlayer, ThrowRoll, RunnerResult, RunnerEvent, PlayResult, DefensiveCredit, ShallowDeep, Contact, Score, HalfInning } from '../../baseball-sim-engine/index.js';
 
 import { simService } from '../../baseball-sim-engine/index.js';
 
@@ -50,9 +50,6 @@ class SimSharedService {
         return simService.simPitch(game, rng)
     }
 
-    buildTeamInfoFromPlayers (leagueAverage:LeagueAverage, name:string, teamId:string, players:Player[], color1:string, color2:string, startingId:number) {
-        return simService.buildTeamInfoFromPlayers(leagueAverage, name, teamId, players, color1, color1, startingId)
-    }
 
     getLastPlays(game:Game) : LastPlay[] {
         return this.gameInfo.getLastPlays(game)
@@ -81,12 +78,7 @@ class SimSharedService {
 
     // getChanceRunnerSafe(leagueAverages: LeagueAverage, armRating:number, runnerSpeed:number, defaultSuccess:number) {
     // }
-    
-    //Exposed in tests.
-    initGamePlayers(leagueAverage:LeagueAverage, players:Player[], startingPitcher:RotationPitcher, teamId:string, color1:string, color2:string, startingId:number) : GamePlayer[] {
-        return simService.initGamePlayers(leagueAverage, players, startingPitcher, teamId, color1, color2, startingId)
-    }
-    
+
 
 }
 

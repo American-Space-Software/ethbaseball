@@ -158,7 +158,7 @@ n
         })
     }
 
-    async getTeamViewModel(currentDate:Date, team: Team, season: Season, userOwner:User, options?: any): Promise<TeamViewModel> {
+    async getTeamViewModel(team: Team, season: Season, userOwner:User, options?: any): Promise<TeamViewModel> {
 
         let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
         let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
@@ -206,7 +206,7 @@ n
                 owner: {
                     _id: team.userId,
                     discordId: userOwner?.discordId,
-                    discordUsername: userOwner?.discordProfile?.username
+                    discordUsername: userOwner?.discordProfile?.global_name
                 }
             },
             players: plss.map(pls => {
@@ -975,7 +975,7 @@ n
 
         let team:Team = new Team()
         team._id = uuidv4()
-        team.name = user.discordProfile.username
+        team.name = user.discordProfile.global_name
         team.userId = user._id
 
         const colors = TEAM_COLORS[Math.floor(Math.random() * TEAM_COLORS.length)]

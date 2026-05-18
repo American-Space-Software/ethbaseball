@@ -69,7 +69,7 @@ class UserService {
 
         let authInfo:any = { 
           _id: user._id, 
-          discordUsername: user.discordProfile?.username, 
+          discordUsername: user.discordProfile?.global_name, 
           discordId: user.discordId,
           address: user.address, 
           teamId: team?._id,
@@ -95,7 +95,7 @@ class UserService {
         let teams:Team[] = await this.teamService.getByUser(user)
         let team = teams[0]
 
-        vm.teamInfo = await this.teamService.getTeamViewModel(currentDate, team, season, user)
+        vm.teamInfo = await this.teamService.getTeamViewModel(team, season, user)
 
         vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)

@@ -727,7 +727,7 @@ class GameSharedService {
         ]
 
         const seed =
-            (pitch.quality ?? 0) +
+            (pitch.overallQuality ?? 0) +
             (Number(pitch.type) || 0) * 7 +
             (pitch.actualZone ? pitch.actualZone.length : 0) * 13 +
             (pitch.locQ ? Math.floor(pitch.locQ) : 0)

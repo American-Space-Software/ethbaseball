@@ -46,7 +46,9 @@ class PlayerController {
             return {
                 player: player,
                 authInfo: authInfo,
-                discord: this.discord
+                discord: this.discord,
+                setStartDate: () => this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+
             }
 
         }, PlayerIndexComponent)
@@ -97,7 +99,9 @@ class PlayerController {
                 position: position,
                 sortColumn: sortColumn,
                 sortDirection: sortDirection,
-                page: page
+                page: page,
+                setStartDate: () => this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+
             }
 
         }, PlayersListComponent)

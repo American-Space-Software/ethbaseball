@@ -59,7 +59,8 @@ class TeamController {
 
             return {
                 authInfo: authInfo,
-                discord: this.discord
+                discord: this.discord,
+                setStartDate: () => this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
             }
         }, TeamIndexComponent)
 

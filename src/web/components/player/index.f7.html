@@ -1070,6 +1070,9 @@
 
     $on('pageBeforeIn', async (e) => {
 
+      props.setStartDate()
+
+
       let breadcrumbs = [
           { text: "Home", path: "/"},
       ]

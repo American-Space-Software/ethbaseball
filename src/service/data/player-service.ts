@@ -27,7 +27,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import dayjs from "dayjs"
 import { PlayerSharedService } from "../shared/player-shared-service.js"
-import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, LeagueAverage, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange } from '../../baseball-sim-engine/index.js';
+import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange } from '../../baseball-sim-engine/index.js';
 
 
 const zodiac = zodiacFn("en")

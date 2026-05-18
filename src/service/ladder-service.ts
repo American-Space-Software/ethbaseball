@@ -98,44 +98,42 @@ class LadderService {
             let leagues:League[] = await this.leagueService.listByRankAsc(options)
             let season:Season = await this.seasonService.getByDate(universe.currentDate, options)
 
-            if (season) {
-
-                const shouldStartDay = await this.shouldStartDay(universe)
-
-                if (shouldStartDay) {
-
-                    const previousDay = dayjs(universe.currentDate).format("YYYY-MM-DD")
-
-                    // Day-level housekeeping before opening the next day.
-                    if ( previousDay == dayjs(season.endDate).format("YYYY-MM-DD") && !season.isComplete ) {
-                        console.time(`Finishing season...`)
-                        await this.finishSeason(season, leagues, options)
-                        console.timeEnd(`Finishing season...`)
-                    }
-
-                    await this.startDay(universe, options)
-
-                    const newDay = dayjs(universe.currentDate).format("YYYY-MM-DD")
-                    console.log(`Started day ${newDay} (previously ${previousDay})`)
-
-                    // startDay() / finishSeason() may move us into a new season
-                    season = await this.seasonService.getByDate(universe.currentDate, options)
-                }
-
-                let logDate = dayjs(universe.currentDate).format("YYYY/MM/DD")
-                console.time(`Running game runner (${logDate})...`)
-
-                //Start games
-                for (let league of leagues) {
-                    await this.startGames(universe.currentDate, league, season, rng, options)
-                }
+            if (!season) {
                 
-                // Play games
-                gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
+                let mostRecentSeason:Season = await this.seasonService.getMostRecent(options)
 
-                console.timeEnd(`Running game runner (${logDate})...`)
+                if (mostRecentSeason.isComplete) {
+                    throw new Error("Season is complete but no new season has been created. Something went wrong.")
+                }
+
+                console.time(`Finishing season...`)
+                await this.finishSeason(mostRecentSeason, leagues, options)
+                console.timeEnd(`Finishing season...`)
+
+                // startDay() / finishSeason() may move us into a new season
+                season = await this.seasonService.getByDate(universe.currentDate, options)
 
             }
+
+
+            const shouldStartDay = await this.shouldStartDay(universe)
+
+            if (shouldStartDay) {
+                await this.startDay(universe, options)
+            }
+
+            let logDate = dayjs(universe.currentDate).format("YYYY/MM/DD")
+            console.time(`Running game runner (${logDate})...`)
+
+            //Start games
+            for (let league of leagues) {
+                await this.startGames(universe.currentDate, league, season, rng, options)
+            }
+            
+            // Play games
+            gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
+
+            console.timeEnd(`Running game runner (${logDate})...`)
 
         })
 
@@ -150,16 +148,26 @@ class LadderService {
 
         await this.universeRepository.put(universe, options)
 
+        const newDay = dayjs(universe.currentDate).format("YYYY-MM-DD")
+        console.log(`Started day ${newDay} `)
+
+
     }
 
     private async shouldStartDay(universe: Universe): Promise<boolean> {
 
-        const nowUtc = dayjs.utc()
+        const nowEt = dayjs().tz("America/New_York")
+        const todayEt = nowEt.startOf("day")
 
-        const nextDay = dayjs(universe.currentDate).utc().add(1, "day").format("YYYY-MM-DD")
-        const startTimeUtc = dayjs.tz(`${nextDay} 09:30`, "America/New_York").utc()
+        const currentDateEt = dayjs(universe.currentDate).tz("America/New_York").startOf("day")
+       
+        if (currentDateEt.isBefore(todayEt, "day")) return true
 
-        return nowUtc.isSame(startTimeUtc) || nowUtc.isAfter(startTimeUtc)
+        const nextDay = currentDateEt.add(1, "day").format("YYYY-MM-DD")
+        const startTimeEt = dayjs.tz(`${nextDay} 09:30`, "America/New_York")
+
+        return nowEt.isSame(startTimeEt) || nowEt.isAfter(startTimeEt)
+
     }
 
     private async distributeRewards(rewardsPerTeam:RewardPerTeam[], rewardTeams:Team[], rewardTlss:TeamLeagueSeason[], season:Season, source:OffChainEventSource, offChainEventTransactionId:string, options?:any) {
@@ -415,11 +423,13 @@ class LadderService {
             awayStartingPitcher: awayBundle.startingPitcher,
             homeStartingPitcher: homeBundle.startingPitcher,
 
+            pitchEnvironmentTarget: league.pitchEnvironmentTarget,
+
             date
 
         })
 
-        game.changed('leagueAverages', true)
+        game.changed('pitchEnvironmentTarget', true)
         game.changed('away', true)
         game.changed('home', true)
         game.changed('startDate', true)
@@ -746,6 +756,8 @@ class LadderService {
 
     async finishSeason(season:Season, leagues:League[], options?:any) {
 
+        const TEAMS_TO_RELEGATE = 0 //Disabling for now.
+
         //Distribute rewards to anyone that played at least one game and finished above the threshhold
         let teamIds = await this.teamService.getTeamIdsBySeason(season, options)
         let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
@@ -754,7 +766,8 @@ class LadderService {
 
         //Calculate season end rewards.
         let rewardTeams = await this.teamService.getByIds(teamIds, options)
-        let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeams)
+        let rewardTeamsNonCPU = rewardTeams.filter( t => t.userId != undefined)
+        let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeamsNonCPU)
 
         let offChainEventTransactionId = uuidv4()
 
@@ -765,6 +778,7 @@ class LadderService {
         let nextSeason:Season = new Season()
         nextSeason._id = uuidv4()
         nextSeason.startDate = dayjs(season.endDate).add(1, 'days').toDate()
+        nextSeason.endDate = dayjs(nextSeason.startDate).add(161, 'day').toDate()
         nextSeason.isComplete = false
         nextSeason.isInitialized = false
 
@@ -772,6 +786,65 @@ class LadderService {
 
         //Handle relegation
         let updatedStructure:{ league:League, teamInfo:{ cityId:string, teamId:string}[]}[] = leagues.map( l => { return { league: l, teamInfo: [] } })
+
+        season.promotionRelegationLog = []
+
+        for (let league of leagues) {
+
+            let leagueTLS:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
+
+            let teamInfo = leagueTLS.map( tls =>  { return { teamId: tls.teamId, cityId: tls.cityId } })
+
+            let thisLeague = updatedStructure.find( r => r.league.rank == league.rank)
+            let higherLeague = updatedStructure.find( r => r.league.rank == league.rank - 1)
+            let lowerLeague = updatedStructure.find( r => r.league.rank == league.rank + 1)
+
+            if (higherLeague) {
+
+                let i =0
+                let toPromote = []
+
+                //If we're not doing the first league...the top 3 teams go up a level.
+                while (toPromote.length < TEAMS_TO_RELEGATE) {
+
+                    let current = teamInfo[i]
+
+                    let currentCityCount = higherLeague.teamInfo.filter( ti2 => ti2.cityId == current.cityId).length + toPromote.filter(ti3 => ti3.cityId == current.cityId).length
+
+                    if (currentCityCount < 2) {
+                        toPromote.push(current)
+                    }
+
+                    i++
+                }
+
+                for (let current of toPromote) {
+                    //Remove from teamInfo
+                    teamInfo = teamInfo.filter( ti => ti.teamId != current.teamId)
+                    higherLeague.teamInfo.push(current)
+                    season.promotionRelegationLog.push({ _id: current.teamId, rank: higherLeague.league.rank, previousRank: league.rank})
+
+                }
+
+            }
+
+            if (lowerLeague) {
+
+                //If we're not doing the lowest league...the bottom 3 teams go down a level.
+                //No city contraints on the way down.
+
+                while (lowerLeague.teamInfo.length < TEAMS_TO_RELEGATE) {
+                    let ti = teamInfo.pop()
+                    lowerLeague.teamInfo.push(ti)
+                    season.promotionRelegationLog.push({ _id: ti.teamId, rank: lowerLeague.league.rank, previousRank: league.rank})
+                }
+
+            }
+
+            //The rest stay here
+            thisLeague.teamInfo.push(...teamInfo)
+
+        }
 
         //Create next season's TLS
         for (let leagueInfo of updatedStructure) {
@@ -782,7 +855,9 @@ class LadderService {
             for (let teamId of teamIds) {
 
                 let team:Team = await this.teamService.get(teamId, options)
-                let lastSeason:TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
+                let teamSeasonId:TeamSeasonId = teamSeasonIds.find( tsi => tsi.teamId == teamId)
+
+                let lastSeason:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeasonId(teamSeasonId, options)
 
                 let financeSeason:FinanceSeason = this.financeService.getDefaultFinanceSeason()
                 financeSeason.diamondBalance = lastSeason.financeSeason.diamondBalance
@@ -808,9 +883,11 @@ class LadderService {
         }
 
         //Create PLS for the next season or retire players
-        let currentPLS:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentBySeason(season, options)
+        let currentPLSIds = await this.playerLeagueSeasonService.getMostRecentIdsBySeason(season, options)
         
-        for (let pls of currentPLS) {
+        for (let plsId of currentPLSIds) {
+
+            let pls:PlayerLeagueSeason = await this.playerLeagueSeasonService.getById(plsId, options)
 
             let player:Player = await this.playerService.get(pls.playerId, options)
 
@@ -825,6 +902,7 @@ class LadderService {
                 let nextSeasonPLS = new PlayerLeagueSeason()
                 nextSeasonPLS.playerId = pls.playerId
                 nextSeasonPLS.seasonId = nextSeason._id
+                nextSeasonPLS.teamId = pls.teamId
                 nextSeasonPLS.seasonIndex = 1
                 nextSeasonPLS.primaryPosition = pls.primaryPosition
                 nextSeasonPLS.overallRating = pls.overallRating

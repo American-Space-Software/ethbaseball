@@ -13,6 +13,7 @@ interface TeamLeagueSeasonRepository {
     getByIds(_ids: string[], options?: any): Promise<TeamLeagueSeason[]>
     getByTeam(team:Team, options?:any): Promise<TeamLeagueSeason[]>
     getByTeamSeasonIds( tokenSeasonIds:TeamSeasonId[], options?: any): Promise<TeamLeagueSeason[]>
+    getByTeamSeasonId( tokenSeasonId:TeamSeasonId, options?: any): Promise<TeamLeagueSeason>    
     getMostRecent(team:Team, options?:any): Promise<TeamLeagueSeason> 
     put(tls:TeamLeagueSeason, options?:any) : Promise<TeamLeagueSeason>
     listByLeagueAndSeason(league:League, season:Season, options?:any): Promise<TeamLeagueSeason[]>

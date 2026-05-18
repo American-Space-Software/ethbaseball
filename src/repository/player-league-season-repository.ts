@@ -22,6 +22,7 @@ interface PlayerLeagueSeasonRepository {
     // getMostRecentByLeague(league: League, options?: any): Promise<PlayerLeagueSeason[]>
     getMostRecentByLeagueSeason(league: League, season:Season, options?: any): Promise<PlayerLeagueSeason[]>
     getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]>
+    getMostRecentIdsBySeason(season:Season, options?: any): Promise<string[]>    
     getMostRecentByTeamSeason(team: Team, season:Season, options?: any): Promise<PlayerLeagueSeason[]>
     getMostRecentByPlayerSeason(player: Player, season:Season, options?: any): Promise<PlayerLeagueSeason>
     getMostRecentByPlayersSeason( players: Player[], season: Season, options?: any ): Promise<PlayerLeagueSeason[]>

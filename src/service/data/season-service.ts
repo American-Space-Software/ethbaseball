@@ -58,7 +58,7 @@ class SeasonService {
 
         // "league day" flips at 1:00 PM ET 
         const startDay = dayjs(currentDate).utc().format("YYYY-MM-DD")
-        const startTimeUtc = dayjs.tz(`${startDay} 13:00`, "America/New_York").utc()
+        const startTimeUtc = dayjs.tz(`${startDay} 09:30`, "America/New_York").utc()
 
         // if we're past today's start time, treat it as the next league day
         const leagueDayUtc = (nowUtc.isSame(startTimeUtc) || nowUtc.isAfter(startTimeUtc))

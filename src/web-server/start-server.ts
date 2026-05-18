@@ -531,6 +531,8 @@ let startWebServer = async () => {
 
       try {
 
+        await refreshUniverse()
+        
         let gameDate = req.query.gameDate ? dayjs(req.query.gameDate?.toString()) : universe.currentDate
 
         await renderIndex(res,{ 
@@ -914,6 +916,8 @@ let startWebServer = async () => {
         return res.json(vm)
       }
 
+      await refreshUniverse()
+
       let user: User = await userService.get(userId)
       let userVm = await userService.getViewModel(universe.currentDate, user, season)
 
@@ -965,8 +969,6 @@ let startWebServer = async () => {
 
       let season: Season = await seasonService.getByDate(startDate)
 
-      //We need the current date so refresh the universe.      
-      // await refreshUniverse()
 
       return res.json(await playerViewService.getPlayerViewModel(req.params.playerId, season))
     } catch (ex) {
@@ -1449,7 +1451,7 @@ let startWebServer = async () => {
           user = await userService.get(team.userId)
       }
 
-      return res.json(await teamService.getTeamViewModel(universe.currentDate, team, season, user))
+      return res.json(await teamService.getTeamViewModel(team, season, user))
 
     } catch (ex) {
       console.log(ex)
@@ -2027,7 +2029,6 @@ let startWebServer = async () => {
   const gameLoop = async () => {
 
     console.time(`Game loop`)
-
 
     //Simulate games 
     let gameIds = await ladderService.runGameRunner(universe._id)

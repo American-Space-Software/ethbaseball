@@ -94,6 +94,10 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getMostRecentByPlayersSeason(players, season, options)
     }
 
+    async getMostRecentIdsBySeason(season:Season, options?: any): Promise<string[]> {
+        return this.playerLeagueSeasonRepository.getMostRecentIdsBySeason(season, options)
+    }
+    
     async getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getMostRecentBySeason(season, options)
     }

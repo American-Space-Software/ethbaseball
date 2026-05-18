@@ -6,7 +6,7 @@ import { BelongsToManyAddAssociationMixin, BelongsToManyRemoveAssociationMixin }
 import { Stadium } from './stadium.js';
 import { League } from './league.js';
 import { Season } from './season.js';
-import { Count, HalfInning, LeagueAverage, Score } from '../baseball-sim-engine/index.js';
+import { Count, HalfInning, PitchEnvironmentTarget, Score } from '../baseball-sim-engine/index.js';
 
 
 
@@ -53,7 +53,7 @@ class Game extends Model {
         allowNull: true,
         type: DataType.JSON
     })
-    declare leagueAverages: LeagueAverage
+    declare pitchEnvironmentTarget:PitchEnvironmentTarget
 
     @Column(DataType.INTEGER)
     declare currentInning: number

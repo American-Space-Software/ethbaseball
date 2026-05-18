@@ -12,7 +12,7 @@ interface StartGameCommand {
     awayLineup:Lineup 
     awayPlayers:Player[], 
     awayStartingPitcher:RotationPitcher,
-    leagueAverages?:LeagueAverage
+    pitchEnvironmentTarget?:PitchEnvironmentTarget
     date:Date
 }
 
@@ -35,7 +35,7 @@ interface SimPitchCommand {
     halfInningRunnerEvents:RunnerEvent[]
     halfInning:HalfInning
     
-    leagueAverages: LeagueAverage
+    pitchEnvironmentTarget:PitchEnvironmentTarget
 
     matchupHandedness:MatchupHandedness
 
@@ -44,7 +44,7 @@ interface SimPitchCommand {
 }
 
 interface RunnerThrowCommand {
-    gameRNG
+    gameRNG: () => number
     runnerResult:RunnerResult
     allEvents:RunnerEvent[]
     runnerEvents:RunnerEvent[]
@@ -55,7 +55,7 @@ interface RunnerThrowCommand {
     end:BaseResult
     eventType: PlayResult|OfficialRunnerResult
     eventTypeOut: PlayResult|OfficialRunnerResult
-    leagueAverage:LeagueAverage
+    pitchEnvironmentTarget:PitchEnvironmentTarget
     pitcher:GamePlayer
     defense:TeamInfo
     offense:TeamInfo
@@ -77,7 +77,9 @@ interface Game {
     halfInnings?: HalfInning[]
 
     playIndex: number
-    leagueAverages?: LeagueAverage
+
+    pitchEnvironmentTarget:PitchEnvironmentTarget
+
 
     currentInning: number
     summary?: any
@@ -371,10 +373,13 @@ interface Pitch {
     result: PitchCall,
     count?: Count,
     type: PitchType,
-    quality: number
-    powQ: number
-    locQ: number
-    movQ: number
+    quality: PitchQuality
+    contactQuality?:ContactQuality
+    overallContactQuality?: number
+    overallQuality: number
+    powQ: number,
+    movQ: number,
+    locQ: number,
     swing: boolean
     inZone:boolean
     isWP:boolean
@@ -408,90 +413,7 @@ interface FielderChance {
     pitcher: number
 }
 
-interface LeagueAverage {
 
-    hittingRatings:HittingRatings
-    pitchRatings:PitchRatings
-
-    powerRollInput:PowerRollInput,
-    contactTypeRollInput:ContactTypeRollInput
-
-    foulRate:number,
-
-    zoneSwingContactRate:number
-    chaseSwingContactRate:number
-
-    pitchQuality:number,
-
-    fielderChanceR:FielderChance
-    fielderChanceL:FielderChance
-    shallowDeepChance:ShallowDeepChance
-
-    inZoneByCount: InZoneByCount[],
-
-    steal: StolenBaseByCount[]
-
-
-    tuning: {
-        zoneSwingBase: number
-        chaseSwingBase: number
-
-        zoneSwingPerStrike: number
-        zoneSwingPerBall: number
-
-        chaseSwingPerStrike: number
-        chaseSwingPerBall: number
-
-        threeBallZoneSwingPenalty: number
-        threeBallChaseSwingPenalty: number
-
-        pitchQualityZoneSwingEffect: number
-        pitchQualityChaseSwingEffect: number
-
-        disciplineZoneSwingEffect: number
-        disciplineChaseSwingEffect: number
-
-        zoneContactBase: number
-        chaseContactBase: number
-
-        zoneContactPerStrike: number
-        zoneContactPerBall: number
-
-        chaseContactPerStrike: number
-        chaseContactPerBall: number
-
-        twoStrikeZoneContactBonus: number
-        twoStrikeChaseContactBonus: number
-
-        pitchQualityContactEffect: number
-        contactSkillEffect: number
-
-        foulRateBase: number
-        twoStrikeFoulBonus: number
-
-        fullPitchQualityBonus: number
-        fullTeamDefenseBonus: number
-        fullFielderDefenseBonus: number        
-        
-        groundballDoublePenalty:number
-        groundballTriplePenalty: number
-        groundballHRPenalty: number
-
-        groundballOutcomeBoost: number
-        flyballOutcomeBoost: number
-        lineDriveOutcomeBoost: number
-
-        flyballHRPenalty:number
-
-        lineDriveOutToSingleWindow: number
-        lineDriveOutToSingleBoost:number
-
-        lineDriveSingleToDoubleFactor:number    
-
-    }
-
-
-}
 
 interface ContactProfile {
     groundball:number
@@ -980,177 +902,236 @@ interface PowerRollInput {
 class InningEndingEvent extends Error {}
 
 
-// interface HitResult {
+interface PitchCountBehaviorTarget {
+    balls: number
+    strikes: number
 
-//     games?:number
-//     uniqueGames?:number
+    zoneSwingPercent: number
+    chaseSwingPercent: number
 
-//     playerId:string
-//     age:number
-//     teamWins:number
-//     teamLosses:number
-//     pa:number
-//     atBats:number 
-//     hits:number 
-//     singles:number 
-//     doubles:number 
-//     triples:number 
-//     homeRuns:number
-//     runs:number 
-//     rbi:number 
-//     bb:number 
-//     sbAttempts:number
-//     sb:number
-//     cs:number
-//     hbp:number 
-//     so:number 
-//     lob:number 
-//     sacBunts:number 
-//     sacFlys:number
-//     groundOuts:number 
-//     flyOuts:number
-//     lineOuts:number
-//     outs:number
-//     groundBalls:number
-//     lineDrives:number
-//     flyBalls:number
-//     gidp:number
-//     po:number
-//     assists:number
-//     outfieldAssists:number
-//     csDefense:number
-//     doublePlays:number
-//     e:number
-//     passedBalls:number
-//     wpa:number
-//     pitches:number
-//     balls:number
-//     strikes:number
-//     fouls:number
-//     inZone:number
-//     swings:number
-//     swingAtBalls:number
-//     swingAtStrikes:number
-//     calledStrikes:number
-//     swingingStrikes:number
-//     ballsInPlay:number
-//     inZoneContact:number
-//     outZoneContact:number
-//     totalPitchQuality: number
-//     totalPitchPowerQuality: number
-//     totalPitchLocationQuality: number
-//     totalPitchMovementQuality: number
-//     overallRatingBefore:number
-//     overallRatingAfter:number
-//     careerStats:{
-//         before: HitterStatLine
-//         after: HitterStatLine
-//     }
-//     startDate?:Date
-//     lastUpdated?:Date 
-//     dateCreated?:Date    
-// }
+    zoneContactPercent: number
+    chaseContactPercent: number
 
-// interface PitchResult  {
-//     games?:number
-//     uniqueGames?:number
+    foulContactPercent: number
+    inPlayPercentOfContact: number
+    inPlayPercentOfFairContact: number
+}
 
-//     playerId:string
-//     age:number
-//     teamWins:number
-//     teamLosses:number
-//     starts:number
-//     wins:number
-//     losses:number
-//     saves:number
-//     bs:number
-//     outs:number
-//     er:number
-//     so:number
-//     hits:number
-//     bb:number
-//     sho:number
-//     cg:number
-//     hbp:number
-//     singles:number
-//     doubles:number
-//     triples:number
-//     battersFaced:number
-//     atBats:number
-//     runs:number
-//     homeRuns:number
-//     groundOuts:number
-//     flyOuts:number
-//     lineOuts:number
-//     groundBalls:number
-//     lineDrives:number
-//     flyBalls:number
-//     sacFlys:number
-//     wpa:number
-//     wildPitches:number
-//     pitches:number
-//     strikes:number
-//     balls:number
-//     fouls:number
-//     inZone:number
-//     swings:number
-//     swingAtBalls:number
-//     swingAtStrikes:number
-//     calledStrikes:number
-//     swingingStrikes:number    
-//     ballsInPlay:number
-//     inZoneContact:number
-//     outZoneContact:number
-//     totalPitchQuality: number
-//     totalPitchPowerQuality: number
-//     totalPitchLocationQuality: number
-//     totalPitchMovementQuality: number
-//     overallRatingBefore:number
-//     overallRatingAfter:number
-//     careerStats:{
-//             before: PitcherStatLine
-//             after: PitcherStatLine
-//         }
+interface PitchPhysics {
+    velocity: {
+        count: number
+        total: number
+        totalSquared: number
+        avg: number
+    }
+    horizontalBreak: {
+        count: number
+        total: number
+        totalSquared: number
+        avg: number
+    }
+    verticalBreak: {
+        count: number
+        total: number
+        totalSquared: number
+        avg: number
+    }
+    byPitchType: Partial<Record<PitchType, {
+        count: number
+        totalVelocity: number
+        totalVelocitySquared: number
+        avgVelocity: number
+        totalHorizontalBreak: number
+        totalHorizontalBreakSquared: number
+        avgHorizontalBreak: number
+        totalVerticalBreak: number
+        totalVerticalBreakSquared: number
+        avgVerticalBreak: number
+    }>>
+}
 
-//     startDate?:Date
-//     lastUpdated?:Date 
-//     dateCreated?:Date    
-// }
+interface BattedBallPhysics {
+    exitVelocity: {
+        count: number
+        total: number
+        totalSquared: number
+        avg: number
+    }
+    launchAngle: {
+        count: number
+        total: number
+        totalSquared: number
+        avg: number
+    }
+    distance: {
+        count: number
+        total: number
+        totalSquared: number
+        avg: number
+    }
+    byTrajectory: {
+        groundBall: {
+            count: number
+            totalExitVelocity: number
+            totalExitVelocitySquared: number
+            avgExitVelocity: number
+            totalLaunchAngle: number
+            totalLaunchAngleSquared: number
+            avgLaunchAngle: number
+            totalDistance: number
+            totalDistanceSquared: number
+            avgDistance: number
+        }
+        flyBall: {
+            count: number
+            totalExitVelocity: number
+            totalExitVelocitySquared: number
+            avgExitVelocity: number
+            totalLaunchAngle: number
+            totalLaunchAngleSquared: number
+            avgLaunchAngle: number
+            totalDistance: number
+            totalDistanceSquared: number
+            avgDistance: number
+        }
+        lineDrive: {
+            count: number
+            totalExitVelocity: number
+            totalExitVelocitySquared: number
+            avgExitVelocity: number
+            totalLaunchAngle: number
+            totalLaunchAngleSquared: number
+            avgLaunchAngle: number
+            totalDistance: number
+            totalDistanceSquared: number
+            avgDistance: number
+        }
+        popup: {
+            count: number
+            totalExitVelocity: number
+            totalExitVelocitySquared: number
+            avgExitVelocity: number
+            totalLaunchAngle: number
+            totalLaunchAngleSquared: number
+            avgLaunchAngle: number
+            totalDistance: number
+            totalDistanceSquared: number
+            avgDistance: number
+        }
+    }
+}
 
+
+
+type BattedBallTrajectory = "groundBall" | "flyBall" | "lineDrive" | "popup"
+
+interface BattedBallEvLaModel {
+    count: number
+    evMean: number
+    evStdDev: number
+    laMean: number
+    laStdDev: number
+    evLaCorrelation: number
+}
+
+interface BattedBallOutcomeFormula {
+    intercept: number
+    ev: number
+    la: number
+    ev2: number
+    la2: number
+    evLa: number
+}
+
+interface BattedBallOutcomeModel {
+    out: BattedBallOutcomeFormula
+    single: BattedBallOutcomeFormula
+    double: BattedBallOutcomeFormula
+    triple: BattedBallOutcomeFormula
+    hr: BattedBallOutcomeFormula
+}
+
+interface BattedBallSprayModel {
+    pullMean: number
+    centerMean: number
+    oppoMean: number
+    pullShare: number
+    centerShare: number
+    oppoShare: number
+    stdDev: number
+}
+
+interface BattedBallDepthModel {
+    mean: number
+    stdDev: number
+}
+
+interface RunningAdvancementTarget {
+    runnerOnFirstToThirdOnSingle: number
+    runnerOnFirstToHomeOnDouble: number
+    runnerOnSecondToHomeOnSingle: number
+    runnerOnSecondToHomeOnDouble: number
+    runnerOnThirdToHomeOnFlyBallShallow: number
+    runnerOnThirdToHomeOnFlyBallNormal: number
+    runnerOnThirdToHomeOnFlyBallDeep: number
+    runnerOnSecondToThirdOnGroundBall: number
+    runnerOnThirdToHomeOnGroundBall: number
+}
 
 interface PitchEnvironmentTarget {
+    
     season: number
+    avgRating:number
 
     pitch: {
         inZonePercent: number
         strikePercent: number
         ballPercent: number
         swingPercent: number
-        foulContactPercent: number
-        pitchesPerPA: number,
+        pitchesPerPA: number
         inZoneByCount: InZoneByCount[]
     }
 
-    swing: {      
+    swing: {
         swingAtStrikesPercent: number
         swingAtBallsPercent: number
         inZoneContactPercent: number
         outZoneContactPercent: number
+
+        zoneSwingBase: number
+        chaseSwingBase: number
+
+        zoneContactBase: number
+        chaseContactBase: number
+
+        behaviorByCount: PitchCountBehaviorTarget[]
     }
 
     battedBall: {
         inPlayPercent: number
         contactRollInput: ContactTypeRollInput
         powerRollInput: PowerRollInput
-    },
 
-    steal: StolenBaseByCount[],
+        evLaModel: Record<BattedBallTrajectory, BattedBallEvLaModel>
+        outcomeModel: Record<BattedBallTrajectory, BattedBallOutcomeModel>
+        sprayModel: Record<BattedBallTrajectory, BattedBallSprayModel>
+        depthModel: Record<BattedBallTrajectory, BattedBallDepthModel>
+        
+    }
+
+
+    running: {
+        steal: StolenBaseByCount[]
+        extraBaseTakenRate: number 
+        advancement: RunningAdvancementTarget
+    }
+    
 
     fielderChance: {
         vsR: FielderChance
         vsL: FielderChance
-        shallowDeep:ShallowDeepChance
-    },
+        shallowDeep: ShallowDeepChance
+    }
 
     outcome: {
         avg: number
@@ -1172,69 +1153,210 @@ interface PitchEnvironmentTarget {
         homeRunsPerGame: number
         bbPerGame: number
         soPerGame: number
-    },
-
-    tuning: {
-        zoneSwingBase: number
-        chaseSwingBase: number
-
-        zoneSwingPerStrike: number
-        zoneSwingPerBall: number
-
-        chaseSwingPerStrike: number
-        chaseSwingPerBall: number
-
-        threeBallZoneSwingPenalty: number
-        threeBallChaseSwingPenalty: number
-
-        pitchQualityZoneSwingEffect: number
-        pitchQualityChaseSwingEffect: number
-
-        disciplineZoneSwingEffect: number
-        disciplineChaseSwingEffect: number
-
-        zoneContactBase: number
-        chaseContactBase: number
-
-        zoneContactPerStrike: number
-        zoneContactPerBall: number
-
-        chaseContactPerStrike: number
-        chaseContactPerBall: number
-
-        twoStrikeZoneContactBonus: number
-        twoStrikeChaseContactBonus: number
-
-        pitchQualityContactEffect: number
-        contactSkillEffect: number
-
-        foulRateBase: number
-        twoStrikeFoulBonus: number
-
-        fullPitchQualityBonus: number
-        fullTeamDefenseBonus: number
-        fullFielderDefenseBonus: number   
-    
-        groundballDoublePenalty:number
-        groundballTriplePenalty: number
-        groundballHRPenalty: number
-
-        groundballOutcomeBoost: number
-        flyballOutcomeBoost: number
-        lineDriveOutcomeBoost: number
-
-        flyballHRPenalty:number
-
-        lineDriveOutToSingleWindow: number
-        lineDriveOutToSingleBoost:number
-
-        lineDriveSingleToDoubleFactor:number        
+        sbPerGame: number
+        sbAttemptsPerGame: number
     }
+
+    importReference: {
+        hitter: {
+            games: number
+            pa: number
+            ab: number
+
+            hits: number
+            doubles: number
+            triples: number
+            homeRuns: number
+            bb: number
+            so: number
+            hbp: number
+
+            groundBalls: number
+            flyBalls: number
+            lineDrives: number
+            popups: number
+
+            pitchesSeen: number
+            ballsSeen: number
+            strikesSeen: number
+
+            swings: number
+            swingAtBalls: number
+            swingAtStrikes: number
+
+            calledStrikes: number
+            swingingStrikes: number
+
+            inZonePitches: number
+            inZoneContact: number
+            outZoneContact: number
+
+            fouls: number
+            ballsInPlay: number
+
+            physics: BattedBallPhysics
+        }
+
+        pitcher: {
+            games: number
+            starts: number
+
+            battersFaced: number
+            outs: number
+
+            hitsAllowed: number
+            doublesAllowed: number
+            triplesAllowed: number
+            homeRunsAllowed: number
+            bbAllowed: number
+            so: number
+            hbpAllowed: number
+
+            groundBallsAllowed: number
+            flyBallsAllowed: number
+            lineDrivesAllowed: number
+            popupsAllowed: number
+
+            pitchesThrown: number
+            ballsThrown: number
+            strikesThrown: number
+
+            swingsInduced: number
+            swingAtBallsAllowed: number
+            swingAtStrikesAllowed: number
+
+            inZoneContactAllowed: number
+            outZoneContactAllowed: number
+
+            foulsAllowed: number
+            ballsInPlayAllowed: number
+
+            physics: PitchPhysics
+        }
+
+        fielding: {
+            errors: number
+            assists: number
+            putouts: number
+            chances: number
+            doublePlays: number
+            doublePlayOpportunities: number
+
+            outfieldAssists: number
+            catcherCaughtStealing: number
+            catcherStolenBasesAllowed: number
+            passedBalls: number
+
+            throwsAttempted: number
+            successfulThrowOuts: number
+        }
+
+        running: {
+
+            sb: number
+            cs: number
+            sbAttempts: number
+            timesOnFirst: number
+            extraBaseTaken: number
+            extraBaseOpportunities: number
+        }
+
+        splits: {
+            hitting: {
+                vsL: PlayerHittingSplitStats
+                vsR: PlayerHittingSplitStats
+            }
+            pitching: {
+                vsL: PlayerPitchingSplitStats
+                vsR: PlayerPitchingSplitStats
+            }
+        }
+    }
+
+    pitchEnvironmentTuning?: PitchEnvironmentTuning
 }
 
+interface PitchEnvironmentTuning {
 
+    _id:string
 
+    tuning?: {
 
+        contactQuality: {
+            evScale: number
+            laScale: number
+            distanceScale: number
+            outOutcomeScale:number
+            doubleOutcomeScale: number
+            tripleOutcomeScale: number
+            homeRunOutcomeScale: number
+        }
+
+        swing: {
+            pitchQualityZoneSwingEffect: number
+            pitchQualityChaseSwingEffect: number
+            disciplineZoneSwingEffect: number
+            disciplineChaseSwingEffect: number
+            walkRateScale:number
+        }
+
+        contact: {
+            pitchQualityContactEffect: number
+            contactSkillEffect: number
+        }
+
+        running: {
+            stealAttemptAggressionScale:number
+            advancementAggressionScale:number 
+        },
+
+        meta: {
+            fullPitchQualityBonus: number
+            fullTeamDefenseBonus: number
+            fullFielderDefenseBonus: number
+        }
+
+    }
+
+    ratingTuning?: {
+        hitting: {
+            overallPlateDisciplineScale: number
+            splitPlateDisciplineScale: number
+
+            overallContactScale: number
+            splitContactScale: number
+            contactSkillScale: number
+            contactDecisionScale: number
+            contactEvScale: number
+
+            overallGapPowerScale: number
+            splitGapPowerScale: number
+
+            overallHrPowerScale: number
+            splitHrPowerScale: number
+            hrEvScale: number
+        }
+
+        pitching: {
+            minFastball: number
+            maxFastball: number
+            veloScale: number
+            kScale: number
+            baselinePowerScale: number
+
+            overallControlScale: number
+            splitControlScale: number
+            strikeoutControlHelpScale: number
+
+            overallMovementScale: number
+            splitMovementScale: number
+            arsenalMovementScale: number
+            contactSuppressionScale: number
+            missBatScale: number
+        }
+    }
+
+}
 
 interface InZoneByCount {
     balls:number
@@ -1242,212 +1364,665 @@ interface InZoneByCount {
     inZone:number
 }
 
-
-
-
 interface StolenBaseByCount {
     balls:number
     strikes:number
-    attempt:number
-    success:number
+    
+    attempt2BChance:number
+    attempt2BSuccess:number    
+    
+    attempt3BChance:number
+    attempt3BSuccess:number
+    
 }
 
+interface PlayerFromStatsCommand {
+    
+    season: number
 
-const LEAGUE_AVERAGE_FIELDER_CHANCE_R: FielderChance = {
-    first: 8,
-    second: 13,
-    third: 10,
-    catcher: 2,
-    shortstop: 14,
-    leftField: 17,
-    centerField: 18,
-    rightField: 13,
-    pitcher: 5
+    playerId: string
+    firstName: string
+    lastName: string
+
+    age?: number
+
+    primaryPosition: Position
+    secondaryPositions?: Position[]
+
+    throws: Handedness
+    hits: Handedness
+
+    primaryRole: "hitter" | "pitcher" | "twoWay"
+
+    hitter: PlayerHittingStats
+    pitcher: PlayerPitchingStats
+
+    fielding: PlayerFieldingStats
+    running: PlayerRunningStats
+
+    splits: PlayerSplitsStats
+
+    pitchEnvironmentTarget:PitchEnvironmentTarget
+    playerImportBaseline: PlayerImportBaseline
+    leagueImportBaseline: PlayerImportBaseline
 }
 
-const LEAGUE_AVERAGE_FIELDER_CHANCE_L: FielderChance = {
-    first: 10,
-    second: 15,
-    third: 8,
-    catcher: 2,
-    shortstop: 12,
-    leftField: 13,
-    centerField: 18,
-    rightField: 17,
-    pitcher: 5
+interface PlayerHittingStats {
+    games: number
+    pa: number
+    ab: number
+
+    hits: number
+    doubles: number
+    triples: number
+    homeRuns: number
+    bb: number
+    so: number
+    hbp: number
+
+    groundBalls: number
+    flyBalls: number
+    lineDrives: number
+    popups: number
+
+    pitchesSeen: number
+    ballsSeen: number
+    strikesSeen: number
+
+    swings: number
+    swingAtBalls: number
+    swingAtStrikes: number
+
+    calledStrikes: number
+    swingingStrikes: number
+
+    inZonePitches: number
+    inZoneContact: number
+    outZoneContact: number
+
+    fouls: number
+    ballsInPlay: number
+
+    exitVelocity?: ExitVelocityStat
 }
 
-const LEAGUE_AVERAGE_SHALLOW_DEEP_CHANCE: ShallowDeepChance = {
-    shallow: 20,
-    normal: 60,
-    deep: 20
+interface PlayerPitchingStats {
+    games: number
+    starts: number
+
+    battersFaced: number
+    outs: number
+
+    hitsAllowed: number
+    doublesAllowed: number
+    triplesAllowed: number
+    homeRunsAllowed: number
+    bbAllowed: number
+    so: number
+    hbpAllowed: number
+
+    groundBallsAllowed: number
+    flyBallsAllowed: number
+    lineDrivesAllowed: number
+    popupsAllowed: number
+
+    pitchesThrown: number
+    ballsThrown: number
+    strikesThrown: number
+
+    swingsInduced: number
+    swingAtBallsAllowed: number
+    swingAtStrikesAllowed: number
+
+    inZoneContactAllowed: number
+    outZoneContactAllowed: number
+
+    foulsAllowed: number
+    ballsInPlayAllowed: number
+
+    pitchTypes?: Partial<Record<PitchType, PitchTypeMovementStat>>
 }
 
+interface PlayerFieldingStats {
+    gamesAtPosition?: Partial<Record<Position, number>>
+    inningsAtPosition?: Partial<Record<Position, number>>
 
+    errors?: number
+    assists?: number
+    putouts?: number
+    doublePlays?: number
 
-const PITCH_ENVIRONMENT_TARGETS: Record<number, PitchEnvironmentTarget> = {
-    2025: {
-        season: 2025,
-        //researched via baseballsavant
-        pitch: {
-            inZonePercent: 50.5,
-            strikePercent: 65,
-            ballPercent: 33.5,
-            swingPercent: 47.7,
-            foulContactPercent: 50.7,
-            pitchesPerPA: 3.88,
-            inZoneByCount: [
-                { balls: 0, strikes: 0, inZone: 55 },
-                { balls: 0, strikes: 1, inZone: 46 },
-                { balls: 0, strikes: 2, inZone: 32 },
-                { balls: 1, strikes: 0, inZone: 56 },
-                { balls: 1, strikes: 1, inZone: 51 },
-                { balls: 1, strikes: 2, inZone: 38 },
-                { balls: 2, strikes: 0, inZone: 60 },
-                { balls: 2, strikes: 1, inZone: 58 },
-                { balls: 2, strikes: 2, inZone: 48 },
-                { balls: 3, strikes: 0, inZone: 63 },
-                { balls: 3, strikes: 1, inZone: 63 },
-                { balls: 3, strikes: 2, inZone: 60 }
-            ]
-        },
-        swing: {
-            swingAtStrikesPercent: 66.8,
-            swingAtBallsPercent: 28.1,
-            inZoneContactPercent: 82.7,
-            outZoneContactPercent: 55.3
-        },
-        battedBall: {
-            inPlayPercent: 17.5,
+    outfieldAssists?: number
+    catcherCaughtStealing?: number
+    catcherStolenBasesAllowed?: number
+    passedBalls?: number
+}
 
-            contactRollInput: {
-                groundball: 43,
-                flyBall: 35,
-                lineDrive: 22,
-            },
+interface PlayerRunningStats {
+    sb?: number
+    cs?: number
+    sbAttempts?: number
+}
 
-            powerRollInput: {
-                out: 675,
-                singles: 215,
-                doubles: 62,
-                triples: 4,
-                hr: 44
-            }
+interface PlayerSplitsStats {
+    hitting: {
+        vsL: PlayerHittingSplitStats
+        vsR: PlayerHittingSplitStats
+    }
+    pitching: {
+        vsL: PlayerPitchingSplitStats
+        vsR: PlayerPitchingSplitStats
+    }
+}
 
-        },
-        outcome: {
-            avg: 0.245,
-            obp: 0.315,
-            slg: 0.404,
-            ops: 0.719,
-            babip: 0.291,
-            homeRunPercent: 0.03,
-            doublePercent: 0.042,
-            triplePercent: 0.003,
-            bbPercent: 0.084,
-            soPercent: 0.222,
-            hbpPercent: 0.01
-        },
-        team: {
-            runsPerGame: 4.45,
-            hitsPerGame: 8.25,
-            homeRunsPerGame: 1.16,
-            bbPerGame: 3.16,
-            soPerGame: 8.36,
-        },
+interface PlayerHittingSplitStats {
+    pa: number
+    ab: number
 
-        //these ones are just global for now. Not sure how to research fully.
-        steal: [
-            { balls: 0, strikes: 0, attempt: 32, success: 76 },
-            { balls: 0, strikes: 1, attempt: 42, success: 76 },
-            { balls: 0, strikes: 2, attempt: 18, success: 76 },
+    hits: number
+    doubles: number
+    triples: number
+    homeRuns: number
+    bb: number
+    so: number
+    hbp: number
 
-            { balls: 1, strikes: 0, attempt: 32, success: 76 },
-            { balls: 1, strikes: 1, attempt: 42, success: 76 },
-            { balls: 1, strikes: 2, attempt: 20, success: 76 },
+    swings?: number
+    swingAtBalls?: number
+    swingAtStrikes?: number
+    calledStrikes?: number
+    swingingStrikes?: number
+    inZoneContact?: number
+    outZoneContact?: number
 
-            { balls: 2, strikes: 0, attempt: 49, success: 76 },
-            { balls: 2, strikes: 1, attempt: 53, success: 76 },
-            { balls: 2, strikes: 2, attempt: 25, success: 76 },
+    exitVelocity: number
+}
 
-            { balls: 3, strikes: 0, attempt: 1,  success: 76 },
-            { balls: 3, strikes: 1, attempt: 14, success: 76 },
-            { balls: 3, strikes: 2, attempt: 29, success: 76 }
-        ],
+interface PlayerPitchingSplitStats {
+    battersFaced: number
+    outs: number
 
-        //Just global for now.
-        fielderChance: {
-            vsR: LEAGUE_AVERAGE_FIELDER_CHANCE_R,
-            vsL: LEAGUE_AVERAGE_FIELDER_CHANCE_L,
-            shallowDeep: LEAGUE_AVERAGE_SHALLOW_DEEP_CHANCE
-        },
+    hitsAllowed: number
+    doublesAllowed: number
+    triplesAllowed: number
+    homeRunsAllowed: number
+    bbAllowed: number
+    so: number
+    hbpAllowed: number
 
-        tuning: {
-            zoneSwingBase: 47,
-            chaseSwingBase: 16,
+    swingsInduced?: number
+    swingAtBallsAllowed?: number
+    swingAtStrikesAllowed?: number
+    inZoneContactAllowed?: number
+    outZoneContactAllowed?: number
+    foulsAllowed?: number
+    ballsInPlayAllowed?: number
+}
 
-            zoneSwingPerStrike: 20.9,
-            zoneSwingPerBall: 5,
+interface PlayerImportBaseline {
+    hitting: {
+        plateDisciplineBBPercent: number
+        contactSOPercent: number
+        gapPowerPercent: number
+        homerunPowerPercent: number
 
-            chaseSwingPerStrike: 11,
-            chaseSwingPerBall: 2.85,
+        speedExtraBaseTakenPercent: number
+        stealsAttemptPercent: number
+        stealsSuccessPercent: number
 
-            threeBallZoneSwingPenalty: 22.5,
-            threeBallChaseSwingPenalty: 22.5,
+        defenseErrorPercent: number
+        defenseFieldingPlayPercent: number
+        armThrowOutPercent: number
+        defenseDoublePlayPercent: number
 
-            pitchQualityZoneSwingEffect: 5,
-            pitchQualityChaseSwingEffect: 6,
+        catcherCaughtStealingPercent?: number
+        catcherPassedBallPercent?: number
+        outfieldAssistPercent?: number
 
-            disciplineZoneSwingEffect: 6.25,
-            disciplineChaseSwingEffect: 8.25,
-
-            zoneContactBase: 81.3,
-            chaseContactBase: 54.25,
-
-            zoneContactPerStrike: 0.5,
-            zoneContactPerBall: 0,
-
-            chaseContactPerStrike: 0.5,
-            chaseContactPerBall: 0,
-
-            twoStrikeZoneContactBonus: 2.5,
-            twoStrikeChaseContactBonus: 1.45,
-
-            pitchQualityContactEffect: 8.5,
-            contactSkillEffect: 12,
-
-            foulRateBase: 50.25,
-            twoStrikeFoulBonus: 3.25,
-
-            fullPitchQualityBonus: -180,
-            fullTeamDefenseBonus: 0,
-            fullFielderDefenseBonus: -25,
-
-            groundballDoublePenalty: 6,
-            groundballTriplePenalty: 18,
-            groundballHRPenalty: 30,
-
-            flyballHRPenalty: 13,
-
-            lineDriveOutToSingleWindow: 27,
-            lineDriveOutToSingleBoost: 27,
-
-            lineDriveSingleToDoubleFactor: 0.60,
-
-            groundballOutcomeBoost: 3,
-            flyballOutcomeBoost: 1,
-            lineDriveOutcomeBoost: 12
-
+        contactProfile: {
+            groundball: number
+            flyBall: number
+            lineDrive: number
+        }
+    }
+    pitching: {
+        powerSOPercent: number
+        controlBBPercent: number
+        movementHRPercent: number
+        contactProfile: {
+            groundball: number
+            flyBall: number
+            lineDrive: number
         }
     }
 }
 
+interface ExitVelocityStat {
+    count: number
+    totalExitVelo: number
+    avgExitVelo: number
+}
+
+interface LaunchAngleStat {
+    count: number
+    totalLaunchAngle: number
+    avgLaunchAngle: number
+}
+
+interface DistanceStat {
+    count: number
+    totalDistance: number
+    avgDistance: number
+}
+
+interface BattedBallCoordinateStat {
+    count: number
+    totalCoordX: number
+    avgCoordX: number
+    totalCoordY: number
+    avgCoordY: number
+}
+
+interface BattedBallPhysicsStat {
+    exitVelocity: ExitVelocityStat
+    launchAngle: LaunchAngleStat
+    distance: DistanceStat
+    coordinates: BattedBallCoordinateStat
+}
+
+interface PitchTypeMovementStat {
+    count: number
+    totalMph: number
+    avgMph: number
+    totalHorizontalBreak: number
+    avgHorizontalBreak: number
+    totalVerticalBreak: number
+    avgVerticalBreak: number
+}
+
+interface PlayerRunningStatsRaw {
+    sb: number
+    cs: number
+    sbAttempts: number
+
+    sb2B: number
+    cs2B: number
+    sb2BAttempts: number
+
+    sb3B: number
+    cs3B: number
+    sb3BAttempts: number
+
+    timesOnFirst: number
+    timesOnSecond: number
+    timesOnThird: number
+
+    firstToThird: number
+    firstToThirdOpportunities: number
+
+    firstToHome: number
+    firstToHomeOpportunities: number
+
+    secondToHomeOnSingle: number
+    secondToHomeOnSingleOpportunities: number
+
+    secondToHomeOnDouble: number
+    secondToHomeOnDoubleOpportunities: number
+
+    thirdToHomeOnFlyBallShallow: number
+    thirdToHomeOnFlyBallShallowOpportunities: number
+
+    thirdToHomeOnFlyBallNormal: number
+    thirdToHomeOnFlyBallNormalOpportunities: number
+
+    thirdToHomeOnFlyBallDeep: number
+    thirdToHomeOnFlyBallDeepOpportunities: number
+
+    secondToThirdOnGroundBall: number
+    secondToThirdOnGroundBallOpportunities: number
+
+    thirdToHomeOnGroundBall: number
+    thirdToHomeOnGroundBallOpportunities: number
+
+    extraBaseTaken: number
+    extraBaseOpportunities: number
+
+    pickedOff: number
+    pickoffAttemptsFaced: number
+
+    advancedOnGroundOut: number
+    advancedOnFlyOut: number
+    tagUps: number
+
+    heldOnBase: number
+}
+
+interface PlayerFieldingPositionRaw {
+    chances: number
+    putouts: number
+    assists: number
+    errors: number
+    doublePlays: number
+    doublePlayOpportunities: number
+    outsRecorded: number
+
+    fieldedBalls: number
+    groundBallsFielded: number
+    flyBallsFielded: number
+    lineDrivesFielded: number
+    popupsFielded: number
+
+    throwsAttempted: number
+    successfulThrowOuts: number
+
+    battedBallOpportunitiesByLocation: Partial<Record<string, number>>
+}
+
+interface PlayerPitchCountZoneRaw {
+    balls: number
+    strikes: number
+    inZone: number
+    total: number
+}
+
+interface PlayerPitchCountBehaviorRaw {
+    balls: number
+    strikes: number
+
+    zonePitches: number
+    chasePitches: number
+
+    zoneSwings: number
+    chaseSwings: number
+
+    zoneContact: number
+    chaseContact: number
+
+    zoneMisses: number
+    chaseMisses: number
+
+    zoneFouls: number
+    chaseFouls: number
+
+    zoneBallsInPlay: number
+    chaseBallsInPlay: number
+}
+
+interface BattedBallOutcomeBucketRaw {
+    evBin: number
+    laBin: number
+    count: number
+    out: number
+    single: number
+    double: number
+    triple: number
+    hr: number
+}
+
+interface BattedBallXyBucketRaw {
+    xBin: number
+    yBin: number
+    count: number
+}
+
+interface BattedBallXyByTrajectoryBucketRaw extends BattedBallXyBucketRaw {
+    trajectory: "groundBall" | "flyBall" | "lineDrive" | "popup"
+}
+
+interface BattedBallXyByTrajectoryEvLaBucketRaw extends BattedBallXyBucketRaw {
+    trajectory: "groundBall" | "flyBall" | "lineDrive" | "popup"
+    evBin: number
+    laBin: number
+}
+
+interface BattedBallSprayByTrajectoryBucketRaw {
+    trajectory: "groundBall" | "flyBall" | "lineDrive" | "popup"
+    sprayBin: number
+    count: number
+}
+
+interface BattedBallSprayByTrajectoryEvLaBucketRaw {
+    trajectory: "groundBall" | "flyBall" | "lineDrive" | "popup"
+    evBin: number
+    laBin: number
+    sprayBin: number
+    count: number
+}
+
+interface PlayerImportRaw {
+    playerId: string
+    firstName: string
+    lastName: string
+
+    age?: number
+
+    primaryPosition: Position
+    secondaryPositions?: Position[]
+
+    throws: Handedness
+    bats: Handedness
+
+    primaryRole: "hitter" | "pitcher" | "twoWay"
+
+    hitting: {
+        games: number
+        pa: number
+        ab: number
+
+        hits: number
+        doubles: number
+        triples: number
+        homeRuns: number
+        bb: number
+        so: number
+        hbp: number
+
+        groundBalls: number
+        flyBalls: number
+        lineDrives: number
+        popups: number
+
+        pitchesSeen: number
+        ballsSeen: number
+        strikesSeen: number
+
+        swings: number
+        swingAtBalls: number
+        swingAtStrikes: number
+
+        calledStrikes: number
+        swingingStrikes: number
+
+        inZonePitches: number
+        inZoneContact: number
+        outZoneContact: number
+
+        fouls: number
+        ballsInPlay: number
+
+        inZoneByCount: PlayerPitchCountZoneRaw[]
+        behaviorByCount: PlayerPitchCountBehaviorRaw[]
+
+        exitVelocity: ExitVelocityStat
+        launchAngle: LaunchAngleStat
+        distance: DistanceStat
+        coordinates: BattedBallCoordinateStat
+
+        physicsByTrajectory: {
+            groundBall: BattedBallPhysicsStat
+            flyBall: BattedBallPhysicsStat
+            lineDrive: BattedBallPhysicsStat
+            popup: BattedBallPhysicsStat
+        }
+
+        battedBallLocation: Partial<Record<string, number>>
+        battedBallHardness: {
+            soft: number
+            medium: number
+            hard: number
+        }
+
+        outcomeByEvLa: BattedBallOutcomeBucketRaw[]
+        xyByTrajectory: BattedBallXyByTrajectoryBucketRaw[]
+        xyByTrajectoryEvLa: BattedBallXyByTrajectoryEvLaBucketRaw[]
+        sprayByTrajectory: BattedBallSprayByTrajectoryBucketRaw[]
+        sprayByTrajectoryEvLa: BattedBallSprayByTrajectoryEvLaBucketRaw[]
+    }
+
+    pitching: {
+        games: number
+        starts: number
+
+        battersFaced: number
+        outs: number
+
+        hitsAllowed: number
+        doublesAllowed: number
+        triplesAllowed: number
+        homeRunsAllowed: number
+        bbAllowed: number
+        so: number
+        hbpAllowed: number
+
+        groundBallsAllowed: number
+        flyBallsAllowed: number
+        lineDrivesAllowed: number
+        popupsAllowed: number
+
+        pitchesThrown: number
+        ballsThrown: number
+        strikesThrown: number
+
+        swingsInduced: number
+        swingAtBallsAllowed: number
+        swingAtStrikesAllowed: number
+
+        inZoneContactAllowed: number
+        outZoneContactAllowed: number
+
+        foulsAllowed: number
+        ballsInPlayAllowed: number
+
+        inZoneByCount: PlayerPitchCountZoneRaw[]
+        behaviorByCount: PlayerPitchCountBehaviorRaw[]
+
+        pitchTypes: Partial<Record<PitchType, PitchTypeMovementStat>>
+
+        exitVelocityAllowed: ExitVelocityStat
+        launchAngleAllowed: LaunchAngleStat
+        distanceAllowed: DistanceStat
+        coordinatesAllowed: BattedBallCoordinateStat
+
+        physicsAllowedByTrajectory: {
+            groundBall: BattedBallPhysicsStat
+            flyBall: BattedBallPhysicsStat
+            lineDrive: BattedBallPhysicsStat
+            popup: BattedBallPhysicsStat
+        }
+
+        battedBallLocationAllowed: Partial<Record<string, number>>
+        battedBallHardnessAllowed: {
+            soft: number
+            medium: number
+            hard: number
+        }
+
+        outcomeAllowedByEvLa: BattedBallOutcomeBucketRaw[]
+        xyAllowedByTrajectory: BattedBallXyByTrajectoryBucketRaw[]
+        xyAllowedByTrajectoryEvLa: BattedBallXyByTrajectoryEvLaBucketRaw[]
+        sprayAllowedByTrajectory: BattedBallSprayByTrajectoryBucketRaw[]
+        sprayAllowedByTrajectoryEvLa: BattedBallSprayByTrajectoryEvLaBucketRaw[]
+    }
+
+    fielding: {
+        gamesAtPosition: Partial<Record<Position, number>>
+        inningsAtPosition: Partial<Record<Position, number>>
+
+        errors: number
+        assists: number
+        putouts: number
+        doublePlays: number
+        doublePlayOpportunities: number
+
+        outfieldAssists: number
+        catcherCaughtStealing: number
+        catcherStolenBasesAllowed: number
+        passedBalls: number
+
+        fieldedBalls: number
+        groundBallsFielded: number
+        flyBallsFielded: number
+        lineDrivesFielded: number
+        popupsFielded: number
+
+        throwsAttempted: number
+        successfulThrowOuts: number
+
+        battedBallOpportunitiesByLocation: Partial<Record<string, number>>
+
+        chances: number
+        positionStats: Partial<Record<Position, PlayerFieldingPositionRaw>>
+    }
+
+    running: PlayerRunningStatsRaw
+
+    splits: {
+        hitting: {
+            vsL: PlayerHittingSplitStats
+            vsR: PlayerHittingSplitStats
+        }
+        pitching: {
+            vsL: PlayerPitchingSplitStats
+            vsR: PlayerPitchingSplitStats
+        }
+    }
+}
+
+interface ContactQuality {
+    launchAngle: number
+    exitVelocity: number
+    distance: number
+    coordX: number
+    coordY: number
+}
+
+
+interface PitchQuality {
+    velocity: number
+    horizontalBreak: number
+    verticalBreak: number
+}
+
+
 
 export {
-    PITCH_ENVIRONMENT_TARGETS, StolenBaseByCount,  PitchCount, InZoneByCount,  PitchEnvironmentTarget, DefensiveCredit, Player, ThrowRoll, Game, StartGameCommand, RollChart, ContactTypeRollInput, FielderChanceRollInput, ShallowDeepRollInput, HitterHandednessRollInput, PitcherHandednessRollInput, PowerRollInput, ShallowDeepChance,
-    TeamInfo, FielderChance, LastPlay, UpcomingMatchup, InningEndingEvent, LeagueAverage, Lineup, LineupPlayer, RotationPitcher, HalfInning, RunnerResult, Score,
+    PitchQuality, ContactQuality, StolenBaseByCount,  PitchCount, InZoneByCount,  PitchEnvironmentTarget, DefensiveCredit, Player, ThrowRoll, Game, StartGameCommand, RollChart, ContactTypeRollInput, FielderChanceRollInput, ShallowDeepRollInput, HitterHandednessRollInput, PitcherHandednessRollInput, PowerRollInput, ShallowDeepChance,
+    TeamInfo, FielderChance, LastPlay, UpcomingMatchup, InningEndingEvent,  Lineup, LineupPlayer, RotationPitcher, HalfInning, RunnerResult, Score,
     Pitch, RunnerEvent, Play, Count, PitcherChange, HitterChange, PitchResultCount,HitResultCount, MatchupHandedness,
     GamePlayer, GamePlayerBio, HitterStatLine, PitcherStatLine, SimPitchResult, SimPitchCommand, PitchLog, RunnerThrowCommand, Team,
-    Colors, ContactProfile, PitchRatings, PitchingHandednessRatings, HittingRatings, HittingHandednessRatings
-
+    Colors, ContactProfile, PitchRatings, PitchingHandednessRatings, HittingRatings, HittingHandednessRatings,     PlayerFromStatsCommand,
+    PlayerHittingStats,
+    PlayerPitchingStats,
+    PlayerFieldingStats,
+    PlayerRunningStats,
+    PlayerSplitsStats,
+    PlayerHittingSplitStats,
+    PlayerPitchingSplitStats,
+    PlayerImportBaseline,
+    PlayerImportRaw,
+    PitchTypeMovementStat,
+    ExitVelocityStat,
+    PlayerFieldingPositionRaw,
+    PlayerRunningStatsRaw,
+    PitchEnvironmentTuning,
+    BattedBallCoordinateStat,
+    BattedBallPhysicsStat,
+    DistanceStat,
+    LaunchAngleStat,
+    PitchPhysics,
+    BattedBallPhysics,
+    BattedBallOutcomeBucketRaw,
+    BattedBallXyBucketRaw,
+    BattedBallXyByTrajectoryBucketRaw,
+    BattedBallXyByTrajectoryEvLaBucketRaw
 }

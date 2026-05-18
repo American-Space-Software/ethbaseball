@@ -1,4 +1,5 @@
 import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryKey, Unique, AllowNull } from 'sequelize-typescript'
+import { PitchEnvironmentTarget } from '../baseball-sim-engine/service/interfaces.js'
 
 
 
@@ -27,6 +28,10 @@ class League extends Model {
     @AllowNull(true)
     @Column(DataType.STRING)
     declare baseDiamondReward?: string
+
+    @AllowNull(true)
+    @Column(DataType.JSON)
+    declare pitchEnvironmentTarget?: PitchEnvironmentTarget    
 
     @Column(DataType.DATE)
     declare lastUpdated?:Date 

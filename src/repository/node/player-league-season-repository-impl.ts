@@ -290,7 +290,8 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
-    async getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
+
+    async getMostRecentIdsBySeason(season:Season, options?: any): Promise<string[]> {
 
         let s = await this.sequelize()
 
@@ -324,7 +325,15 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         `, Object.assign(queryOptions, options));
     
 
-        return this.getByIds(idQueryResults.map(qr => qr._id), options)
+        return idQueryResults.map(qr => qr._id)
+
+    }
+
+    async getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
+
+        let idQueryResults = await this.getMostRecentIdsBySeason(season, options)
+    
+        return this.getByIds(idQueryResults, options)
 
     }
 
