@@ -370,6 +370,8 @@ interface PitchLog {
 interface Pitch {
     intentZone:PitchZone,
     actualZone:PitchZone,
+    plateX: number,
+    plateZ: number,
     result: PitchCall,
     count?: Count,
     type: PitchType,

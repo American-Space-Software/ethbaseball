@@ -1,7 +1,7 @@
 :root {
   
   --f7-message-bubble-font-size: .75em;
-  --f7-messages-content-bg-color: unset;
+  /* --f7-messages-content-bg-color: unset; */
   --f7-toolbar-height: 170px;
   /* --f7-toolbar-bg-color: #0A3161; */
   --f7-toolbar-inner-padding-left: calc(100vw - 1250px) / 2; 
@@ -46,6 +46,9 @@
 
   --f7-block-font-size: 15px;
   --f7-list-item-title-font-size: 18px;
+
+  --f7-panel-bg-color: #ffffff;
+
 }
 
 .logo {
@@ -204,6 +207,12 @@ html {
   padding-bottom: 0px;
 }
 
+
+.ios .message:has(.message-content .message-header) + .message:not(.message-first),
+.ios .message + .message:not(.message-first):has(.message-content .message-header) {
+    margin-top: 15px;
+}
+
 .at-bat-ended, .at-bat-started {
   position: fixed;
   left: 50%;
@@ -335,6 +344,7 @@ html {
   --f7-navbar-link-color: unset;
   color-scheme: dark;
   --f7-list-item-text-text-color: #FFFFFF;
+    --f7-panel-bg-color: #000000;
 } 
 
 .dark a {
@@ -351,6 +361,11 @@ html {
 
 .navbar .title {
   color: #ffffff;
+}
+
+.navbar .title a {
+  color: #ffffff;
+  font-size: 1.6em;  
 }
 
 h1 {
@@ -2830,7 +2845,10 @@ td.action, th.action {
   .home-banner img {
     width:100%;
   }
+
+
 }
+
 
 
 .footer {
@@ -2850,6 +2868,13 @@ td.action, th.action {
   height: 37px;
 }
 
+@media only screen and (max-height: 700px) {
+
+  .footer {
+    display: none;
+  }
+
+}
 
 .mint-help {
   padding: 15px;
@@ -3412,11 +3437,6 @@ td.action, th.action {
   color: #ffffff;
 }
 
-
-
-.dark .panel-left  {
-  background: var(--f7-navbar-bg-color);
-}
 
 
 

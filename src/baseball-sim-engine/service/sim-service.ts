@@ -22,7 +22,10 @@ const DEFAULT_FULL_PITCH_QUALITY_BONUS = 500
 const DEFAULT_FULL_TEAM_DEFENSE_BONUS = 75
 const DEFAULT_FULL_FIELDER_DEFENSE_BONUS = 75
 
-
+const STRIKE_ZONE_LEFT = -0.83
+const STRIKE_ZONE_RIGHT = 0.83
+const STRIKE_ZONE_BOTTOM = 1.5
+const STRIKE_ZONE_TOP = 3.5
 
 class SimService {
 
@@ -353,24 +356,30 @@ class SimService {
             return avg + Rolls.getRollUnrounded(command.rng, -sd, sd)
         }
 
+        const buildMomentStat = (count: number, total: number, totalSquared: number, avg: number) => ({ count, total, totalSquared, avg })
+
         const pitcherPhysics = command.pitchEnvironmentTarget.importReference.pitcher.physics
         const pitchTypePhysics = pitcherPhysics.byPitchType?.[pitchType]
 
-        const leagueVelocity = pitchTypePhysics
-            ? sampleMoment({ count: pitchTypePhysics.count, total: pitchTypePhysics.totalVelocity, totalSquared: pitchTypePhysics.totalVelocitySquared, avg: pitchTypePhysics.avgVelocity })
-            : sampleMoment(pitcherPhysics.velocity)
+        const velocityStat = pitchTypePhysics
+            ? buildMomentStat(pitchTypePhysics.count, pitchTypePhysics.totalVelocity, pitchTypePhysics.totalVelocitySquared, pitchTypePhysics.avgVelocity)
+            : pitcherPhysics.velocity
 
-        const leagueHorizontalBreak = pitchTypePhysics
-            ? sampleMoment({ count: pitchTypePhysics.count, total: pitchTypePhysics.totalHorizontalBreak, totalSquared: pitchTypePhysics.totalHorizontalBreakSquared, avg: pitchTypePhysics.avgHorizontalBreak })
-            : sampleMoment(pitcherPhysics.horizontalBreak)
+        const horizontalBreakStat = pitchTypePhysics
+            ? buildMomentStat(pitchTypePhysics.count, pitchTypePhysics.totalHorizontalBreak, pitchTypePhysics.totalHorizontalBreakSquared, pitchTypePhysics.avgHorizontalBreak)
+            : pitcherPhysics.horizontalBreak
 
-        const leagueVerticalBreak = pitchTypePhysics
-            ? sampleMoment({ count: pitchTypePhysics.count, total: pitchTypePhysics.totalVerticalBreak, totalSquared: pitchTypePhysics.totalVerticalBreakSquared, avg: pitchTypePhysics.avgVerticalBreak })
-            : sampleMoment(pitcherPhysics.verticalBreak)
+        const verticalBreakStat = pitchTypePhysics
+            ? buildMomentStat(pitchTypePhysics.count, pitchTypePhysics.totalVerticalBreak, pitchTypePhysics.totalVerticalBreakSquared, pitchTypePhysics.avgVerticalBreak)
+            : pitcherPhysics.verticalBreak
 
-        const velocityStdDev = _getStdDev(pitcherPhysics.velocity)
-        const horizontalBreakStdDev = _getStdDev(pitcherPhysics.horizontalBreak)
-        const verticalBreakStdDev = _getStdDev(pitcherPhysics.verticalBreak)
+        const leagueVelocity = sampleMoment(velocityStat)
+        const leagueHorizontalBreak = sampleMoment(horizontalBreakStat)
+        const leagueVerticalBreak = sampleMoment(verticalBreakStat)
+
+        const velocityStdDev = _getStdDev(velocityStat)
+        const horizontalBreakStdDev = _getStdDev(horizontalBreakStat)
+        const verticalBreakStdDev = _getStdDev(verticalBreakStat)
 
         const handedPitchRatings = command.matchupHandedness.hits === Handedness.L
             ? command.pitcher.pitchRatings.vsL
@@ -384,6 +393,22 @@ class SimService {
         const horizontalBreak = leagueHorizontalBreak + (horizontalBreakStdDev * movementChange)
         const verticalBreak = leagueVerticalBreak + (verticalBreakStdDev * movementChange)
 
+        const velocityBaseline = asNumber(velocityStat.avg)
+        const horizontalBreakBaseline = asNumber(horizontalBreakStat.avg)
+        const verticalBreakBaseline = asNumber(verticalBreakStat.avg)
+
+        const velocityQualityChange = velocityStdDev > 0
+            ? clamp((velocity - velocityBaseline) / velocityStdDev, MIN_CHANGE, MAX_CHANGE)
+            : powerChange
+
+        const baselineMovement = Math.abs(horizontalBreakBaseline) + Math.abs(verticalBreakBaseline)
+        const actualMovement = Math.abs(horizontalBreak) + Math.abs(verticalBreak)
+        const movementStdDev = Math.abs(horizontalBreakStdDev) + Math.abs(verticalBreakStdDev)
+
+        const movementQualityChange = movementStdDev > 0
+            ? clamp((actualMovement - baselineMovement) / movementStdDev, MIN_CHANGE, MAX_CHANGE)
+            : movementChange
+
         const velocityWeight = Math.max(0, asNumber(PITCH_QUALITY_WEIGHTS.velocity))
         const movementWeight = Math.max(0, asNumber(PITCH_QUALITY_WEIGHTS.movement))
         const controlWeight = Math.max(0, asNumber(PITCH_QUALITY_WEIGHTS.control))
@@ -394,17 +419,17 @@ class SimService {
         }
 
         const pitchQualityChange = clamp(
-            (powerChange * (velocityWeight / weightTotal)) +
-            (movementChange * (movementWeight / weightTotal)) +
+            (velocityQualityChange * (velocityWeight / weightTotal)) +
+            (movementQualityChange * (movementWeight / weightTotal)) +
             (controlChange * (controlWeight / weightTotal)),
             MIN_CHANGE,
             MAX_CHANGE
         )
 
-        const powQ = clamp(Math.round(50 + (powerChange * 99)), 0, 99)
-        const movQ = clamp(Math.round(50 + (movementChange * 99)), 0, 99)
-        const locQ = clamp(Math.round(50 + (controlChange * 99)), 0, 99)
-        const overallQuality = clamp(Math.round(50 + (pitchQualityChange * 99)), 0, 99)
+        const powQ = clamp(Math.round(AVG_PITCH_QUALITY + (velocityQualityChange * AVG_PITCH_QUALITY)), 0, 99)
+        const movQ = clamp(Math.round(AVG_PITCH_QUALITY + (movementQualityChange * AVG_PITCH_QUALITY)), 0, 99)
+        const locQ = clamp(Math.round(AVG_PITCH_QUALITY + (controlChange * AVG_PITCH_QUALITY)), 0, 99)
+        const overallQuality = clamp(Math.round(AVG_PITCH_QUALITY + (pitchQualityChange * AVG_PITCH_QUALITY)), 0, 99)
 
         const countInZoneRate = command.pitchEnvironmentTarget.pitch.inZoneByCount.find(
             r => r.balls === command.play.pitchLog.count.balls && r.strikes === command.play.pitchLog.count.strikes
@@ -412,14 +437,23 @@ class SimService {
 
         const walkRateScale = clamp(Number(command.pitchEnvironmentTarget.pitchEnvironmentTuning?.tuning?.swing?.walkRateScale ?? 0), -1, 1)
         const inZoneRate = clamp(Number(countInZoneRate ?? command.pitchEnvironmentTarget.pitch.inZonePercent ?? 0) - (walkRateScale * 100), 0, 100)
-        const inZone = this.gameRolls.isInZone(command.rng, locQ, inZoneRate)
+        const intendedInZone = this.gameRolls.isInZone(command.rng, locQ, inZoneRate)
 
         const intentZone = this.gameRolls.getIntentZone(command.rng)
-        const actualZone = Pitching.getActualZone(intentZone, locQ)
+        const plateLocation = this.getPlateLocation(command.rng, intentZone, locQ, horizontalBreak, verticalBreak, intendedInZone)
+        const actualZone = this.getZoneFromPlateLocation(plateLocation.plateX, plateLocation.plateZ)
+
+        const inZone =
+            plateLocation.plateX >= STRIKE_ZONE_LEFT &&
+            plateLocation.plateX <= STRIKE_ZONE_RIGHT &&
+            plateLocation.plateZ >= STRIKE_ZONE_BOTTOM &&
+            plateLocation.plateZ <= STRIKE_ZONE_TOP
 
         const pitch: Pitch = {
             intentZone,
             actualZone,
+            plateX: plateLocation.plateX,
+            plateZ: plateLocation.plateZ,
             type: pitchType,
             quality: {
                 velocity,
@@ -532,6 +566,105 @@ class SimService {
 
         return result
     }
+
+    private getPlateLocation(rng: () => number, intentZone: PitchZone, locQ: number, horizontalBreak: number, verticalBreak: number, intendedInZone: boolean): { plateX: number, plateZ: number } {
+        const zoneCenters: Record<PitchZone, { x: number, z: number }> = {
+            [PitchZone.HIGH_INSIDE]: { x: -0.55, z: 3.15 },
+            [PitchZone.HIGH_MIDDLE]: { x: 0, z: 3.15 },
+            [PitchZone.HIGH_AWAY]: { x: 0.55, z: 3.15 },
+            [PitchZone.MID_INSIDE]: { x: -0.55, z: 2.5 },
+            [PitchZone.MID_MIDDLE]: { x: 0, z: 2.5 },
+            [PitchZone.MID_AWAY]: { x: 0.55, z: 2.5 },
+            [PitchZone.LOW_INSIDE]: { x: -0.55, z: 1.85 },
+            [PitchZone.LOW_MIDDLE]: { x: 0, z: 1.85 },
+            [PitchZone.LOW_AWAY]: { x: 0.55, z: 1.85 }
+        }
+
+        const ballCenters: Record<PitchZone, { x: number, z: number }> = {
+            [PitchZone.HIGH_INSIDE]: { x: -0.9, z: 3.6 },
+            [PitchZone.HIGH_MIDDLE]: { x: 0, z: 3.65 },
+            [PitchZone.HIGH_AWAY]: { x: 0.9, z: 3.6 },
+            [PitchZone.MID_INSIDE]: { x: -1.0, z: 2.5 },
+            [PitchZone.MID_MIDDLE]: { x: 0, z: 3.65 },
+            [PitchZone.MID_AWAY]: { x: 1.0, z: 2.5 },
+            [PitchZone.LOW_INSIDE]: { x: -0.9, z: 1.4 },
+            [PitchZone.LOW_MIDDLE]: { x: 0, z: 1.35 },
+            [PitchZone.LOW_AWAY]: { x: 0.9, z: 1.4 }
+        }
+
+        const center = intendedInZone
+            ? zoneCenters[intentZone] ?? zoneCenters[PitchZone.MID_MIDDLE]
+            : ballCenters[intentZone] ?? ballCenters[PitchZone.MID_MIDDLE]
+
+        const commandNoiseScale = (100 - locQ) / 100
+        const missX = Rolls.getRollUnrounded(rng, -0.22, 0.22) * commandNoiseScale
+        const missZ = Rolls.getRollUnrounded(rng, -0.28, 0.28) * commandNoiseScale
+        const movementX = horizontalBreak / 24
+        const movementZ = verticalBreak / 240
+
+        let plateX = center.x + missX + movementX
+        let plateZ = center.z + missZ + movementZ
+
+        const isInStrikeZone = plateX >= STRIKE_ZONE_LEFT && plateX <= STRIKE_ZONE_RIGHT && plateZ >= STRIKE_ZONE_BOTTOM && plateZ <= STRIKE_ZONE_TOP
+
+        if (intendedInZone && !isInStrikeZone) {
+            plateX = clamp(plateX, STRIKE_ZONE_LEFT + 0.01, STRIKE_ZONE_RIGHT - 0.01)
+            plateZ = clamp(plateZ, STRIKE_ZONE_BOTTOM + 0.01, STRIKE_ZONE_TOP - 0.01)
+        }
+
+        if (!intendedInZone && isInStrikeZone) {
+            const distances = [
+                { side: "LEFT", value: Math.abs(plateX - STRIKE_ZONE_LEFT) },
+                { side: "RIGHT", value: Math.abs(plateX - STRIKE_ZONE_RIGHT) },
+                { side: "BOTTOM", value: Math.abs(plateZ - STRIKE_ZONE_BOTTOM) },
+                { side: "TOP", value: Math.abs(plateZ - STRIKE_ZONE_TOP) }
+            ]
+
+            const nearest = distances.sort((a, b) => a.value - b.value)[0].side
+
+            if (nearest === "LEFT") plateX = STRIKE_ZONE_LEFT - 0.01
+            if (nearest === "RIGHT") plateX = STRIKE_ZONE_RIGHT + 0.01
+            if (nearest === "BOTTOM") plateZ = STRIKE_ZONE_BOTTOM - 0.01
+            if (nearest === "TOP") plateZ = STRIKE_ZONE_TOP + 0.01
+        }
+
+        return {
+            plateX: Number(plateX.toFixed(3)),
+            plateZ: Number(plateZ.toFixed(3))
+        }
+    }
+
+    private getZoneFromPlateLocation(plateX: number, plateZ: number): PitchZone {
+
+        const horizontal =
+            plateX < -0.25
+                ? "INSIDE"
+                : plateX > 0.25
+                    ? "AWAY"
+                    : "MIDDLE"
+
+        const vertical =
+            plateZ > 2.9
+                ? "HIGH"
+                : plateZ < 2.1
+                    ? "LOW"
+                    : "MID"
+
+        if (vertical === "HIGH" && horizontal === "INSIDE") return PitchZone.HIGH_INSIDE
+        if (vertical === "HIGH" && horizontal === "MIDDLE") return PitchZone.HIGH_MIDDLE
+        if (vertical === "HIGH" && horizontal === "AWAY") return PitchZone.HIGH_AWAY
+
+        if (vertical === "MID" && horizontal === "INSIDE") return PitchZone.MID_INSIDE
+        if (vertical === "MID" && horizontal === "MIDDLE") return PitchZone.MID_MIDDLE
+        if (vertical === "MID" && horizontal === "AWAY") return PitchZone.MID_AWAY
+
+        if (vertical === "LOW" && horizontal === "INSIDE") return PitchZone.LOW_INSIDE
+        if (vertical === "LOW" && horizontal === "MIDDLE") return PitchZone.LOW_MIDDLE
+
+        return PitchZone.LOW_AWAY
+    }
+
+
 
     private getPitchAnomalyResult(gameRNG: () => number, locationQuality: number, pitchEnvironmentTarget: PitchEnvironmentTarget): { result: PitchCall, isWP?: boolean, isPB?: boolean } | null {
         const baselineHbpPerPitch = pitchEnvironmentTarget.outcome.hbpPercent / pitchEnvironmentTarget.pitch.pitchesPerPA

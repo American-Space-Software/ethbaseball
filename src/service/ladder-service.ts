@@ -89,7 +89,7 @@ class LadderService {
         await s.transaction(async (t1) => {
 
             let options = { transaction: t1 }
-            let rng = await this.seedService.getRNG(options)
+            let rng = await this.seedService.getRNG()
 
             let universe:Universe = await this.universeRepository.get(universeId, options)
 
@@ -902,6 +902,7 @@ class LadderService {
                 let nextSeasonPLS = new PlayerLeagueSeason()
                 nextSeasonPLS.playerId = pls.playerId
                 nextSeasonPLS.seasonId = nextSeason._id
+                nextSeasonPLS.leagueId = pls.leagueId
                 nextSeasonPLS.teamId = pls.teamId
                 nextSeasonPLS.seasonIndex = 1
                 nextSeasonPLS.primaryPosition = pls.primaryPosition

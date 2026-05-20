@@ -812,9 +812,9 @@
         "byPitchType": {
           "FF": {
             "count": 226321,
-            "total": 21386837.6,
-            "totalSquared": 2022167124.956,
-            "avg": 94.498,
+            "totalVelocity": 21386837.6,
+            "totalVelocitySquared": 2022167124.956,
+            "avgVelocity": 94.498,
             "totalHorizontalBreak": 772027.8,
             "totalHorizontalBreakSquared": 16372627.689,
             "avgHorizontalBreak": 3.411,
@@ -824,9 +824,9 @@
           },
           "SL": {
             "count": 104141,
-            "total": 8977178,
-            "totalSquared": 774667403.973,
-            "avg": 86.202,
+            "totalVelocity": 8977178,
+            "totalVelocitySquared": 774667403.973,
+            "avgVelocity": 86.202,
             "totalHorizontalBreak": -219144.5,
             "totalHorizontalBreakSquared": 2895552.679,
             "avgHorizontalBreak": -2.104,
@@ -836,9 +836,9 @@
           },
           "CH": {
             "count": 73035,
-            "total": 6269448.7,
-            "totalSquared": 539057314.53,
-            "avg": 85.842,
+            "totalVelocity": 6269448.7,
+            "totalVelocitySquared": 539057314.53,
+            "avgVelocity": 85.842,
             "totalHorizontalBreak": 329902.4,
             "totalHorizontalBreakSquared": 15500397.481,
             "avgHorizontalBreak": 4.517,
@@ -848,9 +848,9 @@
           },
           "SI": {
             "count": 110621,
-            "total": 10377356.1,
-            "totalSquared": 974237503.109,
-            "avg": 93.81,
+            "totalVelocity": 10377356.1,
+            "totalVelocitySquared": 974237503.109,
+            "avgVelocity": 93.81,
             "totalHorizontalBreak": 701878,
             "totalHorizontalBreakSquared": 26030816.334,
             "avgHorizontalBreak": 6.345,
@@ -860,9 +860,9 @@
           },
           "ST": {
             "count": 52030,
-            "total": 4290547.3,
-            "totalSquared": 354175222.153,
-            "avg": 82.463,
+            "totalVelocity": 4290547.3,
+            "totalVelocitySquared": 354175222.153,
+            "avgVelocity": 82.463,
             "totalHorizontalBreak": -368907.1,
             "totalHorizontalBreakSquared": 10152968.662,
             "avgHorizontalBreak": -7.09,
@@ -872,9 +872,9 @@
           },
           "CU": {
             "count": 47708,
-            "total": 3799568.4,
-            "totalSquared": 303150308.903,
-            "avg": 79.642,
+            "totalVelocity": 3799568.4,
+            "totalVelocitySquared": 303150308.903,
+            "avgVelocity": 79.642,
             "totalHorizontalBreak": -185656.3,
             "totalHorizontalBreakSquared": 4816643.094,
             "avgHorizontalBreak": -3.892,
@@ -884,9 +884,9 @@
           },
           "FS": {
             "count": 23240,
-            "total": 2004567.7,
-            "totalSquared": 173103266.219,
-            "avg": 86.255,
+            "totalVelocity": 2004567.7,
+            "totalVelocitySquared": 173103266.219,
+            "avgVelocity": 86.255,
             "totalHorizontalBreak": 210988.8,
             "totalHorizontalBreakSquared": 3027659.159,
             "avgHorizontalBreak": 9.079,
@@ -896,9 +896,9 @@
           },
           "FC": {
             "count": 53571,
-            "total": 4804360.8,
-            "totalSquared": 431270811.823,
-            "avg": 89.682,
+            "totalVelocity": 4804360.8,
+            "totalVelocitySquared": 431270811.823,
+            "avgVelocity": 89.682,
             "totalHorizontalBreak": -63528.8,
             "totalHorizontalBreakSquared": 486391.77,
             "avgHorizontalBreak": -1.186,
@@ -908,9 +908,9 @@
           },
           "KC": {
             "count": 12692,
-            "total": 1049439,
-            "totalSquared": 86927971.833,
-            "avg": 82.685,
+            "totalVelocity": 1049439,
+            "totalVelocitySquared": 86927971.833,
+            "avgVelocity": 82.685,
             "totalHorizontalBreak": -67938.5,
             "totalHorizontalBreakSquared": 794404.687,
             "avgHorizontalBreak": -5.353,
@@ -920,9 +920,9 @@
           },
           "KN": {
             "count": 136,
-            "total": 9899.7,
-            "totalSquared": 733604.718,
-            "avg": 72.792,
+            "totalVelocity": 9899.7,
+            "totalVelocitySquared": 733604.718,
+            "avgVelocity": 72.792,
             "totalHorizontalBreak": 137.5,
             "totalHorizontalBreakSquared": 1163.883,
             "avgHorizontalBreak": 1.011,
@@ -932,9 +932,9 @@
           },
           "SV": {
             "count": 3562,
-            "total": 291415.1,
-            "totalSquared": 23856746.777,
-            "avg": 81.812,
+            "totalVelocity": 291415.1,
+            "totalVelocitySquared": 23856746.777,
+            "avgVelocity": 81.812,
             "totalHorizontalBreak": -18689.3,
             "totalHorizontalBreakSquared": 581027.673,
             "avgHorizontalBreak": -5.247,
@@ -944,9 +944,9 @@
           },
           "FO": {
             "count": 543,
-            "total": 44799.7,
-            "totalSquared": 3696152.139,
-            "avg": 82.504,
+            "totalVelocity": 44799.7,
+            "totalVelocitySquared": 3696152.139,
+            "avgVelocity": 82.504,
             "totalHorizontalBreak": 5401.1,
             "totalHorizontalBreakSquared": 53725.945,
             "avgHorizontalBreak": 9.947,
@@ -956,9 +956,9 @@
           },
           "SC": {
             "count": 7,
-            "total": 600.7,
-            "totalSquared": 51548.298,
-            "avg": 85.814,
+            "totalVelocity": 600.7,
+            "totalVelocitySquared": 51548.298,
+            "avgVelocity": 85.814,
             "totalHorizontalBreak": 83.2,
             "totalHorizontalBreakSquared": 988.939,
             "avgHorizontalBreak": 11.886,
@@ -1045,15 +1045,15 @@
     }
   },
   "pitchEnvironmentTuning": {
-    "_id": "new-tuning-01",
+    "_id": "7c995983-5c3e-4f48-9b13-5fcc2bede41a",
     "tuning": {
       "contactQuality": {
         "evScale": 0,
         "laScale": 0,
         "distanceScale": 0,
-        "outOutcomeScale": -0.01771426380314625,
-        "doubleOutcomeScale": 0,
-        "tripleOutcomeScale": 0.007,
+        "outOutcomeScale": -0.018,
+        "doubleOutcomeScale": 0.02,
+        "tripleOutcomeScale": 0.02,
         "homeRunOutcomeScale": 0
       },
       "swing": {
@@ -1061,15 +1061,15 @@
         "pitchQualityChaseSwingEffect": 0,
         "disciplineZoneSwingEffect": 0,
         "disciplineChaseSwingEffect": 0,
-        "walkRateScale": 0.0196927744919273
+        "walkRateScale": 0.02167705876936902
       },
       "contact": {
         "pitchQualityContactEffect": 0,
         "contactSkillEffect": 0
       },
       "running": {
-        "stealAttemptAggressionScale": 0.35911111111111155,
-        "advancementAggressionScale": 0.35
+        "stealAttemptAggressionScale": 0.35,
+        "advancementAggressionScale": 0.02
       },
       "meta": {
         "fullPitchQualityBonus": 0,

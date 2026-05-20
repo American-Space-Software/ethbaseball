@@ -38,7 +38,6 @@ import { LeagueRepositoryNodeImpl } from "../src/repository/node/league-reposito
 import { GameRepository } from "../src/repository/game-repository.js";
 import { GameRepositoryNodeImpl } from "../src/repository/node/game-repository-impl.js";
 import { OwnerRepositoryNodeImpl } from "../src/repository/node/owner-repository-impl.js";
-import { SeedRepositoryNodeImpl } from "../src/repository/node/seed-repository-impl.js";
 
 import { TeamLeagueSeason } from "../src/dto/team-league-season.js";
 import { TeamMintPass } from "../src/dto/team-mint-pass.js";
@@ -58,7 +57,6 @@ import { ConnectLink } from "../src/dto/connect-link.js";
 import { PlayerService } from "../src/service/data/player-service.js";
 import { OwnerRepository } from "../src/repository/owner-repository.js";
 import { Owner } from "../src/dto/owner.js";
-import { SeedRepository } from "../src/repository/seed-repository.js";
 import { Seed } from "../src/dto/seed.js";
 import { Animation } from "../src/dto/animation.js";
 import { Image } from "../src/dto/image.js";
@@ -418,7 +416,6 @@ function getContainer(command?: GetContainerCommand) {
 
   container.bind<GameRepository>("GameRepository").to(GameRepositoryNodeImpl).inSingletonScope()
   container.bind<OwnerRepository>("OwnerRepository").to(OwnerRepositoryNodeImpl).inSingletonScope()
-  container.bind<SeedRepository>("SeedRepository").to(SeedRepositoryNodeImpl).inSingletonScope()
   container.bind<GameTeamRepository>("GameTeamRepository").to(GameTeamRepositoryNodeImpl).inSingletonScope()
   container.bind<GamePlayerRepository>("GamePlayerRepository").to(GamePlayerRepositoryNodeImpl).inSingletonScope()
 

@@ -1,8 +1,10 @@
 <template>
 
   <li>
-      <a href="${universeWebService.startDateLink(`/g/${vm.game._id}`)}" class="item-link">
 
+    ${vm ? $h`
+      
+      <a href="${universeWebService.startDateLink(`/g/${vm.game._id}`)}" class="item-link">
         <div class="item-content">
           <div class="item-inner">
 
@@ -50,6 +52,9 @@
           </div>
         </div>
       </a>
+      
+    ` : $h` `}
+
   </li>
 </template>
 

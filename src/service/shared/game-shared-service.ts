@@ -313,7 +313,7 @@ class GameSharedService {
 
     getPlayDescriptions(game, play:Play) {
 
-        let descriptions = []
+        let descriptions:PlayDescription[] = []
 
         let gamePlayers = this.gamePlayers(game)
 
@@ -332,12 +332,20 @@ class GameSharedService {
             e.runner?._id === play.hitterId &&
             e.movement?.start === BaseResult.HOME
 
+
+        let inPlayPitch 
+
         let i=0
         for (let pitch of play.pitchLog.pitches) {
 
+            if (pitch.result == PitchCall.IN_PLAY) inPlayPitch = pitch
+
             descriptions.push({
                 type: PlayDescriptionType.RECAP,
-                text: this.getPitchDescription(pitch)
+                text: this.getPitchDescription(pitch),
+                meta: {
+                    pitch: pitch
+                }
             })
 
             // Runner events that occurred on this pitch
@@ -351,8 +359,8 @@ class GameSharedService {
                 const runnerText = this.getRunnerDescription(game, runnerEvent)
                 if (runnerText) {
                     descriptions.push({
-                    type: PlayDescriptionType.RECAP,
-                    text: runnerText
+                        type: PlayDescriptionType.RECAP,
+                        text: runnerText
                     })
                 }
 
@@ -368,10 +376,8 @@ class GameSharedService {
             fielderPlayer = gamePlayers[play.fielderId]
         }
 
+        descriptions.push(...this.getPlayResultDescription(play, hitter, fielderPlayer, inPlayPitch))
 
-        descriptions.push(...this.getPlayResultDescription(play, hitter, fielderPlayer))
-
-        
         descriptions.push(...this.getRunnerRecapDescription(game, play))
 
 
@@ -437,7 +443,9 @@ class GameSharedService {
         return descriptions
     }
 
-    getPlayResultDescription(play: Play, hitter: GamePlayer, fielderPlayer?: GamePlayer) {
+
+
+    getPlayResultDescription(play: Play, hitter: GamePlayer, fielderPlayer?: GamePlayer, inPlayPitch?:Pitch) {
 
         const descriptions: PlayDescription[] = []
 
@@ -656,6 +664,10 @@ class GameSharedService {
 
         // Final tidy pass (safety)
         for (const d of descriptions) d.text = tidy(d.text)
+
+        if (inPlayPitch) {
+            descriptions[0].meta = { pitch: inPlayPitch }
+        }
 
         
         return descriptions
@@ -961,7 +973,7 @@ class GameSharedService {
 
         switch (contact) {
             case Contact.FLY_BALL:
-                // popup vs fly ball (or “deep fly” if you want)
+
                 return isOutfieldTarget ? "a fly ball" : "a popup"
 
             case Contact.GROUNDBALL:

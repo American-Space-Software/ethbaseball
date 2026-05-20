@@ -464,7 +464,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
     async runLeagueGenerator(universe:Universe, season:Season, rank:number, name:string, numberOfTeams:number, options?:any) {
 
-        let rng = await this.seedService.getRNG(options)
+        let rng = await this.seedService.getRNG()
 
         let league:League = new League()
         league._id = uuidv4()

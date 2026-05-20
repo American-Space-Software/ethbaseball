@@ -36,10 +36,25 @@
 
                       <div class="message message-received ${d.type == 'RESULT' ? 'main' : ''}">
                         <div class="message-content">
-                          <!-- Bubble with text -->
+                        
+                          ${d.meta?.pitch ? $h`
+
+                            ${d.type == "RESULT" ? $h`
+                              <div class="message-header">${gameWebService.getInPlayHeader(d.meta.pitch)}</div>
+                            ` : $h`
+                              <div class="message-header">${gameWebService.getPitchHeader(d.meta.pitch)}</div>
+                            `}
+
+                            
+                          ` : $h` `}
+                        
+
                           <div class="message-bubble">
                             <div class="message-text">${d.text}</div>
                           </div>
+
+
+
                         </div>
                       </div>
                       
@@ -102,9 +117,9 @@
     let gamePlayers = props.gamePlayers
     let gameViewModel = props.gameViewModel
 
-    // console.log(playByPlay, gameViewModel)
 
-    // console.log(JSON.parse(JSON.stringify(playByPlay)).reverse().map ( p => p.descriptions))
+
+    console.log(JSON.parse(JSON.stringify(playByPlay)).reverse())
 
     $on('pageBeforeIn', async (e) => {
                 

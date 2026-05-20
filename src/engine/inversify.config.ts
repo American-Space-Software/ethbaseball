@@ -27,7 +27,6 @@ import { TeamMintPass } from "../dto/team-mint-pass.js";
 import { Owner } from "../dto/owner.js";
 import { OwnerService } from "../service/data/owner-service.js";
 import { OwnerRepositoryNodeImpl } from "../repository/node/owner-repository-impl.js";
-import { SeedRepositoryNodeImpl } from "../repository/node/seed-repository-impl.js";
 import { Seed } from "../dto/seed.js";
 import { SeedService } from "../service/data/seed-service.js";
 
@@ -436,7 +435,6 @@ async function getContainer() {
     container.bind("TeamRepository").to(TeamRepositoryNodeImpl).inSingletonScope()
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()
     container.bind("OwnerRepository").to(OwnerRepositoryNodeImpl).inSingletonScope()
-    container.bind("SeedRepository").to(SeedRepositoryNodeImpl).inSingletonScope()
     container.bind("GameRepository").to(GameRepositoryNodeImpl).inSingletonScope()
     container.bind("AnimationRepository").to(AnimationRepositoryNodeImpl).inSingletonScope()
     container.bind("ImageRepository").to(ImageRepositoryNodeImpl).inSingletonScope()

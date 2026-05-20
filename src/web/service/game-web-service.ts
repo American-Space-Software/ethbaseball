@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import axios from "axios"
-import { AtBatState, PlayDescription } from "../../service/enums.js";
+import { AtBatState, PlayDescription, PlayDescriptionType } from "../../service/enums.js";
 import dayjs from "dayjs";
 
 import { SocketWebService } from "./socket-web-service.js";
 
 import { GameSharedService } from "../../service/shared/game-shared-service.js";
-import { Handedness, Play, GamePlayer } from '../../baseball-sim-engine/index.js';
+import { Handedness, Play, GamePlayer, Pitch, PitchCall } from '../../baseball-sim-engine/index.js';
 
 
 @injectable()
@@ -451,8 +451,57 @@ class GameWebService {
     }
 
     getMessagesFromPlayDescriptions(descriptions) {
-        return descriptions?.map( d => {  return { text: d.text, type: "received", name: "Gamelog" } })
+
+        return descriptions?.map( d => {  
+
+            let message:any = { 
+                text: d.text, 
+                type: "received", 
+                name: "Gamelog"
+            } 
+
+            if (d.meta?.pitch) {
+
+                if (d.type == PlayDescriptionType.RESULT) {
+                    message.header = this.getInPlayHeader(d.meta.pitch)
+                } else {
+                    message.header = this.getPitchHeader(d.meta.pitch)
+                }
+
+            } else {}
+
+
+
+            return message
+        })
     }
+
+    getPitchHeader(pitch:Pitch) {
+        return `${this.getPitchResultDescription(pitch)} - ${pitch.count.balls}-${pitch.count.strikes} - ${pitch.quality.velocity.toFixed(1)} MPH ${this.gameSharedService.getPitchTypeFull(pitch.type)}`
+    }
+
+    getInPlayHeader(pitch:Pitch) {
+        return `EV ${pitch.contactQuality.exitVelocity.toFixed(1)} MPH / LA ${pitch.contactQuality.launchAngle.toFixed(1)}° / Dst ${pitch.contactQuality.distance.toFixed(0)} ft`
+    }
+
+    getPitchResultDescription(pitch: Pitch) {
+        if (pitch.isWP) return "Wild Pitch"
+        if (pitch.isPB) return "Passed Ball"
+
+        switch (pitch.result) {
+            case PitchCall.BALL:
+                return "Ball"
+            case PitchCall.STRIKE:
+                return pitch.swing ? "Swinging Strike" : "Called Strike"
+            case PitchCall.FOUL:
+                return "Foul Ball"
+            case PitchCall.IN_PLAY:
+                return "In Play"
+            default:
+                return pitch.swing ? "Swinging Strike" : "Ball"
+        }
+    }
+
 
     getPlayByPlay(game) {
         return this.gameSharedService.getPlayByPlay(game)
