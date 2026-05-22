@@ -168,6 +168,9 @@ import { WIN_EXPECTANCY_CHART } from "../service/enums.js"
 import { GameNotificationService } from "../service/data/game-notification-service.js"
 import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository-impl.js"
 import { GameNotifications } from "../dto/game-notifications.js"
+import { TradeRequestRepositoryNodeImpl } from "../repository/node/trade-request-repository-impl.js"
+import { TradeRequest } from "../dto/trade-request.js"
+import { TeamTransactionService } from "../service/data/team-transaction-service.js"
 
 
 const client = new Client({ intents: [
@@ -291,7 +294,7 @@ async function getContainer() {
                 multipleStatements: true,
                 timezone: 'Z'    
                },
-               models: [GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
+               models: [TradeRequest, GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, TeamLeagueSeason,
                  DiamondMintPass, Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ],
@@ -431,6 +434,7 @@ async function getContainer() {
     container.bind(GameSharedService).toSelf().inSingletonScope()
     container.bind(TeamSharedService).toSelf().inSingletonScope()
     container.bind(PlayerSharedService).toSelf().inSingletonScope()
+    container.bind(TeamTransactionService).toSelf().inSingletonScope()
 
     container.bind("TeamRepository").to(TeamRepositoryNodeImpl).inSingletonScope()
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()
@@ -454,6 +458,7 @@ async function getContainer() {
     container.bind("LadderChallengeRepository").to(LadderChallengeRepositoryNodeImpl).inSingletonScope()
     container.bind("GameTeamRepository").to(GameTeamRepositoryNodeImpl).inSingletonScope()
     container.bind("GamePlayerRepository").to(GamePlayerRepositoryNodeImpl).inSingletonScope()
+    container.bind("TradeRequestRepository").to(TradeRequestRepositoryNodeImpl).inSingletonScope()
 
     container.bind("SignatureTokenRepository").to(SignatureTokenRepositoryNodeImpl).inSingletonScope()
     container.bind("SeasonRepository").to(SeasonRepositoryNodeImpl).inSingletonScope()

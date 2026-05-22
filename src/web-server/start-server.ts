@@ -57,6 +57,7 @@ import { SocketService } from '../service/socket-service.js'
 import { LadderService } from '../service/ladder-service.js'
 import { TeamQueueService } from '../service/data/team-queue-service.js'
 import { Position, RotationPitcher } from '../baseball-sim-engine/index.js';
+import { TeamTransactionService } from '../service/data/team-transaction-service.js';
 
 
 const TWITTER = "@ethbaseball"
@@ -128,6 +129,7 @@ let startWebServer = async () => {
   let socketService:SocketService = container.get(SocketService)
   let ladderService:LadderService = container.get(LadderService)
   let teamQueueService:TeamQueueService = container.get(TeamQueueService)
+  let teamTransactionService:TeamTransactionService = container.get(TeamTransactionService)
 
   let offchainEventService:OffchainEventService = container.get(OffchainEventService)
   let processedTransactionService:ProcessedTransactionService = container.get(ProcessedTransactionService)
@@ -1062,39 +1064,8 @@ let startWebServer = async () => {
 
           //Make sure this user owns this player
           let player:Player = await playerService.get(playerId, options)
-          let season:Season = await seasonService.getMostRecent(options)
           
-          let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
-          
-          if (!pls.teamId) {
-            throw new Error("Player is not rostered.")
-          }
-          
-          let team:Team = await teamService.get(pls.teamId, options)
-          
-          //Must be team owner
-          if (user._id != team.userId) {
-            throw new Error ("Not authorized.")
-          }
-
-          //Must not be queued.
-          let isQueued = await teamQueueService.isTeamQueued(team, options)
-          if (isQueued) {
-            throw new Error("Team is queued for a game. Cannot drop player.")
-          }
-
-          //Team must have at least the minimum player salary in their balance. Otherwise they are stuck.
-          let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
-
-          let minimumPlayerSalary = playerService.getFreeAgentSalary(1, 50, 365)
-
-          if (BigInt(diamondBalance) < BigInt(minimumPlayerSalary)) {
-            throw new Error(`Team does not have enough diamonds to drop this player.`)
-          }
-
-
-
-          await teamService.dropPlayer(pls, player, team, season, universe.currentDate)
+          await teamTransactionService.dropPlayer(user, player, universe.currentDate, options)
 
       })
 
@@ -1134,53 +1105,10 @@ let startWebServer = async () => {
           let teams:Team[] = await teamService.getByUser(user, options)
           let team = teams[0]
 
-
-
-          //Make sure this user owns this player
           let player:Player = await playerService.get(playerId, options)
-          let season:Season = await seasonService.getMostRecent(options)
           
-          let pls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
-          
-          if (pls.teamId) {
-            throw new Error("Player is rostered.")
-          }
-          
-          
-          let tls:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season, options)
-          let tlsPlain = tls.get({ plain: true })
-
-          //Must be team owner
-          if (user._id != team.userId) {
-            throw new Error("Not authorized.")
-          }
-
-          //Must not be queued.
-          let isQueued = await teamQueueService.isTeamQueued(team, options)
-          if (isQueued) {
-            throw new Error("Team is queued for a game. Cannot sign player.")
-          }
-
-          //Make sure the roster has space for a player at this position
-          let currentPLSS:PlayerLeagueSeason[] = await playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-
-          let requiredPositions:Position[] = teamService.listRequiredRosterSpots(currentPLSS)
-
-          if (!requiredPositions.includes(pls.primaryPosition)) {
-            throw new Error(`Your roster does not have space for a ${pls.primaryPosition}. Drop your current ${pls.primaryPosition} to make room.`)
-          }
-
-          //Make sure the team has enough budget to sign this player
-          let diamondBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
-
-          let askingPrice = playerService.getAskingPrice(pls)
-
-          if (BigInt(diamondBalance) < BigInt(askingPrice)) {
-            throw new Error(`Team does not have enough diamonds to sign this player.`)
-          }
-
           let offChainEventTransactionId = uuidv4()
-          await teamService.signPlayer(pls, player, team, season, tlsPlain.league, universe.currentDate, askingPrice, offChainEventTransactionId, options)
+          await teamTransactionService.signFreeAgent(user, player, team, universe.currentDate, offChainEventTransactionId, options)
 
       })
 

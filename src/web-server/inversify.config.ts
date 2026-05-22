@@ -164,6 +164,11 @@ import { GameNotificationService } from "../service/data/game-notification-servi
 import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository-impl.js";
 import { GameNotifications } from "../dto/game-notifications.js"
 
+import { TradeRequestRepositoryNodeImpl } from "../repository/node/trade-request-repository-impl.js"
+import { TradeRequest } from "../dto/trade-request.js"
+import { TradeRequestRepository } from "../repository/trade-request-repository.js"
+import { TeamTransactionService } from "../service/data/team-transaction-service.js";
+
 let _diamondsAddress:string
 let _universe:Universe
 let _config:any
@@ -277,7 +282,7 @@ async function getContainer(command?:GetContainerCommand) {
                 multipleStatements: true,
                 timezone: 'Z'    
                },
-               models: [GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
+               models: [TradeRequest, GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
                  Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ]
@@ -394,6 +399,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(GameSharedService).toSelf().inSingletonScope()
     container.bind(TeamSharedService).toSelf().inSingletonScope()
     container.bind(PlayerSharedService).toSelf().inSingletonScope()
+    container.bind(TeamTransactionService).toSelf().inSingletonScope()
 
     container.bind("PlayerRepository").to(PlayerRepositoryNodeImpl).inSingletonScope()
     container.bind("OwnerRepository").to(OwnerRepositoryNodeImpl).inSingletonScope()
@@ -408,6 +414,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind("UserRepository").to(UserRepositoryNodeImpl).inSingletonScope()
     container.bind("LeagueRepository").to(LeagueRepositoryNodeImpl).inSingletonScope()
     container.bind("GameNotificationsRepository").to(GameNotificationsRepositoryNodeImpl).inSingletonScope()
+    container.bind("TradeRequestRepository").to(TradeRequestRepositoryNodeImpl).inSingletonScope()
 
     container.bind("BlockRepository").to(BlockRepositoryNodeImpl).inSingletonScope()
     container.bind("ContractStateRepository").to(ContractStateRepositoryNodeImpl).inSingletonScope()

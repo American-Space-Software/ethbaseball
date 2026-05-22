@@ -665,7 +665,7 @@ class GameSharedService {
         // Final tidy pass (safety)
         for (const d of descriptions) d.text = tidy(d.text)
 
-        if (inPlayPitch) {
+        if (inPlayPitch && descriptions?.length > 0) {
             descriptions[0].meta = { pitch: inPlayPitch }
         }
 
@@ -1305,7 +1305,7 @@ class GameSharedService {
             }
 
         }
-
+        
         return results
 
     }

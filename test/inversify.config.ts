@@ -208,6 +208,11 @@ import { TeamLeagueSeasonRepositoryNodeImpl } from "../src/repository/node/team-
 import { PlayerLeagueSeasonRepository } from "../src/repository/player-league-season-repository.js"
 import { PlayerLeagueSeasonRepositoryNodeImpl } from "../src/repository/node/player-league-season-repository-impl.js"
 
+import { TradeRequestRepository } from "../src/repository/trade-request-repository.js"
+import { TradeRequestRepositoryNodeImpl } from "../src/repository/node/trade-request-repository-impl.js"
+import { TradeRequest } from "../src/dto/trade-request.js"
+
+
 import { SignatureToken } from "../src/dto/signature-token.js"
 import { SignatureTokenService } from "../src/service/data/signature-token-service.js"
 import { HuggingFaceService } from "../src/service/hugging-face-service.js"
@@ -227,6 +232,7 @@ import { Post } from "../src/dto/post.js"
 import { Alchemy } from "alchemy-sdk";
 import { AbiPayloadService } from "../src/service/abi-payload-service.js"
 import { TeamSharedService } from "../src/service/shared/team-shared-service.js"
+import { TeamTransactionService } from "../src/service/data/team-transaction-service.js"
 
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
@@ -309,7 +315,7 @@ function getContainer(command?: GetContainerCommand) {
           multipleStatements: true   ,   
           timezone: 'Z'  
          },
-         models: [ GameNotifications, TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
+         models: [ TradeRequest, GameNotifications, TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
           DiamondMintPass, Universe, Animation, Image, ConnectLink,
           Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
           ]
@@ -418,6 +424,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind<OwnerRepository>("OwnerRepository").to(OwnerRepositoryNodeImpl).inSingletonScope()
   container.bind<GameTeamRepository>("GameTeamRepository").to(GameTeamRepositoryNodeImpl).inSingletonScope()
   container.bind<GamePlayerRepository>("GamePlayerRepository").to(GamePlayerRepositoryNodeImpl).inSingletonScope()
+  container.bind<TradeRequestRepository>("TradeRequestRepository").to(TradeRequestRepositoryNodeImpl).inSingletonScope()
 
   container.bind<AnimationRepository>("AnimationRepository").to(AnimationRepositoryNodeImpl).inSingletonScope()
   container.bind<ImageRepository>("ImageRepository").to(ImageRepositoryNodeImpl).inSingletonScope()
@@ -454,6 +461,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(AbiPayloadService).toSelf().inSingletonScope()
 
   container.bind(UserService).toSelf().inSingletonScope()
+  container.bind(TeamTransactionService).toSelf().inSingletonScope()
 
 
   container.bind("WalletService").to(NodeWalletServiceImpl).inSingletonScope()

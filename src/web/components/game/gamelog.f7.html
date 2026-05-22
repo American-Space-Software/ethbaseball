@@ -40,9 +40,9 @@
                           ${d.meta?.pitch ? $h`
 
                             ${d.type == "RESULT" ? $h`
-                              <div class="message-header">${gameWebService.getInPlayHeader(d.meta.pitch)}</div>
+                              <div class="message-header">${gameWebService.getInPlayHeader(d.meta?.pitch)}</div>
                             ` : $h`
-                              <div class="message-header">${gameWebService.getPitchHeader(d.meta.pitch)}</div>
+                              <div class="message-header">${gameWebService.getPitchHeader(d.meta?.pitch)}</div>
                             `}
 
                             
@@ -113,13 +113,10 @@
     let eventTarget = ContainerService.getInstance("eventTarget")
     let env = ContainerService.getInstance("env")()
 
-    let playByPlay = props.playByPlay
+    let playByPlay = props.playByPlay?.reverse()
     let gamePlayers = props.gamePlayers
     let gameViewModel = props.gameViewModel
 
-
-
-    console.log(JSON.parse(JSON.stringify(playByPlay)).reverse())
 
     $on('pageBeforeIn', async (e) => {
                 

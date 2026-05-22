@@ -1007,130 +1007,10 @@ n
 
     }
 
-    async dropPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, date:Date, options?:any) {
-
-        //Update team. Remove from lineup and rotation.
-        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
-
-        // let tlsPlain:TeamLeagueSeason = tls.get({ plain: true })
-
-        this.lineupService.lineupRemove(tls.lineups[0], player._id)
-        this.lineupService.rotationRemove(tls.lineups[0], player._id)
-
-        tls.lineups[0].valid = false
-        tls.hasValidLineup = false
-
-        tls.changed("lineups", true)
-        tls.changed("hasValidLineup", true)
-
-        //End current PLS
-        pls.endDate = date
-
-        await this.playerLeagueSeasonService.put(pls, options)
-
-        //Create new PLS
-        let nextPLS = new PlayerLeagueSeason()
-        nextPLS.playerId = pls.playerId
-        nextPLS.seasonId = season._id
-        nextPLS.seasonIndex = pls.seasonIndex + 1
-        nextPLS.primaryPosition = pls.primaryPosition
-        nextPLS.overallRating = pls.overallRating
-        nextPLS.hittingRatings = pls.hittingRatings
-        nextPLS.pitchRatings = pls.pitchRatings
-        nextPLS.potentialOverallRating = pls.potentialOverallRating
-        nextPLS.potentialHittingRatings = pls.potentialHittingRatings
-        nextPLS.potentialPitchRatings = pls.potentialPitchRatings
-        nextPLS.startDate = date
-        nextPLS.endDate = season.endDate
-        nextPLS.age = player.age
-
-        nextPLS.stats = {
-            //@ts-ignore
-            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-            //@ts-ignore
-            pitching: this.statService.mergePitchResultsToStatLine({}, {})
-        }
-
-        await this.playerLeagueSeasonService.put(nextPLS, options)
-
-        //drop the player
-        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, uuidv4(), options)
 
 
-        await this.put(team, options)
-        await this.teamLeagueSeasonService.put(tls, options)
 
-
-    }
-
-
-    async signPlayer(pls:PlayerLeagueSeason, player:Player, team:Team, season:Season, league:League, date:Date, askingPrice:string, offChainEventTransactionId:string, options?:any) {
-
-        //Update team. Add to lineup/rotation.
-        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
-
-        if (player.primaryPosition == Position.PITCHER) {
-            let spot = this.lineupService.getFirstAvailableRotationSpot(tls.lineups[0])
-            this.lineupService.rotationAdd(tls.lineups[0], player, spot)
-        } else {
-            let spot = this.lineupService.getFirstAvailableOrderSpot(tls.lineups[0])
-            this.lineupService.lineupAdd(tls.lineups[0], player, spot)
-        }
-
-
-        //End current PLS
-        pls.startDate = date
-
-        await this.playerLeagueSeasonService.put(pls, options)
-
-        //Create new PLS
-        let nextPLS = new PlayerLeagueSeason()
-        nextPLS.playerId = pls.playerId
-        nextPLS.seasonId = season._id,
-        nextPLS.leagueId = league._id,
-        nextPLS.teamId = team._id
-        nextPLS.seasonIndex = pls.seasonIndex + 1
-        nextPLS.primaryPosition = pls.primaryPosition
-        nextPLS.overallRating = pls.overallRating
-        nextPLS.hittingRatings = pls.hittingRatings
-        nextPLS.pitchRatings = pls.pitchRatings
-
-        nextPLS.potentialOverallRating = pls.potentialOverallRating
-        nextPLS.potentialHittingRatings = pls.potentialHittingRatings
-        nextPLS.potentialPitchRatings = pls.potentialPitchRatings
-
-        nextPLS.startDate = date
-        nextPLS.endDate = season.endDate
-        nextPLS.age = player.age
-
-        nextPLS.stats = {
-            //@ts-ignore
-            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-            //@ts-ignore
-            pitching: this.statService.mergePitchResultsToStatLine({}, {})
-        }
-
-        await this.playerLeagueSeasonService.put(nextPLS, options)
-
-
-        //Set lineup validity
-        let currentTeamPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-        this.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS.map( pls => pls.get({ plain: true})))
-
-        tls.changed("lineups", true)
-        tls.changed("hasValidLineup", true)
-
-
-        //sign the player
-        await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, offChainEventTransactionId, options)
-
-        //transfer diamonds
-        await this.offchainEventService.createTeamBurnEvent(team._id, askingPrice, offChainEventTransactionId, options)
-
-        await this.teamLeagueSeasonService.put(tls, options)
-
-
-    }    
+ 
 
     async updateSeasonRecord(team:Team, season:Season, tls:TeamLeagueSeason, options?:any) : Promise<OverallRecord> {
 
@@ -1155,6 +1035,61 @@ n
       return this.teamSharedService.calculateProjectedReward(baseDiamondReward, maxRatingDiff)
     }
 
+
+    async transferPlayerToTeam(player:Player, fromTeam:Team, toTeam:Team, season:Season, offChainEventTransactionId:string, options?:any): Promise<void> {
+
+        let nowDate = new Date(new Date().toUTCString())
+
+        let pls:PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (pls.teamId != fromTeam._id) {
+            throw new Error("Player is not currently on this team.")
+        }
+
+        let toTls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(toTeam, season, options)
+
+        pls.endDate = nowDate
+
+        await this.playerLeagueSeasonService.put(pls, options)
+
+        let nextPLS = new PlayerLeagueSeason()
+
+        nextPLS.playerId = pls.playerId
+        nextPLS.seasonId = season._id
+        nextPLS.leagueId = toTls.leagueId
+        nextPLS.teamId = toTls.teamId
+        nextPLS.seasonIndex = pls.seasonIndex + 1
+        nextPLS.primaryPosition = pls.primaryPosition
+        nextPLS.overallRating = pls.overallRating
+        nextPLS.hittingRatings = pls.hittingRatings
+        nextPLS.pitchRatings = pls.pitchRatings
+        nextPLS.potentialOverallRating = pls.potentialOverallRating
+        nextPLS.potentialHittingRatings = pls.potentialHittingRatings
+        nextPLS.potentialPitchRatings = pls.potentialPitchRatings
+        nextPLS.startDate = nowDate
+        nextPLS.endDate = season.endDate
+        nextPLS.age = player.age
+
+        nextPLS.stats = {
+            //@ts-ignore
+            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
+            //@ts-ignore
+            pitching: this.statService.mergePitchResultsToStatLine({}, {})
+        }
+
+        await this.playerLeagueSeasonService.put(nextPLS, options)
+
+        await this.offchainEventService.createPlayerTransferEvent(
+            fromTeam._id,
+            toTeam._id,
+            player._id,
+            offChainEventTransactionId,
+            options
+        )
+
+        await this.playerService.put(player, options)
+
+    }
 
 }
 

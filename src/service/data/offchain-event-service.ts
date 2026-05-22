@@ -150,6 +150,7 @@ class OffchainEventService {
 
     }
 
+
     async createPlayerDropTransferEvent(fromTeamId:string, playerId:string, transactionId:string, options?:any) {
 
         let offChainEvent:OffchainEvent = new OffchainEvent()

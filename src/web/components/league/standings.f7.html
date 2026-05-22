@@ -150,6 +150,7 @@
         let previousSeason = viewModel.seasons[previousSeasonIndex] ? viewModel.seasons[previousSeasonIndex].startDate : undefined
         let nextSeason = viewModel.seasons[nextSeasonIndex] ? viewModel.seasons[nextSeasonIndex].startDate : undefined
 
+
         const isPromoted = (t) => {
             if (!viewModel.season.promotionRelegationLog) return false
             let log = viewModel.season.promotionRelegationLog.find(l => l._id == t._id)
