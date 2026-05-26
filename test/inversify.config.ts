@@ -208,9 +208,9 @@ import { TeamLeagueSeasonRepositoryNodeImpl } from "../src/repository/node/team-
 import { PlayerLeagueSeasonRepository } from "../src/repository/player-league-season-repository.js"
 import { PlayerLeagueSeasonRepositoryNodeImpl } from "../src/repository/node/player-league-season-repository-impl.js"
 
-import { TradeRequestRepository } from "../src/repository/trade-request-repository.js"
-import { TradeRequestRepositoryNodeImpl } from "../src/repository/node/trade-request-repository-impl.js"
-import { TradeRequest } from "../src/dto/trade-request.js"
+import { TeamMarketOfferRepository } from "../src/repository/team-market-offer-repository.js"
+import { TeamMarketOfferRepositoryNodeImpl } from "../src/repository/node/team-market-offer-repository-impl.js"
+import { TeamMarketOffer } from "../src/dto/team-market-offer.js"
 
 
 import { SignatureToken } from "../src/dto/signature-token.js"
@@ -315,7 +315,7 @@ function getContainer(command?: GetContainerCommand) {
           multipleStatements: true   ,   
           timezone: 'Z'  
          },
-         models: [ TradeRequest, GameNotifications, TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
+         models: [ TeamMarketOffer, GameNotifications, TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
           DiamondMintPass, Universe, Animation, Image, ConnectLink,
           Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
           ]
@@ -424,7 +424,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind<OwnerRepository>("OwnerRepository").to(OwnerRepositoryNodeImpl).inSingletonScope()
   container.bind<GameTeamRepository>("GameTeamRepository").to(GameTeamRepositoryNodeImpl).inSingletonScope()
   container.bind<GamePlayerRepository>("GamePlayerRepository").to(GamePlayerRepositoryNodeImpl).inSingletonScope()
-  container.bind<TradeRequestRepository>("TradeRequestRepository").to(TradeRequestRepositoryNodeImpl).inSingletonScope()
+  container.bind<TeamMarketOfferRepository>("TeamMarketOfferRepository").to(TeamMarketOfferRepositoryNodeImpl).inSingletonScope()
 
   container.bind<AnimationRepository>("AnimationRepository").to(AnimationRepositoryNodeImpl).inSingletonScope()
   container.bind<ImageRepository>("ImageRepository").to(ImageRepositoryNodeImpl).inSingletonScope()

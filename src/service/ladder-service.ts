@@ -4,7 +4,7 @@ import { PlayerService } from "./data/player-service.js"
 
 import { GameService } from "./data/game-service.js"
 import { Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART } from "./enums.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART, DEFAULT_PLAYER_STARTING_AGE } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -494,8 +494,18 @@ class LadderService {
         let awayTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(away, season, options)
         let homeTLS:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(home, season, options)
 
-        let players:Player[] = await this.playerService.getByIds( [].concat(game.home.players).concat(game.away.players).map( p => p._id), options )
-        let plss = await this.playerLeagueSeasonService.getMostRecentByPlayersSeason(players, season, options)
+        let players:Player[] = []
+        let plss:PlayerLeagueSeason[] = []
+
+        for (let team of [game.home, game.away]) {
+
+            let teamPlayers = await this.playerService.getByIds( team.players.map( p => p._id), options )
+            let t = [home, away].find( t => t._id == team._id)
+            
+            players.push(...teamPlayers)
+            plss.push(...await this.playerLeagueSeasonService.getMostRecentByPlayersTeamSeason(teamPlayers, t,  season, options))
+
+        }
 
         this.simSharedService.finishGame(game)
 
@@ -753,123 +763,182 @@ class LadderService {
 
     }
 
+    async buildNextSeasonLeagueStructure(season: Season, leagues: League[], teamsToMove: number, options?: any): Promise<{ structure: { league: League, teamInfo: { cityId: string, teamId: string, previousRank: number, previousLeagueId: string }[] }[], promotionRelegationLog: { _id: string, rank: number, previousRank: number }[] }> {
 
-    async finishSeason(season:Season, leagues:League[], options?:any) {
+        let sortedLeagues = [...leagues].sort((a, b) => a.rank - b.rank)
 
-        const TEAMS_TO_RELEGATE = 0 //Disabling for now.
+        for (let i = 1; i < sortedLeagues.length; i++) {
+            if (sortedLeagues[i].rank != sortedLeagues[i - 1].rank + 1) {
+                throw new Error("League ranks must be contiguous.")
+            }
+        }
 
-        //Distribute rewards to anyone that played at least one game and finished above the threshhold
-        let teamIds = await this.teamService.getTeamIdsBySeason(season, options)
-        let teamSeasonIds:TeamSeasonId[] = teamIds.map( t => { return { teamId: t, seasonId: season._id } })
+        let allTls = await this.teamLeagueSeasonService.listBySeason(season, options)
 
-        let tlss:TeamLeagueSeason[] = await this.teamLeagueSeasonService.getByTeamSeasonIds(teamSeasonIds, options)
+        let originalStructure = sortedLeagues.map(league => {
 
-        //Calculate season end rewards.
-        let rewardTeams = await this.teamService.getByIds(teamIds, options)
-        let rewardTeamsNonCPU = rewardTeams.filter( t => t.userId != undefined)
+            let leagueTLS = allTls
+                .filter(tls => tls.leagueId == league._id)
+                .sort((a, b) => {
+                    let aRank = a.overallRecord?.rank ?? Number.MAX_SAFE_INTEGER
+                    let bRank = b.overallRecord?.rank ?? Number.MAX_SAFE_INTEGER
+
+                    return aRank - bRank
+                })
+
+            return {
+                league: league,
+                teamInfo: leagueTLS.map(tls => {
+                    return {
+                        cityId: tls.cityId,
+                        teamId: tls.teamId,
+                        previousRank: league.rank,
+                        previousLeagueId: league._id
+                    }
+                })
+            }
+
+        })
+
+        let updatedStructure = originalStructure.map(leagueInfo => {
+            return {
+                league: leagueInfo.league,
+                teamInfo: [...leagueInfo.teamInfo]
+            }
+        })
+
+        let promotionRelegationLog: { _id: string, rank: number, previousRank: number }[] = []
+        let movedTeamIds = new Set<string>()
+
+        for (let i = 0; i < sortedLeagues.length - 1; i++) {
+            let higherOriginal = originalStructure[i]
+            let lowerOriginal = originalStructure[i + 1]
+
+            let higherUpdated = updatedStructure[i]
+            let lowerUpdated = updatedStructure[i + 1]
+
+            let toPromote: { cityId: string, teamId: string, previousRank: number, previousLeagueId: string }[] = []
+
+            for (let candidate of lowerOriginal.teamInfo) {
+                if (toPromote.length >= teamsToMove) {
+                    break
+                }
+
+                if (movedTeamIds.has(candidate.teamId)) {
+                    continue
+                }
+
+                let currentCityCount = higherUpdated.teamInfo.filter(ti => ti.cityId == candidate.cityId).length + toPromote.filter(ti => ti.cityId == candidate.cityId).length
+
+                if (currentCityCount < 2) {
+                    toPromote.push(candidate)
+                }
+            }
+
+            let toRelegate = [...higherOriginal.teamInfo]
+                .reverse()
+                .filter(candidate => !movedTeamIds.has(candidate.teamId))
+                .slice(0, teamsToMove)
+
+            for (let teamInfo of toPromote) {
+                movedTeamIds.add(teamInfo.teamId)
+
+                lowerUpdated.teamInfo = lowerUpdated.teamInfo.filter(ti => ti.teamId != teamInfo.teamId)
+                higherUpdated.teamInfo.push(teamInfo)
+
+                promotionRelegationLog.push({
+                    _id: teamInfo.teamId,
+                    rank: higherUpdated.league.rank,
+                    previousRank: teamInfo.previousRank
+                })
+            }
+
+            for (let teamInfo of toRelegate) {
+                movedTeamIds.add(teamInfo.teamId)
+
+                higherUpdated.teamInfo = higherUpdated.teamInfo.filter(ti => ti.teamId != teamInfo.teamId)
+                lowerUpdated.teamInfo.push(teamInfo)
+
+                promotionRelegationLog.push({
+                    _id: teamInfo.teamId,
+                    rank: lowerUpdated.league.rank,
+                    previousRank: teamInfo.previousRank
+                })
+            }
+        }
+
+        return {
+            structure: updatedStructure,
+            promotionRelegationLog: promotionRelegationLog
+        }
+
+    }
+
+    async finishSeason(season: Season, leagues: League[], options?: any) {
+
+        const TEAMS_TO_RELEGATE = 3
+
+        let rewardTeamIds = await this.teamService.getTeamIdsBySeason(season, options)
+        let rewardTeamSeasonIds: TeamSeasonId[] = rewardTeamIds.map(t => { return { teamId: t, seasonId: season._id } })
+
+        let rewardTlss: TeamLeagueSeason[] = rewardTeamSeasonIds.length > 0 ? await this.teamLeagueSeasonService.getByTeamSeasonIds(rewardTeamSeasonIds, options) : []
+        let rewardTeams = rewardTeamIds.length > 0 ? await this.teamService.getByIds(rewardTeamIds, options) : []
+        let rewardTeamsNonCPU = rewardTeams.filter(t => t.userId != undefined)
         let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeamsNonCPU)
 
         let offChainEventTransactionId = uuidv4()
 
-        await this.distributeRewards(rewardsPerTeam, rewardTeams, tlss, season, { type: "reward", rewardType:"season", fromDate: season.endDate }, offChainEventTransactionId, options)
+        await this.distributeRewards(rewardsPerTeam, rewardTeamsNonCPU, rewardTlss, season, { type: "reward", rewardType: "season", fromDate: season.endDate }, offChainEventTransactionId, options)
 
-
-        //Create the next season. 
-        let nextSeason:Season = new Season()
+        let nextSeason: Season = new Season()
         nextSeason._id = uuidv4()
-        nextSeason.startDate = dayjs(season.endDate).add(1, 'days').toDate()
-        nextSeason.endDate = dayjs(nextSeason.startDate).add(161, 'day').toDate()
+        nextSeason.startDate = dayjs(season.endDate).add(1, "days").toDate()
+        nextSeason.endDate = dayjs(nextSeason.startDate).add(161, "day").toDate()
         nextSeason.isComplete = false
         nextSeason.isInitialized = false
 
         await this.seasonService.put(nextSeason, options)
 
-        //Handle relegation
-        let updatedStructure:{ league:League, teamInfo:{ cityId:string, teamId:string}[]}[] = leagues.map( l => { return { league: l, teamInfo: [] } })
+        let nextLeagueStructure = await this.buildNextSeasonLeagueStructure(season, leagues, TEAMS_TO_RELEGATE, options)
 
-        season.promotionRelegationLog = []
+        season.promotionRelegationLog = nextLeagueStructure.promotionRelegationLog
 
-        for (let league of leagues) {
+        let nextLeagueIdByTeamId = new Map<string, string>()
 
-            let leagueTLS:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listByLeagueAndSeason(league, season, options)
-
-            let teamInfo = leagueTLS.map( tls =>  { return { teamId: tls.teamId, cityId: tls.cityId } })
-
-            let thisLeague = updatedStructure.find( r => r.league.rank == league.rank)
-            let higherLeague = updatedStructure.find( r => r.league.rank == league.rank - 1)
-            let lowerLeague = updatedStructure.find( r => r.league.rank == league.rank + 1)
-
-            if (higherLeague) {
-
-                let i =0
-                let toPromote = []
-
-                //If we're not doing the first league...the top 3 teams go up a level.
-                while (toPromote.length < TEAMS_TO_RELEGATE) {
-
-                    let current = teamInfo[i]
-
-                    let currentCityCount = higherLeague.teamInfo.filter( ti2 => ti2.cityId == current.cityId).length + toPromote.filter(ti3 => ti3.cityId == current.cityId).length
-
-                    if (currentCityCount < 2) {
-                        toPromote.push(current)
-                    }
-
-                    i++
-                }
-
-                for (let current of toPromote) {
-                    //Remove from teamInfo
-                    teamInfo = teamInfo.filter( ti => ti.teamId != current.teamId)
-                    higherLeague.teamInfo.push(current)
-                    season.promotionRelegationLog.push({ _id: current.teamId, rank: higherLeague.league.rank, previousRank: league.rank})
-
-                }
-
+        for (let leagueInfo of nextLeagueStructure.structure) {
+            for (let teamInfo of leagueInfo.teamInfo) {
+                nextLeagueIdByTeamId.set(teamInfo.teamId, leagueInfo.league._id)
             }
-
-            if (lowerLeague) {
-
-                //If we're not doing the lowest league...the bottom 3 teams go down a level.
-                //No city contraints on the way down.
-
-                while (lowerLeague.teamInfo.length < TEAMS_TO_RELEGATE) {
-                    let ti = teamInfo.pop()
-                    lowerLeague.teamInfo.push(ti)
-                    season.promotionRelegationLog.push({ _id: ti.teamId, rank: lowerLeague.league.rank, previousRank: league.rank})
-                }
-
-            }
-
-            //The rest stay here
-            thisLeague.teamInfo.push(...teamInfo)
-
         }
 
-        //Create next season's TLS
-        for (let leagueInfo of updatedStructure) {
-
+        for (let leagueInfo of nextLeagueStructure.structure) {
             let league = leagueInfo.league
-            let teamIds = leagueInfo.teamInfo.map( ti => ti.teamId)
 
-            for (let teamId of teamIds) {
+            for (let teamInfo of leagueInfo.teamInfo) {
+                let team: Team = await this.teamService.get(teamInfo.teamId, options)
+                let teamSeasonId: TeamSeasonId = { teamId: teamInfo.teamId, seasonId: season._id }
 
-                let team:Team = await this.teamService.get(teamId, options)
-                let teamSeasonId:TeamSeasonId = teamSeasonIds.find( tsi => tsi.teamId == teamId)
+                let lastSeason: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeasonId(teamSeasonId, options)
 
-                let lastSeason:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeasonId(teamSeasonId, options)
-
-                let financeSeason:FinanceSeason = this.financeService.getDefaultFinanceSeason()
+                let financeSeason: FinanceSeason = this.financeService.getDefaultFinanceSeason()
                 financeSeason.diamondBalance = lastSeason.financeSeason.diamondBalance
 
-                let tls:TeamLeagueSeason =  this.teamLeagueSeasonService.init(lastSeason, team, financeSeason)
-                
+                let tls: TeamLeagueSeason = this.teamLeagueSeasonService.init(lastSeason, team, financeSeason)
+
                 tls.leagueId = league._id
+                tls.league = league
                 tls.seasonId = nextSeason._id
+                tls.season = nextSeason
                 tls.logoId = lastSeason.logoId
                 tls.longTermRating = lastSeason.longTermRating
                 tls.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
 
+                tls.changed("leagueId", true)
+                tls.changed("seasonId", true)
+                tls.changed("seasonRating", true)
+                tls.changed("longTermRating", true)
+                tls.changed("overallRecord", true)
+                tls.changed("financeSeason", true)
 
                 await this.teamLeagueSeasonService.put(tls, options)
 
@@ -877,32 +946,26 @@ class LadderService {
                 team.seasonRating = tls.seasonRating
 
                 await this.teamService.put(team, options)
-
             }
-
         }
 
-        //Create PLS for the next season or retire players
         let currentPLSIds = await this.playerLeagueSeasonService.getMostRecentIdsBySeason(season, options)
-        
+
         for (let plsId of currentPLSIds) {
+            let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getById(plsId, options)
+            let player: Player = await this.playerService.get(pls.playerId, options)
 
-            let pls:PlayerLeagueSeason = await this.playerLeagueSeasonService.getById(plsId, options)
+            let playerSeasons = await this.playerLeagueSeasonService.getUniqueSeasonCountByPlayer(player, options)
 
-            let player:Player = await this.playerService.get(pls.playerId, options)
-
-            player.age += 1
+            player.age = DEFAULT_PLAYER_STARTING_AGE + playerSeasons
 
             if (player.age > PLAYER_RETIREMENT_AGE) {
-
                 player.isRetired = true
-
             } else {
-
                 let nextSeasonPLS = new PlayerLeagueSeason()
                 nextSeasonPLS.playerId = pls.playerId
                 nextSeasonPLS.seasonId = nextSeason._id
-                nextSeasonPLS.leagueId = pls.leagueId
+                nextSeasonPLS.leagueId = nextLeagueIdByTeamId.get(pls.teamId) ?? pls.leagueId
                 nextSeasonPLS.teamId = pls.teamId
                 nextSeasonPLS.seasonIndex = 1
                 nextSeasonPLS.primaryPosition = pls.primaryPosition
@@ -924,11 +987,9 @@ class LadderService {
                 }
 
                 await this.playerLeagueSeasonService.put(nextSeasonPLS, options)
-
             }
-            
+
             await this.playerService.put(player, options)
-  
         }
 
         season.isComplete = true
@@ -938,7 +999,6 @@ class LadderService {
 
         nextSeason.isInitialized = true
         await this.seasonService.put(nextSeason, options)
-
 
     }
 

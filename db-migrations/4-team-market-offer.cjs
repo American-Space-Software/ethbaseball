@@ -3,7 +3,7 @@
 const fs = require("fs")
 const path = require("path")
 
-let query = fs.readFileSync(path.resolve(__dirname, "sql/4-trade-request.sql"), "utf-8").toString()
+let query = fs.readFileSync(path.resolve(__dirname, "sql/4-team-market-offer.sql"), "utf-8").toString()
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

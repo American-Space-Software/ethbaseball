@@ -1,16 +1,15 @@
 import { Table, Column, Model, DataType, ForeignKey, AllowNull, BelongsTo } from "sequelize-typescript"
 
 import { Team } from "./team.js"
-import { TradeRequestStatus } from "../service/enums.js"
-
+import { TeamMarketOfferStatus } from "../service/enums.js"
 
 @Table({
-    tableName: "trade_request",
+    tableName: "team_market_offer",
     createdAt: "dateCreated",
     updatedAt: "lastUpdated",
     paranoid: false,
 })
-class TradeRequest extends Model {
+class TeamMarketOffer extends Model {
 
     @Column({
         primaryKey: true,
@@ -22,30 +21,30 @@ class TradeRequest extends Model {
     @ForeignKey(() => Team)
     @AllowNull(false)
     @Column(DataType.UUID)
-    declare fromTeamId:string
+    declare buyerTeamId:string
 
-    @BelongsTo(() => Team, "fromTeamId")
-    fromTeam:Team
+    @BelongsTo(() => Team, "buyerTeamId")
+    buyerTeam:Team
 
     @ForeignKey(() => Team)
     @AllowNull(false)
     @Column(DataType.UUID)
-    declare toTeamId:string
+    declare sellerTeamId:string
 
-    @BelongsTo(() => Team, "toTeamId")
-    toTeam:Team
-
-    @AllowNull(false)
-    @Column(DataType.JSON)
-    declare fromPackage:TradeRequestPackage
+    @BelongsTo(() => Team, "sellerTeamId")
+    sellerTeam:Team
 
     @AllowNull(false)
     @Column(DataType.JSON)
-    declare toPackage:TradeRequestPackage
+    declare package:TeamMarketOfferPackage
 
     @AllowNull(false)
     @Column(DataType.STRING)
-    declare status:TradeRequestStatus
+    declare diamondAmount:string
+
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    declare status:TeamMarketOfferStatus
 
     @AllowNull(true)
     @Column(DataType.DATE)
@@ -53,7 +52,11 @@ class TradeRequest extends Model {
 
     @AllowNull(true)
     @Column(DataType.STRING)
-    declare offChainEventTransactionId:string    
+    declare escrowTransactionId:string
+
+    @AllowNull(true)
+    @Column(DataType.STRING)
+    declare settlementTransactionId:string
 
     @Column(DataType.DATE)
     declare lastUpdated?:Date
@@ -63,12 +66,11 @@ class TradeRequest extends Model {
 
 }
 
-interface TradeRequestPackage {
+interface TeamMarketOfferPackage {
     playerIds:string[]
-    diamonds:string
 }
 
 export {
-    TradeRequest,
-    TradeRequestPackage
+    TeamMarketOffer,
+    TeamMarketOfferPackage
 }

@@ -291,12 +291,12 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
     }
 
 
-    async getMostRecentIdsBySeason(season:Season, options?: any): Promise<string[]> {
+    async getMostRecentIdsBySeason(season: Season, options?: any): Promise<string[]> {
 
-        let s = await this.sequelize()
+        const s = await this.sequelize()
 
         let queryOptions = {
-            type: QueryTypes.RAW,
+            type: QueryTypes.SELECT,
             plain: false,
             mapToModel: false,
             replacements: {
@@ -304,28 +304,27 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             }
         }
 
-        const [maxSeasonIndexQueryResults, maxSeasonIndexMetadata] = await s.query(`
-            SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
-            FROM player_league_season
-            WHERE seasonId = :seasonId
-            GROUP BY playerId, seasonId
-        `, Object.assign(queryOptions, options))
+        let rows = await s.query(`
+            WITH ranked_seasons AS (
+                SELECT
+                    pls._id,
+                    pls.playerId,
+                    pls.seasonIndex,
+                    pls.startDate,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY pls.playerId
+                        ORDER BY COALESCE(pls.seasonIndex, 0) DESC, pls.startDate DESC, pls._id DESC
+                    ) AS row_num
+                FROM player_league_season pls
+                WHERE pls.seasonId = :seasonId
+            )
+            SELECT _id
+            FROM ranked_seasons
+            WHERE row_num = 1
+            ORDER BY startDate DESC, COALESCE(seasonIndex, 0) DESC
+        `, Object.assign(queryOptions, options)) as { _id: string }[]
 
-
-        const playerList = maxSeasonIndexQueryResults.map(qr => `('${qr.playerId}', '${qr.maxSeasonIndex}')`).join(", ")
-
-        const [idQueryResults, metadata] = await s.query(`
-            SELECT pls._id
-            FROM player_league_season pls
-            WHERE 
-                pls.seasonId = :seasonId AND
-                (pls.playerId, pls.seasonIndex) IN (
-                    ${playerList}
-                )
-        `, Object.assign(queryOptions, options));
-    
-
-        return idQueryResults.map(qr => qr._id)
+        return rows.map(row => row._id)
 
     }
 
@@ -418,7 +417,54 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         return this.getByIds(idRows.map(r => r._id), options)
     }
 
+    async getMostRecentByPlayersTeamSeason( players: Player[], team:Team, season: Season, options?: any ): Promise<PlayerLeagueSeason[]> {
 
+        if (!players?.length) return []
+
+        const s = await this.sequelize()
+
+        const playerIds = players.map(p => p._id)
+
+        let queryOptions = {
+            type: QueryTypes.SELECT,
+            plain: false,
+            mapToModel: false,
+            replacements: {
+                seasonId: season._id,
+                teamId: team._id,
+                playerIds
+            }
+        }
+
+
+        // Grab the most-recent PLS _id per player (for this season) in ONE query
+        const idRows = await s.query(
+            `
+        WITH ranked_seasons AS (
+        SELECT
+            pls._id,
+            pls.playerId,
+            pls.seasonIndex,
+            pls.startDate,
+            ROW_NUMBER() OVER (
+            PARTITION BY pls.playerId
+            ORDER BY pls.seasonIndex DESC
+            ) AS row_num
+        FROM player_league_season pls
+        WHERE pls.seasonId = :seasonId
+            AND pls.teamId = :teamId
+            AND pls.playerId IN (:playerIds)
+        )
+        SELECT _id
+        FROM ranked_seasons
+        WHERE row_num = 1
+        ORDER BY startDate DESC, seasonIndex DESC;
+        `, Object.assign( queryOptions, options ) ) as { _id: string }[]
+
+        if (!idRows?.length) return []
+
+        return this.getByIds(idRows.map(r => r._id), options)
+    }
 
     async getByPlayer(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {
 
@@ -633,6 +679,30 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
 
         await PlayerLeagueSeason.bulkCreate(updatePlayers, queryOptions)
+    }
+
+
+    async getUniqueSeasonCountByPlayer(player: Player, options?: any): Promise<number> {
+
+        const s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.SELECT,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                playerId: player._id
+            }
+        }
+
+        const row = await s.query(`
+            SELECT COUNT(DISTINCT pls.seasonId) AS seasonCount
+            FROM player_league_season pls
+            WHERE pls.playerId = :playerId
+        `, Object.assign(queryOptions, options)) as { seasonCount: number | string }
+
+        return Number(row?.seasonCount ?? 0)
+
     }
 
 }

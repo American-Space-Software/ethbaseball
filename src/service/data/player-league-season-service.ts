@@ -98,6 +98,10 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getMostRecentIdsBySeason(season, options)
     }
     
+    async getMostRecentByPlayersTeamSeason( players: Player[], team:Team, season: Season, options?: any ): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getMostRecentByPlayersTeamSeason(players, team, season, options)
+    }
+    
     async getMostRecentBySeason(season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getMostRecentBySeason(season, options)
     }
@@ -108,6 +112,10 @@ class PlayerLeagueSeasonService {
 
     async getByPlayer(player: Player, options?: any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getByPlayer(player, options)
+    }
+
+    async getUniqueSeasonCountByPlayer(player: Player, options?: any): Promise<number> {
+        return this.playerLeagueSeasonRepository.getUniqueSeasonCountByPlayer(player, options)
     }
 
     async delete(pls:PlayerLeagueSeason, options?:any) {

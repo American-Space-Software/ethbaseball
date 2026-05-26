@@ -14,8 +14,8 @@ interface PlayerLeagueSeasonRepository {
     put(pls:PlayerLeagueSeason, options?:any) : Promise<PlayerLeagueSeason>
     getByIds(ids: string[], options?: any): Promise<PlayerLeagueSeason[]>
     getIdByPlayerSeason(player:Player, season:Season, options?:any) : Promise<string>
-    updateGameFields(plss:PlayerLeagueSeason[], options?:any)
-    getIdsByPlayersSeason(players:Player[], season:Season, options?:any)
+    updateGameFields(plss:PlayerLeagueSeason[], options?:any) : Promise<void>
+    getIdsByPlayersSeason(players:Player[], season:Season, options?:any) : Promise<string[]>
     getIdsBySeason(season: Season, options?: any): Promise<string[]>
     // getByTeamOnDate(team: Team, date:Date, options?: any): Promise<PlayerLeagueSeason[]>
     getMostRecentByTeam(team: Team, options?: any): Promise<PlayerLeagueSeason[]>
@@ -26,10 +26,12 @@ interface PlayerLeagueSeasonRepository {
     getMostRecentByTeamSeason(team: Team, season:Season, options?: any): Promise<PlayerLeagueSeason[]>
     getMostRecentByPlayerSeason(player: Player, season:Season, options?: any): Promise<PlayerLeagueSeason>
     getMostRecentByPlayersSeason( players: Player[], season: Season, options?: any ): Promise<PlayerLeagueSeason[]>
+    getMostRecentByPlayersTeamSeason( players: Player[], team:Team, season: Season, options?: any ): Promise<PlayerLeagueSeason[]>    
     getByLeagueSeason(league: League, season: Season, positions:Position[], sortColumn:string, sortDirection:string, options?: any): Promise<PlayerLeagueSeason[]>
     getFreeAgentsByPosition(position:Position, season:Season, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]>
     getFreeAgentsBySeason(season:Season, positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]>
-    delete(pls:PlayerLeagueSeason, options?:any)
+    getUniqueSeasonCountByPlayer(player: Player, options?: any): Promise<number>
+    delete(pls:PlayerLeagueSeason, options?:any) : Promise<void>
     
 }
 

@@ -16,7 +16,6 @@ import { TeamQueueRepository } from "../src/repository/team-queue-repository.js"
 
 import { v4 as uuidv4 } from "uuid"
 
-import { TradeRequest } from "../src/dto/trade-request.js"
 import { Team } from "../src/dto/team.js"
 import { League } from "../src/dto/league.js"
 import { Season } from "../src/dto/season.js"
@@ -26,8 +25,9 @@ import { TeamLeagueSeason } from "../src/dto/team-league-season.js"
 import { TeamQueue } from "../src/dto/team-queue.js"
 import { User } from "../src/dto/user.js"
 
-import { ContractType, PersonalityType, TradeRequestStatus } from "../src/service/enums.js"
+import { ContractType, PersonalityType, TeamMarketOfferStatus } from "../src/service/enums.js"
 import { Handedness, PitchType, Position } from "../src/baseball-sim-engine/index.js"
+import { TeamMarketOffer } from "../src/dto/team-market-offer.js"
 
 describe("TeamTransactionService", async () => {
     let seasonIndex = 0
@@ -64,33 +64,6 @@ describe("TeamTransactionService", async () => {
 
     })
 
-    it("should send a trade request", async () => {
-
-        let fromTeam:Team = await createTestTeam("From Team")
-        let toTeam:Team = await createTestTeam("To Team")
-
-        let tradeRequest:TradeRequest = await service.sendTradeRequest(
-            fromTeam,
-            toTeam,
-            {
-                playerIds: [uuidv4(), uuidv4()],
-                diamonds: "100"
-            },
-            {
-                playerIds: [uuidv4()],
-                diamonds: "25"
-            }
-        )
-
-        let fetched:TradeRequest = await service.get(tradeRequest._id)
-
-        assert.equal(fetched.fromTeamId, fromTeam._id)
-        assert.equal(fetched.toTeamId, toTeam._id)
-        assert.equal(fetched.status, TradeRequestStatus.PENDING)
-        assert.equal(fetched.fromPackage.diamonds, "100")
-        assert.equal(fetched.toPackage.diamonds, "25")
-
-    })
 
     it("should not sign a rostered player", async () => {
 
@@ -292,6 +265,435 @@ describe("TeamTransactionService", async () => {
 
     })
 
+    it("should drop a player and cancel pending team market offers for that player", async () => {
+
+        let user:User = createTestUser()
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let sellerTeam:Team = await createTestTeam("Seller Team", user)
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        let originalPls:PlayerLeagueSeason = await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(sellerTeam, "1000000000000000000000000")
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let offer:TeamMarketOffer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [player._id]
+            },
+            "100"
+        )
+
+        let escrowedBuyerBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+
+        assert.equal(escrowedBuyerBalance, "900")
+
+        await service.dropPlayer(user, player, new Date())
+
+        let fetchedOffer:TeamMarketOffer = await service.get(offer._id)
+        let refundedBuyerBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+        let currentPls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+
+        assert.equal(fetchedOffer.status, TeamMarketOfferStatus.CANCELLED)
+        assert.notEqual(fetchedOffer.settlementTransactionId, undefined)
+        assert.equal(refundedBuyerBalance, "1000")
+
+        assert.notEqual(currentPls._id, originalPls._id)
+        assert.equal(currentPls.teamId, undefined)
+
+    })
+
+    it("should not create a team market offer to the same team", async () => {
+
+        let team:Team = await createTestTeam("Same Team")
+
+        await assert.rejects(
+            async () => service.createTeamMarketOffer(
+                team,
+                team,
+                {
+                    playerIds: [uuidv4()]
+                },
+                "100"
+            ),
+            /Buyer and seller teams cannot be the same./
+        )
+
+    })
+
+    it("should not create a team market offer with zero diamonds", async () => {
+
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+
+        await assert.rejects(
+            async () => service.createTeamMarketOffer(
+                buyerTeam,
+                sellerTeam,
+                {
+                    playerIds: [uuidv4()]
+                },
+                "0"
+            ),
+            /Diamond amount must be greater than zero./
+        )
+
+    })
+
+    it("should not create a team market offer with negative diamonds", async () => {
+
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+
+        await assert.rejects(
+            async () => service.createTeamMarketOffer(
+                buyerTeam,
+                sellerTeam,
+                {
+                    playerIds: [uuidv4()]
+                },
+                "-1"
+            ),
+            /Diamond amount must be greater than zero./
+        )
+
+    })
+
+    it("should not create a team market offer when a player is not rostered by the seller team", async () => {
+
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+        let otherTeam:Team = await createTestTeam("Other Team")
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, otherTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        await assert.rejects(
+            async () => service.createTeamMarketOffer(
+                buyerTeam,
+                sellerTeam,
+                {
+                    playerIds: [player._id]
+                },
+                "100"
+            ),
+            /Player is not currently rostered by the seller team./
+        )
+
+    })
+
+    it("should not create a team market offer when the buyer does not have enough diamonds", async () => {
+
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+
+        await assert.rejects(
+            async () => service.createTeamMarketOffer(
+                buyerTeam,
+                sellerTeam,
+                {
+                    playerIds: [player._id]
+                },
+                "100"
+            ),
+            /Buyer team does not have enough diamonds to create this offer./
+        )
+
+    })
+
+    it("should create a team market offer", async () => {
+
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let startingBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+
+        let offer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [player._id]
+            },
+            "100"
+        )
+
+        let fetched = await service.get(offer._id)
+        let endingBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+
+        assert.equal(fetched.buyerTeamId, buyerTeam._id)
+        assert.equal(fetched.sellerTeamId, sellerTeam._id)
+        assert.equal(fetched.package.playerIds.length, 1)
+        assert.equal(fetched.package.playerIds[0], player._id)
+        assert.equal(fetched.diamondAmount, "100")
+        assert.equal(fetched.status, TeamMarketOfferStatus.PENDING)
+        assert.notEqual(fetched.escrowTransactionId, undefined)
+        assert.equal(BigInt(endingBalance), BigInt(startingBalance) - BigInt("100"))
+
+    })
+
+
+    it("should not cancel a team market offer that is not pending", async () => {
+
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+
+        let offer:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
+            _id: uuidv4(),
+            buyerTeamId: buyerTeam._id,
+            sellerTeamId: sellerTeam._id,
+            package: {
+                playerIds: [uuidv4()]
+            },
+            diamondAmount: "100",
+            status: TeamMarketOfferStatus.CANCELLED,
+            escrowTransactionId: uuidv4()
+        })
+
+        await service.put(offer)
+
+        await assert.rejects(
+            async () => service.cancelTeamMarketOffer(offer),
+            /Team market offer is not pending./
+        )
+
+    })    
+
+    it("should cancel a team market offer and refund escrowed diamonds", async () => {
+
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team")
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let offer:TeamMarketOffer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [player._id]
+            },
+            "100"
+        )
+
+        let escrowedBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+
+        assert.equal(escrowedBalance, "900")
+
+        await service.cancelTeamMarketOffer(offer)
+
+        let fetchedOffer:TeamMarketOffer = await service.get(offer._id)
+        let refundedBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+
+        assert.equal(fetchedOffer.status, TeamMarketOfferStatus.CANCELLED)
+        assert.notEqual(fetchedOffer.settlementTransactionId, undefined)
+        assert.equal(refundedBalance, "1000")
+
+    })    
+
+    it("should not accept and process a team market offer that is not pending", async () => {
+
+        let user:User = createTestUser()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team", user)
+
+        let offer:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
+            _id: uuidv4(),
+            buyerTeamId: buyerTeam._id,
+            sellerTeamId: sellerTeam._id,
+            package: {
+                playerIds: [uuidv4()]
+            },
+            diamondAmount: "100",
+            status: TeamMarketOfferStatus.CANCELLED,
+            escrowTransactionId: uuidv4()
+        })
+
+        await service.put(offer)
+
+        await assert.rejects(
+            async () => service.acceptAndProcessTeamMarketOffer(user, offer, new Date()),
+            /Team market offer is not pending./
+        )
+
+    })
+
+    it("should not accept and process a team market offer for the wrong user", async () => {
+
+        let owner:User = createTestUser()
+        let wrongUser:User = createTestUser()
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team", owner)
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+        await createTestTeamLeagueSeason(buyerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let offer:TeamMarketOffer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [player._id]
+            },
+            "100"
+        )
+
+        await assert.rejects(
+            async () => service.acceptAndProcessTeamMarketOffer(wrongUser, offer, new Date()),
+            /Not authorized./
+        )
+
+    })
+
+    it("should not accept and process a team market offer when the player is no longer on the seller team", async () => {
+
+        let user:User = createTestUser()
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team", user)
+        let otherTeam:Team = await createTestTeam("Other Team")
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        let originalPls:PlayerLeagueSeason = await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+
+        await createTestTeamLeagueSeason(buyerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await createTestTeamLeagueSeason(otherTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let offer:TeamMarketOffer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [player._id]
+            },
+            "100"
+        )
+
+        originalPls.teamId = otherTeam._id
+        await playerLeagueSeasonService.put(originalPls)
+
+        await assert.rejects(
+            async () => service.acceptAndProcessTeamMarketOffer(user, offer, new Date()),
+            /Player is not currently rostered by the seller team./
+        )
+
+    })
+
+    it("should not accept and process a team market offer when the buyer roster has no space", async () => {
+
+        let user:User = createTestUser()
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team", user)
+        let buyerCatcher:Player = await createTestPlayer(Position.CATCHER)
+        let sellerCatcher:Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(buyerCatcher, buyerTeam, league, season)
+        await createTestPlayerLeagueSeason(sellerCatcher, sellerTeam, league, season)
+        await createTestTeamLeagueSeason(buyerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let offer:TeamMarketOffer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [sellerCatcher._id]
+            },
+            "100"
+        )
+
+        await assert.rejects(
+            async () => service.acceptAndProcessTeamMarketOffer(user, offer, new Date()),
+            /Buyer roster does not have space for a/
+        )
+
+    })
+
+    it("should accept and process a team market offer", async () => {
+
+        let user:User = createTestUser()
+        let league:League = await createTestLeague()
+        let season:Season = await createTestSeason()
+        let buyerTeam:Team = await createTestTeam("Buyer Team")
+        let sellerTeam:Team = await createTestTeam("Seller Team", user)
+        let player:Player = await createTestPlayer(Position.CATCHER)
+
+        let originalPls:PlayerLeagueSeason = await createTestPlayerLeagueSeason(player, sellerTeam, league, season)
+
+        await createTestTeamLeagueSeason(buyerTeam, league, season)
+        await createTestTeamLeagueSeason(sellerTeam, league, season)
+        await giveTeamDiamonds(buyerTeam, "1000")
+
+        let offer:TeamMarketOffer = await service.createTeamMarketOffer(
+            buyerTeam,
+            sellerTeam,
+            {
+                playerIds: [player._id]
+            },
+            "100"
+        )
+
+        let buyerEscrowedBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+        let sellerStartingBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, sellerTeam._id)
+
+        assert.equal(buyerEscrowedBalance, "900")
+        assert.equal(sellerStartingBalance, "0")
+
+        await service.acceptAndProcessTeamMarketOffer(user, offer, new Date())
+
+        let fetchedOffer:TeamMarketOffer = await service.get(offer._id)
+        let buyerFinalBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerTeam._id)
+        let sellerFinalBalance = await offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, sellerTeam._id)
+        let currentPls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+        let allPls:PlayerLeagueSeason[] = await playerLeagueSeasonService.getByPlayersSeason([player], season)
+        let endedPls:PlayerLeagueSeason | undefined = allPls.find((pls) => pls._id == originalPls._id)
+
+        assert.equal(fetchedOffer.status, TeamMarketOfferStatus.PROCESSED)
+        assert.notEqual(fetchedOffer.settlementTransactionId, undefined)
+
+        assert.equal(buyerFinalBalance, "900")
+        assert.equal(sellerFinalBalance, "100")
+
+        assert.notEqual(endedPls, undefined)
+        assert.notEqual(endedPls.endDate, undefined)
+
+        assert.notEqual(currentPls._id, originalPls._id)
+        assert.equal(currentPls.teamId, buyerTeam._id)
+
+    })
 
 
     function createTestUser(): User {

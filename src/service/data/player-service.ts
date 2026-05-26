@@ -13,7 +13,7 @@ import glicko2 from "glicko2"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {   Rating, BallSwingByCount, InZoneByCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId,  FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, GLICKO_SETTINGS, HittingProfile, PitchingProfile } from "../enums.js"
+import {   Rating, BallSwingByCount, InZoneByCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId,  FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, GLICKO_SETTINGS, HittingProfile, PitchingProfile, DEFAULT_PLAYER_STARTING_AGE } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -159,7 +159,7 @@ class PlayerService {
         player.hits = faker.helpers.weightedArrayElement([{ weight: 70, value: Handedness.R }, { weight: 20, value: Handedness.L }, { weight: 10, value: Handedness.S }])
 
         player.potentialOverallRating = 70
-        player.age = 19
+        player.age = DEFAULT_PLAYER_STARTING_AGE
         player.stamina = 1
 
         player.isRetired = false

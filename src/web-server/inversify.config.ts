@@ -164,9 +164,9 @@ import { GameNotificationService } from "../service/data/game-notification-servi
 import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository-impl.js";
 import { GameNotifications } from "../dto/game-notifications.js"
 
-import { TradeRequestRepositoryNodeImpl } from "../repository/node/trade-request-repository-impl.js"
-import { TradeRequest } from "../dto/trade-request.js"
-import { TradeRequestRepository } from "../repository/trade-request-repository.js"
+import { TeamMarketOfferRepositoryNodeImpl } from "../repository/node/team-market-offer-repository-impl.js"
+import { TeamMarketOffer } from "../dto/team-market-offer.js"
+import { TeamMarketOfferRepository } from "../repository/team-market-offer-repository.js"
 import { TeamTransactionService } from "../service/data/team-transaction-service.js";
 
 let _diamondsAddress:string
@@ -282,7 +282,7 @@ async function getContainer(command?:GetContainerCommand) {
                 multipleStatements: true,
                 timezone: 'Z'    
                },
-               models: [TradeRequest, GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
+               models: [TeamMarketOffer, GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
                  Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ]
@@ -414,7 +414,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind("UserRepository").to(UserRepositoryNodeImpl).inSingletonScope()
     container.bind("LeagueRepository").to(LeagueRepositoryNodeImpl).inSingletonScope()
     container.bind("GameNotificationsRepository").to(GameNotificationsRepositoryNodeImpl).inSingletonScope()
-    container.bind("TradeRequestRepository").to(TradeRequestRepositoryNodeImpl).inSingletonScope()
+    container.bind("TeamMarketOfferRepository").to(TeamMarketOfferRepositoryNodeImpl).inSingletonScope()
 
     container.bind("BlockRepository").to(BlockRepositoryNodeImpl).inSingletonScope()
     container.bind("ContractStateRepository").to(ContractStateRepositoryNodeImpl).inSingletonScope()

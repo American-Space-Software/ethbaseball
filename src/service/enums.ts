@@ -426,6 +426,8 @@ interface OffChainEventSource {
     rewardType?:string
     fromDate?:Date
     fromGameId?:string
+    teamMarketOfferId?:string
+    escrowTransactionId?:string
 }
 
 interface RewardPerTeam {
@@ -16215,7 +16217,7 @@ interface DevelopmentStrategy {
 
 const STANDARD_INNINGS = 9
 
-enum TradeRequestStatus {
+enum TeamMarketOfferStatus {
     PENDING = "PENDING",
     ACCEPTED = "ACCEPTED",
     REJECTED = "REJECTED",
@@ -16224,7 +16226,9 @@ enum TradeRequestStatus {
     PROCESSED = "PROCESSED"
 }
 
-export  {TradeRequestStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
+const DEFAULT_PLAYER_STARTING_AGE = 19
+
+export  {DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
     WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, 
     ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, TeamInfo, BaseRunners,  BaseRunnerIds, HitterPitcher,  ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

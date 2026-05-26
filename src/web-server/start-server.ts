@@ -1495,7 +1495,6 @@ let startWebServer = async () => {
 
   })
 
-
   app.get('/api/team/mint', async function (req, res) {
 
     try {
