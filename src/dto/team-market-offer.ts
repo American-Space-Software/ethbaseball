@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, ForeignKey, AllowNull, BelongsTo } from "sequelize-typescript"
 
 import { Team } from "./team.js"
+import { User } from "./user.js"
 import { TeamMarketOfferStatus } from "../service/enums.js"
 
 @Table({
@@ -18,21 +19,37 @@ class TeamMarketOffer extends Model {
     })
     declare _id:string
 
+    @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column(DataType.UUID)
+    declare buyerUserId:string
+
+    @BelongsTo(() => User, "buyerUserId")
+    buyerUser:User
+
+    @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column(DataType.UUID)
+    declare sellerUserId:string
+
+    @BelongsTo(() => User, "sellerUserId")
+    sellerUser:User
+
     @ForeignKey(() => Team)
     @AllowNull(false)
     @Column(DataType.UUID)
-    declare buyerTeamId:string
+    declare buyerPaymentTeamId:string
 
-    @BelongsTo(() => Team, "buyerTeamId")
-    buyerTeam:Team
+    @BelongsTo(() => Team, "buyerPaymentTeamId")
+    buyerPaymentTeam:Team
 
     @ForeignKey(() => Team)
     @AllowNull(false)
     @Column(DataType.UUID)
-    declare sellerTeamId:string
+    declare sellerPaymentTeamId:string
 
-    @BelongsTo(() => Team, "sellerTeamId")
-    sellerTeam:Team
+    @BelongsTo(() => Team, "sellerPaymentTeamId")
+    sellerPaymentTeam:Team
 
     @AllowNull(false)
     @Column(DataType.JSON)

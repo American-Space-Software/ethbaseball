@@ -37,6 +37,9 @@ import dayjs from "dayjs";
 import { FinanceService } from "./finance-service.js";
 import { FinanceSeason, GLICKO_SETTINGS } from "./enums.js";
 import { Rolls }  from '../baseball-sim-engine/index.js';
+import { TeamTransactionService } from "./data/team-transaction-service.js";
+import { UserService } from "./data/user-service.js";
+import { User } from "../dto/user.js";
 
 const BASE_DIAMOND_REWARD = "100000000000000000000" //100 EBLD
 
@@ -62,8 +65,10 @@ class UniverseService {
         private leagueService:LeagueService,
         private seasonService:SeasonService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
+        private teamTransactionService:TeamTransactionService,
         private ladderService:LadderService,
         private financeService:FinanceService,
+        private userService:UserService,
         @inject("universe") private _universe:Function,
         @inject("config") private _config:Function
     ) {}
@@ -481,6 +486,8 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
         for (let t of teams) {
 
+            let botUser:User = await this.userService.getOrCreateBotUser(options)
+
             let financeSeason:FinanceSeason = this.financeService.getDefaultFinanceSeason()
             let tls:TeamLeagueSeason = this.teamLeagueSeasonService.initNew(t.team, league, season, t.city, t.stadium, financeSeason)
 
@@ -491,7 +498,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             await this.teamLeagueSeasonService.put(tls, options)
 
-            await this.teamService.fillAndValidateRoster(tls, [], season, universe.currentDate, true, options)
+            await this.teamTransactionService.fillAndValidateRoster(botUser, t.team, tls, [], season, universe.currentDate, true, options)
 
         }
 
@@ -516,6 +523,8 @@ Join us at [https://playebl.com](https://playebl.com)`,
 
             for (let t of leagueInfo.teams) {
 
+                let botUser:User = await this.userService.getOrCreateBotUser(options)
+                
                 let city = cities.find( c => c.name == t.city.name && c.state == t.city.state)
 
                 if (!city) {
@@ -576,7 +585,7 @@ Join us at [https://playebl.com](https://playebl.com)`,
                 await this.teamLeagueSeasonService.put(tls, options)
 
 
-                await this.teamService.fillAndValidateRoster(tls, [], season, universe.currentDate, true, options)
+                await this.teamTransactionService.fillAndValidateRoster(botUser, team, tls, [], season, universe.currentDate, true, options)
 
             }
 

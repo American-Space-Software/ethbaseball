@@ -570,7 +570,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
                 pls.*
             FROM player_league_season pls 
             INNER JOIN player p on pls.playerId = p._id
-            WHERE pls.primaryPosition = :position AND pls.seasonId = :seasonId AND pls.teamId is null
+            WHERE pls.primaryPosition = :position AND pls.seasonId = :seasonId AND pls.userId is null
 			ORDER BY pls.startDate DESC, pls.seasonIndex DESC, p.overallRating DESC
             LIMIT ${limit} OFFSET ${offset}
         `, Object.assign(queryOptions, options))
@@ -612,7 +612,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
             ON latest.playerId = pls.playerId
             AND latest.maxSeasonIndex = pls.seasonIndex
             WHERE pls.seasonId = :seasonId
-            AND pls.teamId IS NULL
+            AND pls.userId IS NULL
             AND pls.primaryPosition IN (:positions)
             ORDER BY ${expr} ${safeDir}
             LIMIT :limit OFFSET :offset
@@ -648,8 +648,8 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
     async updateGameFields(plss: PlayerLeagueSeason[], options?: any) {
 
         let queryOptions = Object.assign({
-            fields: ["_id", "playerId", "leagueId", "seasonId", "teamId", "stats", "startDate", "endDate", "overallRating",  "hittingRatings", "pitchRatings","potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "percentileRatings", "primaryPosition", "age", "seasonIndex"],
-            updateOnDuplicate: ["_id", "playerId", "leagueId", "seasonId", "stats",  "teamId", "startDate", "endDate", "overallRating", "hittingRatings","potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "percentileRatings", "pitchRatings", "primaryPosition",  "age", "seasonIndex"],
+            fields: ["_id", "playerId", "leagueId", "userId", "seasonId", "teamId", "stats", "startDate", "endDate", "overallRating",  "hittingRatings", "pitchRatings","potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "percentileRatings", "primaryPosition", "age", "seasonIndex"],
+            updateOnDuplicate: ["_id", "playerId", "leagueId", "userId", "seasonId", "stats",  "teamId", "startDate", "endDate", "overallRating", "hittingRatings","potentialOverallRating",  "potentialPitchRatings", "potentialHittingRatings", "percentileRatings", "pitchRatings", "primaryPosition",  "age", "seasonIndex"],
         }, options)
 
         let updatePlayers = plss.map(p => {
@@ -658,6 +658,7 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
                 playerId: p.playerId,
                 leagueId: p.leagueId,
                 seasonId: p.seasonId,
+                userId: p.userId,
                 teamId: p.teamId,
                 stats: p.stats,
                 startDate: p.startDate,
@@ -704,6 +705,40 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
         return Number(row?.seasonCount ?? 0)
 
     }
+
+    async getMostRecentCountByUserSeason(userId:string, season:Season, options?:any): Promise<number> {
+
+        const s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.SELECT,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                userId: userId,
+                seasonId: season._id
+            }
+        }
+
+        const row = await s.query(`
+            SELECT COUNT(*) AS rosterCount
+            FROM player_league_season pls
+            JOIN (
+                SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
+                FROM player_league_season
+                WHERE seasonId = :seasonId
+                GROUP BY playerId
+            ) latest
+                ON latest.playerId = pls.playerId
+                AND latest.maxSeasonIndex = pls.seasonIndex
+            WHERE pls.seasonId = :seasonId
+                AND pls.userId = :userId
+        `, Object.assign(queryOptions, options)) as { rosterCount: number | string }
+
+        return Number(row?.rosterCount ?? 0)
+
+    }
+
 
 }
 

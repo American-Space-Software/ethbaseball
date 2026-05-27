@@ -31,6 +31,7 @@ interface PlayerLeagueSeasonRepository {
     getFreeAgentsByPosition(position:Position, season:Season, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]>
     getFreeAgentsBySeason(season:Season, positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]>
     getUniqueSeasonCountByPlayer(player: Player, options?: any): Promise<number>
+    getMostRecentCountByUserSeason(userId:string, season:Season, options?:any): Promise<number>
     delete(pls:PlayerLeagueSeason, options?:any) : Promise<void>
     
 }

@@ -468,7 +468,7 @@ async function getContainer(command?:GetContainerCommand) {
                 let leagueService:LeagueService = container.get(LeagueService)
                 let seasonService:SeasonService = container.get(SeasonService)
                 let financeService:FinanceService = container.get(FinanceService)
-
+                let teamTransactionService:TeamTransactionService = container.get(TeamTransactionService)
 
                 let existingUser:User
 
@@ -499,7 +499,7 @@ async function getContainer(command?:GetContainerCommand) {
                         let season:Season = await seasonService.getMostRecent(options)
                         let league:League = await leagueService.getByRank(1, options)
 
-                        await teamService.createForUser(existingUser, league, season, options)
+                        await teamTransactionService.createForUser(existingUser, league, season, options)
 
 
                     }

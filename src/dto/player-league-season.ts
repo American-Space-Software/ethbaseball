@@ -5,6 +5,7 @@ import { Player } from './player.js'
 import { PlayerPercentileRatings, PlayerStatLines } from '../service/enums.js'
 import { Team } from './team.js'
 import { HittingRatings, PitchRatings, Position } from '../baseball-sim-engine/index.js';
+import { User } from './user.js'
 
 @Table({
     tableName: 'player_league_season',
@@ -52,6 +53,16 @@ class PlayerLeagueSeason extends Model {
 
     @BelongsTo(() => Team)
     team: Team
+
+
+    @ForeignKey(() => User)
+    @AllowNull(true)
+    @Column(DataType.UUID)
+    declare userId?:string
+
+    @BelongsTo(() => User)
+    user: User
+
 
     @AllowNull(false)
     @Column(DataType.INTEGER)

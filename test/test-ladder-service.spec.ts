@@ -205,7 +205,6 @@ describe("LadderService", async () => {
 
     })
 
-
     it("should reject non-contiguous league ranks when building promotion and relegation structure", async () => {
 
         let badLeagues = [

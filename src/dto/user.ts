@@ -23,12 +23,15 @@ class User extends Model {
     @Column(DataType.STRING)
     declare discordId:string
 
+    @AllowNull(true)
     @Column(DataType.STRING)
     declare discordRefreshToken:string
 
+    @AllowNull(true)
     @Column(DataType.STRING)
     declare discordAccessToken:string
 
+    @AllowNull(true)
     @Column(DataType.JSON)
     declare discordProfile:any
 

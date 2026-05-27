@@ -106,6 +106,10 @@ class PlayerLeagueSeasonService {
         return this.playerLeagueSeasonRepository.getMostRecentBySeason(season, options)
     }
 
+    async getMostRecentCountByUserSeason(userId:string, season:Season, options?:any): Promise<number> {
+        return this.playerLeagueSeasonRepository.getMostRecentCountByUserSeason(userId, season, options)
+    }    
+
     async getFreeAgentsBySeason(season:Season,positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getFreeAgentsBySeason(season, positions, sortColumn, sortDirection, options)
     }

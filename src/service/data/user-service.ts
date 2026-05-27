@@ -2,13 +2,11 @@ import { inject, injectable } from "inversify";
 import { User } from "../../dto/user.js";
 import { UserRepository } from "../../repository/user-repository.js";
 import { OwnerService } from "./owner-service.js";
-import { Owner } from "../../dto/owner.js";
 import { TeamService } from "./team-service.js";
 import { Season } from "../../dto/season.js";
 import { Team } from "../../dto/team.js";
 import { TeamLeagueSeasonService } from "./team-league-season-service.js";
 import { GameService } from "./game-service.js";
-import { Game } from "../../dto/game.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { OffchainEventService } from "../data/offchain-event-service.js";
 import { ContractType, SeasonInfo } from "../enums.js";
@@ -17,6 +15,8 @@ import { SeasonService } from "./season-service.js";
 import { LadderService } from "../ladder-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { TeamLeagueSeason } from "../../dto/team-league-season.js";
+import { v4 as uuidv4 } from 'uuid';
+import { ethers } from "ethers";
 
 
 
@@ -132,7 +132,28 @@ class UserService {
     
     }
 
+    async getOrCreateBotUser(options?:any): Promise<User> {
 
+        let existingUser:User = await this.getByAddress(ethers.ZeroAddress, options)
+
+        if (existingUser) {
+            return existingUser
+        }
+
+        let user:User = new User()
+
+        user._id = uuidv4()
+        user.address = ethers.ZeroAddress
+        user.discordId = undefined
+        user.discordAccessToken = undefined
+        user.discordRefreshToken = undefined
+        user.discordProfile = undefined
+
+        await this.put(user, options)
+
+        return user
+
+    }
 
 }
 

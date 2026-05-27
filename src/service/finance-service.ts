@@ -45,25 +45,7 @@ class FinanceService {
         @inject("getFees") private fees:Function
     ) {}
 
-    signContract(tls:TeamLeagueSeason, pls:PlayerLeagueSeason, player:Player, season:Season, date:Date) {
 
-        // pls.contractYear = player.contract.years[0]
-        // pls.changed("contractYear", true)
-
-        if (player.primaryPosition == Position.PITCHER) {
-
-            let rotationIndex = this.lineupService.getFirstAvailableRotationSpot(tls.lineups[0])
-            this.lineupService.rotationAdd(tls.lineups[0], player, rotationIndex)
-            
-        } else {
-
-            let lineupIndex = this.lineupService.getFirstAvailableOrderSpot(tls.lineups[0])
-            this.lineupService.lineupAdd(tls.lineups[0], player, lineupIndex)
-        }
-
-        tls.changed('lineups', true)
-
-    }
 
     updateFinanceSeason(financeSeason:FinanceSeason, gameTeamFinance:GameTeamFinance) {
 

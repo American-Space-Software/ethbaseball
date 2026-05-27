@@ -784,20 +784,7 @@ n
         await this.teamLeagueSeasonService.put(currentTLS, options)
     }
 
-    async signAvailablePlayer(player:Player, pls:PlayerLeagueSeason, tls: TeamLeagueSeason, season: Season, date: Date, offChainEventTransactionId:string, options?: any) {
 
-        // this.playerService.signContract(league, player, season, date)
-
-        this.financeService.signContract(tls, pls, player, season, date)
-        this.offchainEventService.createFreeAgentTransferEvent(tls.teamId, player._id, offChainEventTransactionId, options)
-
-        pls.leagueId = tls.leagueId
-        pls.teamId = tls.teamId
-
-        await this.playerLeagueSeasonService.put(pls, options)
-        await this.playerService.put(player, options)
-
-    }
 
     listRequiredRosterSpots(roster: PlayerLeagueSeason[]): Position[] {
 
@@ -836,80 +823,7 @@ n
 
     }
 
-    async fillAndValidateRoster(tls: TeamLeagueSeason, roster: PlayerLeagueSeason[], season: Season, date: Date, minimumOnly: boolean, options?: any) {
 
-        let added = {
-            players:[],
-            plss:[]
-        }
-
-        let required: Position[] = this.listRequiredRosterSpots(roster)
-
-        //Shuffle so we get every position to fill instead of just the first ones.
-        let shuffled = required
-            .map(value => ({ value, sort: Math.random() }))
-            .sort((a, b) => a.sort - b.sort)
-            .map(({ value }) => value)
-
-
-        let fillCount=0
-
-
-        let offChainEventTransactionId = uuidv4()
-        for (let position of shuffled) {
-
-            //Find a player from the pool that fits via salary.
-            let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsByPosition(position, season, 1, 0, options)
-
-
-            let pls: PlayerLeagueSeason
-            let player: Player
-
-            if (minimumOnly || plss?.length < 1) {
-
-                //Generate a player.
-                player = await this.playerService.scoutPlayer({ onDate: dayjs(date).format("YYYY-MM-DD"), type: position})
-
-                // this.playerService.createRookieContract(player)
-                await this.playerService.put(player, options)
-
-                pls = await this.playerLeagueSeasonService.createPlayerLeagueSeason(player, season, 1, options)
-
-            } else {
-
-                pls = await this.playerLeagueSeasonService.getById(plss[0]._id, options)
-                player = await this.playerService.get(plss[0].playerId, options)
-
-            }
-
-
-            //Sign a player from the player pool.
-            await this.signAvailablePlayer(player, pls, tls, season, date, offChainEventTransactionId, options)
-
-            added.players.push(player)
-            added.plss.push(pls)
-
-            //Update finances.
-            // await updateFinances(team, season, options)
-
-            fillCount++
-
-        }
-
-        if (shuffled?.length > 0) {
-            
-            // await updateFinances(team, season, options)
-
-            tls.lineups[0].valid = true
-            tls.hasValidLineup = true
-    
-            await this.teamLeagueSeasonService.put(tls, options)
-        }
-
-
-        return added
-
-    }
 
     getTeamCost(financeSeason:FinanceSeason) {
 
@@ -969,7 +883,7 @@ n
 
     }
 
-    async createForUser(user:User, league:League, season:Season, options?:any) {
+    async createForUser(user:User, league:League, season:Season, options?:any) : Promise<{team:Team, tls:TeamLeagueSeason}> {
 
         let financeSeason:FinanceSeason = this.financeService.getDefaultFinanceSeason()
 
@@ -1000,17 +914,13 @@ n
 
         await this.teamLeagueSeasonService.put(tls, options)
 
-
-        await this.fillAndValidateRoster(tls, [], season, undefined, true, options)
-
-
+        return {
+            team: team,
+            tls: tls
+        }
 
     }
 
-
-
-
- 
 
     async updateSeasonRecord(team:Team, season:Season, tls:TeamLeagueSeason, options?:any) : Promise<OverallRecord> {
 
