@@ -52,7 +52,8 @@ class TeamLeagueSeasonService {
             rotation: [
                 {},{},{},{},{}
             ],
-            availablePitchers: []
+            availablePitchers: [],
+            availableHitters: []
         }]
 
         tls.hasValidLineup = false

@@ -4,9 +4,9 @@ import {  DiamondMintPass, Team, TEAM_COLORS } from "../../dto/team.js";
 import { TeamRepository } from "../../repository/team-repository.js";
 
 import { Player } from "../../dto/player.js";
-import {  PlayerRowViewModel, PlayerService } from "./player-service.js";
+import {   PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import {  ContractType, DEFAULT_ROSTER_CONSTRAINTS, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, Rating, TEAMS_PER_TIER } from "../enums.js";
+import {  ContractType, DEFAULT_ROSTER_CONSTRAINTS, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, PlayerRowViewModel, Rating, TEAMS_PER_TIER, TeamViewModel } from "../enums.js";
 import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
@@ -172,13 +172,13 @@ n
 
         let games:Game[] = await this.gameService.getRecentByTeam(team, Object.assign({ limit: 5 }, options) )
 
-
         let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
-
 
         let events = await this.offchainEventService.getByTeamId(team._id, Object.assign({ limit: 5, offset: 0 }, options) )
         let eventsViewModel = await this.offchainEventService.getOffChainEventViewModels(events, season, options)
         
+        let plainPLSS = plss.map(p => p.get({ plain: true }))
+
         return {
             team: {
                 _id: team._id,
@@ -209,45 +209,45 @@ n
                     discordUsername: userOwner?.discordProfile?.global_name
                 }
             },
-            players: plss.map(pls => {
+            players: plainPLSS.map(pls => this.translatePLSToPlayerRowViewModel(pls.player, pls, pls.player._id == nextStarter?._id) ),
 
-                let p: PlayerLeagueSeason = pls.get({ plain: true })
-
-                let isNextStarter = p.player._id == nextStarter?._id
-
-                
-                return {
-                    _id: p.playerId,
-                    coverImageCid: p.player.coverImageCid,
-                    fullName: `${p.player.firstName} ${p.player.lastName}`,
-                    firstName: p.player.firstName,
-                    lastName: p.player.lastName,
-                    primaryPosition: p.primaryPosition,
-                    age: p.age,
-                    zodiacSign: p.player.zodiacSign,
-                    throws: p.player.throws,
-                    hits: p.player.hits,
-                    lastGamePlayed: p.player.lastGamePlayed,
-                    lastGamePitched: p.player.lastGamePitched,
-
-                    overallRating: p.player.overallRating,
-                    pitchRatings: p.pitchRatings,
-                    hittingRatings: p.hittingRatings,
-
-                    potentialOverallRating: p.player.potentialOverallRating,
-                    potentialPitchRatings: p.potentialPitchRatings,
-                    potentialHittingRatings: p.potentialHittingRatings,
-
-                    careerStats: p.player.careerStats,
-                    seasonStats: p.stats,
-                    isNextStarter: isNextStarter,
-                    stamina: p.player.stamina
-
-                }
-            }),
             completedGames: games?.filter(g => g.isFinished == true).map( g => this.gameService.getGameSummaryViewModel(g)),
             inProgressGame: games.find( g => !g.isFinished),
             eventsViewModel: eventsViewModel
+        }
+
+    }
+
+    public translatePLSToPlayerRowViewModel(player:Player, pls:PlayerLeagueSeason, isNextStarter:boolean): PlayerRowViewModel {
+
+        return {
+            _id: pls.playerId,
+            coverImageCid: player.coverImageCid,
+            fullName: `${player.firstName} ${player.lastName}`,
+            firstName: player.firstName,
+            lastName: player.lastName,
+            primaryPosition: pls.primaryPosition,
+            age: pls.age,
+            zodiacSign: player.zodiacSign,
+            throws: player.throws,
+            hits: player.hits,
+            lastGamePlayed: player.lastGamePlayed,
+            lastGamePitched: player.lastGamePitched,
+
+            overallRating: player.overallRating,
+            pitchRatings: pls.pitchRatings,
+            hittingRatings: pls.hittingRatings,
+
+            potentialOverallRating: player.potentialOverallRating,
+            potentialPitchRatings: pls.potentialPitchRatings,
+            potentialHittingRatings: pls.potentialHittingRatings,
+
+            careerStats: player.careerStats,
+            seasonStats: pls.stats,
+            isNextStarter: isNextStarter,
+            stamina: player.stamina,
+            maxPitchCount: player.maxPitchCount
+
         }
 
     }
@@ -1045,55 +1045,7 @@ n
 }
 
 
-interface TeamViewModel {
 
-    team: {
-        _id: string
-        logoId:string
-        name: string
-        leagueRank: number
-        overallRank: number
-        colors:Colors
-        abbrev: string
-        city: City
-        stadium: Stadium
-        
-        rank?: number
-        seasonRating?: Rating
-        longTermRating?: Rating
-        lineups?: Lineup[]
-        overallRecord?: {
-            wins: number
-            losses: number
-        }
-        fanInterestLongTerm: number
-        fanInterestShortTerm: number
-        winPercent?: number
-        hasValidLineup?: boolean
-
-        financeSeason: FinanceSeason
-        // seasonHistory: SeasonHistory[]
-        // teamCost
-
-        diamondBalance:string,
-
-        owner?: {
-            _id: string
-            discordId?:string
-            discordUsername?:string
-        }
-
-        isQueued:boolean
-        minimumPlayerSalary:string
-        developmentStrategy:DevelopmentStrategy
-    }
-
-    players?: PlayerRowViewModel[]
-    completedGames?
-    inProgressGame?
-    eventsViewModel?
-    // todaysGames?
-}
 
 interface SeasonHistory {
     rating: Rating

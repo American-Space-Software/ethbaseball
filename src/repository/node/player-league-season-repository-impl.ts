@@ -9,6 +9,7 @@ import { Team } from "../../dto/team.js"
 import { Op, QueryTypes } from "sequelize"
 import { PLAYER_STATS_SORT_EXPRESSION } from "../../service/enums.js"
 import { Position }  from '../../baseball-sim-engine/index.js';
+import { User } from "../../dto/user.js"
 
 
 
@@ -255,6 +256,45 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
     }
 
+    async getMostRecentInactiveByUserSeason(user: User, season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
+
+        let s = await this.sequelize()
+
+        let queryOptions = {
+            type: QueryTypes.RAW,
+            plain: true,
+            mapToModel: false,
+            replacements: {
+                userId: user._id,
+                seasonId: season._id
+            }
+        }
+
+        const [idQueryResults, metadata] = await s.query(`
+            SELECT pls._id
+            FROM player_league_season pls
+            JOIN (
+                SELECT playerId, MAX(seasonIndex) AS maxSeasonIndex
+                FROM player_league_season
+                WHERE seasonId = :seasonId
+                GROUP BY playerId
+            ) latest
+                ON latest.playerId = pls.playerId
+            AND latest.maxSeasonIndex = pls.seasonIndex
+            WHERE pls.seasonId = :seasonId
+                AND pls.userId = :userId
+                AND pls.teamId is null
+                
+            ORDER BY pls.startDate DESC, pls.seasonIndex DESC
+
+        `, Object.assign(queryOptions, options))
+
+
+        return this.getByIds(idQueryResults.map(qr => qr._id), options)
+
+    }
+
+
     async getMostRecentByLeagueSeason(league: League, season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
 
         let s = await this.sequelize()
@@ -289,7 +329,6 @@ class PlayerLeagueSeasonRepositoryNodeImpl implements PlayerLeagueSeasonReposito
 
 
     }
-
 
     async getMostRecentIdsBySeason(season: Season, options?: any): Promise<string[]> {
 

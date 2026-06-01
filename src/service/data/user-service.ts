@@ -1,23 +1,20 @@
 import { inject, injectable } from "inversify";
 import { User } from "../../dto/user.js";
 import { UserRepository } from "../../repository/user-repository.js";
-import { OwnerService } from "./owner-service.js";
 import { TeamService } from "./team-service.js";
 import { Season } from "../../dto/season.js";
 import { Team } from "../../dto/team.js";
 import { TeamLeagueSeasonService } from "./team-league-season-service.js";
-import { GameService } from "./game-service.js";
 import { DiamondMintPassService } from "./diamond-mint-pass-service.js";
 import { OffchainEventService } from "../data/offchain-event-service.js";
 import { ContractType, SeasonInfo } from "../enums.js";
 import dayjs from "dayjs";
 import { SeasonService } from "./season-service.js";
-import { LadderService } from "../ladder-service.js";
-import { TeamQueueService } from "./team-queue-service.js";
+
 import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 import { v4 as uuidv4 } from 'uuid';
 import { ethers } from "ethers";
-
+import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
 
 
 @injectable()
@@ -27,16 +24,12 @@ class UserService {
     private userRepository:UserRepository
     
     constructor(
-        private ladderService:LadderService,
         private seasonService:SeasonService,
-        private ownerService:OwnerService,
         private teamService:TeamService,
-        private gameService:GameService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private diamondMintPassService:DiamondMintPassService,
         private offchainEventService:OffchainEventService,
-        private teamQueueService:TeamQueueService,
-        @inject("getDiamondsAddress") private getDiamondsAddress:Function
+        private playerLeagueSeasonService:PlayerLeagueSeasonService
     ) {}
 
     async get(_id:string, options?:any) : Promise<User> {
@@ -100,32 +93,34 @@ class UserService {
         vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
         
-        if (season) {
+        let inactivePlss = await this.playerLeagueSeasonService.getMostRecentInactiveByUserSeason(user, season)
+        let inactivePlainPlss = inactivePlss.map(pls => pls.get({ plain: true }))
+        
+        vm.inactivePlayers = inactivePlainPlss.map(pls => this.teamService.translatePLSToPlayerRowViewModel(pls.player, pls, false))
 
-            let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
+        let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
 
-            let gamesPlayed = vm.teamInfo.team.overallRecord.wins + vm.teamInfo.team.overallRecord.losses 
+        let gamesPlayed = vm.teamInfo.team.overallRecord.wins + vm.teamInfo.team.overallRecord.losses 
 
-            if (vm.teamInfo?.inProgressGame?._id != undefined) {
-                gamesPlayed++
-            }
-
-            vm.season = {
-                _id: season._id,
-                startDate: season.startDate,
-                endDate: season.endDate,
-                dayNumber: seasonInfo.dayNumber,
-                daysRemaining: seasonInfo.daysRemaining,
-                totalDays: seasonInfo.totalDays,
-                universeDate: dayjs(currentDate).format("YYYY-MM-DD"),
-
-                team: {
-                    gamesPlayed: gamesPlayed
-                }
-            }
-            
-
+        if (vm.teamInfo?.inProgressGame?._id != undefined) {
+            gamesPlayed++
         }
+
+        vm.season = {
+            _id: season._id,
+            startDate: season.startDate,
+            endDate: season.endDate,
+            dayNumber: seasonInfo.dayNumber,
+            daysRemaining: seasonInfo.daysRemaining,
+            totalDays: seasonInfo.totalDays,
+            universeDate: dayjs(currentDate).format("YYYY-MM-DD"),
+
+            team: {
+                gamesPlayed: gamesPlayed
+            }
+        }
+        
+
 
 
         return vm

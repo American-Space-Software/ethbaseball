@@ -96,16 +96,24 @@ class TeamTransactionService {
         await this.teamQueueService.dequeueTeam(team, options)
 
         let currentPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-        let requiredPositions: Position[] = this.listRequiredRosterSpots(currentPLSS)
 
-        if (currentPLSS.length < DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize && requiredPositions.includes(signedPLS.primaryPosition)) {
+        if (currentPLSS.length < DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize) {
 
             let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
 
             await this.assignPlayerToTeamByPLS(player, signedPLS, team, tls, season, date, options)
 
             let currentTeamPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-            this.teamService.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS.map(pls => pls.get({ plain: true })))
+
+            try {
+                this.teamService.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS.map(pls => pls.get({ plain: true })))
+            } catch (e) {
+                tls.hasValidLineup = false
+
+                for (let lineup of tls.lineups) {
+                    lineup.valid = false
+                }
+            }
 
             tls.changed("lineups", true)
             tls.changed("hasValidLineup", true)
@@ -159,6 +167,10 @@ class TeamTransactionService {
 
         if (tls.lineups[0].availablePitchers) {
             tls.lineups[0].availablePitchers = tls.lineups[0].availablePitchers.filter(p => p.playerId != player._id)
+        }
+
+        if (tls.lineups[0].availableHitters) {
+            tls.lineups[0].availableHitters = tls.lineups[0].availableHitters.filter(p => p._id != player._id)
         }
 
         tls.lineups[0].valid = false
@@ -329,6 +341,10 @@ class TeamTransactionService {
                     tls.lineups[0].availablePitchers = tls.lineups[0].availablePitchers.filter(p => p.playerId != player._id)
                 }
 
+                if (tls.lineups[0].availableHitters) {
+                    tls.lineups[0].availableHitters = tls.lineups[0].availableHitters.filter(p => p._id != player._id)
+                }
+
                 tls.lineups[0].valid = false
                 tls.hasValidLineup = false
 
@@ -480,51 +496,6 @@ class TeamTransactionService {
 
     }
 
-    async assignPlayerToTeam(user: User, player: Player, team: Team, date: Date, options?: any) {
-
-        let season: Season = await this.seasonService.getMostRecent(options)
-
-        if (user._id != team.userId) {
-            throw new Error("Not authorized.")
-        }
-
-        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
-
-        if (pls.userId != user._id) {
-            throw new Error("Player is not owned by this user.")
-        }
-
-        if (pls.teamId) {
-            throw new Error("Player is already assigned to a team.")
-        }
-
-        await this.teamQueueService.dequeueTeam(team, options)
-
-        let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
-
-        let currentPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-
-        if (currentPLSS.length >= DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize) {
-            throw new Error("Team roster is full.")
-        }
-
-        let requiredPositions: Position[] = this.listRequiredRosterSpots(currentPLSS)
-
-        if (!requiredPositions.includes(pls.primaryPosition)) {
-            throw new Error(`Your roster does not have space for a ${pls.primaryPosition}. Drop your current ${pls.primaryPosition} to make room.`)
-        }
-
-        await this.assignPlayerToTeamByPLS(player, pls, team, tls, season, date, options)
-
-        let currentTeamPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-        this.teamService.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS.map(pls => pls.get({ plain: true })))
-
-        tls.changed("lineups", true)
-        tls.changed("hasValidLineup", true)
-
-        await this.teamLeagueSeasonService.put(tls, options)
-
-    }
 
     async updateRoster(lineups: Lineup[], team: Team, options?: any) {
 
@@ -533,7 +504,7 @@ class TeamTransactionService {
 
         let playerIds = this.getPlayerIdsFromLineups(lineups)
 
-        let currentTeamPLS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(team, options)
+        let currentTeamPLS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
         let currentTeamPlayerIds = new Set(currentTeamPLS.map(pls => pls.playerId))
 
         let playersToAssign: { player: Player, pls: PlayerLeagueSeason }[] = []
@@ -551,13 +522,19 @@ class TeamTransactionService {
                 throw new Error("Invalid player in roster.")
             }
 
-            if (!pls.teamId) {
+            if (!pls.teamId && !currentTeamPlayerIds.has(playerId)) {
                 playersToAssign.push({ player, pls })
             }
 
         }
 
-        if (currentTeamPlayerIds.size + playersToAssign.length > DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize) {
+        let projectedTeamPlayerIds = new Set(currentTeamPlayerIds)
+
+        for (let assignment of playersToAssign) {
+            projectedTeamPlayerIds.add(assignment.player._id)
+        }
+
+        if (projectedTeamPlayerIds.size > DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize) {
             throw new Error("Team roster is full.")
         }
 
@@ -575,7 +552,28 @@ class TeamTransactionService {
         let updatedTeamPLS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(team, options)
         let updatedTeamPLSPlain = updatedTeamPLS.map(pls => pls.get({ plain: true }))
 
-        this.teamService.setLineupValidityAllowTiredStarters(team, currentTLS, updatedTeamPLSPlain)
+        try {
+            this.teamService.setLineupValidityAllowTiredStarters(team, currentTLS, updatedTeamPLSPlain)
+        } catch (e) {
+
+            let error = e as Error
+
+            if (
+                !error.message.includes("not enough") &&
+                !error.message.includes("Not enough") &&
+                !error.message.includes("does not have enough") &&
+                !error.message.includes("must have")
+            ) {
+                throw e
+            }
+
+            currentTLS.hasValidLineup = false
+
+            for (let lineup of currentTLS.lineups) {
+                lineup.valid = false
+            }
+
+        }
 
         currentTLS.changed("hasValidLineup", true)
 
@@ -599,6 +597,10 @@ class TeamTransactionService {
 
             if (lineup.availablePitchers) {
                 playerIds.push(...lineup.availablePitchers.filter(p => p?.playerId != undefined).map(p => p.playerId))
+            }
+
+            if (lineup.availableHitters) {
+                playerIds.push(...lineup.availableHitters.filter(p => p?._id != undefined).map(p => p._id))
             }
 
         }
@@ -793,6 +795,10 @@ class TeamTransactionService {
             tls.lineups[0].availablePitchers = []
         }
 
+        if (!tls.lineups[0].availableHitters) {
+            tls.lineups[0].availableHitters = []
+        }
+
         if (player.primaryPosition == Position.PITCHER) {
 
             let rotationPitchers = tls.lineups[0].rotation.filter(p => p?._id != undefined).length
@@ -807,7 +813,7 @@ class TeamTransactionService {
 
                 let maxPitches = this.playerService.getMaxPitchCountForBullpenRole(pitchingRole.role)
 
-                if ( maxPitches < player.maxPitchCount) {
+                if (maxPitches < player.maxPitchCount) {
                     player.maxPitchCount = maxPitches
                     await this.playerService.put(player, options)
                 }
@@ -823,6 +829,10 @@ class TeamTransactionService {
             if (!alreadyHasPosition) {
                 let spot = this.lineupService.getFirstAvailableOrderSpot(tls.lineups[0])
                 this.lineupService.lineupAdd(tls.lineups[0], player, spot)
+            } else {
+                tls.lineups[0].availableHitters.push({
+                    _id: player._id
+                } as any)
             }
 
         }
@@ -915,8 +925,6 @@ class TeamTransactionService {
 
     }
 
-
-
     private async updatePitcherMaxPitchCountsForLineups(lineups:Lineup[], options?:any): Promise<void> {
 
         for (let lineup of lineups) {
@@ -943,8 +951,6 @@ class TeamTransactionService {
         }
 
     }
-
-
 
     public async fillAllRosters() {
 

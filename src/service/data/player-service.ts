@@ -1221,38 +1221,7 @@ interface RowItemViewModel {
     tokenId: number
 }
 
-interface PlayerRowViewModel {
 
-    _id: string
-    coverImageCid:string
-    fullName: string
-    firstName: string
-    lastName: string
-    primaryPosition: Position
-    age: number
-    zodiacSign: string
-    throws: Handedness
-    hits: Handedness
-    lastGamePlayed: Date
-
-    overallRating:number
-    pitchRatings:PitchRatings
-    hittingRatings:HittingRatings
-
-    potentialOverallRating:number
-    potentialPitchRatings:PitchRatings
-    potentialHittingRatings:HittingRatings    
-
-    teamId?:string,
-    team?: {
-        _id?:string
-        name?:string
-        cityName?:string
-    }
-
-    stats?: PlayerStatLines
-
-}
 
 
 
@@ -1269,5 +1238,5 @@ interface ScoutPlayerCommand {
 
 
 export {
-    PlayerService, RatingPlayer,  RowItemViewModel, PlayerRowViewModel
+    PlayerService, RatingPlayer,  RowItemViewModel
 }

@@ -1,115 +1,53 @@
-import { inject, injectable } from "inversify";
+import { injectable } from "inversify";
 import { LoginWebService } from "./login-web-service.js";
 import { TeamWebService } from "./team-web-service.js";
 import { LineupService } from "../../service/lineup-service.js";
 import { GameWebService } from "./game-web-service.js";
-import { Position } from '../../baseball-sim-engine/index.js';
-
+import { Position } from "../../baseball-sim-engine/index.js";
+import { TeamViewModel } from "../../service/enums.js";
 
 @injectable()
 class TeamComponentService {
 
     constructor(
-        private loginWebService:LoginWebService,
-        private teamWebService:TeamWebService,
-        private lineupService:LineupService,
-        private gameWebService:GameWebService
+        private loginWebService: LoginWebService,
+        private teamWebService: TeamWebService,
+        private lineupService: LineupService,
+        private gameWebService: GameWebService
     ) {}
 
     loading = false
     hasChanges = false
 
-    authInfo:any
+    authInfo: any
     selected = "stats"
 
-    team
-    startDate
-    inProgressGame
-    completedGames = []
-    eventsViewModel
+    teamViewModel: TeamViewModel
 
-    rosterPlayers:any[] = []
+    startDate
+    _inProgressGame
 
     get hasEmptySpots() {
 
-        let emptyLineupSpots = this.team.lineups[0].order.filter(p => p._id != undefined).length < 8
-        let emptyRotationSpots = this.team.lineups[0].rotation.filter(p => p._id != undefined).length < 5
+        let emptyLineupSpots = this.teamViewModel.team.lineups[0].order.filter(p => p._id != undefined).length < 8
+        let emptyRotationSpots = this.teamViewModel.team.lineups[0].rotation.filter(p => p._id != undefined).length < 5
 
         return emptyLineupSpots || emptyRotationSpots
 
     }
 
-    getDisplayHitters() {
-        if (!this.team) return []
-        return this.buildDisplayHitters(this.team.lineups[0])
+    get inProgressGame() {
+        return this._inProgressGame
     }
 
-    getDisplayPitchers(){
-        if (!this.team) return []
-        return this.buildDisplayPitchers(this.team.lineups[0])
+    get completedGames() {
+        return this.teamViewModel.completedGames
     }
 
-    buildDisplayHitters(lineup) {
+    public async loadTeam(teamId: string, startDate: string, options?: any) {
 
-        let h = []
+        if ((options?.forceRefresh || teamId != this.teamViewModel.team?._id || startDate != this.startDate) && this.loading == false) {
 
-        for (let player of lineup.order) {
-
-            if (player._id) {
-                h.push(this.getPlayer(player._id))
-            } else {
-                if (player.position == Position.PITCHER) {
-                    // h.push({
-                    //     fullName: "Pitcher Slot",
-                    //     primaryPosition: Position.PITCHER
-                    // })
-                } else {
-                    h.push({ fullName: "Sign a free agent.", primaryPosition: player.position } )
-                }
-            }
-
-        }
-
-        return h
-    }
-
-    buildDisplayPitchers(lineup) {
-
-        let p = []
-
-        for (let player of lineup.rotation) {
-
-            if (player._id) {
-                p.push(this.getPlayer(player._id))
-            } else {
-                p.push({ fullName: "Sign a free agent.", primaryPosition: "P" } )
-            }
-
-        }
-
-        return p
-    }
-
-    updateInProgressGame(inProgressGame) {
-        Object.assign(this.inProgressGame, this.gameWebService.getGameViewModel(inProgressGame))
-    }
-
-    getRosterSize() {
-        return this.rosterPlayers.length
-    }
-
-    getPlayer(id) {
-        return this.rosterPlayers.find(p => p._id == id)
-    }
-
-    isTeamOwner() {
-        return (this.authInfo?._id == this.team?.owner?._id && this.team?.owner?._id != undefined)
-    }
-
-    async loadTeam(teamId:string, startDate:string, options?:any) {
-
-        if ( (options?.forceRefresh || teamId != this.team?._id || startDate != this.startDate) && this.loading == false) {
-            
             console.log(`Loading team ${teamId}/${startDate}`)
 
             this.loading = true
@@ -119,224 +57,127 @@ class TeamComponentService {
 
             this.setLoadedTeam(teamViewModel, authInfo, startDate)
 
-
             this.hasChanges = false
             this.loading = false
 
         }
-        
 
-        return this.team
+        return this.teamViewModel.team
 
     }
 
-
-    setLoadedTeam(teamViewModel, authInfo, startDate) {
+    public setLoadedTeam(teamViewModel, authInfo, startDate) {
 
         this.authInfo = authInfo
+        this.teamViewModel = teamViewModel
 
-        this.team = teamViewModel.team
         this.startDate = startDate
-        
-        this.rosterPlayers.length = 0
-        this.rosterPlayers.push(...teamViewModel.players)
-
-        this.completedGames.length = 0
-        this.completedGames.push(...teamViewModel.completedGames)
-
-        this.eventsViewModel = teamViewModel.eventsViewModel
 
 
-        delete this.inProgressGame
+        delete this._inProgressGame
 
         if (teamViewModel.inProgressGame) {
-            this.inProgressGame = this.gameWebService.getGameViewModel(teamViewModel.inProgressGame)
+            this._inProgressGame = this.gameWebService.getGameViewModel(teamViewModel.inProgressGame)
         }
-        
 
-        //Add placeholder positions for any missing lineup spots
-        let order = this.team.lineups[0].order
-        
-        let missingPositions = this.listMissingPositionsInLineup(order)
-
-        for (let position of missingPositions) {
-            let firstBlankSpot = order.find( o => !o.position)
-            firstBlankSpot.position = position                
-        }
+        this.addMissingLineupPlaceholders()
 
         this.hasChanges = false
 
     }
 
+    public isTeamOwner() {
+        return this.authInfo?._id == this.teamViewModel?.team?.owner?._id && this.teamViewModel?.team?.owner?._id != undefined
+    }
 
-    dropPlayer(id) {
+    public getDisplayHitters(lineupIndex = 0) {
 
-        let selectedPlayer = this.rosterPlayers.find(p => p._id == id)
+        if (!this.teamViewModel?.team) return []
 
-        // if (selectedPlayer.primaryPosition == Position.PITCHER) {
-        //     this.removeRosterPitcher(selectedPlayer)
-        //     this.lineupService.rotationRemove(this.team.lineups[0], selectedPlayer._id)
-        // } else {
-        //     this.removeRosterHitter(selectedPlayer)
-        //     this.lineupService.lineupRemove(this.team.lineups[0], selectedPlayer._id)
-        // }
+        return this.buildDisplayHitters(this.teamViewModel?.team.lineups[lineupIndex])
 
-        this.hasChanges = true
+    }
+
+    public getDisplayPitchers(lineupIndex = 0) {
+
+        if (!this.teamViewModel?.team) return []
+
+        return this.buildDisplayPitchers(this.teamViewModel?.team.lineups[lineupIndex])
+
     }
 
 
-    moveToRoster(selectedId, currentPlayerId, spot, lineupIndex) {
+    public getDisplayAvailablePitchers(lineupIndex = 0) {
+
+        if (!this.teamViewModel?.team) return []
+
+        return this.buildDisplayPitchers({
+            rotation: this.teamViewModel.team.lineups[lineupIndex].availablePitchers.map(p => ({
+                _id: p.playerId
+            }))
+        })
+
+    }  
+
+    public getDisplayAvailableHitters(lineupIndex = 0) {
+
+        if (!this.teamViewModel?.team) return []
+
+        return this.buildDisplayHitters({
+            order: this.teamViewModel.team.lineups[lineupIndex].availableHitters.map(p => ({
+                _id: p._id
+            }))
+        })
+
+    }
+
+    public canAffordDrop() {
+
+        if (!this.authInfo?.offChainDiamondBalance) return false
+        if (!this.teamViewModel?.team?.minimumPlayerSalary) return false
+
+        if (BigInt(this.authInfo.offChainDiamondBalance) < BigInt(this.teamViewModel.team.minimumPlayerSalary)) return false
+
+        return true
+
+    }
+
+    public async save() {
+
+        await this.teamWebService.setRoster(this.teamViewModel.team._id, this.teamViewModel.team.lineups)
+
+        this.hasChanges = false
+
+    }
+
+    public moveToRoster(selectedId, currentPlayerId, spot, lineupIndex) {
+
         this.hasChanges = true
 
-        let lineup = this.team.lineups[lineupIndex]
+        let lineup = this.teamViewModel.team.lineups[lineupIndex]
 
         let selectedPlayer = this.getPlayer(selectedId)
         let currentPlayer = this.getPlayer(currentPlayerId)
 
-        let isSelectedRostered = this.rosterPlayers.find(p => p._id == selectedPlayer._id) != undefined
-
-
-        //Handle adding/removing from roster move(s) first
-        // if (!isSelectedRostered) {
-
-        //     //If we're moving a player from unrostered to roster then remove current player from roster to make room.
-        //     if (currentPlayer) {
-        //         this.removeRoster(currentPlayer)
-        //     }
-
-        //     if (currentPlayer?.primaryPosition != selectedPlayer.primaryPosition) {
-
-        //         //Remove any other players that play the same position as the selected player
-        //         let removedId = this.lineupService.lineupRemoveByPosition(lineup, selectedPlayer.primaryPosition)
-
-        //         let player = this.getPlayer(removedId)
-        //         this.removeRoster(player)
-
-        //     }
-
-        //     //Add to roster
-        //     this.addRoster(selectedPlayer)
-
-        // } 
-
-
         if (selectedPlayer.primaryPosition != Position.PITCHER) {
-
-            //Hitters
-            let isSelectedInLineup = lineup.order.find(p => p._id == selectedPlayer._id) != undefined
-
-            //Handle lineup move
-            if (isSelectedRostered) {
-    
-                if (currentPlayer) {
-                    //If the players are already on the roster and play different positions it's just a lineup swap
-                    this.lineupService.lineupSwap(lineup, selectedPlayer._id, currentPlayer._id)
-                } else {
-                    //Not replacing anyone just move them
-                    this.lineupService.lineupMove(lineup, selectedPlayer._id, spot)
-                }
-    
-            } else {
-    
-                if (currentPlayer) {
-    
-                    this.lineupService.lineupReplace(lineup, selectedPlayer, currentPlayer._id)
-    
-                } else {
-    
-                    if (isSelectedInLineup) {
-    
-                        //If no current player in the spot and the selected player is already in the lineup just move them to the spot
-                        this.lineupService.lineupMove(lineup, selectedPlayer._id, spot)
-    
-                    } else {
-    
-                        // if (selectedPlayer.primaryPosition == Position.PITCHER) {
-                        //     spot = this.getLastAvailableSpot(lineup)
-                        // }
-            
-                        this.lineupService.lineupAdd(lineup, selectedPlayer, spot) 
-    
-                    }
-                }
-    
-            }
-
-
-
+            this.moveHitterToRoster(lineup, selectedPlayer, currentPlayer, spot)
         } else {
-
-            //Pitchers
-            let isSelectedInRotation = lineup.rotation.find(p => p._id == selectedPlayer._id) != undefined
-
-            //Handle lineup move
-            if (isSelectedRostered) {
-    
-                if (currentPlayer) {
-                    //If the players are already on the roster it's just a rotation spot swap
-                    this.lineupService.rotationSwap(lineup, selectedPlayer._id, currentPlayer._id)
-                } else {
-                    //Not replacing anyone just move them
-                    this.lineupService.rotationMove(lineup, selectedPlayer._id, spot)
-                }
-    
-            } else {
-    
-                if (currentPlayer) {
-    
-                    this.lineupService.rotationReplace(lineup, selectedPlayer, currentPlayer._id)
-    
-                } else {
-    
-                    if (isSelectedInRotation) {
-    
-                        //If no current player in the spot and the selected player is already in the rotation just move them to the spot
-                        this.lineupService.rotationMove(lineup, selectedPlayer._id, spot)
-    
-                    } else {
-    
-                        // if (selectedPlayer.primaryPosition == Position.PITCHER) {
-                        //     spot = this.getLastAvailableSpot(lineup)
-                        // }
-            
-                        this.lineupService.rotationAdd(lineup, selectedPlayer, spot) 
-    
-                    }
-                }
-    
-            }
-
+            this.movePitcherToRoster(lineup, selectedPlayer, currentPlayer, spot)
         }
 
-
-
-    }
-
-    
-    arrayRemove(arr, id) {
-        const index = arr.indexOf( arr.find(p => p._id == id) )
-        arr.splice(index, 1)
-    }
-
-    arrayAdd(arr, player) {
-        if (arr.filter(p => p.id == player._id).length == 0) {
-            arr.push(player)
-        }
-    }
-
-    arrayMove(arr, fromIndex, toIndex) {
-        var element = arr[fromIndex]
-        arr.splice(fromIndex, 1)
-        arr.splice(toIndex, 0, element)
-    }
-
-    async save() {
-        await this.teamWebService.setRoster( this.team._id, this.team.lineups )
-        this.hasChanges = false
     }
 
 
-    listMissingPositionsInLineup(order): Position[] {
+
+    public updateInProgressGame(inProgressGame) {
+        Object.assign(this.inProgressGame, this.gameWebService.getGameViewModel(inProgressGame))
+    }
+
+    public getRosterSize() {
+        return this.teamViewModel?.players.length
+    }
+
+    public listMissingPositionsInLineup(order): Position[] {
 
         let required: Position[] = []
 
@@ -348,11 +189,12 @@ class TeamComponentService {
             Position.THIRD_BASE,
             Position.LEFT_FIELD,
             Position.RIGHT_FIELD,
-            Position.CENTER_FIELD,
+            Position.CENTER_FIELD
         ]
 
         for (let position of positions) {
             let current = order.filter(p => p.position == position).length
+
             if (current == 0) {
                 required.push(position)
             }
@@ -362,16 +204,95 @@ class TeamComponentService {
 
     }
 
-    canAffordDrop() {
+    private buildDisplayHitters(lineup) {
 
-      if (!this.authInfo?.offChainDiamondBalance) return false
-      if (!this.team?.minimumPlayerSalary) return false
+        let hitters = []
 
-      if (BigInt(this.authInfo.offChainDiamondBalance) < BigInt(this.team.minimumPlayerSalary)) return false
+        for (let lineupPlayer of lineup.order) {
 
-      return true
+            if (lineupPlayer._id) {
+                hitters.push(this.getPlayer(lineupPlayer._id))
+            } else if (lineupPlayer.position != Position.PITCHER) {
+                hitters.push({
+                    fullName: "Sign a free agent.",
+                    primaryPosition: lineupPlayer.position
+                })
+            }
+
+        }
+
+        return hitters
 
     }
+
+    private buildDisplayPitchers(lineup) {
+
+        let pitchers = []
+
+        for (let rotationPitcher of lineup.rotation) {
+
+            if (rotationPitcher._id) {
+                pitchers.push(this.getPlayer(rotationPitcher._id))
+            } else {
+                pitchers.push({
+                    fullName: "Sign a free agent.",
+                    primaryPosition: Position.PITCHER
+                })
+            }
+
+        }
+
+        return pitchers
+
+    }
+
+    private moveHitterToRoster(lineup, selectedPlayer, currentPlayer, spot) {
+
+        let isSelectedInLineup = lineup.order.find(p => p._id == selectedPlayer._id) != undefined
+
+        if (currentPlayer) {
+            this.lineupService.lineupSwap(lineup, selectedPlayer._id, currentPlayer._id)
+        } else if (isSelectedInLineup) {
+            this.lineupService.lineupMove(lineup, selectedPlayer._id, spot)
+        } else {
+            this.lineupService.lineupAdd(lineup, selectedPlayer, spot)
+        }
+
+    }
+
+    private movePitcherToRoster(lineup, selectedPlayer, currentPlayer, spot) {
+
+        let isSelectedInRotation = lineup.rotation.find(p => p._id == selectedPlayer._id) != undefined
+
+        if (currentPlayer) {
+            this.lineupService.rotationSwap(lineup, selectedPlayer._id, currentPlayer._id)
+        } else if (isSelectedInRotation) {
+            this.lineupService.rotationMove(lineup, selectedPlayer._id, spot)
+        } else {
+            this.lineupService.rotationAdd(lineup, selectedPlayer, spot)
+        }
+
+    }
+
+    private getPlayer(id) {
+        return this.teamViewModel?.players.find(p => p._id == id)
+    }
+
+    private addMissingLineupPlaceholders() {
+
+        let order = this.teamViewModel.team.lineups[0].order
+        let missingPositions = this.listMissingPositionsInLineup(order)
+
+        for (let position of missingPositions) {
+            let firstBlankSpot = order.find(o => !o.position)
+
+            if (firstBlankSpot) {
+                firstBlankSpot.position = position
+            }
+        }
+
+    }
+
 
 
 }

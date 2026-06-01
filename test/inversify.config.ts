@@ -243,6 +243,11 @@ import timezone from "dayjs/plugin/timezone.js"
 import { SimSharedService } from "../src/service/shared/sim-shared-service.js"
 import { WIN_EXPECTANCY_CHART } from "../src/service/enums.js"
 import { GameNotifications } from "../src/dto/game-notifications.js"
+import { TeamComponentService } from "../src/web/service/team-component-service.js"
+import { LoginWebService } from "../src/web/service/login-web-service.js"
+import { TeamWebService } from "../src/web/service/team-web-service.js"
+import { GameWebService } from "../src/web/service/game-web-service.js"
+import { SocketWebService } from "../src/web/service/socket-web-service.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -462,6 +467,14 @@ function getContainer(command?: GetContainerCommand) {
 
   container.bind(UserService).toSelf().inSingletonScope()
   container.bind(TeamTransactionService).toSelf().inSingletonScope()
+  container.bind(TeamComponentService).toSelf().inSingletonScope()
+  container.bind(LoginWebService).toSelf().inSingletonScope()
+  container.bind(TeamWebService).toSelf().inSingletonScope()
+  container.bind(GameWebService).toSelf().inSingletonScope()
+  container.bind(SocketWebService).toSelf().inSingletonScope()
+
+  container.bind("eventTarget").toConstantValue({})
+  container.bind("env").toConstantValue({})
 
 
   container.bind("WalletService").to(NodeWalletServiceImpl).inSingletonScope()

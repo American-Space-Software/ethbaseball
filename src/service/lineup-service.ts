@@ -53,17 +53,17 @@ class LineupService {
     
     lineupRemoveByPosition(lineup:Lineup, position) {
 
-        const index = lineup.order.indexOf( lineup.order.find(p => p.position == position) )
+        const index = lineup.order.indexOf(lineup.order.find(p => p.position == position))
 
-        if (lineup.order[index]?._id) {
+        const playerId = lineup.order[index]?._id
+
+        if (playerId) {
             lineup.order[index] = {}
         }
 
-        return lineup.order[index]?._id
+        return playerId
 
     }
-
-
 
     rotationReplace(lineup:Lineup, addPlayer, replaceId) {
         const index = lineup.rotation.indexOf( lineup.rotation.find(p => p._id == replaceId) )
@@ -123,6 +123,78 @@ class LineupService {
             }
         }
     }
+
+
+    availableHitterAdd(lineup: Lineup, playerId: string) {
+
+        if (lineup.availableHitters.find(p => p._id == playerId)) return
+
+        lineup.availableHitters.push({
+            _id: playerId
+        })
+
+    }
+
+    availableHitterRemove(lineup: Lineup, playerId: string) {
+
+        const index = lineup.availableHitters.indexOf(lineup.availableHitters.find(p => p._id == playerId))
+
+        if (index >= 0) {
+            lineup.availableHitters.splice(index, 1)
+        }
+
+    }
+
+    availablePitcherAdd(lineup: Lineup, playerId: string, role, priority: number) {
+
+        if (lineup.availablePitchers.find(p => p.playerId == playerId)) return
+
+        lineup.availablePitchers.push({
+            playerId,
+            role,
+            priority
+        })
+
+    }
+
+    availablePitcherRemove(lineup: Lineup, playerId: string) {
+
+        const index = lineup.availablePitchers.indexOf(lineup.availablePitchers.find(p => p.playerId == playerId))
+
+        if (index >= 0) {
+            lineup.availablePitchers.splice(index, 1)
+        }
+
+    }
+
+    moveLineupPlayerToAvailableHitters(lineup: Lineup, playerId: string) {
+
+        this.lineupRemove(lineup, playerId)
+        this.availableHitterAdd(lineup, playerId)
+
+    }
+
+    moveAvailableHitterToLineup(lineup: Lineup, player, index: number) {
+
+        this.availableHitterRemove(lineup, player._id)
+        this.lineupAdd(lineup, player, index)
+
+    }
+
+    moveRotationPitcherToAvailablePitchers(lineup: Lineup, playerId: string, role, priority: number) {
+
+        this.rotationRemove(lineup, playerId)
+        this.availablePitcherAdd(lineup, playerId, role, priority)
+
+    }
+
+    moveAvailablePitcherToRotation(lineup: Lineup, player, index: number) {
+
+        this.availablePitcherRemove(lineup, player._id)
+        this.rotationAdd(lineup, player, index)
+
+    }
+
 
 }
 

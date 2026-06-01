@@ -1,6 +1,8 @@
 
-import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, LineupPlayer, Pitch, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RotationPitcher, RunnerResult, Score }  from '../baseball-sim-engine/index.js';
-import { PitchingRole } from '../baseball-sim-engine/service/interfaces.js';
+import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, Handedness, HitResultCount, HitterStatLine, HittingRatings, HomeAway, LineupPlayer, Pitch, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RotationPitcher, RunnerResult, Score }  from '../baseball-sim-engine/index.js';
+import { Colors, PitchingRole } from '../baseball-sim-engine/service/interfaces.js';
+import { City } from '../dto/city.js';
+import { Stadium } from '../dto/stadium.js';
 
 const DIAMONDS_PER_DAY = 1000 
 
@@ -16252,12 +16254,100 @@ interface Lineup {
     order?:LineupPlayer[]
     rotation?:RotationPitcher[]
     availablePitchers:PitchingRole[]
+    availableHitters:LineupPlayer[]
     valid?:boolean
 }
 
+interface TeamViewModel {
+
+    team: {
+        _id: string
+        logoId:string
+        name: string
+        leagueRank: number
+        overallRank: number
+        colors:Colors
+        abbrev: string
+        city: City
+        stadium: Stadium
+        
+        rank?: number
+        seasonRating?: Rating
+        longTermRating?: Rating
+        lineups?: Lineup[]
+        overallRecord?: {
+            wins: number
+            losses: number
+        }
+        fanInterestLongTerm: number
+        fanInterestShortTerm: number
+        winPercent?: number
+        hasValidLineup?: boolean
+
+        financeSeason: FinanceSeason
+        // seasonHistory: SeasonHistory[]
+        // teamCost
+
+        diamondBalance:string,
+
+        owner?: {
+            _id: string
+            discordId?:string
+            discordUsername?:string
+        }
+
+        isQueued:boolean
+        minimumPlayerSalary:string
+        developmentStrategy:DevelopmentStrategy
+    }
+
+    players?: PlayerRowViewModel[]
+    completedGames?
+    inProgressGame?
+    eventsViewModel?
+    // todaysGames?
+}
 
 
-export  {DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
+interface PlayerRowViewModel {
+
+    _id: string
+    coverImageCid:string
+    fullName: string
+    firstName: string
+    lastName: string
+    primaryPosition: Position
+    age: number
+    zodiacSign: string
+    throws: Handedness
+    hits: Handedness
+    lastGamePlayed: Date
+    lastGamePitched:Date
+
+    overallRating:number
+    pitchRatings:PitchRatings
+    hittingRatings:HittingRatings
+
+    potentialOverallRating:number
+    potentialPitchRatings:PitchRatings
+    potentialHittingRatings:HittingRatings    
+
+    teamId?:string,
+    team?: {
+        _id?:string
+        name?:string
+        cityName?:string
+    }
+
+    careerStats?: PlayerStatLines
+    seasonStats?: PlayerStatLines
+
+    isNextStarter:boolean
+    stamina:number
+    maxPitchCount:number
+}
+
+export  {TeamViewModel, PlayerRowViewModel, DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
     WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, 
     ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, TeamInfo, BaseRunners,  BaseRunnerIds, HitterPitcher,  ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

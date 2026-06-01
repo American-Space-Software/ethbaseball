@@ -909,6 +909,10 @@ let startWebServer = async () => {
       let startDate = dayjs(req.params.startDate).toDate()
       let season: Season = await seasonService.getByDate(startDate)
 
+      if (!season) {
+        throw new Error("Season not found for date.")
+      }
+
       let vm = {}
 
       //@ts-ignore

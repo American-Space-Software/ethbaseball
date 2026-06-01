@@ -5,6 +5,7 @@ import { Player } from "../dto/player.js"
 import { Season } from "../dto/season.js"
 import { Team } from "../dto/team.js"
 import { Position }  from '../baseball-sim-engine/index.js';
+import { User } from "../dto/user.js"
 
 interface PlayerLeagueSeasonRepository {
     getById(_id: string, options?: any): Promise<PlayerLeagueSeason>
@@ -32,6 +33,7 @@ interface PlayerLeagueSeasonRepository {
     getFreeAgentsBySeason(season:Season, positions:Position[], sortColumn:string, sortDirection:string, options?:any): Promise<PlayerLeagueSeason[]>
     getUniqueSeasonCountByPlayer(player: Player, options?: any): Promise<number>
     getMostRecentCountByUserSeason(userId:string, season:Season, options?:any): Promise<number>
+    getMostRecentInactiveByUserSeason(user: User, season:Season, options?: any): Promise<PlayerLeagueSeason[]>
     delete(pls:PlayerLeagueSeason, options?:any) : Promise<void>
     
 }

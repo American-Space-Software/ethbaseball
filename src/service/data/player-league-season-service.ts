@@ -9,6 +9,7 @@ import { Team } from "../../dto/team.js";
 
 import { v4 as uuidv4 } from 'uuid';
 import { Position } from '../../baseball-sim-engine/index.js';
+import { User } from "../../dto/user.js";
 
 @injectable()
 class PlayerLeagueSeasonService {
@@ -64,6 +65,10 @@ class PlayerLeagueSeasonService {
 
     async getMostRecentByTeam(team: Team, options?: any): Promise<PlayerLeagueSeason[]> {
         return this.playerLeagueSeasonRepository.getMostRecentByTeam(team, options)
+    }
+
+    async getMostRecentInactiveByUserSeason(user: User, season:Season, options?: any): Promise<PlayerLeagueSeason[]> {
+        return this.playerLeagueSeasonRepository.getMostRecentInactiveByUserSeason(user, season, options)
     }
 
     async getFreeAgentsByPosition(position:Position, season:Season, limit:number, offset:number , options?:any): Promise<PlayerLeagueSeason[]> {
