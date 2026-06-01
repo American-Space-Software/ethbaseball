@@ -1,17 +1,22 @@
-import { BaseResult, Contact, DefenseCreditType, Handedness, HomeAway, OfficialPlayResult, OfficialRunnerResult, PitchCall, PitchType, PitchZone, PlayResult, Position, ShallowDeep, ThrowResult } from "./enums.js"
+import { BaseResult, Contact, DefenseCreditType, Handedness, HomeAway, OfficialPlayResult, OfficialRunnerResult, PitchCall, PitchingRoleType, PitchType, PitchZone, PlayResult, Position, ShallowDeep, ThrowResult } from "./enums.js"
 
 interface StartGameCommand {
     game:Game, 
+
     home:Team, 
     homeTeamOptions:any,
     homePlayers:Player[], 
     homeLineup:Lineup
     homeStartingPitcher:RotationPitcher, 
+    homeAvailablePitchers: PitchingRole[],
+
     away:Team, 
     awayTeamOptions:any,   
     awayLineup:Lineup 
     awayPlayers:Player[], 
     awayStartingPitcher:RotationPitcher,
+    awayAvailablePitchers: PitchingRole[],
+
     pitchEnvironmentTarget?:PitchEnvironmentTarget
     date:Date
 }
@@ -104,8 +109,22 @@ interface Game {
     startDate?: Date
     gameDate?: Date
 
+    substitutions?: GameSubstitution[]
+
     lastUpdated?: Date
     dateCreated?: Date
+}
+
+interface GameSubstitution {
+    inning: number
+    top: boolean
+    teamId: string
+    outPlayerId: string
+    inPlayerId: string
+    lineupIndex?: number
+    fromPosition?: Position
+    toPosition?: Position
+    isPitchingChange: boolean
 }
 
 interface Player {
@@ -130,16 +149,11 @@ interface Player {
     isRetired: boolean
 
     stamina: number
+    maxPitchCount:number
     overallRating: number
 
     pitchRatings: PitchRatings
     hittingRatings: HittingRatings
-
-    potentialOverallRating: number
-    potentialPitchRatings: PitchRatings
-    potentialHittingRatings: HittingRatings
-
-    totalExperience?: string
 
     age: number
 
@@ -159,8 +173,6 @@ interface Team {
     abbrev?: string
 
     colors: Colors
-    // longTermRating: Rating
-    // seasonRating: Rating
 
     lineups?: Lineup[]    
 
@@ -181,6 +193,7 @@ interface TeamInfo {
     players?:GamePlayer[]
 
     lineupIds?:string[]
+    availablePitchers?: PitchingRole[]
 
     currentHitterIndex?:number
     currentPitcherId?:string
@@ -190,7 +203,15 @@ interface TeamInfo {
     runner2BId?:string
     runner3BId?:string
 
+
 }
+
+interface PitchingRole {
+    playerId: string
+    role: PitchingRoleType
+    priority: number
+}
+
 
 interface GamePlayerBio {
 
@@ -468,11 +489,15 @@ interface HittingHandednessRatings {
 }
 
 interface GamePlayer {
+    
     _id:string
     fullName: string
     firstName:string
     lastName:string
     displayName: string
+
+    stamina:number
+    maxPitchCount:number
 
     age:number
 
@@ -492,6 +517,7 @@ interface GamePlayer {
     hittingRatings:HittingRatings
 
     currentPosition?:Position
+    positions:Position[]
     lineupIndex?:number
 
     hitResult:HitResultCount
@@ -839,7 +865,6 @@ interface LinescoreTeam {
 
 interface Lineup {
     order?:LineupPlayer[]
-    rotation?:RotationPitcher[]
     valid?:boolean
 }
 
@@ -850,7 +875,6 @@ interface LineupPlayer {
 
 interface RotationPitcher {
     _id?:string
-    stamina?:number
 }
 
 
@@ -1998,7 +2022,7 @@ interface PitchQuality {
 
 
 export {
-    PitchQuality, ContactQuality, StolenBaseByCount,  PitchCount, InZoneByCount,  PitchEnvironmentTarget, DefensiveCredit, Player, ThrowRoll, Game, StartGameCommand, RollChart, ContactTypeRollInput, FielderChanceRollInput, ShallowDeepRollInput, HitterHandednessRollInput, PitcherHandednessRollInput, PowerRollInput, ShallowDeepChance,
+    PitchingRole, PitchQuality, ContactQuality, StolenBaseByCount,  PitchCount, InZoneByCount,  PitchEnvironmentTarget, DefensiveCredit, Player, ThrowRoll, Game, StartGameCommand, RollChart, ContactTypeRollInput, FielderChanceRollInput, ShallowDeepRollInput, HitterHandednessRollInput, PitcherHandednessRollInput, PowerRollInput, ShallowDeepChance,
     TeamInfo, FielderChance, LastPlay, UpcomingMatchup, InningEndingEvent,  Lineup, LineupPlayer, RotationPitcher, HalfInning, RunnerResult, Score,
     Pitch, RunnerEvent, Play, Count, PitcherChange, HitterChange, PitchResultCount,HitResultCount, MatchupHandedness,
     GamePlayer, GamePlayerBio, HitterStatLine, PitcherStatLine, SimPitchResult, SimPitchCommand, PitchLog, RunnerThrowCommand, Team,

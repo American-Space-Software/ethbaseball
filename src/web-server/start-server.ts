@@ -56,7 +56,7 @@ import http from 'http'
 import { SocketService } from '../service/socket-service.js'
 import { LadderService } from '../service/ladder-service.js'
 import { TeamQueueService } from '../service/data/team-queue-service.js'
-import { Position, RotationPitcher } from '../baseball-sim-engine/index.js';
+import { PitchingRoleType, Position, RotationPitcher } from '../baseball-sim-engine/index.js';
 import { TeamTransactionService } from '../service/data/team-transaction-service.js';
 
 
@@ -1420,7 +1420,6 @@ let startWebServer = async () => {
       }
 
       let user: User = await userService.get(loggedInUser)
-      // let owner: Owner = await ownerService.get(user.address)
       let team: Team = await teamService.get(req.params.teamId)
 
       if (team == undefined || user._id != team.userId) {
@@ -1429,8 +1428,88 @@ let startWebServer = async () => {
 
       let roster = req.body
 
+      if (!roster || typeof roster != "object" || Array.isArray(roster)) {
+        throw new Error("Invalid roster.")
+      }
+
       if (!Array.isArray(roster.lineups)) {
         throw new Error("Invalid lineup.")
+      }
+
+      if (roster.lineups.length < 1) {
+        throw new Error("Invalid lineup.")
+      }
+
+      for (let lineup of roster.lineups) {
+
+        if (!lineup || typeof lineup != "object" || Array.isArray(lineup)) {
+          throw new Error("Invalid lineup.")
+        }
+
+        if (!Array.isArray(lineup.order)) {
+          throw new Error("Invalid lineup order.")
+        }
+
+        if (!Array.isArray(lineup.rotation)) {
+          throw new Error("Invalid rotation.")
+        }
+
+        if (!Array.isArray(lineup.availablePitchers)) {
+          throw new Error("Invalid bullpen.")
+        }
+
+        if (lineup.valid != undefined && typeof lineup.valid != "boolean") {
+          throw new Error("Invalid lineup valid flag.")
+        }
+
+        for (let lineupPlayer of lineup.order) {
+
+          if (!lineupPlayer || typeof lineupPlayer != "object" || Array.isArray(lineupPlayer)) {
+            throw new Error("Invalid lineup player.")
+          }
+
+          if (lineupPlayer._id != undefined && typeof lineupPlayer._id != "string") {
+            throw new Error("Invalid lineup player.")
+          }
+
+          if (lineupPlayer.position != undefined && !Object.values(Position).includes(lineupPlayer.position)) {
+            throw new Error("Invalid lineup position.")
+          }
+
+        }
+
+        for (let rotationPitcher of lineup.rotation) {
+
+          if (!rotationPitcher || typeof rotationPitcher != "object" || Array.isArray(rotationPitcher)) {
+            throw new Error("Invalid rotation pitcher.")
+          }
+
+          if (rotationPitcher._id != undefined && typeof rotationPitcher._id != "string") {
+            throw new Error("Invalid rotation pitcher.")
+          }
+
+        }
+
+        for (let pitchingRole of lineup.availablePitchers) {
+
+          if (!pitchingRole || typeof pitchingRole != "object" || Array.isArray(pitchingRole)) {
+            throw new Error("Invalid bullpen pitcher.")
+          }
+
+          if (pitchingRole.playerId != undefined && typeof pitchingRole.playerId != "string") {
+            throw new Error("Invalid bullpen pitcher.")
+          }
+
+          if (!Object.values(PitchingRoleType).includes(pitchingRole.role)) {
+            throw new Error("Invalid bullpen role.")
+          }
+
+          if (!Number.isInteger(pitchingRole.priority) || pitchingRole.priority < 1) {
+            throw new Error("Invalid bullpen priority.")
+          }
+
+        }
+
       }
 
       let isQueued = await teamQueueService.isTeamQueued(team)
@@ -1442,7 +1521,7 @@ let startWebServer = async () => {
       await sequelize.transaction(async (t1) => {
         let options = { transaction: t1 }
 
-        await teamService.updateRoster(roster.lineups, team, options)
+        await teamTransactionService.updateRoster(roster.lineups, team, options)
       })
 
       return res.json("success")

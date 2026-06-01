@@ -1,5 +1,6 @@
 
-import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, Pitch, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RunnerResult, Score }  from '../baseball-sim-engine/index.js';
+import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, HitResultCount, HitterStatLine, HittingRatings, HomeAway, LineupPlayer, Pitch, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RotationPitcher, RunnerResult, Score }  from '../baseball-sim-engine/index.js';
+import { PitchingRole } from '../baseball-sim-engine/service/interfaces.js';
 
 const DIAMONDS_PER_DAY = 1000 
 
@@ -100,6 +101,7 @@ interface TeamInfo {
     players?:GamePlayer[]
 
     lineupIds?:string[]
+    availablePitchers?: PitchingRole[]
 
     currentHitterIndex?:number
     currentPitcherId?:string
@@ -16227,11 +16229,35 @@ enum TeamMarketOfferStatus {
 }
 
 const DEFAULT_PLAYER_STARTING_AGE = 19
+const DEFAULT_MAX_PITCH_COUNT = 100
 
-const MAX_TEAM_ROSTER_SIZE = 26
-const MAX_TOTAL_ROSTER_SIZE = 40
+const DEFAULT_ROSTER_CONSTRAINTS = {
 
-export  {MAX_TEAM_ROSTER_SIZE, MAX_TOTAL_ROSTER_SIZE, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
+    maxTeamRosterSize: 26,
+    maxTotalRosterSize: 40,
+
+    minRotationPitchers: 5,
+
+    minClosers: 1,
+    minSetupRelievers: 2,
+    minMiddleRelievers: 3,
+    minLongRelievers: 1,
+    minMopUpRelievers: 1,
+
+    minBullpenPitchers: 8,
+    minPitchers: 13
+
+}
+interface Lineup {
+    order?:LineupPlayer[]
+    rotation?:RotationPitcher[]
+    availablePitchers:PitchingRole[]
+    valid?:boolean
+}
+
+
+
+export  {DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
     WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, 
     ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, TeamInfo, BaseRunners,  BaseRunnerIds, HitterPitcher,  ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

@@ -14,7 +14,7 @@ import { Team } from "../src/dto/team.js"
 import { League } from "../src/dto/league.js"
 import { Owner } from "../src/dto/owner.js"
 
-import { ContractType, OffChainEventSource, PersonalityType } from "../src/service/enums.js"
+import { ContractType, DEFAULT_MAX_PITCH_COUNT, OffChainEventSource, PersonalityType } from "../src/service/enums.js"
 import { Handedness, PitchType, Position } from "../src/baseball-sim-engine/index.js"
 
 import { v4 as uuidv4 } from "uuid"
@@ -243,6 +243,7 @@ describe("OffchainEventService", async () => {
         player.zodiacSign = "ZOD"
         player.age = 18
         player.stamina = 1
+        player.maxPitchCount = DEFAULT_MAX_PITCH_COUNT
         player.primaryPosition = Position.CATCHER
         player.overallRating = 60
         player.isRetired = false

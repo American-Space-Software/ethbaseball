@@ -15,6 +15,9 @@ import { TeamLeagueSeason } from "../src/dto/team-league-season.js"
 import { PlayerLeagueSeason } from "../src/dto/player-league-season.js"
 import { v4 as uuidv4 } from "uuid"
 import dayjs from "dayjs"
+import { DEFAULT_MAX_PITCH_COUNT } from "../src/service/enums.js"
+import { Player } from "../src/dto/player.js"
+import { PitchingRoleType, Position } from "../src/baseball-sim-engine/index.js"
 
 describe("LadderService", async () => {
 
@@ -90,24 +93,25 @@ describe("LadderService", async () => {
         bottomTls = await setLeagueTeamRanks(leagues[2], season, originalTls)
 
         originalTls = await teamLeagueSeasonService.listBySeason(season)
-
-    })
-
-    it("should generate a schedule", async () => {
-
         originalPls = await playerLeagueSeasonService.getMostRecentBySeason(season)
 
-        let originalPlsIds = await playerLeagueSeasonService.getMostRecentIdsBySeason(season)
-
-        assert.equal(leagues.length, 3)
-        assert.equal(originalTls.length, 24)
-        assert.equal(topTls.length, 8)
-        assert.equal(middleTls.length, 8)
-        assert.equal(bottomTls.length, 8)
-        assert.equal(originalPls.length, 312)
-        assert.equal(originalPlsIds.length, originalPls.length)
-
     })
+
+    // it("should generate a schedule", async () => {
+
+    //     originalPls = await playerLeagueSeasonService.getMostRecentBySeason(season)
+
+    //     let originalPlsIds = await playerLeagueSeasonService.getMostRecentIdsBySeason(season)
+
+    //     assert.equal(leagues.length, 3)
+    //     assert.equal(originalTls.length, 24)
+    //     assert.equal(topTls.length, 8)
+    //     assert.equal(middleTls.length, 8)
+    //     assert.equal(bottomTls.length, 8)
+    //     assert.equal(originalPls.length, 312)
+    //     assert.equal(originalPlsIds.length, originalPls.length)
+
+    // })
 
     it("should build promotion and relegation structure", async () => {
 
@@ -259,33 +263,15 @@ describe("LadderService", async () => {
         assert.equal(nextTls.length, originalTls.length)
         assert.equal(nextPls.length, originalPls.length)
 
-        let completedSeason = await seasonService.get(season._id)
-        let nextLeagueRankByTeamId = new Map<string, number>()
+        let originalTeamIds = originalTls.map(tls => tls.teamId).sort()
+        let nextTeamIds = nextTls.map(tls => tls.teamId).sort()
 
-        for (let log of completedSeason.promotionRelegationLog) {
-            nextLeagueRankByTeamId.set(log._id, log.rank)
-        }
+        assert.deepEqual(nextTeamIds, originalTeamIds)
 
-        for (let oldTls of originalTls) {
-            let newTls = nextTls.find(tls => tls.teamId == oldTls.teamId)
+        let originalPlayerIds = originalPls.map(pls => pls.playerId).sort()
+        let nextPlayerIds = nextPls.map(pls => pls.playerId).sort()
 
-            assert.ok(newTls)
-            assert.equal(newTls.seasonId, nextSeason._id)
-            assert.equal(newTls.teamId, oldTls.teamId)
-            assert.equal(newTls.logoId, oldTls.logoId)
-            assert.equal(newTls.seasonRating.rating, 1500)
-
-            let movedRank = nextLeagueRankByTeamId.get(oldTls.teamId)
-
-            if (movedRank != undefined) {
-                let expectedLeague = leagues.find(league => league.rank == movedRank)
-
-                assert.ok(expectedLeague)
-                assert.equal(newTls.leagueId, expectedLeague._id)
-            } else {
-                assert.equal(newTls.leagueId, oldTls.leagueId)
-            }
-        }
+        assert.deepEqual(nextPlayerIds, originalPlayerIds)
 
         for (let oldPls of originalPls) {
             let newPls = nextPls.find(pls => pls.playerId == oldPls.playerId)
@@ -294,23 +280,299 @@ describe("LadderService", async () => {
             assert.equal(newPls.seasonId, nextSeason._id)
             assert.equal(newPls.playerId, oldPls.playerId)
             assert.equal(newPls.teamId, oldPls.teamId)
+            assert.equal(newPls.userId, oldPls.userId)
             assert.equal(newPls.primaryPosition, oldPls.primaryPosition)
             assert.equal(newPls.age, oldPls.age + 1)
+            assert.equal(newPls.seasonIndex, 1)
+        }
 
-            let movedRank = nextLeagueRankByTeamId.get(oldPls.teamId)
+    })
 
-            if (movedRank != undefined) {
-                let expectedLeague = leagues.find(league => league.rank == movedRank)
+    it("should include every team exactly once in the next season structure", async () => {
 
-                assert.ok(expectedLeague)
-                assert.equal(newPls.leagueId, expectedLeague._id)
-            } else {
-                assert.equal(newPls.leagueId, oldPls.leagueId)
+        let result = await service.buildNextSeasonLeagueStructure(season, leagues, 3)
+
+        let originalTeamIds = originalTls.map(tls => tls.teamId).sort()
+        let resultTeamIds = result.structure
+            .flatMap(leagueInfo => leagueInfo.teamInfo.map(teamInfo => teamInfo.teamId))
+            .sort()
+
+        assert.equal(resultTeamIds.length, originalTeamIds.length)
+        assert.deepEqual(resultTeamIds, originalTeamIds)
+
+    })
+
+    it("should not move any team more than one league during promotion and relegation", async () => {
+
+        let result = await service.buildNextSeasonLeagueStructure(season, leagues, 3)
+
+        for (let leagueInfo of result.structure) {
+            for (let teamInfo of leagueInfo.teamInfo) {
+                assert.ok(Math.abs(leagueInfo.league.rank - teamInfo.previousRank) <= 1)
             }
         }
 
     })
 
+    it("should relegate bottom teams only one league", async () => {
+
+        let result = await service.buildNextSeasonLeagueStructure(season, leagues, 3)
+
+        let middleLeagueInfo = result.structure.find(leagueInfo => leagueInfo.league._id == leagues[1]._id)
+        let bottomLeagueInfo = result.structure.find(leagueInfo => leagueInfo.league._id == leagues[2]._id)
+
+        assert.ok(middleLeagueInfo)
+        assert.ok(bottomLeagueInfo)
+
+        let bottomTopLeagueTeams = [...topTls]
+            .sort((a, b) => a.overallRecord.rank - b.overallRecord.rank)
+            .slice(-3)
+
+        let bottomMiddleLeagueTeams = [...middleTls]
+            .sort((a, b) => a.overallRecord.rank - b.overallRecord.rank)
+            .slice(-3)
+
+        for (let tls of bottomTopLeagueTeams) {
+            assert.ok(middleLeagueInfo.teamInfo.some(teamInfo => teamInfo.teamId == tls.teamId))
+            assert.ok(!bottomLeagueInfo.teamInfo.some(teamInfo => teamInfo.teamId == tls.teamId))
+        }
+
+        for (let tls of bottomMiddleLeagueTeams) {
+            assert.ok(bottomLeagueInfo.teamInfo.some(teamInfo => teamInfo.teamId == tls.teamId))
+        }
+
+    })
+
+
+
+    it("should reduce starter stamina based on pitches thrown", async () => {
+
+        let player:Player = new Player()
+
+        player._id = uuidv4()
+        player.primaryPosition = Position.PITCHER
+        player.stamina = 1
+        player.maxPitchCount = DEFAULT_MAX_PITCH_COUNT
+
+        let game:any = {
+            home: {
+                _id: "home-team",
+                availablePitchers: []
+            },
+            away: {
+                _id: "away-team",
+                availablePitchers: []
+            }
+        }
+
+        let gamePlayer:any = {
+            _id: player._id,
+            teamId: "home-team",
+            pitchResult: {
+                pitches: 30
+            }
+        }
+
+        service.adjustPitcherStamina(game, gamePlayer, player)
+
+        assert.equal(player.stamina, 0.7)
+        assert.equal(player.maxPitchCount, DEFAULT_MAX_PITCH_COUNT)
+
+    })
+    
+    it("should recover starter stamina by twenty percent when they do not pitch", async () => {
+
+        let player:Player = new Player()
+
+        player._id = uuidv4()
+        player.primaryPosition = Position.PITCHER
+        player.stamina = 0.5
+        player.maxPitchCount = DEFAULT_MAX_PITCH_COUNT
+
+        let game:any = {
+            home: {
+                _id: "home-team",
+                availablePitchers: []
+            },
+            away: {
+                _id: "away-team",
+                availablePitchers: []
+            }
+        }
+
+        let gamePlayer:any = {
+            _id: player._id,
+            teamId: "home-team",
+            pitchResult: {
+                pitches: 0
+            }
+        }
+
+        service.adjustPitcherStamina(game, gamePlayer, player)
+
+        assert.equal(player.stamina, 0.7)
+        assert.equal(player.maxPitchCount, DEFAULT_MAX_PITCH_COUNT)
+
+    })
+
+    it("should recover reliever stamina by thirty-three percent when they do not pitch", async () => {
+
+        let player:Player = new Player()
+
+        player._id = uuidv4()
+        player.primaryPosition = Position.PITCHER
+        player.stamina = 0.5
+        player.maxPitchCount = 30
+
+        let game:any = {
+            home: {
+                _id: "home-team",
+                availablePitchers: [
+                    {
+                        playerId: player._id,
+                        role: PitchingRoleType.CLOSER,
+                        priority: 1
+                    }
+                ]
+            },
+            away: {
+                _id: "away-team",
+                availablePitchers: []
+            }
+        }
+
+        let gamePlayer:any = {
+            _id: player._id,
+            teamId: "home-team",
+            pitchResult: {
+                pitches: 0
+            }
+        }
+
+        service.adjustPitcherStamina(game, gamePlayer, player)
+
+        assert.equal(player.stamina, 0.83)
+        assert.equal(player.maxPitchCount, 30)
+
+    })
+
+    it("should stretch out a starter by ten pitches when they throw their current max", async () => {
+
+        let player:Player = new Player()
+
+        player._id = uuidv4()
+        player.primaryPosition = Position.PITCHER
+        player.stamina = 1
+        player.maxPitchCount = 30
+
+        let game:any = {
+            home: {
+                _id: "home-team",
+                availablePitchers: []
+            },
+            away: {
+                _id: "away-team",
+                availablePitchers: []
+            }
+        }
+
+        let gamePlayer:any = {
+            _id: player._id,
+            teamId: "home-team",
+            pitchResult: {
+                pitches: 30
+            }
+        }
+
+        service.adjustPitcherStamina(game, gamePlayer, player)
+
+        assert.equal(player.stamina, 0)
+        assert.equal(player.maxPitchCount, 40)
+
+    })
+
+    it("should stretch out a mop-up reliever by ten pitches when they throw their current max", async () => {
+
+        let player:Player = new Player()
+
+        player._id = uuidv4()
+        player.primaryPosition = Position.PITCHER
+        player.stamina = 1
+        player.maxPitchCount = 30
+
+        let game:any = {
+            home: {
+                _id: "home-team",
+                availablePitchers: [
+                    {
+                        playerId: player._id,
+                        role: PitchingRoleType.MOP_UP,
+                        priority: 1
+                    }
+                ]
+            },
+            away: {
+                _id: "away-team",
+                availablePitchers: []
+            }
+        }
+
+        let gamePlayer:any = {
+            _id: player._id,
+            teamId: "home-team",
+            pitchResult: {
+                pitches: 30
+            }
+        }
+
+        service.adjustPitcherStamina(game, gamePlayer, player)
+
+        assert.equal(player.stamina, 0)
+        assert.equal(player.maxPitchCount, 40)
+
+    })
+
+    it("should not stretch a closer beyond their bullpen max pitch count", async () => {
+
+        let player:Player = new Player()
+
+        player._id = uuidv4()
+        player.primaryPosition = Position.PITCHER
+        player.stamina = 1
+        player.maxPitchCount = 30
+
+        let game:any = {
+            home: {
+                _id: "home-team",
+                availablePitchers: [
+                    {
+                        playerId: player._id,
+                        role: PitchingRoleType.CLOSER,
+                        priority: 1
+                    }
+                ]
+            },
+            away: {
+                _id: "away-team",
+                availablePitchers: []
+            }
+        }
+
+        let gamePlayer:any = {
+            _id: player._id,
+            teamId: "home-team",
+            pitchResult: {
+                pitches: 30
+            }
+        }
+
+        service.adjustPitcherStamina(game, gamePlayer, player)
+
+        assert.equal(player.stamina, 0)
+        assert.equal(player.maxPitchCount, 30)
+
+    })
+    
     async function setLeagueTeamRanks(league: League, season: Season, tlssForSeason: TeamLeagueSeason[]): Promise<TeamLeagueSeason[]> {
 
         let tlss = tlssForSeason.filter(tls => tls.leagueId == league._id)

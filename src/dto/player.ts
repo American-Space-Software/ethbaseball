@@ -94,6 +94,10 @@ class Player extends Model {
     declare stamina:number
 
     @AllowNull(false)
+    @Column(DataType.INTEGER)
+    declare maxPitchCount:number
+
+    @AllowNull(false)
     @Column(DataType.DECIMAL(10,2))
     declare overallRating:number
 

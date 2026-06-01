@@ -4,8 +4,7 @@ import { Player } from '../dto/player.js'
 import Table from "cli-table3"
 import colors from "@colors/colors"
 import { GameViewModel, LastPlay } from './data/game-service.js'
-import { GamePlayer, PlayResult, Position, ShallowDeep }  from '../baseball-sim-engine/index.js';
-import { TeamInfo } from './enums.js'
+import { GamePlayer, PlayResult, Position, ShallowDeep, TeamInfo }  from '../baseball-sim-engine/index.js';
 
 @injectable()
 class UserIOService {

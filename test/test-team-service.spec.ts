@@ -19,7 +19,7 @@ import { Season } from "../src/dto/season.js"
 import { PlayerLeagueSeason } from "../src/dto/player-league-season.js"
 import { TeamLeagueSeason } from "../src/dto/team-league-season.js"
 
-import { PersonalityType } from "../src/service/enums.js"
+import { DEFAULT_MAX_PITCH_COUNT, PersonalityType } from "../src/service/enums.js"
 import { Handedness, PitchType, Position } from "../src/baseball-sim-engine/index.js"
 
 import { v4 as uuidv4 } from "uuid"
@@ -189,7 +189,8 @@ describe("TeamService", async () => {
                     {
                         position: Position.PITCHER
                     }
-                ]
+                ],
+                availablePitchers: []
             }
         ]
 
@@ -239,6 +240,7 @@ describe("TeamService", async () => {
         player.zodiacSign = "ZOD"
         player.age = 18
         player.stamina = 1
+        player.maxPitchCount = DEFAULT_MAX_PITCH_COUNT
         player.primaryPosition = Position.CATCHER
         player.overallRating = 60
         player.isRetired = false

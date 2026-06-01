@@ -14,7 +14,7 @@ import { GamePitchResult } from "../../dto/game-pitch-result.js"
 import { GameHitResult } from "../../dto/game-hit-result.js"
 import { GamePlayerRepository } from "../../repository/game-player-repository.js"
 import { GameSharedService } from "../shared/game-shared-service.js"
-import { AtBatInfo, HomeAway, LastPlay, UpcomingMatchup, GamePlayer, Play, Score } from '../../baseball-sim-engine/index.js';
+import { AtBatInfo, HomeAway, LastPlay, UpcomingMatchup, GamePlayer, Play, Score, PitchingRoleType } from '../../baseball-sim-engine/index.js';
 
 import { v4 as uuidv4 } from 'uuid';
 import { SimSharedService } from "../shared/sim-shared-service.js"
@@ -628,6 +628,21 @@ class GameService {
         return this.gameSharedService.getPlayMetadata(game, play)
     }
 
+    public getPitchingRole(game: Game, gamePlayer: GamePlayer): PitchingRoleType {
+
+        let team = game.away._id == gamePlayer.teamId
+            ? game.away
+            : game.home
+
+        let bullpenRole = team.availablePitchers?.find(p => p.playerId == gamePlayer._id)
+
+        if (bullpenRole) {
+            return bullpenRole.role
+        }
+
+        return PitchingRoleType.STARTER
+
+    }    
 
 }
 

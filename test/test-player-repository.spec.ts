@@ -12,7 +12,7 @@ import { Owner } from "../src/dto/owner.js"
 import { OwnerService } from "../src/service/data/owner-service.js"
 import { GameRepository } from "../src/repository/game-repository.js"
 import dayjs from "dayjs"
-import { PersonalityType,  } from "../src/service/enums.js"
+import { DEFAULT_MAX_PITCH_COUNT, PersonalityType,  } from "../src/service/enums.js"
 import { Handedness,PitchType, Position } from '../src/baseball-sim-engine/index.js';
 
 
@@ -56,6 +56,7 @@ describe('PlayerRepository', async () => {
         player.zodiacSign = "ZOD"
         player.age = 18
         player.stamina = 1
+        player.maxPitchCount = DEFAULT_MAX_PITCH_COUNT
 
         player.primaryPosition = Position.CATCHER
         player.overallRating = 60

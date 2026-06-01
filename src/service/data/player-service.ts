@@ -13,7 +13,7 @@ import glicko2 from "glicko2"
 
 import { ImageService } from "./image-service.js"
 import { StatService } from "../stat-service.js"
-import {   Rating, BallSwingByCount, InZoneByCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId,  FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, GLICKO_SETTINGS, HittingProfile, PitchingProfile, DEFAULT_PLAYER_STARTING_AGE } from "../enums.js"
+import {   Rating, BallSwingByCount, InZoneByCount, PlayerStatLines, PlayerFinalContract,  PersonalityType, PlayerPercentileRatings, TeamSeasonId,  FREE_AGENT_DAYS_TO_FLOOR, STARTING_FREE_AGENT_PRICE, FREE_AGENT_FLOOR_PRICE, PLAYER_LEAGUE_AVERAGE_RATING, PlayerGrade, GLICKO_SETTINGS, HittingProfile, PitchingProfile, DEFAULT_PLAYER_STARTING_AGE, DEFAULT_MAX_PITCH_COUNT } from "../enums.js"
 
 
 import zodiacFn from 'zodiac-signs'
@@ -27,7 +27,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js"
 import { TeamLeagueSeasonService } from "./team-league-season-service.js"
 import dayjs from "dayjs"
 import { PlayerSharedService } from "../shared/player-shared-service.js"
-import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange } from '../../baseball-sim-engine/index.js';
+import { ContactProfile, ContactTypeRollInput, FielderChance, Handedness, HittingHandednessRatings, HittingRatings, PitchingHandednessRatings, PitchRatings, PitchType, Position, PowerRollInput, Rolls, ShallowDeepChance, PlayerChange, PitchingRoleType } from '../../baseball-sim-engine/index.js';
 import { Team } from "../../dto/team.js"
 
 
@@ -161,6 +161,7 @@ class PlayerService {
         player.potentialOverallRating = 70
         player.age = DEFAULT_PLAYER_STARTING_AGE
         player.stamina = 1
+        player.maxPitchCount = DEFAULT_MAX_PITCH_COUNT
 
         player.isRetired = false
 
@@ -1152,6 +1153,20 @@ class PlayerService {
 
         }
         return nums
+
+    }
+
+    getMaxPitchCountForBullpenRole(role: PitchingRoleType): number {
+
+        if (role == PitchingRoleType.MOP_UP) {
+            return 60
+        }
+
+        if (role == PitchingRoleType.LONG) {
+            return 50
+        }
+
+        return 30
 
     }
 

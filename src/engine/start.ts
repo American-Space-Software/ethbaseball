@@ -19,6 +19,9 @@ import { SchemaService } from "../service/data/schema-service.js"
 import { v4 as uuidv4 } from 'uuid';
 import { DiscordService } from "../service/discord-service.js"
 import { GameNotificationService } from "../service/data/game-notification-service.js"
+import { TeamService } from "../service/data/team-service.js"
+import { Team } from "../dto/team.js"
+import { TeamTransactionService } from "../service/data/team-transaction-service.js"
 
 
 
@@ -55,6 +58,7 @@ let startEngine = async () => {
   let gameNotificationService:GameNotificationService = container.get(GameNotificationService)
   let minterWalletAddress: string = container.get("minterWalletAddress")
   let adminWalletAddress:string = container.get("adminWalletAddress")
+  let teamTransactionService:TeamTransactionService = container.get(TeamTransactionService)
   let sequelize = container.get("sequelize")
 
   let s = await sequelize()
@@ -198,6 +202,10 @@ let startEngine = async () => {
   }
 
   const startupTasks = async () => {
+
+    await teamTransactionService.fillAllRosters()
+    
+
 
     //Make sure that players have percentile ratings. 
     // await playerService.updateAllPercentileRatings()

@@ -51,7 +51,8 @@ class TeamLeagueSeasonService {
             order: [{},{},{},{},{},{},{},{},{ position: Position.PITCHER }],
             rotation: [
                 {},{},{},{},{}
-            ]
+            ],
+            availablePitchers: []
         }]
 
         tls.hasValidLineup = false

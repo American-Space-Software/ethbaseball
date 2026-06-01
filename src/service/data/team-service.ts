@@ -6,7 +6,7 @@ import { TeamRepository } from "../../repository/team-repository.js";
 import { Player } from "../../dto/player.js";
 import {  PlayerRowViewModel, PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import {  ContractType, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, OverallRecord, Rating, TEAMS_PER_TIER } from "../enums.js";
+import {  ContractType, DEFAULT_ROSTER_CONSTRAINTS, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, Rating, TEAMS_PER_TIER } from "../enums.js";
 import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
@@ -29,7 +29,7 @@ import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
 import { TeamSharedService } from "../shared/team-shared-service.js";
-import { Colors, Lineup, Position, RotationPitcher } from '../../baseball-sim-engine/index.js';
+import { Colors, PitchingRoleType, Position, RotationPitcher } from '../../baseball-sim-engine/index.js';
 
 
 const MAX_ROSTER_SIZE = 13
@@ -552,7 +552,7 @@ n
 
     // }
 
-    setLineupValidityAllowTiredStarters(team:Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[]) {
+    setLineupValidityAllowTiredStarters(team: Team, tls: TeamLeagueSeason, plss: PlayerLeagueSeason[]) {
 
         tls.hasValidLineup = false
 
@@ -566,7 +566,7 @@ n
                     tls.hasValidLineup = true
                 }
 
-            } catch(ex) { }
+            } catch (ex) { }
 
         }
 
@@ -577,19 +577,16 @@ n
 
         lineup.valid = false
 
-        //Make sure there are 9 spots in the order and 5 spots in the rotation
-        //We should have 8 actual players with ids and an empty pitcher spot in the order.
         let orderIds = lineup.order.filter(p => p._id != undefined).map(p => p._id)
         if (orderIds?.length != 8) {
             throw new Error("Lineup must have 9 players.")
         }
 
         let rotationIds = lineup.rotation.filter(p => p._id != undefined).map(p => p._id)
-        if (rotationIds?.length != 5) {
-            throw new Error("Rotation must have 5 players.")
+        if (rotationIds?.length != DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers) {
+            throw new Error(`Rotation must have ${DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers} players.`)
         }
 
-        //Make sure no one is playing a duplicate position
         let filledSpots = lineup.order.filter(o => o.position != undefined)
         let filledPositions = new Set(filledSpots.map(o => o.position))
 
@@ -597,20 +594,27 @@ n
             throw new Error("Duplicate position players.")
         }
 
+        let usedPlayerIds = new Set<string>()
+
         for (let p of lineup.order) {
 
             if (p?._id == undefined) continue
 
             let pls = plss.find(p2 => p2.player._id == p._id)
 
-            //Pitcher spot will not have an id/pitcher
-            if ( (!pls || pls.teamId != team._id) && p.position != Position.PITCHER) {
+            if ((!pls || pls.teamId != team._id) && p.position != Position.PITCHER) {
                 throw new Error("Invalid player in lineup.")
             }
 
             if (p.position == Position.PITCHER) {
                 if (p._id) throw new Error("Pitcher set to specific ID. Invalid.")
             }
+
+            if (usedPlayerIds.has(p._id)) {
+                throw new Error("Duplicate player assignment.")
+            }
+
+            usedPlayerIds.add(p._id)
 
         }
 
@@ -623,17 +627,26 @@ n
             if ((!pls || pls.teamId != team._id) || pls.player.primaryPosition != Position.PITCHER) {
                 throw new Error("Invalid player in rotation.")
             }
+
+            if (usedPlayerIds.has(p._id)) {
+                throw new Error("Duplicate player assignment.")
+            }
+
+            usedPlayerIds.add(p._id)
+
         }
+
+        this.validateBullpen(team, lineup, plss, usedPlayerIds)
 
         if (!startingPitcher) {
             throw new Error(`No valid starting pitcher`)
         }
 
-        //Lineup must have 8 hitters, one empty pitcher spot, and 5 pitchers in the rotation to be valid.
         if (
             lineup.order.filter(p => p._id != undefined).length == 8 &&
             lineup.order.filter(p => p._id == undefined && p.position == Position.PITCHER).length == 1 &&
-            lineup.rotation.filter(p => p._id != undefined).length == 5
+            lineup.rotation.filter(p => p._id != undefined).length == DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers &&
+            lineup.availablePitchers.filter(p => p.playerId != undefined).length >= DEFAULT_ROSTER_CONSTRAINTS.minBullpenPitchers
         ) {
             lineup.valid = true
         }
@@ -644,19 +657,16 @@ n
 
         lineup.valid = false
 
-        //Make sure there are 9 spots in the order and 5 spots in the rotation
-        //We should have 8 actual players with ids and an empty pitcher spot in the order.
         let orderIds = lineup.order.filter(p => p._id != undefined).map(p => p._id)
         if (orderIds?.length != 8) {
             throw new Error("Lineup must have 9 players.")
         }
 
         let rotationIds = lineup.rotation.filter(p => p._id != undefined).map(p => p._id)
-        if (rotationIds?.length != 5) {
-            throw new Error("Rotation must have 5 players.")
+        if (rotationIds?.length != DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers) {
+            throw new Error(`Rotation must have ${DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers} players.`)
         }
 
-        //Make sure no one is playing a duplicate position
         let filledSpots = lineup.order.filter(o => o.position != undefined)
         let filledPositions = new Set(filledSpots.map(o => o.position))
 
@@ -664,20 +674,27 @@ n
             throw new Error("Duplicate position players.")
         }
 
+        let usedPlayerIds = new Set<string>()
+
         for (let p of lineup.order) {
 
             if (p?._id == undefined) continue
 
             let pls = plss.find(p2 => p2.player._id == p._id)
 
-            //Pitcher spot will not have an id/pitcher
-            if ( (!pls || pls.teamId != team._id) && p.position != Position.PITCHER) {
+            if ((!pls || pls.teamId != team._id) && p.position != Position.PITCHER) {
                 throw new Error("Invalid player in lineup.")
             }
 
             if (p.position == Position.PITCHER) {
                 if (p._id) throw new Error("Pitcher set to specific ID. Invalid.")
             }
+
+            if (usedPlayerIds.has(p._id)) {
+                throw new Error("Duplicate player assignment.")
+            }
+
+            usedPlayerIds.add(p._id)
 
         }
 
@@ -690,22 +707,102 @@ n
             if ((!pls || pls.teamId != team._id) || pls.player.primaryPosition != Position.PITCHER) {
                 throw new Error("Invalid player in rotation.")
             }
+
+            if (usedPlayerIds.has(p._id)) {
+                throw new Error("Duplicate player assignment.")
+            }
+
+            usedPlayerIds.add(p._id)
+
         }
 
-        // if (!startingPitcher) {
-        //     throw new Error(`No valid starting pitcher for ${dayjs(gameDate).format('YYYY-MM-DD')}`)
-        // }
+        this.validateBullpen(team, lineup, plss, usedPlayerIds)
 
-        //Lineup must have 8 hitters, one empty pitcher spot, and 5 pitchers in the rotation to be valid.
         if (
             lineup.order.filter(p => p._id != undefined).length == 8 &&
             lineup.order.filter(p => p._id == undefined && p.position == Position.PITCHER).length == 1 &&
-            lineup.rotation.filter(p => p._id != undefined).length == 5
+            lineup.rotation.filter(p => p._id != undefined).length == DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers &&
+            lineup.availablePitchers.filter(p => p.playerId != undefined).length >= DEFAULT_ROSTER_CONSTRAINTS.minBullpenPitchers
         ) {
             lineup.valid = true
         }
 
     }
+
+    validateBullpen(team: Team, lineup: Lineup, plss: PlayerLeagueSeason[], usedPlayerIds: Set<string>) {
+
+        if (!lineup.availablePitchers) {
+            throw new Error("Bullpen is missing.")
+        }
+
+        let bullpenIds = lineup.availablePitchers.filter(p => p.playerId != undefined).map(p => p.playerId)
+
+        if (bullpenIds.length < DEFAULT_ROSTER_CONSTRAINTS.minBullpenPitchers) {
+            throw new Error(`Bullpen must have ${DEFAULT_ROSTER_CONSTRAINTS.minBullpenPitchers} pitchers.`)
+        }
+
+        let closers = 0
+        let setup = 0
+        let middle = 0
+        let long = 0
+        let mopUp = 0
+
+        for (let p of lineup.availablePitchers) {
+
+            if (!p.playerId) {
+                throw new Error("Invalid bullpen pitcher.")
+            }
+
+            let pls = plss.find(p2 => p2.player._id == p.playerId)
+
+            if ((!pls || pls.teamId != team._id) || pls.player.primaryPosition != Position.PITCHER) {
+                throw new Error("Invalid player in bullpen.")
+            }
+
+            if (usedPlayerIds.has(p.playerId)) {
+                throw new Error("Duplicate player assignment.")
+            }
+
+            if (!p.role) {
+                throw new Error("Bullpen pitcher is missing role.")
+            }
+
+            if (!p.priority || p.priority < 1) {
+                throw new Error("Bullpen pitcher is missing priority.")
+            }
+
+            if (p.role == PitchingRoleType.CLOSER) closers++
+            if (p.role == PitchingRoleType.SETUP) setup++
+            if (p.role == PitchingRoleType.MIDDLE) middle++
+            if (p.role == PitchingRoleType.LONG) long++
+            if (p.role == PitchingRoleType.MOP_UP) mopUp++
+
+            usedPlayerIds.add(p.playerId)
+
+        }
+
+        if (closers < DEFAULT_ROSTER_CONSTRAINTS.minClosers) {
+            throw new Error("Bullpen is missing closer.")
+        }
+
+        if (setup < DEFAULT_ROSTER_CONSTRAINTS.minSetupRelievers) {
+            throw new Error("Bullpen is missing setup relievers.")
+        }
+
+        if (middle < DEFAULT_ROSTER_CONSTRAINTS.minMiddleRelievers) {
+            throw new Error("Bullpen is missing middle relievers.")
+        }
+
+        if (long < DEFAULT_ROSTER_CONSTRAINTS.minLongRelievers) {
+            throw new Error("Bullpen is missing long relievers.")
+        }
+
+        if (mopUp < DEFAULT_ROSTER_CONSTRAINTS.minMopUpRelievers) {
+            throw new Error("Bullpen is missing mop-up relievers.")
+        }
+
+    }
+
 
     getStartingPitcherFromPLS( rotation: RotationPitcher[], plss: PlayerLeagueSeason[] ): RotationPitcher {
 
@@ -716,7 +813,6 @@ n
 
         const select = (pitcher: RotationPitcher, stamina: number) => {
             selected = JSON.parse(JSON.stringify(pitcher))
-            selected.stamina = stamina
         }
 
         let selected: RotationPitcher | undefined
@@ -728,7 +824,7 @@ n
             const player = getPlayer(pls)
             if (!player) continue
 
-            const stamina = Number(player.stamina ?? 0)
+            const stamina = player.stamina
 
             if (stamina === 1) {
                 select(pitcher, stamina)
@@ -768,61 +864,6 @@ n
         return nextStartDate
 
     }
-
-    async updateRoster(lineups: any[], team: Team, options?:any) {
-
-        let currentTLS: TeamLeagueSeason = await this.teamLeagueSeasonService.getMostRecent(team, options)
-        let currentPLS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeam(team, options)
-
-        let currentPLSPlain = currentPLS.map( pls => pls.get({ plain: true}))
-
-        currentTLS.lineups = lineups
-        currentTLS.changed('lineups', true)
-
-        await this.setLineupValidityAllowTiredStarters(team, currentTLS, currentPLSPlain)
-
-        await this.teamLeagueSeasonService.put(currentTLS, options)
-    }
-
-
-
-    listRequiredRosterSpots(roster: PlayerLeagueSeason[]): Position[] {
-
-        let rosterPlain = roster.map(r => r.get({ plain: true }))
-
-
-        let required: Position[] = []
-
-        let positions = [
-            Position.CATCHER,
-            Position.FIRST_BASE,
-            Position.SECOND_BASE,
-            Position.SHORTSTOP,
-            Position.THIRD_BASE,
-            Position.LEFT_FIELD,
-            Position.RIGHT_FIELD,
-            Position.CENTER_FIELD,
-        ]
-
-        for (let position of positions) {
-            let current = rosterPlain.filter(p => p.player.primaryPosition == position).length
-            if (current == 0) {
-                required.push(position)
-            }
-        }
-
-        let pitchers = rosterPlain.filter(p => p.player.primaryPosition == Position.PITCHER).length
-
-        while (pitchers < 5) {
-
-            required.push(Position.PITCHER)
-            pitchers++
-        }
-
-        return required
-
-    }
-
 
 
     getTeamCost(financeSeason:FinanceSeason) {

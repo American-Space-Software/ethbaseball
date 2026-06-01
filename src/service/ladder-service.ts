@@ -4,7 +4,7 @@ import { PlayerService } from "./data/player-service.js"
 
 import { GameService } from "./data/game-service.js"
 import { Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART, DEFAULT_PLAYER_STARTING_AGE } from "./enums.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART, DEFAULT_PLAYER_STARTING_AGE, Lineup, DEFAULT_MAX_PITCH_COUNT } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -36,7 +36,7 @@ import { GamePitchResultRepository } from "../repository/game-pitch-result-repos
 import { ethers } from "ethers"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { TeamQueueMatchup } from "../dto/team-queue.js"
-import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher }  from '../baseball-sim-engine/index.js';
+import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher, Player as SimPlayer, Lineup as SimLineup, PitchingRoleType }  from '../baseball-sim-engine/index.js';
 import { SimSharedService, WPAReward } from "./shared/sim-shared-service.js"
 import { PlayerSharedService } from "./shared/player-shared-service.js"
 import { GameNotificationService } from "./data/game-notification-service.js"
@@ -351,14 +351,6 @@ class LadderService {
         await this.gameService.createGamePlayers(game, playerIds, options)
 
 
-        let activePlayerIds:string[] = [].concat(homeBundle.tls.lineups[0].order.filter(o => o._id != undefined).map( o => o._id)).concat(awayBundle.tls.lineups[0].order.filter(o => o._id != undefined).map( o => o._id))
-
-        activePlayerIds.push(...[awayBundle.startingPitcher._id, homeBundle.startingPitcher._id])
-
-        let activePlayers:Player[] = activePlayerIds.map( id => players.find( p => p._id == id))
-
-        const avgOverallRating = activePlayers.reduce((sum, p) => sum + p.overallRating, 0) / activePlayers.length
-
         const getTeamOptions = (teamBundle:TeamBundle) => {
 
             return {
@@ -385,26 +377,14 @@ class LadderService {
         }
 
 
-        //Parse just to make sure we don't accidentally change actual ratings. Which shouldn't really be a problem but eh
-        let awayPlayers = JSON.parse(JSON.stringify(awayBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player)))
-        let homePlayers = JSON.parse(JSON.stringify(homeBundle.plss.map( pls => pls.get({ plain: true })).map( pls => pls.player)))
+        const awayPlayers = awayBundle.plss.map(pls => pls.get({ plain: true }).player).map(player => this.translatePlayerToSimPlayer(player))
+        const homePlayers = homeBundle.plss.map(pls => pls.get({ plain: true }).player).map(player => this.translatePlayerToSimPlayer(player))
 
-        let allPlayers:Player[] = [].concat(awayPlayers).concat(homePlayers)
-
-        //Look for the pitchers and set their effectiveness/ratings based on stamina
-        for (let p of allPlayers.filter( p => p.primaryPosition == Position.PITCHER)) {
-
-            if (p.stamina != 1) {
-
-                let modifier = Math.max(.25, p.stamina) // minimium of .25 effective
-                
-                this.playerSharedService.modifyRatings(p.hittingRatings, modifier)
-                this.playerSharedService.modifyRatings(p.pitchRatings, modifier)
-            }
-
-        }
+        const awayLineup = this.translateLineupToSimLineup(awayBundle.tls.lineups[0], awayBundle.startingPitcher) 
+        const homeLineup = this.translateLineupToSimLineup(homeBundle.tls.lineups[0], homeBundle.startingPitcher) 
 
 
+        
         this.simSharedService.startGame({
 
             game,
@@ -414,11 +394,13 @@ class LadderService {
 
             away: awayBundle.team,
             awayTeamOptions: getTeamOptions(awayBundle),
-            awayLineup: JSON.parse(JSON.stringify(awayBundle.tls.lineups[0])),
+            awayLineup: awayLineup,
+            awayAvailablePitchers: [],
 
             home: homeBundle.team,
             homeTeamOptions: getTeamOptions(homeBundle),
-            homeLineup: JSON.parse(JSON.stringify(homeBundle.tls.lineups[0])),
+            homeLineup: homeLineup,
+            homeAvailablePitchers: [],
 
             awayStartingPitcher: awayBundle.startingPitcher,
             homeStartingPitcher: homeBundle.startingPitcher,
@@ -458,6 +440,59 @@ class LadderService {
 
         return game
     }
+
+    private translateLineupToSimLineup(lineup:Lineup, startingPitcher:RotationPitcher) : SimLineup {
+
+        let order = JSON.parse(JSON.stringify(lineup.order))
+
+        order.find(o => o.position === Position.PITCHER)._id = startingPitcher._id
+
+        return {
+            order: order,
+            valid: lineup.valid
+        }
+
+    }
+
+    private translatePlayerToSimPlayer(player: Player) : SimPlayer {
+
+        return {
+            _id: player._id,
+            tokenId: player.tokenId,
+            transactionHash: player.transactionHash,
+
+            firstName: player.firstName,
+            lastName: player.lastName,
+
+            fullName: player.fullName,
+            displayName: player.displayName,
+
+            primaryPosition: player.primaryPosition,
+            zodiacSign: player.zodiacSign,
+
+            throws: player.throws,
+            hits: player.hits,
+
+            isRetired: player.isRetired,
+
+            stamina: player.stamina,
+            maxPitchCount: player.maxPitchCount,
+            overallRating: player.overallRating,
+
+            pitchRatings: JSON.parse(JSON.stringify(player.pitchRatings)),
+            hittingRatings: JSON.parse(JSON.stringify(player.hittingRatings)),
+
+            age: player.age,
+
+            lastGamePitched: player.lastGamePitched,
+            lastGamePlayed: player.lastGamePlayed,
+            lastTeamChange: player.lastTeamChange,
+
+            lastUpdated: player.lastUpdated,
+            dateCreated: player.dateCreated
+        } 
+    }
+
 
     private async getTeamBundle( theTeam: Team, season: Season, options?: any) : Promise<TeamBundle> {
 
@@ -702,18 +737,7 @@ class LadderService {
 
 
             //Adjust stamina
-            if (player.primaryPosition == Position.PITCHER) {
-
-                //Pitchers that pitches are at .2 and others are +.2
-                if (gamePlayer.pitchResult.pitches > 0) {
-                    player.stamina = .2
-                } else {
-                    player.stamina = Math.min(1, player.stamina + 0.2)
-                }
-
-                player.changed('stamina', true)
-
-            }
+            await this.adjustPitcherStamina(game, gamePlayer, player)
 
 
         }
@@ -746,6 +770,41 @@ class LadderService {
 
     }
 
+    public adjustPitcherStamina(game: Game, gamePlayer: GamePlayer, player: Player) {
+
+        if (player.primaryPosition != Position.PITCHER) {
+            return
+        }
+
+        let role = this.gameService.getPitchingRole(game, gamePlayer)
+
+        let targetMaxPitchCount = role == PitchingRoleType.STARTER
+            ? DEFAULT_MAX_PITCH_COUNT
+            : this.playerService.getMaxPitchCountForBullpenRole(role)
+
+        let recovery = role == PitchingRoleType.STARTER ? 0.2 : 0.33
+
+        let pitchesThrown = gamePlayer.pitchResult?.pitches ?? 0
+        let currentMaxPitchCount = player.maxPitchCount ?? DEFAULT_MAX_PITCH_COUNT
+
+        if (pitchesThrown > 0) {
+
+            player.stamina = Math.max(0, (currentMaxPitchCount - pitchesThrown) / currentMaxPitchCount)
+
+            if (pitchesThrown >= currentMaxPitchCount && currentMaxPitchCount < targetMaxPitchCount) {
+                player.maxPitchCount = Math.min(targetMaxPitchCount, currentMaxPitchCount + 10)
+                player.changed("maxPitchCount", true)
+            }
+
+        } else {
+            player.stamina = Math.min(1, player.stamina + recovery)
+        }
+
+        player.stamina = Number(player.stamina.toFixed(2))
+
+        player.changed("stamina", true)
+
+    }
 
     private async finishNonSeasonGame(away:Team, home:Team,game:Game, options?:any ) {
 
@@ -808,14 +867,22 @@ class LadderService {
         })
 
         let promotionRelegationLog: { _id: string, rank: number, previousRank: number }[] = []
+        let plannedMoves: { teamInfo: { cityId: string, teamId: string, previousRank: number, previousLeagueId: string }, fromIndex: number, toIndex: number }[] = []
         let movedTeamIds = new Set<string>()
 
         for (let i = 0; i < sortedLeagues.length - 1; i++) {
+
             let higherOriginal = originalStructure[i]
             let lowerOriginal = originalStructure[i + 1]
 
-            let higherUpdated = updatedStructure[i]
-            let lowerUpdated = updatedStructure[i + 1]
+            let higherAfterPlannedMoves = [
+                ...higherOriginal.teamInfo,
+                ...plannedMoves
+                    .filter(move => move.toIndex == i)
+                    .map(move => move.teamInfo)
+            ].filter(teamInfo => {
+                return !plannedMoves.some(move => move.fromIndex == i && move.teamInfo.teamId == teamInfo.teamId)
+            })
 
             let toPromote: { cityId: string, teamId: string, previousRank: number, previousLeagueId: string }[] = []
 
@@ -828,7 +895,7 @@ class LadderService {
                     continue
                 }
 
-                let currentCityCount = higherUpdated.teamInfo.filter(ti => ti.cityId == candidate.cityId).length + toPromote.filter(ti => ti.cityId == candidate.cityId).length
+                let currentCityCount = higherAfterPlannedMoves.filter(ti => ti.cityId == candidate.cityId).length + toPromote.filter(ti => ti.cityId == candidate.cityId).length
 
                 if (currentCityCount < 2) {
                     toPromote.push(candidate)
@@ -843,12 +910,15 @@ class LadderService {
             for (let teamInfo of toPromote) {
                 movedTeamIds.add(teamInfo.teamId)
 
-                lowerUpdated.teamInfo = lowerUpdated.teamInfo.filter(ti => ti.teamId != teamInfo.teamId)
-                higherUpdated.teamInfo.push(teamInfo)
+                plannedMoves.push({
+                    teamInfo: teamInfo,
+                    fromIndex: i + 1,
+                    toIndex: i
+                })
 
                 promotionRelegationLog.push({
                     _id: teamInfo.teamId,
-                    rank: higherUpdated.league.rank,
+                    rank: higherOriginal.league.rank,
                     previousRank: teamInfo.previousRank
                 })
             }
@@ -856,15 +926,24 @@ class LadderService {
             for (let teamInfo of toRelegate) {
                 movedTeamIds.add(teamInfo.teamId)
 
-                higherUpdated.teamInfo = higherUpdated.teamInfo.filter(ti => ti.teamId != teamInfo.teamId)
-                lowerUpdated.teamInfo.push(teamInfo)
+                plannedMoves.push({
+                    teamInfo: teamInfo,
+                    fromIndex: i,
+                    toIndex: i + 1
+                })
 
                 promotionRelegationLog.push({
                     _id: teamInfo.teamId,
-                    rank: lowerUpdated.league.rank,
+                    rank: lowerOriginal.league.rank,
                     previousRank: teamInfo.previousRank
                 })
             }
+
+        }
+
+        for (let move of plannedMoves) {
+            updatedStructure[move.fromIndex].teamInfo = updatedStructure[move.fromIndex].teamInfo.filter(ti => ti.teamId != move.teamInfo.teamId)
+            updatedStructure[move.toIndex].teamInfo.push(move.teamInfo)
         }
 
         return {
@@ -879,18 +958,43 @@ class LadderService {
         const TEAMS_TO_RELEGATE = 3
 
         let rewardTeamIds = await this.teamService.getTeamIdsBySeason(season, options)
-        let rewardTeamSeasonIds: TeamSeasonId[] = rewardTeamIds.map(t => { return { teamId: t, seasonId: season._id } })
 
-        let rewardTlss: TeamLeagueSeason[] = rewardTeamSeasonIds.length > 0 ? await this.teamLeagueSeasonService.getByTeamSeasonIds(rewardTeamSeasonIds, options) : []
-        let rewardTeams = rewardTeamIds.length > 0 ? await this.teamService.getByIds(rewardTeamIds, options) : []
-        let rewardTeamsNonCPU = rewardTeams.filter(t => t.userId != undefined)
+        let rewardTeamSeasonIds: TeamSeasonId[] = rewardTeamIds.map(teamId => {
+            return {
+                teamId: teamId,
+                seasonId: season._id
+            }
+        })
+
+        let rewardTlss: TeamLeagueSeason[] = rewardTeamSeasonIds.length > 0
+            ? await this.teamLeagueSeasonService.getByTeamSeasonIds(rewardTeamSeasonIds, options)
+            : []
+
+        let rewardTeams: Team[] = rewardTeamIds.length > 0
+            ? await this.teamService.getByIds(rewardTeamIds, options)
+            : []
+
+        let rewardTeamsNonCPU = rewardTeams.filter(team => team.userId != undefined)
         let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeamsNonCPU)
 
         let offChainEventTransactionId = uuidv4()
 
-        await this.distributeRewards(rewardsPerTeam, rewardTeamsNonCPU, rewardTlss, season, { type: "reward", rewardType: "season", fromDate: season.endDate }, offChainEventTransactionId, options)
+        await this.distributeRewards(
+            rewardsPerTeam,
+            rewardTeamsNonCPU,
+            rewardTlss,
+            season,
+            {
+                type: "reward",
+                rewardType: "season",
+                fromDate: season.endDate
+            },
+            offChainEventTransactionId,
+            options
+        )
 
-        let nextSeason: Season = new Season()
+        let nextSeason = new Season()
+
         nextSeason._id = uuidv4()
         nextSeason.startDate = dayjs(season.endDate).add(1, "days").toDate()
         nextSeason.endDate = dayjs(nextSeason.startDate).add(161, "day").toDate()
@@ -903,94 +1007,70 @@ class LadderService {
 
         season.promotionRelegationLog = nextLeagueStructure.promotionRelegationLog
 
-        let nextLeagueIdByTeamId = new Map<string, string>()
+        let nextLeagueByTeamId = new Map<string, League>()
 
         for (let leagueInfo of nextLeagueStructure.structure) {
             for (let teamInfo of leagueInfo.teamInfo) {
-                nextLeagueIdByTeamId.set(teamInfo.teamId, leagueInfo.league._id)
+                nextLeagueByTeamId.set(teamInfo.teamId, leagueInfo.league)
             }
         }
 
-        for (let leagueInfo of nextLeagueStructure.structure) {
-            let league = leagueInfo.league
-
-            for (let teamInfo of leagueInfo.teamInfo) {
-                let team: Team = await this.teamService.get(teamInfo.teamId, options)
-                let teamSeasonId: TeamSeasonId = { teamId: teamInfo.teamId, seasonId: season._id }
-
-                let lastSeason: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeasonId(teamSeasonId, options)
-
-                let financeSeason: FinanceSeason = this.financeService.getDefaultFinanceSeason()
-                financeSeason.diamondBalance = lastSeason.financeSeason.diamondBalance
-
-                let tls: TeamLeagueSeason = this.teamLeagueSeasonService.init(lastSeason, team, financeSeason)
-
-                tls.leagueId = league._id
-                tls.league = league
-                tls.seasonId = nextSeason._id
-                tls.season = nextSeason
-                tls.logoId = lastSeason.logoId
-                tls.longTermRating = lastSeason.longTermRating
-                tls.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
-
-                tls.changed("leagueId", true)
-                tls.changed("seasonId", true)
-                tls.changed("seasonRating", true)
-                tls.changed("longTermRating", true)
-                tls.changed("overallRecord", true)
-                tls.changed("financeSeason", true)
-
-                await this.teamLeagueSeasonService.put(tls, options)
-
-                team.longTermRating = tls.longTermRating
-                team.seasonRating = tls.seasonRating
-
-                await this.teamService.put(team, options)
-            }
-        }
+        let rolloverTeamIds = Array.from(nextLeagueByTeamId.keys())
 
         let currentPLSIds = await this.playerLeagueSeasonService.getMostRecentIdsBySeason(season, options)
+        let currentPLSSByTeamId = new Map<string, PlayerLeagueSeason[]>()
+        let freeAgentPLSS: PlayerLeagueSeason[] = []
 
         for (let plsId of currentPLSIds) {
+
             let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getById(plsId, options)
-            let player: Player = await this.playerService.get(pls.playerId, options)
 
-            let playerSeasons = await this.playerLeagueSeasonService.getUniqueSeasonCountByPlayer(player, options)
-
-            player.age = DEFAULT_PLAYER_STARTING_AGE + playerSeasons
-
-            if (player.age > PLAYER_RETIREMENT_AGE) {
-                player.isRetired = true
-            } else {
-                let nextSeasonPLS = new PlayerLeagueSeason()
-                nextSeasonPLS.playerId = pls.playerId
-                nextSeasonPLS.seasonId = nextSeason._id
-                nextSeasonPLS.leagueId = nextLeagueIdByTeamId.get(pls.teamId) ?? pls.leagueId
-                nextSeasonPLS.teamId = pls.teamId
-                nextSeasonPLS.seasonIndex = 1
-                nextSeasonPLS.primaryPosition = pls.primaryPosition
-                nextSeasonPLS.overallRating = pls.overallRating
-                nextSeasonPLS.hittingRatings = pls.hittingRatings
-                nextSeasonPLS.pitchRatings = pls.pitchRatings
-                nextSeasonPLS.potentialOverallRating = pls.potentialOverallRating
-                nextSeasonPLS.potentialHittingRatings = pls.potentialHittingRatings
-                nextSeasonPLS.potentialPitchRatings = pls.potentialPitchRatings
-                nextSeasonPLS.startDate = nextSeason.startDate
-                nextSeasonPLS.endDate = nextSeason.endDate
-                nextSeasonPLS.age = player.age
-
-                nextSeasonPLS.stats = {
-                    //@ts-ignore
-                    hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-                    //@ts-ignore
-                    pitching: this.statService.mergePitchResultsToStatLine({}, {})
-                }
-
-                await this.playerLeagueSeasonService.put(nextSeasonPLS, options)
+            if (!pls.teamId) {
+                freeAgentPLSS.push(pls)
+                continue
             }
 
-            await this.playerService.put(player, options)
+            if (!currentPLSSByTeamId.has(pls.teamId)) {
+                currentPLSSByTeamId.set(pls.teamId, [])
+            }
+
+            currentPLSSByTeamId.get(pls.teamId).push(pls)
+
         }
+
+        for (let teamId of rolloverTeamIds) {
+
+            let team: Team = await this.teamService.get(teamId, options)
+
+            let teamSeasonId: TeamSeasonId = {
+                teamId: teamId,
+                seasonId: season._id
+            }
+
+            let lastSeason: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeasonId(teamSeasonId, options)
+
+            if (!lastSeason) {
+                throw new Error(`Team ${teamId} does not have a league season record for season ${season._id}.`)
+            }
+
+            let nextLeague: League = nextLeagueByTeamId.get(teamId) ?? leagues.find(league => league._id == lastSeason.leagueId)
+
+            if (!nextLeague) {
+                throw new Error(`Could not determine next league for team ${teamId}.`)
+            }
+
+            await this.rolloverTeamToNextSeason(
+                team,
+                season,
+                nextSeason,
+                nextLeague,
+                currentPLSSByTeamId.get(teamId) || [],
+                options
+            )
+
+        }
+
+        await this.rolloverFreeAgentsToNextSeason(freeAgentPLSS, nextSeason, options)
 
         season.isComplete = true
         season.changed("promotionRelegationLog", true)
@@ -998,12 +1078,176 @@ class LadderService {
         await this.seasonService.put(season, options)
 
         nextSeason.isInitialized = true
+
         await this.seasonService.put(nextSeason, options)
 
     }
 
+    async rolloverTeamToNextSeason(team: Team, season: Season, nextSeason: Season, nextLeague: League, currentPLSS: PlayerLeagueSeason[], options?: any): Promise<{ tls: TeamLeagueSeason, plss: PlayerLeagueSeason[] }> {
 
+        let teamSeasonId: TeamSeasonId = {
+            teamId: team._id,
+            seasonId: season._id
+        }
 
+        let lastSeason: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeasonId(teamSeasonId, options)
+
+        if (!lastSeason) {
+            throw new Error("Team does not have a league season record for the previous season.")
+        }
+
+        let tls: TeamLeagueSeason = await this.createTeamLeagueSeasonForNextSeason(team, lastSeason, nextSeason, nextLeague, options)
+
+        let nextPLSS: PlayerLeagueSeason[] = []
+
+        for (let pls of currentPLSS) {
+            let player: Player = await this.playerService.get(pls.playerId, options)
+
+            let existingPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getByPlayersSeason([player], nextSeason, options)
+            let existingPLS: PlayerLeagueSeason = existingPLSS.find(existing => existing.playerId == pls.playerId)
+
+            if (existingPLS) {
+                nextPLSS.push(existingPLS)
+                continue
+            }
+
+            let nextPLS: PlayerLeagueSeason = await this.createPlayerLeagueSeasonForNextSeason(
+                pls,
+                player,
+                nextSeason,
+                nextLeague._id,
+                options
+            )
+
+            if (nextPLS) {
+                nextPLSS.push(nextPLS)
+            }
+        }
+
+        return {
+            tls: tls,
+            plss: nextPLSS
+        }
+
+    }
+
+    private async rolloverFreeAgentsToNextSeason(freeAgentPLSS: PlayerLeagueSeason[], nextSeason: Season, options?: any): Promise<PlayerLeagueSeason[]> {
+
+        let nextPLSS: PlayerLeagueSeason[] = []
+
+        for (let pls of freeAgentPLSS) {
+            let player: Player = await this.playerService.get(pls.playerId, options)
+
+            let existingPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getByPlayersSeason([player], nextSeason, options)
+            let existingPLS: PlayerLeagueSeason = existingPLSS.find(existing => existing.playerId == pls.playerId)
+
+            if (existingPLS) {
+                nextPLSS.push(existingPLS)
+                continue
+            }
+
+            let nextPLS: PlayerLeagueSeason = await this.createPlayerLeagueSeasonForNextSeason(
+                pls,
+                player,
+                nextSeason,
+                pls.leagueId,
+                options
+            )
+
+            if (nextPLS) {
+                nextPLSS.push(nextPLS)
+            }
+        }
+
+        return nextPLSS
+
+    }
+
+    private async createTeamLeagueSeasonForNextSeason(team: Team, lastSeason: TeamLeagueSeason, nextSeason: Season, league: League, options?: any): Promise<TeamLeagueSeason> {
+
+        let existing: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, nextSeason, options)
+
+        if (existing) {
+            return existing
+        }
+
+        let financeSeason: FinanceSeason = this.financeService.getDefaultFinanceSeason()
+        financeSeason.diamondBalance = lastSeason.financeSeason.diamondBalance
+
+        let tls: TeamLeagueSeason = this.teamLeagueSeasonService.init(lastSeason, team, financeSeason)
+
+        tls.leagueId = league._id
+        tls.league = league
+        tls.seasonId = nextSeason._id
+        tls.season = nextSeason
+        tls.logoId = lastSeason.logoId
+        tls.longTermRating = lastSeason.longTermRating
+        tls.seasonRating = { rating: 1500, ratingDeviation: GLICKO_SETTINGS.rd, volatility: GLICKO_SETTINGS.vol }
+
+        tls.changed("leagueId", true)
+        tls.changed("seasonId", true)
+        tls.changed("seasonRating", true)
+        tls.changed("longTermRating", true)
+        tls.changed("overallRecord", true)
+        tls.changed("financeSeason", true)
+
+        await this.teamLeagueSeasonService.put(tls, options)
+
+        team.longTermRating = tls.longTermRating
+        team.seasonRating = tls.seasonRating
+
+        await this.teamService.put(team, options)
+
+        return tls
+
+    }
+
+    private async createPlayerLeagueSeasonForNextSeason(pls: PlayerLeagueSeason, player: Player, nextSeason: Season, leagueId: string, options?: any): Promise<PlayerLeagueSeason> {
+
+        let playerSeasons = await this.playerLeagueSeasonService.getUniqueSeasonCountByPlayer(player, options)
+
+        player.age = DEFAULT_PLAYER_STARTING_AGE + playerSeasons
+
+        if (player.age > PLAYER_RETIREMENT_AGE) {
+            player.isRetired = true
+            await this.playerService.put(player, options)
+            return undefined
+        }
+
+        let nextSeasonPLS = new PlayerLeagueSeason()
+
+        nextSeasonPLS._id = uuidv4()
+        nextSeasonPLS.playerId = pls.playerId
+        nextSeasonPLS.seasonId = nextSeason._id
+        nextSeasonPLS.leagueId = leagueId
+        nextSeasonPLS.teamId = pls.teamId
+        nextSeasonPLS.userId = pls.userId
+        nextSeasonPLS.seasonIndex = 1
+        nextSeasonPLS.primaryPosition = pls.primaryPosition
+        nextSeasonPLS.overallRating = pls.overallRating
+        nextSeasonPLS.hittingRatings = pls.hittingRatings
+        nextSeasonPLS.pitchRatings = pls.pitchRatings
+        nextSeasonPLS.potentialOverallRating = pls.potentialOverallRating
+        nextSeasonPLS.potentialHittingRatings = pls.potentialHittingRatings
+        nextSeasonPLS.potentialPitchRatings = pls.potentialPitchRatings
+        nextSeasonPLS.startDate = nextSeason.startDate
+        nextSeasonPLS.endDate = nextSeason.endDate
+        nextSeasonPLS.age = player.age
+
+        nextSeasonPLS.stats = {
+            //@ts-ignore
+            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
+            //@ts-ignore
+            pitching: this.statService.mergePitchResultsToStatLine({}, {})
+        }
+
+        let savedPLS: PlayerLeagueSeason = await this.playerLeagueSeasonService.put(nextSeasonPLS, options)
+
+        await this.playerService.put(player, options)
+
+        return savedPLS
+
+    }
 
     updateRatings(teamRatings:{ rating:Rating, _id:string }[] , games:{ winningTeamId:string, losingTeamId:string }[]) : TeamRating[] {
 

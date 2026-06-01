@@ -9,6 +9,7 @@ import { SchemaService } from "../src/service/data/schema-service.js"
 import { v4 as uuidv4 } from "uuid"
 import { TeamMarketOffer } from "../src/dto/team-market-offer.js"
 import { Team } from "../src/dto/team.js"
+import { User } from "../src/dto/user.js"
 import { TeamMarketOfferStatus } from "../src/service/enums.js"
 
 let id1:string
@@ -33,13 +34,18 @@ describe("TeamMarketOfferRepository", async () => {
 
     it("should create & get a team market offer", async () => {
 
-        let buyerTeam:Team = await createTestTeam("Buyer Team")
-        let sellerTeam:Team = await createTestTeam("Seller Team")
+        let buyerUser:User = await createTestUser()
+        let sellerUser:User = await createTestUser()
 
-        let tmo:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
+        let buyerPaymentTeam:Team = await createTestTeam("Buyer Payment Team")
+        let sellerPaymentTeam:Team = await createTestTeam("Seller Payment Team")
+
+        let tmo:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
-            buyerTeamId: buyerTeam._id,
-            sellerTeamId: sellerTeam._id,
+            buyerUserId: buyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: buyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
             package: {
                 playerIds: [uuidv4(), uuidv4()]
             },
@@ -56,8 +62,10 @@ describe("TeamMarketOfferRepository", async () => {
         let fetched = await repository.get(id1)
 
         assert.equal(fetched._id, id1)
-        assert.equal(fetched.buyerTeamId, buyerTeam._id)
-        assert.equal(fetched.sellerTeamId, sellerTeam._id)
+        assert.equal(fetched.buyerUserId, buyerUser._id)
+        assert.equal(fetched.sellerUserId, sellerUser._id)
+        assert.equal(fetched.buyerPaymentTeamId, buyerPaymentTeam._id)
+        assert.equal(fetched.sellerPaymentTeamId, sellerPaymentTeam._id)
         assert.equal(fetched.status, TeamMarketOfferStatus.PENDING)
         assert.equal(fetched.diamondAmount, "100")
         assert.equal(fetched.package.playerIds.length, 2)
@@ -83,16 +91,21 @@ describe("TeamMarketOfferRepository", async () => {
 
     it("should list pending team market offers by player id", async () => {
 
-        let buyerTeam:Team = await createTestTeam("Buyer Team")
-        let sellerTeam:Team = await createTestTeam("Seller Team")
+        let buyerUser:User = await createTestUser()
+        let sellerUser:User = await createTestUser()
+
+        let buyerPaymentTeam:Team = await createTestTeam("Buyer Payment Team")
+        let sellerPaymentTeam:Team = await createTestTeam("Seller Payment Team")
 
         let playerId = uuidv4()
         let otherPlayerId = uuidv4()
 
-        let matchingOffer:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
+        let matchingOffer:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
-            buyerTeamId: buyerTeam._id,
-            sellerTeamId: sellerTeam._id,
+            buyerUserId: buyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: buyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
             package: {
                 playerIds: [playerId, otherPlayerId]
             },
@@ -101,10 +114,12 @@ describe("TeamMarketOfferRepository", async () => {
             escrowTransactionId: "matching-escrow-transaction-id"
         })
 
-        let nonMatchingOffer:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
+        let nonMatchingOffer:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
-            buyerTeamId: buyerTeam._id,
-            sellerTeamId: sellerTeam._id,
+            buyerUserId: buyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: buyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
             package: {
                 playerIds: [uuidv4()]
             },
@@ -113,10 +128,12 @@ describe("TeamMarketOfferRepository", async () => {
             escrowTransactionId: "non-matching-escrow-transaction-id"
         })
 
-        let cancelledMatchingOffer:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
+        let cancelledMatchingOffer:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
-            buyerTeamId: buyerTeam._id,
-            sellerTeamId: sellerTeam._id,
+            buyerUserId: buyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: buyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
             package: {
                 playerIds: [playerId]
             },
@@ -137,6 +154,23 @@ describe("TeamMarketOfferRepository", async () => {
         assert.equal(offers[0].package.playerIds.includes(playerId), true)
 
     })
+
+    async function createTestUser(): Promise<User> {
+
+        let user:User = User.build({
+            _id: uuidv4(),
+            address: `test-${uuidv4()}`,
+            discordId: null,
+            discordRefreshToken: null,
+            discordAccessToken: null,
+            discordProfile: null
+        })
+
+        await user.save()
+
+        return user
+
+    }
 
     async function createTestTeam(name:string): Promise<Team> {
 

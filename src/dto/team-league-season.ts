@@ -5,9 +5,8 @@ import { Season } from './season.js'
 import { Team } from './team.js'
 import { City } from './city.js'
 import { Stadium } from './stadium.js'
-import { FinanceSeason, OverallRecord, Rating } from '../service/enums.js'
+import { FinanceSeason, Lineup, OverallRecord, Rating } from '../service/enums.js'
 import { Image } from './image.js'
-import { Lineup } from '../baseball-sim-engine/index.js';
 
 
 @Table({
@@ -103,8 +102,6 @@ class TeamLeagueSeason extends Model {
 
     @Column(DataType.JSON)
     declare lineups: Lineup[]
-
-
     
     @Column(DataType.DATE)
     declare lastUpdated?:Date 
