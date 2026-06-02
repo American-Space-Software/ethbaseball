@@ -47,7 +47,7 @@
                                 <td class="action">
                                   
                                     ${actions.showMove(p) ? $h`
-                                        <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="pitcher-stats" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>
+                                        <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="pitcher-stats" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${startIndex + index}">${actions.moveText(p)}</a>
                                     ` : $h``}
 
                                     ${actions.showDrop(p) ? $h`
@@ -72,7 +72,7 @@
 
                                 ${p?._id ? $h`
                                     <a href="${universeWebService.startDateLink(`/p/${p._id}`)}">${p.fullName}</a><br />
-                                    ${p.team ? $h`<span class="position">${teamWebService.getTeamName(p.team)}</span> - ` : $h` `} <span class="position">${p.primaryPosition}</span>
+                                    ${p.team ? $h`<span class="position">${teamWebService.getTeamName(p.team)}</span> - ` : $h` `} <span class="position">${p.primaryPosition}</span> ${startIndex > 0 ? $h` - <span class="position">${teamComponentService.getBullpenRoleDisplyForSpot(startIndex + index)}</span>` : $h` `}
                                 ` : $h`
                                     <a href="${universeWebService.startDateLink(`/players/?position=P&rank=0`)}" style="font-weight: normal;">${p.fullName}</a><br />
                                 `}
@@ -151,6 +151,7 @@
   import { PagingService } from "../../../service/paging-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { TeamWebService } from "../../service/team-web-service.ts"
+  import { TeamComponentService } from "../../service/team-component-service.ts"
 
   import StaminaBar from "../common/stamina-bar.f7.html"
 
@@ -161,6 +162,7 @@
     let pagingService = ContainerService.getInstance(PagingService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let teamWebService = ContainerService.getInstance(TeamWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
 
     const badge = (rating) => {
       if (rating == null) return ""
@@ -193,6 +195,7 @@
 
     let displayPitchers = props.pitchers
     let sortRows = props.sortrows
+    let startIndex = props.startindex
 
     const getSortClass = (sortDirection) => {
       return sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'

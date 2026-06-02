@@ -50,7 +50,7 @@
                   <td class="action">
 
                     ${actions.showMove(p) ? $h`
-                      <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-stats" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${index}">${actions.moveText(p)}</a>
+                      <a @click="${actions.move}" class="button button-outline button-move" data-id="${p._id}" data-position="${p.primaryPosition}" data-action-row="hitter-stats" data-move-target="${actions.moveTarget}" data-is-move-target="${actions.isMoveTarget}" data-spot="${startIndex + index}">${actions.moveText(p)}</a>
                     ` : $h` `}
 
                     ${actions.showDrop(p) ? $h`
@@ -190,6 +190,7 @@
 
     let displayHitters = props.hitters
     let sortRows = props.sortrows
+    let startIndex = props.startindex
 
     const getSortClass = (sortDirection) => {
       return sortDirection == 'DESC' ? 'sortable-asc' : 'sortable-desc'

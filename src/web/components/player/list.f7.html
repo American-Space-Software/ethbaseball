@@ -58,12 +58,12 @@
 
                     <div class="stat-table-wrapper">
                         ${selected == "stats" ? $h`
-                            <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <pitcher-stats pitchers=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}" startindex="${0}">
                             </pitcher-stats>
                         ` : $h` `}
 
                         ${selected == "ratings" ? $h`
-                            <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                            <pitcher-ratings pitchers=${allPlayers} sortable="true"  sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection} startindex="${0}">
                             </pitcher-ratings>
                         ` : $h` `}
                     </div>
@@ -73,12 +73,12 @@
                         <div class="stat-table-wrapper">
 
                             ${selected == "stats" ? $h`
-                                <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                                <hitter-stats hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" statprop="seasonStats" sortcolumn="${sortColumn}" sortdirection="${sortDirection}" startindex="${0}">
                                 </hitter-stats>
                             ` : $h` `}
 
                             ${selected == "ratings" ? $h`
-                                <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}">
+                                <hitter-ratings hitters=${allPlayers} sortable="true" sortrows="${sortRows}" pagesize=${PAGE_SIZE} filters=${filters} actions="${getActions}" showaskingprice="${rank == 0}" sortcolumn="${sortColumn}" sortdirection="${sortDirection}" startindex="${0}">
                                 </hitter-ratings>
                             ` : $h` `}
 

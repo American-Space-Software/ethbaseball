@@ -29,17 +29,43 @@
         
             ${teamComponentService.selected == "stats" ? $h`
                 <hitter-stats hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}" statprop="seasonStats">
+                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}" statprop="seasonStats" startindex="${0}">
                 </hitter-stats>
             ` : $h` `}
 
             ${teamComponentService.selected == "ratings" ? $h`
                 <hitter-ratings hitters=${displayHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}">
+                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}" startindex="${0}">
                 </hitter-ratings>
             ` : $h` `}
 
         </div>
+
+        <div class="block-title block-title-medium ">
+            Bench
+        </div>
+
+        <div class=" block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
+        
+            ${teamComponentService.selected == "stats" ? $h`
+                <hitter-stats hitters=${displayAvailableHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
+                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}" statprop="seasonStats" startindex="${8}">
+                </hitter-stats>
+            ` : $h` `}
+
+            ${teamComponentService.selected == "ratings" ? $h`
+                <hitter-ratings hitters=${displayAvailableHitters} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
+                    movefilter="${moveFilter}" actions="${getActions('hitters', true)}" startindex="${8}">
+                </hitter-ratings>
+            ` : $h` `}
+
+        </div>
+
+
+
+
+
+
 
         <div class="block-title block-title-medium ">
             Pitching Rotation <span class="block-title-detail">Set pitcher priority. The next starter has the highest stamina with rotation priority the tiebreaker.</span>
@@ -48,17 +74,39 @@
         <div class="block block-outline block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
             ${teamComponentService.selected == "stats" ? $h`
                 <pitcher-stats pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
-                    movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" statprop="seasonStats">
+                    movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" statprop="seasonStats" startindex="${0}">
                     <span />
                 </pitcher-stats>
             ` : $h` `}
 
             ${teamComponentService.selected == "ratings" ? $h`
-                <pitcher-ratings pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}">
+                <pitcher-ratings pitchers=${displayPitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" startindex="${0}">
                     <span />
                 </pitcher-ratings>
             ` : $h` `}
         </div>
+
+
+        <div class="block-title block-title-medium ">
+            Bullpen
+        </div>
+
+        <div class="block block-outline block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
+            ${teamComponentService.selected == "stats" ? $h`
+                <pitcher-stats pitchers=${displayAvailablePitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters}
+                    movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" statprop="seasonStats" startindex="${5}">
+                    <span />
+                </pitcher-stats>
+            ` : $h` `}
+
+            ${teamComponentService.selected == "ratings" ? $h`
+                <pitcher-ratings pitchers=${displayAvailablePitchers} sortable="false" pagesize=${PAGE_SIZE} filters=${rosterFilters} movefilter="${moveFilter}" actions="${getActions('pitchers', true)}" startindex="${5}">
+                    <span />
+                </pitcher-ratings>
+            ` : $h` `}
+        </div>
+
+
 
         <div class="popup drop-popup">
             <div class="view">
@@ -123,6 +171,10 @@
     let displayHitters = teamComponentService.getDisplayHitters()
     let displayPitchers = teamComponentService.getDisplayPitchers()
 
+    let displayAvailableHitters = teamComponentService.getDisplayAvailableHitters()
+    let displayAvailablePitchers = teamComponentService.getDisplayAvailablePitchers()
+
+
     let dropPlayer
     let canAffordDrop = teamComponentService.canAffordDrop()
 
@@ -171,6 +223,13 @@
 
         displayPitchers.length = 0
         displayPitchers.push(...teamComponentService.getDisplayPitchers())
+
+
+        displayAvailableHitters.length = 0
+        displayAvailableHitters.push(...teamComponentService.getDisplayAvailableHitters())
+
+        displayAvailablePitchers.length = 0
+        displayAvailablePitchers.push(...teamComponentService.getDisplayAvailablePitchers())
 
         $f7.emit('roster-refresh-lineup')
 
@@ -255,6 +314,8 @@
 
         moveFilter.moveTarget = moveTarget
 
+        let isPitcher = moveTarget == "roster-pitchers"
+
         if (!selectedId) {
 
             moveFilter.moveTarget = moveTarget
@@ -279,7 +340,7 @@
             let spot = $(e.srcElement).data('spot')
 
             if (currentPlayerId != selectedId) {
-                teamComponentService.moveToRoster(selectedId, currentPlayerId, parseInt(spot), 0)
+                teamComponentService.moveToRoster(selectedId, currentPlayerId, parseInt(spot), 0, isPitcher)
             }
 
 
@@ -295,6 +356,7 @@
 
         refreshLineup()
 
+        console.log(teamComponentService.team)
 
         $update()
 
@@ -358,8 +420,6 @@
         await $update()
 
         $f7.popup.open('.drop-popup')
-
-        console.log(dropPlayer)
 
         //   teamComponentService.dropPlayer(dropId)
 

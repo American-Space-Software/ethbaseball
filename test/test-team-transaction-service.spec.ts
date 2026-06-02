@@ -211,37 +211,40 @@ describe("TeamTransactionService", async () => {
     })
 
 
-
-   
-
-    it("should update roster by assigning a user-owned unassigned player to the bench", async () => {
+    it("should reject update roster when a user-owned unassigned player is in the bench payload", async () => {
 
         let user: User = await createTestUser()
         let league: League = await createTestLeague()
         let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Update Bench Roster Team", user)
+        let team: Team = await createTestTeam("Reject Unassigned Bench Team", user)
         let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
 
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
+        let assignedPlayer: Player = await createTestPlayer(Position.FIRST_BASE)
+        let omittedAssignedPlayer: Player = await createTestPlayer(Position.SECOND_BASE)
+        let unassignedPlayer: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(assignedPlayer, user, team, league, season)
+        await createTestPlayerLeagueSeason(omittedAssignedPlayer, user, team, league, season)
+        await createTestPlayerLeagueSeason(unassignedPlayer, user, undefined, league, season)
+
+        tls.lineups[0].order[0] = {
+            _id: assignedPlayer._id,
+            position: Position.FIRST_BASE
+        } as any
 
         tls.lineups[0].availableHitters = [
             {
-                _id: player._id,
-                position: Position.CATCHER
+                _id: unassignedPlayer._id
             } as any
         ]
 
-        await service.updateRoster(tls.lineups, team)
-
-        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        assert.equal(fetchedPLS.userId, user._id)
-        assert.equal(fetchedPLS.teamId, team._id)
-        assert.equal(fetchedTLS.lineups[0].availableHitters.some(p => p._id == player._id), true)
+        await assert.rejects(
+            async () => service.updateRoster(tls.lineups, team),
+            /Invalid player in roster./
+        )
 
     })
+   
 
     it("should drop a bench hitter and remove them from available hitters", async () => {
 
@@ -1135,32 +1138,6 @@ describe("TeamTransactionService", async () => {
 
     })
 
-    it("should update roster by assigning a user-owned unassigned player to the team", async () => {
-
-        let user: User = await createTestUser()
-        let league: League = await createTestLeague()
-        let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Update Roster Team", user)
-        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
-
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
-
-        tls.lineups[0].order[0] = {
-            _id: player._id,
-            position: Position.CATCHER
-        } as any
-
-        await service.updateRoster(tls.lineups, team)
-
-        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        assert.equal(fetchedPLS.userId, user._id)
-        assert.equal(fetchedPLS.teamId, team._id)
-        assert.equal(fetchedTLS.lineups[0].order[0]._id, player._id)
-
-    })
 
     it("should reject update roster when the player is owned by another user", async () => {
 
@@ -1170,12 +1147,22 @@ describe("TeamTransactionService", async () => {
         let season: Season = await createTestSeason()
         let team: Team = await createTestTeam("Update Roster Team", owner)
         let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
 
-        await createTestPlayerLeagueSeason(player, otherUser, undefined, league, season)
+        let assignedPlayer: Player = await createTestPlayer(Position.FIRST_BASE)
+        let omittedAssignedPlayer: Player = await createTestPlayer(Position.SECOND_BASE)
+        let invalidPlayer: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(assignedPlayer, owner, team, league, season)
+        await createTestPlayerLeagueSeason(omittedAssignedPlayer, owner, team, league, season)
+        await createTestPlayerLeagueSeason(invalidPlayer, otherUser, undefined, league, season)
 
         tls.lineups[0].order[0] = {
-            _id: player._id,
+            _id: assignedPlayer._id,
+            position: Position.FIRST_BASE
+        } as any
+
+        tls.lineups[0].order[1] = {
+            _id: invalidPlayer._id,
             position: Position.CATCHER
         } as any
 
@@ -1194,12 +1181,22 @@ describe("TeamTransactionService", async () => {
         let team: Team = await createTestTeam("Update Roster Team", owner)
         let otherTeam: Team = await createTestTeam("Other Update Roster Team", owner)
         let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
 
-        await createTestPlayerLeagueSeason(player, owner, otherTeam, league, season)
+        let assignedPlayer: Player = await createTestPlayer(Position.FIRST_BASE)
+        let omittedAssignedPlayer: Player = await createTestPlayer(Position.SECOND_BASE)
+        let invalidPlayer: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(assignedPlayer, owner, team, league, season)
+        await createTestPlayerLeagueSeason(omittedAssignedPlayer, owner, team, league, season)
+        await createTestPlayerLeagueSeason(invalidPlayer, owner, otherTeam, league, season)
 
         tls.lineups[0].order[0] = {
-            _id: player._id,
+            _id: assignedPlayer._id,
+            position: Position.FIRST_BASE
+        } as any
+
+        tls.lineups[0].order[1] = {
+            _id: invalidPlayer._id,
             position: Position.CATCHER
         } as any
 
@@ -1210,40 +1207,12 @@ describe("TeamTransactionService", async () => {
 
     })
 
-    it("should reject update roster when adding a player would exceed the team roster limit", async () => {
+    it("should reject update roster when an assigned team player is omitted from the roster payload", async () => {
 
         let user: User = await createTestUser()
         let league: League = await createTestLeague()
         let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Full Update Roster Team", user)
-        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
-
-        for (let i = 0; i < DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize; i++) {
-            let rosterPlayer: Player = await createTestPlayer(Position.PITCHER)
-            await createTestPlayerLeagueSeason(rosterPlayer, user, team, league, season)
-        }
-
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
-
-        tls.lineups[0].order[0] = {
-            _id: player._id,
-            position: Position.CATCHER
-        } as any
-
-        await assert.rejects(
-            async () => service.updateRoster(tls.lineups, team),
-            /Team roster is full./
-        )
-
-    })    
-
-    it("should update roster without removing omitted players from the team roster", async () => {
-
-        let user: User = await createTestUser()
-        let league: League = await createTestLeague()
-        let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Update Roster Team", user)
+        let team: Team = await createTestTeam("Omitted Player Roster Team", user)
         let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
         let player: Player = await createTestPlayer(Position.CATCHER)
 
@@ -1253,12 +1222,10 @@ describe("TeamTransactionService", async () => {
             position: Position.CATCHER
         } as any
 
-        await service.updateRoster(tls.lineups, team)
-
-        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-
-        assert.equal(fetchedPLS.userId, user._id)
-        assert.equal(fetchedPLS.teamId, team._id)
+        await assert.rejects(
+            async () => service.updateRoster(tls.lineups, team),
+            /Roster must include every player assigned to the team./
+        )
 
     })
 
@@ -1368,128 +1335,6 @@ describe("TeamTransactionService", async () => {
 
     })
 
-    it("should update roster by assigning a user-owned unassigned player to the team", async () => {
-
-        let user: User = await createTestUser()
-        let league: League = await createTestLeague()
-        let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Update Roster Team", user)
-        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
-
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
-
-        tls.lineups[0].order[0] = {
-            _id: player._id,
-            position: Position.CATCHER
-        } as any
-
-        await service.updateRoster(tls.lineups, team)
-
-        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        assert.equal(fetchedPLS.userId, user._id)
-        assert.equal(fetchedPLS.teamId, team._id)
-        assert.equal(fetchedTLS.lineups[0].order[0]._id, player._id)
-
-    })
-
-    it("should update roster by assigning a user-owned unassigned player to the bench", async () => {
-
-        let user: User = await createTestUser()
-        let league: League = await createTestLeague()
-        let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Update Bench Roster Team", user)
-        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
-
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
-
-        tls.lineups[0].availableHitters = [
-            {
-                _id: player._id
-            } as any
-        ]
-
-        await service.updateRoster(tls.lineups, team)
-
-        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        assert.equal(fetchedPLS.userId, user._id)
-        assert.equal(fetchedPLS.teamId, team._id)
-        assert.equal(fetchedTLS.lineups[0].availableHitters.some(p => p._id == player._id), true)
-
-    })
-
-    it("should update roster by assigning an owned player to the bench when the lineup already has that position", async () => {
-
-        let user:User = await createTestUser()
-        let league:League = await createTestLeague()
-        let season:Season = await createTestSeason()
-        let team:Team = await createTestTeam("Assign Bench Team", user)
-        let activeCatcher:Player = await createTestPlayer(Position.CATCHER)
-        let player:Player = await createTestPlayer(Position.CATCHER)
-
-        await createTestPlayerLeagueSeason(activeCatcher, user, team, league, season)
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
-
-        let tls:TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-
-        tls.lineups[0].order[0] = {
-            _id: activeCatcher._id,
-            position: Position.CATCHER
-        } as any
-
-        tls.lineups[0].availableHitters = [
-            {
-                _id: player._id,
-                position: Position.CATCHER
-            } as any
-        ]
-
-        await service.updateRoster(tls.lineups, team)
-
-        let currentPls:PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
-        let fetchedTLS:TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
-
-        assert.equal(currentPls.userId, user._id)
-        assert.equal(currentPls.teamId, team._id)
-
-        assert.equal(fetchedTLS.lineups[0].order.some(p => p._id == player._id), false)
-        assert.equal(fetchedTLS.lineups[0].availableHitters.some(p => p._id == player._id), true)
-
-    })
-
-    it("should reject update roster when adding a player would exceed the team roster limit", async () => {
-
-        let user: User = await createTestUser()
-        let league: League = await createTestLeague()
-        let season: Season = await createTestSeason()
-        let team: Team = await createTestTeam("Full Update Roster Team", user)
-        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
-        let player: Player = await createTestPlayer(Position.CATCHER)
-
-        for (let i = 0; i < DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize; i++) {
-            let rosterPlayer: Player = await createTestPlayer(Position.PITCHER)
-            await createTestPlayerLeagueSeason(rosterPlayer, user, team, league, season)
-        }
-
-        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
-
-        tls.lineups[0].order[0] = {
-            _id: player._id,
-            position: Position.CATCHER
-        } as any
-
-        await assert.rejects(
-            async () => service.updateRoster(tls.lineups, team),
-            /Team roster is full./
-        )
-
-    })
-
     it("should update roster and save invalid lineup when active roster does not have enough players", async () => {
 
         let user: User = await createTestUser()
@@ -1519,7 +1364,6 @@ describe("TeamTransactionService", async () => {
         assert.equal(fetchedTLS.lineups[0].order[0]._id, player._id)
 
     })
-
 
     it("should update roster without treating existing full-team roster players as new assignments", async () => {
 
@@ -1620,6 +1464,267 @@ describe("TeamTransactionService", async () => {
         assert.equal(fetchedTLS.lineups[0].availablePitchers.length, DEFAULT_ROSTER_CONSTRAINTS.minBullpenPitchers)
 
     })
+
+
+    it("should assign a user-owned player to the team roster and active lineup", async () => {
+
+        let user: User = await createTestUser()
+        let league: League = await createTestLeague()
+        let season: Season = await createTestSeason()
+        let team: Team = await createTestTeam("Assign Active Roster Team", user)
+        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
+        let player: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
+
+        await service.updateTeamRosterAssignment(user, team, new Date(), player._id, undefined)
+
+        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        assert.equal(fetchedPLS.userId, user._id)
+        assert.equal(fetchedPLS.teamId, team._id)
+        assert.equal(fetchedTLS.lineups[0].order.some(p => p._id == player._id), true)
+
+    })
+
+    it("should assign a user-owned hitter to the bench when active lineup has no empty hitter spots", async () => {
+
+        let user: User = await createTestUser()
+        let league: League = await createTestLeague()
+        let season: Season = await createTestSeason()
+        let team: Team = await createTestTeam("Assign Bench Roster Team", user)
+        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
+
+        let positions = [
+            Position.CATCHER,
+            Position.FIRST_BASE,
+            Position.SECOND_BASE,
+            Position.SHORTSTOP,
+            Position.THIRD_BASE,
+            Position.LEFT_FIELD,
+            Position.RIGHT_FIELD,
+            Position.CENTER_FIELD
+        ]
+
+        for (let i = 0; i < positions.length; i++) {
+            let activePlayer: Player = await createTestPlayer(positions[i])
+
+            await createTestPlayerLeagueSeason(activePlayer, user, team, league, season)
+
+            tls.lineups[0].order[i] = {
+                _id: activePlayer._id,
+                position: positions[i]
+            } as any
+        }
+
+        tls.lineups[0].order[8] = {
+            position: Position.PITCHER
+        } as any
+
+        let benchCatcher: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(benchCatcher, user, undefined, league, season)
+
+        tls.changed("lineups", true)
+        await teamLeagueSeasonService.put(tls)
+
+        await service.updateTeamRosterAssignment(user, team, new Date(), benchCatcher._id, undefined)
+
+        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(benchCatcher, season)
+        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        assert.equal(fetchedPLS.teamId, team._id)
+        assert.equal(fetchedTLS.lineups[0].order.some(p => p._id == benchCatcher._id), false)
+        assert.equal(fetchedTLS.lineups[0].availableHitters.some(p => p._id == benchCatcher._id), true)
+
+    })
+
+    it("should remove a team roster player and keep them user owned", async () => {
+
+        let user: User = await createTestUser()
+        let league: League = await createTestLeague()
+        let season: Season = await createTestSeason()
+        let team: Team = await createTestTeam("Remove Team Roster Player Team", user)
+        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
+        let player: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(player, user, team, league, season)
+
+        tls.lineups[0].order[0] = {
+            _id: player._id,
+            position: Position.CATCHER
+        } as any
+
+        tls.changed("lineups", true)
+        await teamLeagueSeasonService.put(tls)
+
+        await service.updateTeamRosterAssignment(user, team, new Date(), undefined, player._id)
+
+        let fetchedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season)
+        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        assert.equal(fetchedPLS.userId, user._id)
+        assert.equal(fetchedPLS.teamId, undefined)
+        assert.equal(fetchedTLS.lineups[0].order.some(p => p._id == player._id), false)
+
+    })
+
+    it("should swap a removed team player for an added user-owned player", async () => {
+
+        let user: User = await createTestUser()
+        let league: League = await createTestLeague()
+        let season: Season = await createTestSeason()
+        let team: Team = await createTestTeam("Swap Roster Assignment Team", user)
+        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
+
+        let removePlayer: Player = await createTestPlayer(Position.CATCHER)
+        let addPlayer: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestPlayerLeagueSeason(removePlayer, user, team, league, season)
+        await createTestPlayerLeagueSeason(addPlayer, user, undefined, league, season)
+
+        tls.lineups[0].order[0] = {
+            _id: removePlayer._id,
+            position: Position.CATCHER
+        } as any
+
+        tls.changed("lineups", true)
+        await teamLeagueSeasonService.put(tls)
+
+        await service.updateTeamRosterAssignment(user, team, new Date(), addPlayer._id, removePlayer._id)
+
+        let removedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(removePlayer, season)
+        let addedPLS: PlayerLeagueSeason = await playerLeagueSeasonService.getMostRecentByPlayerSeason(addPlayer, season)
+        let fetchedTLS: TeamLeagueSeason = await teamLeagueSeasonService.getByTeamSeason(team, season)
+
+        assert.equal(removedPLS.teamId, undefined)
+        assert.equal(addedPLS.teamId, team._id)
+        assert.equal(fetchedTLS.lineups[0].order.some(p => p._id == removePlayer._id), false)
+        assert.equal(fetchedTLS.lineups[0].order.some(p => p._id == addPlayer._id), true)
+
+    })
+
+    it("should reject assigning a player to a full team roster without removing a player first", async () => {
+
+        let user: User = await createTestUser()
+        let league: League = await createTestLeague()
+        let season: Season = await createTestSeason()
+        let team: Team = await createTestTeam("Full Assignment Team", user)
+        let tls: TeamLeagueSeason = await createTestTeamLeagueSeason(team, league, season)
+        let player: Player = await createTestPlayer(Position.CATCHER)
+
+        let starterPositions = [
+            Position.CATCHER,
+            Position.FIRST_BASE,
+            Position.SECOND_BASE,
+            Position.SHORTSTOP,
+            Position.THIRD_BASE,
+            Position.LEFT_FIELD,
+            Position.RIGHT_FIELD,
+            Position.CENTER_FIELD
+        ]
+
+        for (let i = 0; i < starterPositions.length; i++) {
+            let rosterPlayer: Player = await createTestPlayer(starterPositions[i])
+
+            await createTestPlayerLeagueSeason(rosterPlayer, user, team, league, season)
+
+            tls.lineups[0].order[i] = {
+                _id: rosterPlayer._id,
+                position: starterPositions[i]
+            } as any
+        }
+
+        tls.lineups[0].order[8] = {
+            position: Position.PITCHER
+        } as any
+
+        let benchPositions = [
+            Position.CATCHER,
+            Position.FIRST_BASE,
+            Position.SECOND_BASE,
+            Position.LEFT_FIELD,
+            Position.CENTER_FIELD
+        ]
+
+        tls.lineups[0].availableHitters = []
+
+        for (let position of benchPositions) {
+            let rosterPlayer: Player = await createTestPlayer(position)
+
+            await createTestPlayerLeagueSeason(rosterPlayer, user, team, league, season)
+
+            tls.lineups[0].availableHitters.push({
+                _id: rosterPlayer._id
+            } as any)
+        }
+
+        tls.lineups[0].rotation = []
+
+        for (let i = 0; i < DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers; i++) {
+            let rosterPlayer: Player = await createTestPlayer(Position.PITCHER)
+
+            await createTestPlayerLeagueSeason(rosterPlayer, user, team, league, season)
+
+            tls.lineups[0].rotation.push({
+                _id: rosterPlayer._id
+            } as any)
+        }
+
+        tls.lineups[0].availablePitchers = []
+
+        let bullpenRoles = [
+            ...Array(DEFAULT_ROSTER_CONSTRAINTS.minClosers).fill(PitchingRoleType.CLOSER),
+            ...Array(DEFAULT_ROSTER_CONSTRAINTS.minSetupRelievers).fill(PitchingRoleType.SETUP),
+            ...Array(DEFAULT_ROSTER_CONSTRAINTS.minMiddleRelievers).fill(PitchingRoleType.MIDDLE),
+            ...Array(DEFAULT_ROSTER_CONSTRAINTS.minLongRelievers).fill(PitchingRoleType.LONG),
+            ...Array(DEFAULT_ROSTER_CONSTRAINTS.minMopUpRelievers).fill(PitchingRoleType.MOP_UP)
+        ]
+
+        for (let i = 0; i < bullpenRoles.length; i++) {
+            let rosterPlayer: Player = await createTestPlayer(Position.PITCHER)
+
+            await createTestPlayerLeagueSeason(rosterPlayer, user, team, league, season)
+
+            tls.lineups[0].availablePitchers.push({
+                playerId: rosterPlayer._id,
+                role: bullpenRoles[i],
+                priority: i + 1
+            })
+        }
+
+        tls.changed("lineups", true)
+        await teamLeagueSeasonService.put(tls)
+
+        await createTestPlayerLeagueSeason(player, user, undefined, league, season)
+
+        await assert.rejects(
+            async () => service.updateTeamRosterAssignment(user, team, new Date(), player._id, undefined),
+            /Team roster is full. A player must be removed first./
+        )
+
+    })
+
+    it("should reject update team roster assignment for wrong user", async () => {
+
+        let owner: User = await createTestUser()
+        let wrongUser: User = await createTestUser()
+        let league: League = await createTestLeague()
+        let season: Season = await createTestSeason()
+        let team: Team = await createTestTeam("Wrong User Assignment Team", owner)
+        let player: Player = await createTestPlayer(Position.CATCHER)
+
+        await createTestTeamLeagueSeason(team, league, season)
+        await createTestPlayerLeagueSeason(player, owner, undefined, league, season)
+
+        await assert.rejects(
+            async () => service.updateTeamRosterAssignment(wrongUser, team, new Date(), player._id, undefined),
+            /Not authorized./
+        )
+
+    })
+
 
     async function createTestUser(): Promise<User> {
 
