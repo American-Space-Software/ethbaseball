@@ -110,29 +110,68 @@ class TeamComponentService {
 
     }
 
+    public getDisplayAvailableHitters(lineupIndex = 0) {
+
+        if (!this.teamViewModel?.team) return []
+
+        let lineup = this.teamViewModel.team.lineups[lineupIndex]
+        let hitters = []
+
+        for (let spot = 8; spot <= 12; spot++) {
+
+            let benchIndex = this.getBenchIndexForSpot(spot)
+            let hitter = lineup.availableHitters[benchIndex]
+
+            if (hitter?._id) {
+                hitters.push(this.getPlayer(hitter._id))
+            } else {
+                hitters.push({
+                    fullName: this.loginWebService.userOwnsTeam(this.teamViewModel.team._id) ? "Sign a free agent." : "",
+                    primaryPosition: "H"
+                })
+            }
+
+        }
+
+        return hitters
+
+    }
 
     public getDisplayAvailablePitchers(lineupIndex = 0) {
 
         if (!this.teamViewModel?.team) return []
 
-        return this.buildDisplayPitchers({
-            rotation: this.teamViewModel.team.lineups[lineupIndex].availablePitchers.map(p => ({
-                _id: p.playerId
-            }))
-        })
+        let lineup = this.teamViewModel.team.lineups[lineupIndex]
+        let pitchers = []
 
-    }  
+        for (let spot = 5; spot <= 12; spot++) {
 
-    public getDisplayAvailableHitters(lineupIndex = 0) {
+            let bullpenIndex = this.getBullpenIndexForSpot(spot)
+            let pitcher = lineup.availablePitchers[bullpenIndex]
 
-        if (!this.teamViewModel?.team) return []
+            if (pitcher?.playerId) {
+                pitchers.push({
+                    ...this.getPlayer(pitcher.playerId),
+                    role: pitcher.role,
+                    priority: pitcher.priority
+                })
+            } else {
+                pitchers.push({
+                    fullName: this.loginWebService.userOwnsTeam(this.teamViewModel.team._id) ? "Sign a free agent." : "",
+                    primaryPosition: Position.PITCHER,
+                    role: pitcher?.role,
+                    priority: pitcher?.priority
+                })
+            }
 
-        return this.buildDisplayHitters({
-            order: this.teamViewModel.team.lineups[lineupIndex].availableHitters.map(p => ({
-                _id: p._id
-            }))
-        })
+        }
 
+        return pitchers
+
+    }
+
+    get offChainDiamondBalance() {
+        return this.authInfo?.offChainDiamondBalance
     }
 
     public canAffordDrop() {
@@ -207,6 +246,54 @@ class TeamComponentService {
 
     }
 
+    public getPlayerBySpot(spot: number, isPitcher: boolean, lineupIndex = 0) {
+
+        let lineup = this.teamViewModel?.team?.lineups[lineupIndex]
+
+        if (!lineup) return undefined
+
+        if (isPitcher) {
+
+            if (spot >= 0 && spot <= 4) {
+                return lineup.rotation[spot]?._id
+                    ? this.getPlayer(lineup.rotation[spot]._id)
+                    : undefined
+            }
+
+            if (spot >= 5 && spot <= 12) {
+                let bullpenIndex = this.getBullpenIndexForSpot(spot)
+
+                return lineup.availablePitchers[bullpenIndex]?.playerId
+                    ? this.getPlayer(lineup.availablePitchers[bullpenIndex].playerId)
+                    : undefined
+            }
+
+        } else {
+
+            if (spot >= 0 && spot <= 7) {
+                return lineup.order[spot]?._id
+                    ? this.getPlayer(lineup.order[spot]._id)
+                    : undefined
+            }
+
+            if (spot >= 8 && spot <= 12) {
+                let benchIndex = this.getBenchIndexForSpot(spot)
+
+                return lineup.availableHitters[benchIndex]?._id
+                    ? this.getPlayer(lineup.availableHitters[benchIndex]._id)
+                    : undefined
+            }
+
+        }
+
+        return undefined
+
+    }
+
+    public isBenchSpot(spot: number) {
+        return spot >= 8 && spot <= 12
+    }
+
     private getBullpenRoleForSpot(spot: number): PitchingRoleType {
 
         if (spot == 5) return PitchingRoleType.CLOSER
@@ -269,25 +356,25 @@ class TeamComponentService {
     }
 
 
-    private getFirstOpenOrExistingLineupSpot(lineup, playerId: string) {
+    private assertCanMoveHitterToLineupSpot(lineup, player, spot: number) {
 
-        let existingIndex = lineup.order.findIndex(p => p._id == playerId)
+        let targetPosition = lineup.order[spot]?.position
 
-        if (existingIndex >= 0) return existingIndex
+        if (!targetPosition) {
+            throw new Error("Invalid lineup spot.")
+        }
 
-        return this.lineupService.getFirstAvailableOrderSpot(lineup)
+        if (targetPosition == Position.PITCHER) {
+            throw new Error("Cannot move a hitter into the pitcher slot.")
+        }
 
-    }    
+        if (player.primaryPosition != targetPosition) {
+            throw new Error(`Cannot move ${player.primaryPosition} into ${targetPosition}.`)
+        }
 
-    private getFirstOpenOrExistingRotationSpot(lineup, playerId: string) {
+    }
 
-        let existingIndex = lineup.rotation.findIndex(p => p._id == playerId)
 
-        if (existingIndex >= 0) return existingIndex
-
-        return this.lineupService.getFirstAvailableRotationSpot(lineup)
-
-    }    
 
     private buildDisplayHitters(lineup) {
 
@@ -299,7 +386,7 @@ class TeamComponentService {
                 hitters.push(this.getPlayer(lineupPlayer._id))
             } else if (lineupPlayer.position != Position.PITCHER) {
                 hitters.push({
-                    fullName: "Sign a free agent.",
+                    fullName: this.loginWebService.userOwnsTeam(this.teamViewModel.team._id) ? "Sign a free agent." : "",
                     primaryPosition: lineupPlayer.position
                 })
             }
@@ -320,7 +407,7 @@ class TeamComponentService {
                 pitchers.push(this.getPlayer(rotationPitcher._id))
             } else {
                 pitchers.push({
-                    fullName: "Sign a free agent.",
+                    fullName: this.loginWebService.userOwnsTeam(this.teamViewModel.team._id) ? "Sign a free agent." : "",
                     primaryPosition: Position.PITCHER
                 })
             }
@@ -341,6 +428,10 @@ class TeamComponentService {
         let isSelectedInLineup = selectedLineupIndex >= 0
         let isSelectedOnBench = selectedBenchIndex >= 0
 
+        if (!isBenchSpot && isSelectedOnBench) {
+            this.assertCanMoveHitterToLineupSpot(lineup, selectedPlayer, spot)
+        }
+
         if (isBenchSpot) {
 
             let benchIndex = this.getBenchIndexForSpot(spot)
@@ -357,17 +448,20 @@ class TeamComponentService {
 
             if (isSelectedInLineup) {
                 let targetBenchPlayerId = lineup.availableHitters[benchIndex]?._id
+                let originalLineupPosition = lineup.order[selectedLineupIndex].position
 
                 if (targetBenchPlayerId) {
                     let targetBenchPlayer = this.getPlayer(targetBenchPlayerId)
 
+                    this.assertCanMoveHitterToLineupSpot(lineup, targetBenchPlayer, selectedLineupIndex)
+
                     lineup.order[selectedLineupIndex] = {
                         _id: targetBenchPlayer._id,
-                        position: targetBenchPlayer.primaryPosition
+                        position: originalLineupPosition
                     }
                 } else {
                     lineup.order[selectedLineupIndex] = {
-                        position: selectedPlayer.primaryPosition
+                        position: originalLineupPosition
                     }
                 }
 
@@ -427,25 +521,25 @@ class TeamComponentService {
             let targetPriority = this.getBullpenPriorityForSpot(spot)
 
             if (isSelectedInBullpen) {
-                let selectedSourceSpot = selectedBullpenIndex + 5
-                let sourceRole = this.getBullpenRoleForSpot(selectedSourceSpot)
-                let sourcePriority = this.getBullpenPriorityForSpot(selectedSourceSpot)
-
+                let sourceSpot = selectedBullpenIndex + 5
+                let sourceRole = this.getBullpenRoleForSpot(sourceSpot)
+                let sourcePriority = this.getBullpenPriorityForSpot(sourceSpot)
                 let targetBullpenPitcher = lineup.availablePitchers[bullpenIndex]
 
-                lineup.availablePitchers[selectedBullpenIndex] = targetBullpenPitcher ? {
+                lineup.availablePitchers[selectedBullpenIndex] = targetBullpenPitcher?.playerId ? {
                     playerId: targetBullpenPitcher.playerId,
                     role: sourceRole,
                     priority: sourcePriority
-                } : undefined
+                } : {
+                    role: sourceRole,
+                    priority: sourcePriority
+                }
 
                 lineup.availablePitchers[bullpenIndex] = {
                     playerId: selectedPlayer._id,
                     role: targetRole,
                     priority: targetPriority
                 }
-
-                lineup.availablePitchers = lineup.availablePitchers.filter(p => p != undefined)
 
                 return
             }
@@ -481,15 +575,18 @@ class TeamComponentService {
         }
 
         if (isSelectedInBullpen) {
-            let selectedSourceSpot = selectedBullpenIndex + 5
-            let sourceRole = this.getBullpenRoleForSpot(selectedSourceSpot)
-            let sourcePriority = this.getBullpenPriorityForSpot(selectedSourceSpot)
+            let sourceSpot = selectedBullpenIndex + 5
+            let sourceRole = this.getBullpenRoleForSpot(sourceSpot)
+            let sourcePriority = this.getBullpenPriorityForSpot(sourceSpot)
 
             lineup.availablePitchers[selectedBullpenIndex] = currentPlayer ? {
                 playerId: currentPlayer._id,
                 role: sourceRole,
                 priority: sourcePriority
-            } : undefined
+            } : {
+                role: sourceRole,
+                priority: sourcePriority
+            }
         }
 
         if (currentPlayer) {
@@ -506,12 +603,23 @@ class TeamComponentService {
             this.lineupService.rotationAdd(lineup, selectedPlayer, spot)
         }
 
-        lineup.availablePitchers = lineup.availablePitchers.filter(p => p != undefined)
-
     }
 
-    private getPlayer(id) {
+    public getPlayer(id) {
         return this.teamViewModel?.players.find(p => p._id == id)
+    }
+
+    public hasLineupPosition(position: Position, lineupIndex = 0): boolean {
+
+        let lineup = this.teamViewModel?.team?.lineups[lineupIndex]
+
+        if (!lineup) return false
+
+        return lineup.order.some(p =>
+            p?._id &&
+            p.position == position
+        )
+
     }
 
     private addMissingLineupPlaceholders() {

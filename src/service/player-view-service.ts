@@ -19,6 +19,8 @@ import { GamePitchResultRepository } from "../repository/game-pitch-result-repos
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { LeagueService } from "./data/league-service.js"
 import { Handedness, HitterStatLine, HittingRatings, PitcherStatLine, PitchRatings, Position }  from '../baseball-sim-engine/index.js';
+import { UserService } from "./data/user-service.js"
+import { User } from "../dto/user.js"
 
 
 
@@ -39,6 +41,7 @@ class PlayerViewService {
         private leagueSerivce:LeagueService,
         private teamService:TeamService,
         private gameService:GameService,
+        private userService:UserService,
         private offchainEventService:OffchainEventService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
@@ -65,7 +68,7 @@ class PlayerViewService {
         let askingPrice 
         let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
 
-        if (!currentPls.teamId) {
+        if (!currentPls.userId) {
             askingPrice = this.playerService.getAskingPrice(currentPls )
         }
         
@@ -75,7 +78,6 @@ class PlayerViewService {
             askingPrice: askingPrice,
             totalExperience: player.totalExperience,
             minimumPlayerSalary: minimumPlayerSalary,
-            team: currentPls?.team,
             hits: player.hits,
             age: player.age,
             throws: player.throws,
@@ -124,26 +126,47 @@ class PlayerViewService {
             pitcherGameLog: pitcherGameLog
         }
 
-        if (currentPls?.teamId) {
+        if (currentPls.userId) {
 
-            let team:Team = await this.teamService.get(currentPls.teamId)
-            let season:Season = await this.seasonService.get(currentPls.seasonId)
-            let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season )
+            let user:User = await this.userService.get(currentPls.userId)
+            let teams = await this.teamService.getByUser(user)
+            let primaryTeam = teams[0]
+            let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, primaryTeam._id)
 
-            let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
 
-            tls = tls.get({ plain: true })
+            if (currentPls?.teamId) {
 
-            result.team = {
-                name: tls.team?.name,
-                cityName: tls.city?.name,
-                _id: tls.team?._id,
-                userId: tls.team.userId,
-                diamondBalance: diamondBalance,
-                isQueued: await this.teamQueueService.isTeamQueued(team)
+                let team:Team = await this.teamService.get(currentPls.teamId)
+                
+                let season:Season = await this.seasonService.get(currentPls.seasonId)
+                let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season )
+
+                tls = tls.get({ plain: true })
+
+                result.team = {
+                    name: tls.team?.name,
+                    cityName: tls.city?.name,
+                    _id: tls.team?._id,
+                    userId: tls.team.userId,
+                    diamondBalance: diamondBalance,
+                    isQueued: await this.teamQueueService.isTeamQueued(team)
+                }
+
+            } else {
+                result.team = {
+                    name: '',
+                    cityName: '',
+                    _id: '',
+                    userId: currentPls.userId,
+                    diamondBalance: diamondBalance,
+                    isQueued: false
+                }
             }
 
         }
+
+
+
 
 
 

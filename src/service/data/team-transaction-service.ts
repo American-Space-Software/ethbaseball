@@ -5,7 +5,7 @@ import { TeamMarketOfferRepository } from "../../repository/team-market-offer-re
 import { TeamMarketOffer, TeamMarketOfferPackage } from "../../dto/team-market-offer.js";
 import { Team, TEAM_COLORS } from "../../dto/team.js";
 import { Season } from "../../dto/season.js";
-import { ContractType, FinanceSeason, GLICKO_SETTINGS, DEFAULT_ROSTER_CONSTRAINTS, TeamMarketOfferStatus, Lineup, DEFAULT_MAX_PITCH_COUNT } from "../enums.js";
+import { ContractType, FinanceSeason, GLICKO_SETTINGS, DEFAULT_ROSTER_CONSTRAINTS, TeamMarketOfferStatus, Lineup, DEFAULT_MAX_PITCH_COUNT, DEFAULT_DROP_PLAYER_DIAMONDS } from "../enums.js";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
 import { PlayerLeagueSeason } from "../../dto/player-league-season.js";
 import { Player } from "../../dto/player.js";
@@ -121,6 +121,7 @@ class TeamTransactionService {
             await this.teamLeagueSeasonService.put(tls, options)
 
         }
+        
 
         await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, offChainEventTransactionId, options)
 
@@ -134,23 +135,37 @@ class TeamTransactionService {
 
         let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
 
-        if (!pls.teamId) {
-            throw new Error("Player is not rostered.")
+        if (!pls.userId) {
+            throw new Error("Player is not owned.")
         }
 
-        let team: Team = await this.teamService.get(pls.teamId, options)
-
-        if (user._id != team.userId) {
+        if (pls.userId != user._id) {
             throw new Error("Not authorized.")
         }
 
-        await this.teamQueueService.dequeueTeam(team, options)
+        let teams: Team[] = await this.teamService.getByUser(user, options)
+        let paymentTeam: Team = teams[0]
 
-        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id, options)
+        if (!paymentTeam) {
+            throw new Error("User does not have a team to pay for this drop.")
+        }
 
-        let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
+        let rosterTeam: Team | undefined = undefined
+        let tls: TeamLeagueSeason | undefined = undefined
 
-        if (BigInt(diamondBalance) < BigInt(minimumPlayerSalary)) {
+        if (pls.teamId) {
+            rosterTeam = await this.teamService.get(pls.teamId, options)
+
+            if (user._id != rosterTeam.userId) {
+                throw new Error("Not authorized.")
+            }
+
+            await this.teamQueueService.dequeueTeam(rosterTeam, options)
+        }
+
+        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, paymentTeam._id, options)
+
+        if (BigInt(diamondBalance) < BigInt(DEFAULT_DROP_PLAYER_DIAMONDS)) {
             throw new Error(`Team does not have enough diamonds to drop this player.`)
         }
 
@@ -160,31 +175,144 @@ class TeamTransactionService {
             await this.cancelTeamMarketOffer(pendingOffer, options)
         }
 
-        let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+        if (rosterTeam) {
 
-        this.lineupService.lineupRemove(tls.lineups[0], player._id)
-        this.lineupService.rotationRemove(tls.lineups[0], player._id)
+            tls = await this.teamLeagueSeasonService.getByTeamSeason(rosterTeam, season, options)
 
-        if (tls.lineups[0].availablePitchers) {
-            tls.lineups[0].availablePitchers = tls.lineups[0].availablePitchers.filter(p => p.playerId != player._id)
+            this.lineupService.lineupRemove(tls.lineups[0], player._id)
+            this.lineupService.rotationRemove(tls.lineups[0], player._id)
+
+            if (tls.lineups[0].availablePitchers) {
+                tls.lineups[0].availablePitchers = tls.lineups[0].availablePitchers.filter(p => p.playerId != player._id)
+            }
+
+            if (tls.lineups[0].availableHitters) {
+                tls.lineups[0].availableHitters = tls.lineups[0].availableHitters.filter(p => p._id != player._id)
+            }
+
+            tls.lineups[0].valid = false
+            tls.hasValidLineup = false
+
+            tls.changed("lineups", true)
+            tls.changed("hasValidLineup", true)
+
         }
-
-        if (tls.lineups[0].availableHitters) {
-            tls.lineups[0].availableHitters = tls.lineups[0].availableHitters.filter(p => p._id != player._id)
-        }
-
-        tls.lineups[0].valid = false
-        tls.hasValidLineup = false
-
-        tls.changed("lineups", true)
-        tls.changed("hasValidLineup", true)
 
         await this.movePlayerToFreeAgency(player, pls, season, date, options)
 
-        await this.offchainEventService.createPlayerDropTransferEvent(team._id, player._id, uuidv4(), options)
+        let offChainEventTransactionId = uuidv4()
 
-        await this.teamService.put(team, options)
-        await this.teamLeagueSeasonService.put(tls, options)
+        await this.offchainEventService.createPlayerDropTransferEvent(paymentTeam._id, player._id, offChainEventTransactionId, options)
+        await this.offchainEventService.createTeamBurnEvent(paymentTeam._id, DEFAULT_DROP_PLAYER_DIAMONDS, offChainEventTransactionId, options)
+
+        if (rosterTeam) {
+            await this.teamService.put(rosterTeam, options)
+            await this.teamLeagueSeasonService.put(tls, options)
+        }
+
+    }
+
+    async activatePlayer(user: User, team: Team, player: Player, date: Date, options?: any): Promise<TeamLeagueSeason> {
+        return await this.updateTeamRosterAssignment(user, team, date, player._id, undefined, options)
+    }
+
+    async deactivatePlayer(user: User, team: Team, player: Player, date: Date, options?: any): Promise<TeamLeagueSeason> {
+        return await this.updateTeamRosterAssignment(user, team, date, undefined, player._id, options)
+    }
+
+    async updateTeamRosterAssignment(user: User, team: Team, date: Date, addPlayerId?: string, removePlayerId?: string, options?: any): Promise<TeamLeagueSeason> {
+
+        let season: Season = await this.seasonService.getMostRecent(options)
+        let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+
+        if (user._id != team.userId) {
+            throw new Error("Not authorized.")
+        }
+
+        if (!addPlayerId && !removePlayerId) {
+            throw new Error("No roster assignment change requested.")
+        }
+
+        if (addPlayerId && removePlayerId) {
+            throw new Error("Activate and deactivate players separately.")
+        }
+
+        await this.teamQueueService.dequeueTeam(team, options)
+
+        if (removePlayerId) {
+
+            let removePlayer: Player = await this.playerService.get(removePlayerId, options)
+            let removePLS: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(removePlayer, season, options)
+
+            if (removePLS.userId != user._id) {
+                throw new Error("Player is not owned by this user.")
+            }
+
+            if (removePLS.teamId != team._id) {
+                throw new Error("Player is not assigned to this team.")
+            }
+
+            this.removePlayerFromLineups(tls.lineups, removePlayer._id)
+
+            await this.movePlayerToUser(removePlayer, removePLS, user, season, date, options)
+
+            await this.updateRoster(tls.lineups, team, options)
+
+            return await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+
+        }
+
+        if (addPlayerId) {
+
+            let currentTeamPLS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
+
+            if (currentTeamPLS.length >= DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize) {
+                throw new Error("Team roster is full.")
+            }
+
+            let addPlayer: Player = await this.playerService.get(addPlayerId, options)
+            let addPLS: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(addPlayer, season, options)
+
+            if (addPLS.userId != user._id) {
+                throw new Error("Player is not owned by this user.")
+            }
+
+            if (addPLS.teamId) {
+                throw new Error("Player is already assigned to a team.")
+            }
+
+            let lineup = tls.lineups[0]
+
+            if (addPlayer.primaryPosition == Position.PITCHER) {
+
+                let openRotationSpot = lineup.rotation.filter(p => p?._id != undefined).length < DEFAULT_ROSTER_CONSTRAINTS.minRotationPitchers
+                let bullpenPitchers = lineup.availablePitchers?.filter(p => p?.playerId != undefined).length ?? 0
+
+                if (!openRotationSpot && bullpenPitchers >= DEFAULT_ROSTER_CONSTRAINTS.minBullpenPitchers) {
+                    throw new Error("Bullpen and rotation are full. There is no roster spot available for this pitcher.")
+                }
+
+            } else {
+
+                let hitterBenchSize = DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize - DEFAULT_ROSTER_CONSTRAINTS.minPitchers - 8
+                let hasOpenLineupSpot = lineup.order.some(p => p?._id == undefined && p.position == addPlayer.primaryPosition)
+                let benchHitters = lineup.availableHitters?.filter(p => p?._id != undefined).length ?? 0
+
+                if (!hasOpenLineupSpot && benchHitters >= hitterBenchSize) {
+                    throw new Error("Bench is full and there is no lineup spot available for this player.")
+                }
+
+            }
+
+            await this.assignPlayerToTeamByPLS(addPlayer, addPLS, team, tls, season, date, options)
+
+            this.assertPlayerExistsInLineups(tls.lineups, addPlayer._id)
+
+            await this.updateRoster(tls.lineups, team, options)
+
+            return await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+
+        }
 
     }
 
@@ -544,7 +672,13 @@ class TeamTransactionService {
         let updatedTeamPLSPlain = currentTeamPLS.map(pls => pls.get({ plain: true }))
 
         try {
+
+            for (let lineup of currentTLS.lineups) {
+                this.validateLineupHasOnePlayerAtEachPosition(lineup)
+            }
+
             this.teamService.setLineupValidityAllowTiredStarters(team, currentTLS, updatedTeamPLSPlain)
+
         } catch (e) {
 
             let error = e as Error
@@ -553,7 +687,8 @@ class TeamTransactionService {
                 !error.message.includes("not enough") &&
                 !error.message.includes("Not enough") &&
                 !error.message.includes("does not have enough") &&
-                !error.message.includes("must have")
+                !error.message.includes("must have") &&
+                !error.message.includes("Lineup must have exactly one")
             ) {
                 throw e
             }
@@ -573,76 +708,48 @@ class TeamTransactionService {
     }
 
 
-    async updateTeamRosterAssignment(user: User, team: Team, date: Date, addPlayerId?: string, removePlayerId?: string, options?: any): Promise<TeamLeagueSeason> {
+    private assertPlayerExistsInLineups(lineups: Lineup[], playerId: string) {
 
-        let season: Season = await this.seasonService.getMostRecent(options)
-        let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
+        let playerExistsInLineups = lineups.some(lineup =>
+            lineup.order?.some(p => p?._id == playerId) ||
+            lineup.rotation?.some(p => p?._id == playerId) ||
+            lineup.availableHitters?.some(p => p?._id == playerId) ||
+            lineup.availablePitchers?.some(p => p?.playerId == playerId)
+        )
 
-        if (user._id != team.userId) {
-            throw new Error("Not authorized.")
+        if (!playerExistsInLineups) {
+            throw new Error("Activated player was not added to the team roster.")
         }
-
-        if (!addPlayerId && !removePlayerId) {
-            throw new Error("No roster assignment change requested.")
-        }
-
-        if (addPlayerId && removePlayerId && addPlayerId == removePlayerId) {
-            throw new Error("Cannot add and remove the same player.")
-        }
-
-        if (removePlayerId) {
-
-            let removePlayer: Player = await this.playerService.get(removePlayerId, options)
-            let removePLS: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(removePlayer, season, options)
-
-            if (removePLS.userId != user._id) {
-                throw new Error("Player is not owned by this user.")
-            }
-
-            if (removePLS.teamId != team._id) {
-                throw new Error("Player is not assigned to this team.")
-            }
-
-            this.removePlayerFromLineups(tls.lineups, removePlayer._id)
-
-            await this.movePlayerToUser(removePlayer, removePLS, user, season, date, options)
-
-        }
-
-        if (addPlayerId) {
-
-            if (!removePlayerId) {
-
-                let currentTeamPLS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
-
-                if (currentTeamPLS.length >= DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize) {
-                    throw new Error("Team roster is full. A player must be removed first.")
-                }
-
-            }
-
-            let addPlayer: Player = await this.playerService.get(addPlayerId, options)
-            let addPLS: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(addPlayer, season, options)
-
-            if (addPLS.userId != user._id) {
-                throw new Error("Player is not owned by this user.")
-            }
-
-            if (addPLS.teamId) {
-                throw new Error("Player is already assigned to a team.")
-            }
-
-            await this.assignPlayerToTeamByPLS(addPlayer, addPLS, team, tls, season, date, options)
-
-        }
-
-        await this.updateRoster(tls.lineups, team, options)
-
-        return await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
 
     }
 
+    private validateLineupHasOnePlayerAtEachPosition(lineup: Lineup) {
 
+        let requiredPositions = [
+            Position.CATCHER,
+            Position.FIRST_BASE,
+            Position.SECOND_BASE,
+            Position.SHORTSTOP,
+            Position.THIRD_BASE,
+            Position.LEFT_FIELD,
+            Position.RIGHT_FIELD,
+            Position.CENTER_FIELD
+        ]
+
+        for (let position of requiredPositions) {
+
+            let playersAtPosition = lineup.order.filter(p =>
+                p?._id != undefined &&
+                p.position == position
+            )
+
+            if (playersAtPosition.length != 1) {
+                throw new Error(`Lineup must have exactly one ${position}.`)
+            }
+
+        }
+
+    }
 
     private getPlayerIdsFromLineups(lineups: Lineup[]): string[] {
 
@@ -672,7 +779,27 @@ class TeamTransactionService {
 
     }
 
-    private async movePlayerToUser(player:Player, pls:PlayerLeagueSeason, user:User, season:Season, date:Date, options?:any): Promise<PlayerLeagueSeason> {
+    private async movePlayerToUser(player: Player, pls: PlayerLeagueSeason, user: User, season: Season, date: Date, options?: any): Promise<PlayerLeagueSeason> {
+
+        let currentPLS: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (currentPLS.userId == user._id && !currentPLS.teamId) {
+            return currentPLS
+        }
+
+        if (currentPLS.userId && currentPLS.userId != user._id) {
+            throw new Error("Player is already owned.")
+        }
+
+        if (!currentPLS.userId) {
+            let userRosterSize = await this.playerLeagueSeasonService.getMostRecentCountByUserSeason(user._id, season, options)
+
+            if (userRosterSize >= DEFAULT_ROSTER_CONSTRAINTS.maxTotalRosterSize) {
+                throw new Error("User roster is full.")
+            }
+        }
+
+        pls = currentPLS
 
         pls.endDate = date
 

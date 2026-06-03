@@ -95,46 +95,141 @@
           </div>
 
 
+          ${showActions ? $h`
+              <div class="block-title block-title-small">Team Actions</div>
+              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
 
-        <div class="block-title block-title-medium">Experience</div>
-        <div class="block block-outline block-strong">
+                    ${isOwner && player.team?.isQueued ? $h`
 
-          <div class="display-flex align-items-center justify-content-space-between" style="gap:12px; margin-bottom:8px;">
+                      <li>
+                          <a class="item-link item-content">
+                              <div class="item-media">🏟️</div>
 
-            <div class="chip">
-              <div class="chip-media bg-color-blue">LVL</div>
-              <div class="chip-label">
-                ${playerWebService.getDisplayLevel(BigInt(player.totalExperience))}
+                              <div class="item-inner">
+                                  <div class="item-title-row">
+                                  <div class="item-title">
+                                      Your team is queued.
+                                  </div>
+                                  </div>
+
+                                  <div class="item-text">
+                                  Rosters are locked while in the queue.
+                                  </div>
+
+                              </div>
+                          </a>
+                      </li>
+
+                    ` : $h`  `}
+
+                      ${showDrop ? $h`  
+
+                        <li>
+                          <a class="item-link item-content popup-open" data-popup=".drop-popup">
+                            <div class="item-media">⛔</div>
+                            <div class="item-inner">
+                              <div class="item-title-row">
+                                <div class="item-title">
+                                  Drop Player
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </li>
+
+                      ` : $h` `}
+
+                      ${showSign ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".sign-popup">
+                              <div class="item-media">✍️</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    Sign Player
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+              
+                      ${showActivate ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".activate-popup">
+                              <div class="item-media">👆</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    Activate Player
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+
+                      ${showDeactivate ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".deactivate-popup">
+                              <div class="item-media">👇</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    Deactivate Player
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+
+
+                  </ul>
               </div>
+          ` : $h` `}
+
+
+          <div class="block-title block-title-medium">Experience</div>
+          <div class="block block-outline block-strong">
+
+            <div class="display-flex align-items-center justify-content-space-between" style="gap:12px; margin-bottom:8px;">
+
+              <div class="chip">
+                <div class="chip-media bg-color-blue">LVL</div>
+                <div class="chip-label">
+                  ${playerWebService.getDisplayLevel(BigInt(player.totalExperience))}
+                </div>
+              </div>
+
+              <div
+                class="progressbar"
+                data-progress="${playerWebService.getDisplayLevelProgress(BigInt(player.totalExperience))}">
+              </div>
+
+              <div class="text-color-gray">
+                ${playerWebService.getDisplayLevel(BigInt(player.totalExperience))}/100
+              </div>
+
             </div>
 
-            <div
-              class="progressbar"
-              data-progress="${playerWebService.getDisplayLevelProgress(BigInt(player.totalExperience))}">
-            </div>
-
-            <div class="text-color-gray">
-              ${playerWebService.getDisplayLevel(BigInt(player.totalExperience))}/100
-            </div>
-
+            ${playerWebService.getDisplayLevel(BigInt(player.totalExperience)) < 100 ? $h`
+              <div class="text-color-gray" style="font-size:14px;">
+                ${formatBigInt(BigInt(player.totalExperience))} / ${formatBigInt(playerWebService.getNextLevelExperience(BigInt(player.totalExperience)))} XP to Level ${playerWebService.getNextDisplayLevel(BigInt(player.totalExperience))}
+              </div>
+            ` : $h`
+              <div class="text-color-green" style="font-size:14px;">
+                Max Level Reached
+              </div>
+            `}
           </div>
-
-          ${playerWebService.getDisplayLevel(BigInt(player.totalExperience)) < 100 ? $h`
-            <div class="text-color-gray" style="font-size:14px;">
-              ${formatBigInt(BigInt(player.totalExperience))} / ${formatBigInt(playerWebService.getNextLevelExperience(BigInt(player.totalExperience)))} XP to Level ${playerWebService.getNextDisplayLevel(BigInt(player.totalExperience))}
-            </div>
-          ` : $h`
-            <div class="text-color-green" style="font-size:14px;">
-              Max Level Reached
-            </div>
-          `}
-        </div>
-
-
-
-
-
-
 
 
 
@@ -365,77 +460,6 @@
 
           ` : $h` `}
 
-
-
-
-          ${showActions ? $h`
-              <div class="block-title block-title-small">Team Actions</div>
-              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
-
-                    ${player.team?.isQueued ? $h`
-
-                      <li>
-                          <a class="item-link item-content">
-                              <div class="item-media">🏟️</div>
-
-                              <div class="item-inner">
-                                  <div class="item-title-row">
-                                  <div class="item-title">
-                                      Your team is queued.
-                                  </div>
-                                  </div>
-
-                                  <div class="item-text">
-                                  Rosters are locked while in the queue.
-                                  </div>
-
-                              </div>
-                          </a>
-                      </li>
-
-                    ` : $h` 
-                    
-                      ${showDrop ? $h`
-
-                        <li>
-                          <a class="item-link item-content popup-open" data-popup=".drop-popup">
-                            <div class="item-media">⛔</div>
-                            <div class="item-inner">
-                              <div class="item-title-row">
-                                <div class="item-title">
-                                  Drop Player
-                                </div>
-                              </div>
-                            </div>
-                          </a>
-                        </li>
-
-                      ` : $h` `}
-
-                      ${showSign ? $h`
-
-                          <li>
-                            <a class="item-link item-content popup-open" data-popup=".sign-popup">
-                              <div class="item-media">➕</div>
-                              <div class="item-inner">
-                                <div class="item-title-row">
-                                  <div class="item-title">
-                                    Add Player
-                                  </div>
-                                </div>
-                              </div>
-                            </a>
-                          </li>
-
-                      ` : $h` `}
-              
-                    
-                    `}
-
-                  </ul>
-              </div>
-          ` : $h` `}
 
 
 
@@ -797,7 +821,7 @@
 
           `}
 
-          ${player.team ? $h`
+          ${showDropPopup ? $h`
             <div class="popup drop-popup">
               <div class="view">
                 <div class="page">
@@ -813,25 +837,53 @@
                   <div class="page-content">
 
                         <div class="block">
-                          <p>
-                            Are you sure you want to drop ${player.fullName}? They will become a free agent that can be signed by any team.
-                          </p>
+
+                          ${BigInt(authInfo.offChainDiamondBalance) >= BigInt(DEFAULT_DROP_PLAYER_DIAMONDS) ? $h`
+
+                            <p>
+                              Are you sure you want to drop ${player.fullName}? They will become a free agent that can be signed by any team.
+                            </p>
+                            
+
+                            <p>
+                              <strong>Player Buyout: </strong><br />
+                              ${universeWebService.displayDiamonds(DEFAULT_DROP_PLAYER_DIAMONDS)}
+                            </p>
+
+                            <p>
+                              <strong>Balance:</strong><br />
+                              ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance)}
+                            </p>
+
+
+                            <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
+
+
+                          ` : $h` 
+                            You need a balance of at least ${universeWebService.displayDiamonds(DEFAULT_DROP_PLAYER_DIAMONDS)} to drop a player.
+
                           
-                          <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
+                          `}
+
+
+                          
                         </div>
 
                   </div>
                 </div>
               </div>
             </div>
-          ` : $h`
+          ` : $h` `}
+
+          ${showSignPopup ? $h`
+            
             <div class="popup sign-popup">
               <div class="view">
                 <div class="page">
                   <div class="navbar">
                     <div class="navbar-bg"></div>
                     <div class="navbar-inner">
-                      <div class="title">Add Player</div>
+                      <div class="title">✍️ Sign Player</div>
                       <div class="right">
                         <a class="link popup-close">Close</a>
                       </div>
@@ -866,9 +918,98 @@
                   </div>
                 </div>
               </div>
-            </div>
-          
-          `}
+            </div>            
+            
+          ` : $h` `}
+       
+          ${showActivatePopup ? $h`
+            
+            <div class="popup activate-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Activate Player</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                    <div class="list list-dividers-ios">
+
+                      <ul>
+                        <li>
+                          <span class="item-link smart-select" data-page-title="Team"  >
+                            <select name="team" @change="${activateTeamChange}">
+                              ${authInfo.teams?.map( (t, index) => $h`
+                                  <option value="${t._id}">${t.name}</option>
+                              `)}
+                            </select>
+                            <div class="item-content">
+                              <div class="item-inner">
+                                <div class="item-title ">${authInfo.teams[0].name}</div>
+                                <div class="item-after " style="display:none;"></div>
+                              </div>
+                            </div>
+                          </span>
+                        </li>
+
+                      </ul>
+
+                    </div>
+
+                    <div class="block">
+                      <p>
+                        Are you sure you want to activate ${player.fullName} to active roster? There must be space on the roster to activate the player. If there is not space, you will need to drop a player before activating.
+                      </p>
+                      
+                      <a @click="${activateButtonClick}" class="button button-fill color-red activate-button">Activate Player</a>
+                    </div>
+
+
+                  </div>
+                </div>
+              </div>
+            </div>            
+            
+          ` : $h` `}
+
+          ${showDeactivate ? $h`
+            
+            <div class="popup deactivate-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Deactivate Player</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+
+                    <div class="block">
+                      <p>
+                        Are you sure you want to deactivate ${player.fullName} from the active roster? 
+                      </p>
+                      
+                      <a @click="${deactivateButtonClick}" class="button button-fill color-red deactivate-button">Deactivate Player</a>
+                    </div>
+
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
+
 
         ` : $h` `}
 
@@ -893,6 +1034,7 @@
 
   import { ContainerService } from "../../../service/container-service.ts"
   import { PlayerWebService } from "../../service/player-web-service.ts"
+  import { TeamComponentService } from "../../service/team-component-service.ts"
 
   import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
@@ -901,9 +1043,12 @@
   import { Position } from '../../../baseball-sim-engine/index.ts';
 
   import StartDate from "../common/start-date.f7.html"
+  import { DEFAULT_DROP_PLAYER_DIAMONDS } from "../../../service/enums.ts"
+
 
   export default (props, { $on, $, $f7, $update, $onMounted, $h }) => {
 
+    
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
     let playerWebService = ContainerService.getInstance(PlayerWebService)
@@ -911,12 +1056,50 @@
     let statService = ContainerService.getInstance(StatService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let loginWebService = ContainerService.getInstance(LoginWebService)
+    let teamComponentService = ContainerService.getInstance(TeamComponentService)
 
     let authInfo = props.authInfo
     let player = props.player
     
+
+    const canAffordDrop = () => {
+
+      if (!authInfo?.offChainDiamondBalance) return false
+      if (!player?.minimumPlayerSalary) return false
+
+      if (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary)) return false
+
+      return true
+
+    }
+
+
+    let isLoggedIn = authInfo?._id != undefined
+    let isOwner = player.team && player.team.userId == authInfo?._id
     let showPotential = false
 
+    let showDropPopup = isOwner && player.team?._id
+    let showSignPopup = authInfo && player.team?.userId == undefined
+    let showActivatePopup =  isOwner && player.team?.userId && !player.team?._id
+    let showDeactivatePopup = isOwner && player.team?._id
+
+    let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop()) == true
+    let showSign = ( isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
+    let showActivate = showActivatePopup
+    let showDeactivate = showDeactivatePopup
+
+    let showInsufficientDiamonds = isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.askingPrice))
+    let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary))
+
+    let showActions = (isOwner && player.team?.isQueued) || showDrop || showSign || showActivate
+
+    let activeTeamId = isLoggedIn ? authInfo.teams[0]._id : undefined
+
+    const activateTeamChange = (e) => {
+       activeTeamId = $(e.target).val()
+       console.log(activeTeamId)
+       $update()
+    }
 
     const formatBigInt = (value) => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
@@ -956,21 +1139,66 @@
       return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
     }
 
-    const canAffordDrop = () => {
+    const deactivateButtonClick = async (e) => {
 
-      if (!authInfo?.offChainDiamondBalance) return false
-      if (!player?.minimumPlayerSalary) return false
+      try {
 
-      if (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary)) return false
+        await playerWebService.deactivatePlayer(player, activeTeamId)
+        
+        $f7.popup.close('.deactivate-popup')
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
 
-      return true
+        const toast = $f7.toast.create({
+            text: 'Player deactivated successfully.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
 
+        toast.open()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
     }
+
+
+    const activateButtonClick = async (e) => {
+
+      try {
+
+        await playerWebService.activatePlayer(player, activeTeamId)
+        
+        $f7.popup.close('.activate-popup')
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
+
+        const toast = $f7.toast.create({
+            text: 'Player activated successfully.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
+
+        toast.open()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
+    }
+
 
     const dropButtonClick = async (e) => {
 
       try {
+
         await playerWebService.dropPlayer(player)
+        
         $f7.popup.close('.drop-popup')
         $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
 
@@ -1051,18 +1279,8 @@
 
     }
 
-    let isLoggedIn = authInfo?._id != undefined
-    let isOwner = isLoggedIn && authInfo._id == player.team?.userId
 
-    let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop()) == true
-    let showSign = ( isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
 
-    let showInsufficientDiamonds = isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.askingPrice))
-    let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary))
-
-    let showActions = player.team?.isQueued || showDrop || showSign
-
-    
     $on('pageInit', async (e) => {
 
     })

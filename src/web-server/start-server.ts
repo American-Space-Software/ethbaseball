@@ -1130,6 +1130,95 @@ let startWebServer = async () => {
 
   })
 
+  app.post('/api/player/activate/:playerId/:teamId', async function (req, res) {
+
+    try {
+
+      let playerId = req.params.playerId
+      let teamId = req.params.teamId
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      await refreshUniverse()
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let team:Team = await teamService.get(teamId, options)
+
+          if (team.userId != user._id) {
+            throw new Error("Not authorized.")
+          }
+
+          let player:Player = await playerService.get(playerId, options)
+          
+          await teamTransactionService.activatePlayer(user, team, player, universe.currentDate, options)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
+
+  app.post('/api/player/deactivate/:playerId', async function (req, res) {
+
+    try {
+
+      let playerId = req.params.playerId
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      await refreshUniverse()
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let teams:Team[] = await teamService.getByUser(user, options)
+          let team = teams[0]
+
+          let player:Player = await playerService.get(playerId, options)
+          
+          await teamTransactionService.deactivatePlayer(user, team, player, universe.currentDate, options)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
 
 /**
  * End Players

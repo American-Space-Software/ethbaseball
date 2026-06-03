@@ -64,11 +64,8 @@
 
 
 
-
-
-
         <div class="block-title block-title-medium ">
-            Pitching Rotation <span class="block-title-detail">Set pitcher priority. The next starter has the highest stamina with rotation priority the tiebreaker.</span>
+            Starting Pitchers <span class="block-title-detail">Set pitcher priority. The next starter has the highest stamina with rotation priority the tiebreaker.</span>
         </div>
 
         <div class="block block-outline block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
@@ -131,10 +128,21 @@
                             Are you sure you want to drop ${dropPlayer?.fullName}? They will become a free agent that can be signed by any team.
                             </p>
                             
+                            <p>
+                              <strong>Player Buyout: </strong><br />
+                              ${universeWebService.displayDiamonds(DEFAULT_DROP_PLAYER_DIAMONDS)}
+                            </p>
+
+                            <p>
+                              <strong>Balance:</strong><br />
+                              ${universeWebService.displayDiamonds(teamComponentService.offChainDiamondBalance)}
+                            </p>
+
+
                             <a @click="${dropButtonClick}" class="button button-fill color-red drop-button">Drop</a>
                             
                         ` : $h`                         
-                            You need a balance of at least ${universeWebService.displayDiamonds(teamComponentService.team?.minimumPlayerSalary)} to drop a player.
+                            You need a balance of at least ${universeWebService.displayDiamonds(DEFAULT_DROP_PLAYER_DIAMONDS)} to drop a player.
                         `}
 
                     </div>
@@ -158,6 +166,8 @@
   import { TeamComponentService } from "../../service/team-component-service.ts"
   import { PlayerWebService } from "../../service/player-web-service.ts"
 
+  import { DEFAULT_DROP_PLAYER_DIAMONDS } from "../../../service/enums.ts"
+
 
   export default (props, { $, $on, $f7, $update, $f7route, $onMounted }) => {
 
@@ -177,7 +187,6 @@
 
     let dropPlayer
     let canAffordDrop = teamComponentService.canAffordDrop()
-
 
     let showDropButtons = false
 
@@ -306,9 +315,11 @@
         let actionRow = $(e.srcElement).data('action-row')
         let moveTarget = $(e.srcElement).data('move-target')
 
+        let spot = $(e.srcElement).data('spot')
+
         //Get if move is already active
         let selectedId = moveActive[moveTarget]
-
+  
         //Reset all move buttons
         resetMoves()
 
@@ -320,7 +331,7 @@
 
             moveFilter.moveTarget = moveTarget
             moveFilter.isMoveTarget = true
-            moveFilter.position = undefined
+            moveFilter.position = teamComponentService.isBenchSpot(spot) ? teamComponentService.getPlayerBySpot(spot, false)?.primaryPosition : undefined
             moveFilter.showEmpty = true
             moveFilter.hidePitcherSlot = true
 
@@ -335,14 +346,15 @@
 
 
         } else {
+            console.log(JSON.stringify(teamComponentService.teamViewModel.team.lineups))
 
             let currentPlayerId = $(e.srcElement).data('id')
-            let spot = $(e.srcElement).data('spot')
-
+            
             if (currentPlayerId != selectedId) {
                 teamComponentService.moveToRoster(selectedId, currentPlayerId, parseInt(spot), 0, isPitcher)
             }
-
+            
+            console.log(JSON.stringify(teamComponentService.teamViewModel.team.lineups))
 
             resetMoves()
 
@@ -356,67 +368,16 @@
 
         refreshLineup()
 
-        console.log(teamComponentService.team)
-
         $update()
 
     }
 
-    const moveUnrostered = (e) => {
-
-        let actionRow = $(e.srcElement).data('action-row')
-        let moveTarget = $(e.srcElement).data('move-target')
-
-        //Get if move is already active
-        let activeId = moveActive[moveTarget]
-
-        //Reset all move buttons
-        resetMoves()
-
-        if (!activeId) {
-
-            moveFilter.moveTarget = moveTarget
-            moveFilter.isMoveTarget = true
-            moveFilter.position = $(e.srcElement).data('position')
-            moveFilter.showEmpty = true
-
-            //Fill this one in.
-            fillButton($(e.srcElement))
-
-            //Disable previous/next
-            $('.split-row-both a').hide()
-            $('.stats-dropdown').hide()
-
-
-
-            moveActive[moveTarget] = $(e.srcElement).data('id')
-
-        } else {
-
-            resetMoves()
-
-            $('.split-row-both a').show()
-            $('.stats-dropdown').show()
-
-
-            moveActive[moveTarget] = undefined
-
-        }
-
-        refreshLineup()
-
-
-        $update()
-
-
-    }
 
     const drop = async (e) => {
 
         let dropId = $(e.srcElement).data('id')
 
-        dropPlayer = teamComponentService.rosterPlayers.find(p => p._id == dropId)
-
+        dropPlayer = teamComponentService.getPlayer(dropId)
         await $update()
 
         $f7.popup.open('.drop-popup')
@@ -450,12 +411,14 @@
 
 
     const showMoveRoster = (p, moveTarget) => {
-
+        
         if (showDropButtons) return false
         if (moveFilter.hidePitcherSlot == true && p.fullName == "Pitcher Slot") return false
         if (moveFilter.moveTarget && moveFilter.moveTarget != moveTarget) return false
-        if (moveFilter.showEmpty && p?._id == undefined) return true
+        if (moveTarget == "roster-pitchers" && moveFilter.showEmpty && p?._id == undefined) return true
         if (!p) return false
+        if (moveActive[moveTarget] && moveTarget == "roster-hitters" && moveFilter.position && p._id && p.primaryPosition != moveFilter.position) return false
+        if (moveFilter.showEmpty && p?._id == undefined && !teamComponentService.hasLineupPosition(moveFilter.position)) return true
         if (p._id) return true
         if (moveActive[moveTarget] && (p._id != undefined || p.primaryPosition == moveFilter.position)) return true
         if (moveFilter.position && moveFilter.position == p.primaryPosition) return true
@@ -547,31 +510,7 @@
 
     }
 
-    const positionClick = (e) => {
-
-        // currentPage = 0
-
-        $('.position a').removeClass("active")
-        $(e.srcElement).addClass("active")
-
-        $('#playerSearch').val("")
-
-        let value = $(e.srcElement).data('pos')
-
-        unrosteredFilters.position = value
-
-        // updateDisplayRoster()
-
-        // setCurrentPage()
-
-
-        refreshLineup()
-
-
-        $update()
-
-    }
-
+    
     const fillButton = (element) => {
         element.removeClass("button-outline")
         element.addClass("button-fill")

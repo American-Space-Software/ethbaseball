@@ -56,7 +56,6 @@ class PlayerController {
     }
 
 
-
     @routeMap("/players/")
     async showList(): Promise<ModelView> {
         

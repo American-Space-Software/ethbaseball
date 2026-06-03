@@ -38,7 +38,7 @@
         <div class="right no-circle">
 
           <a href="#" class="popup-open" data-popup=".logged-in-popup">
-            <img src="/team/image/60/${authInfo?.teamId}" class="profilePic" />
+            <img src="/team/image/60/${getTeamId()}" class="profilePic" />
           </a> 
 
         </div>
@@ -375,6 +375,9 @@
     let subnavVisible = false
     let contractBalance
 
+    const getTeamId = () => {
+      return authInfo?.teams?.length > 0 ? authInfo.teams[0]._id : null
+    }
 
     const unlinkUserClicked = async (e) => {
 

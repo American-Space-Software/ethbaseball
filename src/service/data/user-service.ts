@@ -15,6 +15,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 import { v4 as uuidv4 } from 'uuid';
 import { ethers } from "ethers";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
+import { Position } from "../../baseball-sim-engine/index.js";
 
 
 @injectable()
@@ -55,9 +56,9 @@ class UserService {
     async getAuthInfo(user:User, season:Season) {
 
         let teams:Team[]  = await this.teamService.getByUser(user)
-        let team = teams[0]
+        let primaryTeam = teams[0]
 
-        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season)
+        let tls:TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(primaryTeam, season)
 
 
         let authInfo:any = { 
@@ -65,7 +66,7 @@ class UserService {
           discordUsername: user.discordProfile?.global_name, 
           discordId: user.discordId,
           address: user.address, 
-          teamId: team?._id,
+          teams: teams.map(t => ({ _id: t._id, name: t.name })),
           leagueId: tls?.leagueId,
         }
     
@@ -73,8 +74,8 @@ class UserService {
             authInfo.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
         }
         
-        if (team) {
-            authInfo.offChainDiamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
+        if (primaryTeam) {
+            authInfo.offChainDiamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, primaryTeam._id)
         }
 
 
@@ -96,7 +97,11 @@ class UserService {
         let inactivePlss = await this.playerLeagueSeasonService.getMostRecentInactiveByUserSeason(user, season)
         let inactivePlainPlss = inactivePlss.map(pls => pls.get({ plain: true }))
         
-        vm.inactivePlayers = inactivePlainPlss.map(pls => this.teamService.translatePLSToPlayerRowViewModel(pls.player, pls, false))
+        let inactivePlainPitcherPlss = inactivePlainPlss.filter(pls => pls.player.primaryPosition == Position.PITCHER)
+        let inactivePlainHitterPlss = inactivePlainPlss.filter(pls => pls.player.primaryPosition != Position.PITCHER)
+
+        vm.inactivePitchers = inactivePlainPitcherPlss.map(pls => this.teamService.translatePLSToPlayerRowViewModel(pls.player, pls, false))
+        vm.inactiveHitters = inactivePlainHitterPlss.map(pls => this.teamService.translatePLSToPlayerRowViewModel(pls.player, pls, false))
 
         let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
 

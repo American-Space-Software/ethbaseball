@@ -572,6 +572,160 @@ describe("LadderService", async () => {
         assert.equal(player.maxPitchCount, 30)
 
     })
+
+    it("should give full hitter XP percent when hitter appears", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.CATCHER,
+            maxPitchCount: DEFAULT_MAX_PITCH_COUNT
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 4 },
+            pitchResult: { pitches: 0 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer)
+
+        assert.equal(result, 100n)
+
+    })
+
+    it("should give half hitter XP percent when hitter does not appear", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.CATCHER,
+            maxPitchCount: DEFAULT_MAX_PITCH_COUNT
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 0 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer)
+
+        assert.equal(result, 50n)
+
+    })
+
+    it("should give starter XP percent based on pitch usage", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.PITCHER,
+            maxPitchCount: 100
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 60 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer, PitchingRoleType.STARTER)
+
+        assert.equal(result, 60n)
+
+    })
+
+    it("should cap starter XP percent at one hundred", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.PITCHER,
+            maxPitchCount: 100
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 115 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer, PitchingRoleType.STARTER)
+
+        assert.equal(result, 100n)
+
+    })
+
+    it("should give no XP percent to idle starters", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.PITCHER,
+            maxPitchCount: 100
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 0 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer, PitchingRoleType.STARTER)
+
+        assert.equal(result, 0n)
+
+    })
+
+    it("should give full reliever XP percent as twenty percent of starter XP", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.PITCHER,
+            maxPitchCount: 30
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 30 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer, PitchingRoleType.CLOSER)
+
+        assert.equal(result, 20n)
+
+    })
+
+    it("should give partial reliever XP percent based on pitch usage", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.PITCHER,
+            maxPitchCount: 30
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 15 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer, PitchingRoleType.SETUP)
+
+        assert.equal(result, 10n)
+
+    })
+
+    it("should give unused bullpen pitchers five percent XP", async () => {
+
+        let player = Object.assign(new Player(), {
+            _id: uuidv4(),
+            primaryPosition: Position.PITCHER,
+            maxPitchCount: 30
+        })
+
+        let gamePlayer = {
+            hitResult: { pa: 0 },
+            pitchResult: { pitches: 0 }
+        } as any
+
+        let result = service.getGameExperiencePercent(player, gamePlayer, PitchingRoleType.MIDDLE)
+
+        assert.equal(result, 5n)
+
+    })
+
+
     
     async function setLeagueTeamRanks(league: League, season: Season, tlssForSeason: TeamLeagueSeason[]): Promise<TeamLeagueSeason[]> {
 

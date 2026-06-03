@@ -16229,7 +16229,7 @@ enum TeamMarketOfferStatus {
     EXPIRED = "EXPIRED",
     PROCESSED = "PROCESSED"
 }
-
+const DEFAULT_DROP_PLAYER_DIAMONDS = "10000000000000000000"
 const DEFAULT_PLAYER_STARTING_AGE = 19
 const DEFAULT_MAX_PITCH_COUNT = 100
 
@@ -16347,7 +16347,7 @@ interface PlayerRowViewModel {
     maxPitchCount:number
 }
 
-export  {TeamViewModel, PlayerRowViewModel, DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
+export  {DEFAULT_DROP_PLAYER_DIAMONDS, TeamViewModel, PlayerRowViewModel, DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
     WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, 
     ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, TeamInfo, BaseRunners,  BaseRunnerIds, HitterPitcher,  ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

@@ -16,6 +16,34 @@ class PlayerWebService {
         private playerSharedService:PlayerSharedService
     ) { }
 
+    async activatePlayer(player:Player, teamId:string) {
+    
+        let result = await fetch(`/api/player/activate/${player._id}/${teamId}`, {
+            method: 'POST'
+        })
+        
+        if (result.status != 200) {
+            throw new Error(await result.text())
+        }
+
+        return result
+
+    }
+
+    async deactivatePlayer(player:Player) {
+    
+        let result = await fetch(`/api/player/deactivate/${player._id}`, {
+            method: 'POST'
+        })
+        
+        if (result.status != 200) {
+            throw new Error(await result.text())
+        }
+
+        return result
+
+    }    
+
     async dropPlayer(player:Player) {
     
         let result = await fetch(`/api/player/drop/${player._id}`, {
@@ -56,6 +84,9 @@ class PlayerWebService {
 
     }
 
+
+
+    
     async getPlayers(startDate:string, rank:number, page:number, position:Position|HitterPitcher, sortColumn:string, sortDirection:string) {
         //Download it.
         let result = await axios.get(`/api/player/list/${rank}/${startDate}/${page}?sortColumn=${sortColumn}&sortDirection=${sortDirection}&position=${position}`)

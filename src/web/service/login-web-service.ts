@@ -45,6 +45,16 @@ class LoginWebService {
 
     }
 
+    userOwnsTeam(teamId:string) {
+        
+        if (!teamId) return false
+        if (!this.authInfo) return false
+        if (this.authInfo.teams?.length == 0) return false
+    
+        return this.authInfo.teams.some(t => t._id == teamId)
+
+    }
+
     async fetchAuthInfo() {
         
         try {
@@ -111,35 +121,7 @@ class LoginWebService {
         
     }
 
-    // async loginWithCoinbaseWallet() {
-
-    //     await this.walletService.connect()
-    
-    //     let wallet = await this.walletService.getWallet()
-    
-    //     let sResult:any = await axios.get(`/auth/token/${wallet.address}`)
-    //     let signatureToken:any = sResult.data
-
-    //     let message = `Log in with wallet ${wallet.address}. \n\n @ ${signatureToken.token}`
-    
-    //     const signature = await wallet.signMessage(message)
-    
-    //     let result = await fetch('/auth/ethereum', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Accept': 'application/json',
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify({
-    //             message: message,
-    //             signature: signature
-    //         })
-    //     })
-
-    //     return result
-        
-    // }
-
+   
 
 
 }

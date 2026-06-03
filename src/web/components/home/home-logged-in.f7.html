@@ -47,108 +47,168 @@
                 <div class="block-title block-title-medium">In Progress</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
-                      ${renderComponent(InProgress, { vm: teamComponentService.inProgressGame })}
+                      <${InProgress} vm=${teamComponentService.inProgressGame} />
                     </ul>
                 </div>
             ` : $h` 
-                <div class="block-title block-title-medium">Play</div>
-                <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-                  <ul>
 
-                    ${isSeasonComplete(vm.season) ? $h`
-                      <li>
-                        <div class="item-content">
-                          <div class="item-media">🏁</div>
-                          <div class="item-inner">
-                            <div class="item-title-row">
-                              <div class="item-title item-title-wrap">Season complete</div>
-                            </div>
-                            <div class="item-text">
-                              Final results locked in.
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ` : $h` `}
+                ${hasValidLineup ? $h`
+                  
+                  <div class="block-title block-title-medium">Play</div>
+                  <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                    <ul>
 
-
-                    ${vm.teamInfo.team.isQueued ? $h`
-                      <li class="game-mode-primary">
-                        <a class="item-link item-content" @click="${clickLeaveQueue}">
-                          
-                          <div class="item-media">✅</div>
-
-                          <div class="item-inner">
-
-                            <div class="item-title-row">
-                              <div class="item-title">
-                                In the ranked queue
-                              </div>
-
-                              <div class="item-after">Leave</div>
-
-                            </div>
-
-                            <div class="item-text">
-                                ${getQueuedSubtitle(vm.season)}
-                            </div>
-
-                          </div>
-
-                        </a>
-                      </li>
-                    ` : $h`
-                      <li>
-                        <a class="item-link item-content popup-open" data-popup=".play-game-popup">
-                          <div class="item-media">🏟️</div>
-                          <div class="item-inner">
-                            <div class="item-title-row">
-                              <div class="item-title">Play Game</div>
-                              <div class="item-after"></div>
-                            </div>
-
-                          </div>
-                        </a>
-                      </li>
-                    `}
-
-
-                  </ul>
-                </div>
-
-                <div class="block-title block-title-medium">Player Development</div>
-                <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-
-                  <ul>
+                      ${isSeasonComplete(vm.season) ? $h`
                         <li>
-                          <a class="item-link item-content popup-open" data-popup=".development-budget-popup">
-                            <div class="item-media">🏋️</div>
+                          <div class="item-content">
+                            <div class="item-media">🏁</div>
                             <div class="item-inner">
                               <div class="item-title-row">
-                                <div class="item-title">Training Budget</div>
-                                <div class="item-after">${vm.teamInfo.team.developmentStrategy.budgetPercent}%</div>
+                                <div class="item-title item-title-wrap">Season complete</div>
                               </div>
                               <div class="item-text">
-                                Choose the % of your rewards that go towards player development.
+                                Final results locked in.
                               </div>
+                            </div>
+                          </div>
+                        </li>
+                      ` : $h` `}
+
+
+                      ${vm.teamInfo.team.isQueued ? $h`
+                        <li class="game-mode-primary">
+                          <a class="item-link item-content" @click="${clickLeaveQueue}">
+                            
+                            <div class="item-media">✅</div>
+
+                            <div class="item-inner">
+
+                              <div class="item-title-row">
+                                <div class="item-title">
+                                  In the ranked queue
+                                </div>
+
+                                <div class="item-after">Leave</div>
+
+                              </div>
+
+                              <div class="item-text">
+                                  ${getQueuedSubtitle(vm.season)}
+                              </div>
+
+                            </div>
+
+                          </a>
+                        </li>
+                      ` : $h`
+                        <li>
+                          <a class="item-link item-content popup-open" data-popup=".play-game-popup">
+                            <div class="item-media">🏟️</div>
+                            <div class="item-inner">
+                              <div class="item-title-row">
+                                <div class="item-title">Play Game</div>
+                                <div class="item-after"></div>
+                              </div>
+
                             </div>
                           </a>
                         </li>
-                  </ul>
+                      `}
 
-                </div>            
+
+                    </ul>
+                  </div>
+
+                  <div class="block-title block-title-medium">Player Development</div>
+                  <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+
+                    <ul>
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".development-budget-popup">
+                              <div class="item-media">🏋️</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">Training Budget</div>
+                                  <div class="item-after">${vm.teamInfo.team.developmentStrategy.budgetPercent}%</div>
+                                </div>
+                                <div class="item-text">
+                                  Choose the % of your rewards that go towards player development.
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+                    </ul>
+
+                  </div> 
+                  
+                ` : $h`
+                
+                  <div class="block-title block-title-medium">YOUR ROSTER IS INCOMPLETE</div>
+                  <div class="block block-outline block-strong color-background-red color-white">
+                    Fix your lineup to start playing games and earning rewards.
+                  </div>
+
+                
+                `}
+
+
+
+           
             `}
 
 
-            ${renderComponent(Roster)}
+            <${Roster} />
 
+            <div class="block-title block-title-medium ">
+                Inactive Players (${inactivePlayerCount} of ${maxInactivePlayers})
+            </div>
+
+
+            <div class="block-title block-title-small ">
+                Inactive Hitters
+            </div>
+
+            <div class="block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
+            
+                ${teamComponentService.selected == "stats" ? $h`
+                    <hitter-stats hitters=${vm.inactiveHitters} sortable="false" pagesize=${25} statprop="seasonStats" startindex="${0}">
+                    </hitter-stats>
+                ` : $h` `}
+
+                ${teamComponentService.selected == "ratings" ? $h`
+                    <hitter-ratings hitters=${vm.inactiveHitters} sortable="false" pagesize=${25} startindex="${0}">
+                    </hitter-ratings>
+                ` : $h` `}
+
+            </div>
+
+
+            <div class="block-title block-title-small ">
+                Inactive Pitchers
+            </div>
+
+            <div class="block block-outline block-lineup-table ${teamComponentService.hasChanges ? $h`card-unsaved` : $h` `} stat-table-wrapper">
+                ${teamComponentService.selected == "stats" ? $h`
+                    <pitcher-stats pitchers=${vm.inactivePitchers} sortable="false" pagesize=${25} statprop="seasonStats" startindex="${0}">
+                        <span />
+                    </pitcher-stats>
+                ` : $h` `}
+
+                ${teamComponentService.selected == "ratings" ? $h`
+                    <pitcher-ratings pitchers=${vm.inactivePitchers} sortable="false" pagesize=${25} startindex="${0}">
+                        <span />
+                    </pitcher-ratings>
+                ` : $h` `}
+            </div>
 
             ${teamComponentService.completedGames?.length > 0 ? $h`
 
                 <div class="block-title block-title-medium">Recent Games</div>
                 <div class="list list-outline-ios list-strong-ios list-dividers-ios">
                     <ul>
-                        ${teamComponentService.completedGames?.map(game => renderComponent(Result, { game }))}
+                        ${teamComponentService.completedGames?.map(game => $h`
+                            <${Result} game=${game} />
+                        `)}
                     </ul>
                 </div>
 
@@ -172,7 +232,7 @@
             ${vm.teamInfo.eventsViewModel?.transactions?.length > 0 ? $h`
 
                 <div class="block-title block-title-medium">Recent Transactions</div>
-                ${renderComponent(OffChainEvents, { model: vm.teamInfo.eventsViewModel })}
+                <${OffChainEvents} model=${vm.teamInfo.eventsViewModel} />
 
             ` : $h` `}
 
@@ -509,6 +569,7 @@
   import { GameWebService } from "../../service/game-web-service.ts"
   import { TeamComponentService } from "../../service/team-component-service.ts"
   import { StatService } from "../../../service/stat-service.ts"
+  import {DEFAULT_ROSTER_CONSTRAINTS} from "../../../service/enums.ts"
 
   import InProgress from "./in-progress.f7.html"
   import Result from "./result.f7.html"
@@ -532,6 +593,13 @@
     let authInfo = props.authInfo
 
 
+    let hasValidLineup = vm.teamInfo?.team?.hasValidLineup
+
+
+    let inactivePlayerCount = vm.inactiveHitters.length + vm.inactivePitchers.length
+
+    let maxInactivePlayers = Math.max((DEFAULT_ROSTER_CONSTRAINTS.maxTotalRosterSize - DEFAULT_ROSTER_CONSTRAINTS.maxTeamRosterSize), inactivePlayerCount)
+
     let selectedBudgetPercent = vm.teamInfo.team.developmentStrategy.budgetPercent
 
     let baseDiamondReward = leagues.find(l => l._id == authInfo.leagueId)?.baseDiamondReward
@@ -542,24 +610,6 @@
     let minOpponentRating = myRating - 25
     let maxOpponentRating = myRating + 25
 
-    const renderComponent = (component, componentProps = {}) => {
-      const renderFn = component(
-        componentProps,
-        { $, $h, $on, $f7, $update }
-      )
-
-      return renderFn({
-        $,
-        $h,
-        $root: null,
-        $f7,
-        $f7route: $f7.views.main.router.currentRoute,
-        $f7router: $f7.views.main.router,
-        $theme: $f7.theme,
-        $update,
-        $store: $f7.store
-      })
-    }
 
     const formatRangeLabel = (value) => {
       return `${value}%`
