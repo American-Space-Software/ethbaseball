@@ -168,6 +168,7 @@ import { TeamMarketOfferRepositoryNodeImpl } from "../repository/node/team-marke
 import { TeamMarketOffer } from "../dto/team-market-offer.js"
 import { TeamMarketOfferRepository } from "../repository/team-market-offer-repository.js"
 import { TeamTransactionService } from "../service/data/team-transaction-service.js";
+import { TeamMarketOfferService } from "../service/data/team-market-offer-service.js";
 
 let _diamondsAddress:string
 let _universe:Universe
@@ -387,6 +388,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(FinanceService).toSelf().inSingletonScope()
     container.bind(SimSharedService).toSelf().inSingletonScope()
     container.bind(GameNotificationService).toSelf().inSingletonScope()
+    container.bind(TeamMarketOfferService).toSelf().inSingletonScope()
 
     container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
     container.bind(PlayerLeagueSeasonService).toSelf().inSingletonScope()

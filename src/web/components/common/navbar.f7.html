@@ -202,7 +202,7 @@
                           ` : $h` `}
                           
                           <li>
-                            <a class="item-link item-content" @click="${depositClick}">
+                            <a class="item-link item-content popup-open" data-popup=".deposit-popup">
                               <div class="item-inner">
                                 <div class="item-title">Start Deposit</div>
                               </div>
@@ -333,6 +333,59 @@
         </div>
       </div>
     </div>
+
+    <div class="popup deposit-popup">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="title">Deposit Diamonds</div>
+              <div class="right">
+                <a class="link popup-close">Close</a>
+              </div>
+            </div>
+          </div>
+          <div class="page-content">
+
+              <div class="block">
+                <p>
+                  Click 'Start Deposit' to begin a deposit.
+                </p>
+
+
+                <p>
+                  Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.
+                </p>
+
+              </div>
+
+              <div class="list list-dividers-ios">
+
+                <ul>
+                  <li>
+                    <div class="item-content item-input">
+                      <div class="item-inner">
+                        <div class="item-title item-label">Deposit Amount:</div>
+                        <div class="item-input-wrap diamond-input-wrap">
+                          <input type="number" name="deposit-amount" placeholder="Deposit amount" />
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+
+              </div>
+
+              <div class="block">                        
+                <a @click="${startDepositButtonClick}" class="button button-fill color-red start-deposit-button">Start Deposit</a>
+              </div>
+
+          </div>
+        </div>
+      </div>
+    </div>   
+
 
 
   </header>
@@ -499,32 +552,24 @@
 
     }
     
-    const depositClick = async (e) => {
+    const startDepositButtonClick = async (e) => {
 
-        const dialog = $f7.dialog.prompt(`<span style="text-align: left;">Click ok to begin a deposit<br /><br /> 
+      try {
 
-        Your wallet will open to confirm a transaction. Enter the number of 🔷 to deposit to the team treasury.
+          let value = $('input[name="deposit-amount"]').val()
+          
+          let v = ethers.parseUnits( value.toString()  , 'ether')
 
-        `, "Deposit", async (value) => {
+          let result = await diamondService.deposit(authInfo.address,  v)
 
-            try {
-                
-                let v = ethers.parseUnits( value.toString()  , 'ether')
-
-                let result = await diamondService.deposit(authInfo.address,  v)
-
-                if (result.hash) {
-                    $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
-                }
-                
-            } catch(ex) {
-                console.log(ex)
-                $f7.dialog.alert(ex.message, "Invalid value")
-            }
-            
-        }, ()=>{}, 0)
-
-        dialog.$el.find('input').attr('type', 'number')
+          if (result.hash) {
+              $f7.views.main.router.navigate($f7.views.main.router.currentRoute.url, { reloadCurrent: true, ignoreCache: true })
+          }
+          
+      } catch(ex) {
+          console.log(ex)
+          $f7.dialog.alert(ex.message, "Invalid value")
+      }
 
 
     }

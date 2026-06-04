@@ -58,6 +58,7 @@ import { LadderService } from '../service/ladder-service.js'
 import { TeamQueueService } from '../service/data/team-queue-service.js'
 import { PitchingRoleType, Position, RotationPitcher } from '../baseball-sim-engine/index.js';
 import { TeamTransactionService } from '../service/data/team-transaction-service.js';
+import { TeamMarketOfferService } from '../service/data/team-market-offer-service.js';
 
 
 const TWITTER = "@ethbaseball"
@@ -130,6 +131,7 @@ let startWebServer = async () => {
   let ladderService:LadderService = container.get(LadderService)
   let teamQueueService:TeamQueueService = container.get(TeamQueueService)
   let teamTransactionService:TeamTransactionService = container.get(TeamTransactionService)
+  let teamMarketOfferService:TeamMarketOfferService = container.get(TeamMarketOfferService)
 
   let offchainEventService:OffchainEventService = container.get(OffchainEventService)
   let processedTransactionService:ProcessedTransactionService = container.get(ProcessedTransactionService)
@@ -1203,6 +1205,92 @@ let startWebServer = async () => {
           let player:Player = await playerService.get(playerId, options)
           
           await teamTransactionService.deactivatePlayer(user, team, player, universe.currentDate, options)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
+
+  app.post('/api/player/list-for-sale/:playerId', async function (req, res) {
+
+    try {
+
+      let playerId = req.params.playerId
+
+      let listPrice = req.body.listPrice
+
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      await refreshUniverse()
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let player:Player = await playerService.get(playerId, options)
+          
+          await teamTransactionService.createPlayerSaleListing(user, player, listPrice, options)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
+
+
+  app.post('/api/player/cancel-sales-listing/:playerId', async function (req, res) {
+
+    try {
+
+      let playerId = req.params.playerId
+
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      await refreshUniverse()
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let player:Player = await playerService.get(playerId, options)
+
+  
+          await teamTransactionService.cancelPlayerSaleListings(user, player, options)
 
       })
 

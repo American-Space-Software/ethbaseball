@@ -3464,3 +3464,27 @@ td.action, th.action {
 .item-title.small {
   font-size: 14px;
 }
+
+
+.diamond-input-wrap {
+    position: relative;
+}
+
+.diamond-input-wrap input {
+    text-align: right;
+    padding-right: 28px;
+}
+
+.diamond-input-wrap:after {
+    content: "🔷";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.item-input-wrap.diamond-input-wrap input {
+    text-align: right;
+    padding-right: 43px;
+}

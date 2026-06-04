@@ -233,6 +233,7 @@ import { Alchemy } from "alchemy-sdk";
 import { AbiPayloadService } from "../src/service/abi-payload-service.js"
 import { TeamSharedService } from "../src/service/shared/team-shared-service.js"
 import { TeamTransactionService } from "../src/service/data/team-transaction-service.js"
+import { TeamMarketOfferService } from "../src/service/data/team-market-offer-service.js"
 
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
@@ -472,6 +473,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(TeamWebService).toSelf().inSingletonScope()
   container.bind(GameWebService).toSelf().inSingletonScope()
   container.bind(SocketWebService).toSelf().inSingletonScope()
+  container.bind(TeamMarketOfferService).toSelf().inSingletonScope()
 
   container.bind("eventTarget").toConstantValue({})
   container.bind("env").toConstantValue({})

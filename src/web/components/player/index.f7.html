@@ -192,6 +192,26 @@
                       ` : $h` `}
 
 
+
+                      ${showListForSale ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".list-for-sale-popup">
+                              <div class="item-media">🔷</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    List for Sale
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+
+
+
                   </ul>
               </div>
           ` : $h` `}
@@ -1011,6 +1031,98 @@
           ` : $h` `}
 
 
+
+          ${showListForSalePopup ? $h`
+            
+            <div class="popup list-for-sale-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">List Player For Sale</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                      <div class="block">
+                        <p>
+                          Set the number of Diamonds 🔷 that you will receive when the player sells. 
+                        </p>
+                      </div>
+
+                      <div class="list list-dividers-ios">
+
+                        <ul>
+                          <li>
+                            <div class="item-content item-input">
+                              <div class="item-inner">
+                                <div class="item-title item-label">Set Price in Diamonds:</div>
+                                <div class="item-input-wrap diamond-input-wrap">
+                                  <input type="number" name="sale-price" placeholder="Sale price" required />
+                                </div>
+                              </div>
+                            </div>
+                          </li>
+                        </ul>
+
+                      </div>
+
+                      <div class="block">                        
+                        <a @click="${listForSaleButtonClick}" class="button button-fill color-red list-for-sale-button">List for Sale</a>
+                      </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
+
+
+          ${showCancelSalesListingPopup ? $h`
+            
+            <div class="popup cancel-sales-listing-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Cancel Listing</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                      <div class="block">
+                        <p>
+                          Cancel sales listing for ${player.fullName}.
+                        </p>
+
+                        <p>
+                            <strong>Current Price: </strong><br />
+                            ${universeWebService.displayDiamonds(player.listPrice)}
+                        </p>
+
+                      </div>
+
+                      <div class="block">                        
+                        <a @click="${cancelSalesListingButtonClick}" class="button button-fill color-red cancel-sales-listing-button">Cancel Listing</a>
+                      </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
+
+
         ` : $h` `}
 
       </div>
@@ -1061,7 +1173,7 @@
     let authInfo = props.authInfo
     let player = props.player
     
-
+   
     const canAffordDrop = () => {
 
       if (!authInfo?.offChainDiamondBalance) return false
@@ -1082,11 +1194,15 @@
     let showSignPopup = authInfo && player.team?.userId == undefined
     let showActivatePopup =  isOwner && player.team?.userId && !player.team?._id
     let showDeactivatePopup = isOwner && player.team?._id
+    let showListForSalePopup = isOwner && !player.salesOffer?._id
+    let showCancelSalesListingPopup = isOwner && player.salesOffer?._id
 
     let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop()) == true
     let showSign = ( isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
     let showActivate = showActivatePopup
     let showDeactivate = showDeactivatePopup
+    let showListForSale = showListForSalePopup
+    let showCancelSalesListing = showCancelSalesListingPopup
 
     let showInsufficientDiamonds = isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.askingPrice))
     let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary))
@@ -1139,6 +1255,87 @@
       return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
     }
 
+
+    const listForSaleButtonClick = async (e) => {
+
+      try {
+          const input = document.querySelector('input[name="sale-price"]')
+
+          if (!input.reportValidity()) {
+              return
+          }
+
+
+          let confirmMessage = `Confirm you would like to list player for sale.`
+
+          $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
+
+             let value = $('input[name="sale-price"]').val()
+             let listPrice = ethers.parseUnits( value.toString()  , 'ether')
+
+
+              await playerWebService.listPlayerForSale(player, listPrice.toString())
+              
+              $f7.popup.close('.deactivate-popup')
+              $f7.views.main.router.navigate(universeWebService.startDateLink(`/p/${player._id}`))
+
+              const toast = $f7.toast.create({
+                  text: 'Player listing created successfully.',
+                  closeTimeout: 5000,
+                  position: 'bottom',
+                  horizontalPosition: 'center',
+                  on: {
+                      opened: function () { }
+                  }
+              })
+
+              toast.open()
+
+
+          })
+
+
+
+
+         
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
+    }
+
+    
+    const cancelSalesListingButtonClick = async (e) => {
+
+      try {
+
+        await playerWebService.cancelPlayerListing(player)
+        
+        $f7.popup.close('.cancel-sales-listing-popup')
+        $f7.views.main.router.navigate(universeWebService.startDateLink(`/p/${player._id}`))
+
+        const toast = $f7.toast.create({
+            text: 'Player listing cancelled.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
+
+        toast.open()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
+    }
+
+
+
+
+
+
     const deactivateButtonClick = async (e) => {
 
       try {
@@ -1164,7 +1361,6 @@
         $f7.dialog.alert(ex.message)
       }
     }
-
 
     const activateButtonClick = async (e) => {
 
@@ -1192,27 +1388,34 @@
       }
     }
 
-
     const dropButtonClick = async (e) => {
 
       try {
 
-        await playerWebService.dropPlayer(player)
-        
-        $f7.popup.close('.drop-popup')
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
+        let confirmMessage = `Confirm you would like to drop player from your roster. Any other team will be able to sign them.`
 
-        const toast = $f7.toast.create({
-            text: 'Player dropped successfully.',
-            closeTimeout: 5000,
-            position: 'bottom',
-            horizontalPosition: 'center',
-            on: {
-                opened: function () { }
-            }
+        $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
+          
+          await playerWebService.dropPlayer(player)
+          
+          $f7.popup.close('.drop-popup')
+          $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
+
+          const toast = $f7.toast.create({
+              text: 'Player dropped successfully.',
+              closeTimeout: 5000,
+              position: 'bottom',
+              horizontalPosition: 'center',
+              on: {
+                  opened: function () { }
+              }
+          })
+
+          toast.open()
+
         })
 
-        toast.open()
+      
 
       } catch(ex) {
         $f7.dialog.alert(ex.message)
@@ -1222,21 +1425,28 @@
     const signButtonClick = async (e) => {
 
       try {
-        await playerWebService.signPlayer(player)
-        $f7.popup.close('.sign-popup')
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
 
-        const toast = $f7.toast.create({
-            text: 'Player signed to roster.',
-            closeTimeout: 5000,
-            position: 'bottom',
-            horizontalPosition: 'center',
-            on: {
-                opened: function () { }
-            }
+        let confirmMessage = `Confirm you would like to sign player to your roster.`
+
+        $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
+          
+          await playerWebService.signPlayer(player)
+          $f7.popup.close('.sign-popup')
+          $f7.views.main.router.navigate(universeWebService.startDateLink(`/`))
+
+          const toast = $f7.toast.create({
+              text: 'Player signed to roster.',
+              closeTimeout: 5000,
+              position: 'bottom',
+              horizontalPosition: 'center',
+              on: {
+                  opened: function () { }
+              }
+          })
+
+          toast.open()
+
         })
-
-        toast.open()
 
       } catch(ex) {
         $f7.dialog.alert(ex.message)

@@ -171,6 +171,7 @@ import { GameNotifications } from "../dto/game-notifications.js"
 import { TeamMarketOfferRepositoryNodeImpl } from "../repository/node/team-market-offer-repository-impl.js"
 import { TeamMarketOffer } from "../dto/team-market-offer.js"
 import { TeamTransactionService } from "../service/data/team-transaction-service.js"
+import { TeamMarketOfferService } from "../service/data/team-market-offer-service.js"
 
 
 const client = new Client({ intents: [

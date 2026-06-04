@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 
 
 import { TeamMarketOfferRepository } from "../../repository/team-market-offer-repository.js";
-import { TeamMarketOffer, TeamMarketOfferPackage } from "../../dto/team-market-offer.js";
+import { TeamMarketOffer } from "../../dto/team-market-offer.js";
 import { Team, TEAM_COLORS } from "../../dto/team.js";
 import { Season } from "../../dto/season.js";
 import { ContractType, FinanceSeason, GLICKO_SETTINGS, DEFAULT_ROSTER_CONSTRAINTS, TeamMarketOfferStatus, Lineup, DEFAULT_MAX_PITCH_COUNT, DEFAULT_DROP_PLAYER_DIAMONDS } from "../enums.js";
@@ -169,14 +169,19 @@ class TeamTransactionService {
             throw new Error(`Team does not have enough diamonds to drop this player.`)
         }
 
-        let pendingOffers: TeamMarketOffer[] = await this.teamMarketOfferRepository.listPendingByPlayerId(player._id, options)
+        let privateBuyOffers: TeamMarketOffer[] = await this.teamMarketOfferRepository.listPendingPrivateBuyOffersByPlayerId(player._id, options)
 
-        for (let pendingOffer of pendingOffers) {
-            await this.cancelTeamMarketOffer(pendingOffer, options)
+        for (let privateBuyOffer of privateBuyOffers) {
+            await this.cancelTeamMarketOffer(privateBuyOffer, options)
+        }
+
+        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+
+        if (saleListing && saleListing.sellerUserId == user._id) {
+            await this.cancelTeamMarketOffer(saleListing, options)
         }
 
         if (rosterTeam) {
-
             tls = await this.teamLeagueSeasonService.getByTeamSeason(rosterTeam, season, options)
 
             this.lineupService.lineupRemove(tls.lineups[0], player._id)
@@ -195,7 +200,6 @@ class TeamTransactionService {
 
             tls.changed("lineups", true)
             tls.changed("hasValidLineup", true)
-
         }
 
         await this.movePlayerToFreeAgency(player, pls, season, date, options)
@@ -218,6 +222,107 @@ class TeamTransactionService {
 
     async deactivatePlayer(user: User, team: Team, player: Player, date: Date, options?: any): Promise<TeamLeagueSeason> {
         return await this.updateTeamRosterAssignment(user, team, date, undefined, player._id, options)
+    }
+
+    async createPlayerSaleListing(user: User, player: Player, listPrice: string, options?: any): Promise<TeamMarketOffer> {
+
+        if (BigInt(listPrice) <= BigInt(0)) {
+            throw new Error("Diamond amount must be greater than zero.")
+        }
+
+        let season: Season = await this.seasonService.getMostRecent(options)
+        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (!pls.userId) {
+            throw new Error("Player is not owned.")
+        }
+
+        if (pls.userId != user._id) {
+            throw new Error("Not authorized.")
+        }
+
+        let existingListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+
+        if (existingListing) {
+            throw new Error("Player already has an active sale listing.")
+        }
+
+        let teams: Team[] = await this.teamService.getByUser(user, options)
+        let sellerPaymentTeam: Team = teams[0]
+
+        if (!sellerPaymentTeam) {
+            throw new Error("User does not have a team.")
+        }
+
+        return this.createTeamMarketOffer(undefined, sellerPaymentTeam, player, listPrice, options)
+
+    }
+
+    async buyPlayerSaleListing(user: User, tmo: TeamMarketOffer, options?: any): Promise<TeamMarketOffer> {
+
+        if (tmo.status != TeamMarketOfferStatus.PENDING) {
+            throw new Error("Team market offer is not pending.")
+        }
+
+        if (tmo.buyerUserId || tmo.buyerPaymentTeamId || tmo.escrowTransactionId) {
+            throw new Error("Team market offer is not a sale listing.")
+        }
+
+        if (user._id == tmo.sellerUserId) {
+            throw new Error("Seller cannot buy their own listing.")
+        }
+
+        let buyerTeams: Team[] = await this.teamService.getByUser(user, options)
+        let buyerPaymentTeam: Team = buyerTeams[0]
+
+        if (!buyerPaymentTeam) {
+            throw new Error("User does not have a team to buy this listing.")
+        }
+
+        throw new Error("Buying existing sale listings is not implemented yet.")
+
+    }
+
+    async createPrivatePlayerBuyOffer(buyerPaymentTeam: Team, sellerPaymentTeam: Team, player: Player, diamondAmount: string, options?: any): Promise<TeamMarketOffer> {
+
+        let season: Season = await this.seasonService.getMostRecent(options)
+        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (!pls.userId || pls.userId != sellerPaymentTeam.userId) {
+            throw new Error("Player is not owned by the seller.")
+        }
+
+        return this.createTeamMarketOffer(buyerPaymentTeam, sellerPaymentTeam, player, diamondAmount, options)
+
+    }
+
+    async cancelPlayerSaleListings(user: User, player: Player, options?: any): Promise<TeamMarketOffer[]> {
+
+        let season: Season = await this.seasonService.getMostRecent(options)
+        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (!pls.userId) {
+            throw new Error("Player is not owned.")
+        }
+
+        if (pls.userId != user._id) {
+            throw new Error("Not authorized.")
+        }
+
+        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+
+        if (!saleListing) {
+            return []
+        }
+
+        if (saleListing.sellerUserId != user._id) {
+            return []
+        }
+
+        await this.cancelTeamMarketOffer(saleListing, options)
+
+        return [saleListing]
+
     }
 
     async updateTeamRosterAssignment(user: User, team: Team, date: Date, addPlayerId?: string, removePlayerId?: string, options?: any): Promise<TeamLeagueSeason> {
@@ -316,54 +421,44 @@ class TeamTransactionService {
 
     }
 
-    async createTeamMarketOffer(buyerPaymentTeam:Team, sellerPaymentTeam:Team, marketPackage:TeamMarketOfferPackage, diamondAmount:string, options?:any): Promise<TeamMarketOffer> {
-
-        if (buyerPaymentTeam._id == sellerPaymentTeam._id) {
-            throw new Error("Buyer and seller teams cannot be the same.")
-        }
+    async createTeamMarketOffer(buyerPaymentTeam: Team | undefined, sellerPaymentTeam: Team, salePlayer: Player, diamondAmount: string, options?: any): Promise<TeamMarketOffer> {
 
         if (BigInt(diamondAmount) <= BigInt(0)) {
             throw new Error("Diamond amount must be greater than zero.")
         }
 
-        let season:Season = await this.seasonService.getMostRecent(options)
-
-        for (let playerId of marketPackage.playerIds) {
-
-            let player:Player = await this.playerService.get(playerId, options)
-            let pls:PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
-
-            if (pls.userId != sellerPaymentTeam.userId) {
-                throw new Error("Player is not owned by the seller.")
-            }
-
+        if (buyerPaymentTeam && buyerPaymentTeam._id == sellerPaymentTeam._id) {
+            throw new Error("Buyer and seller payment teams cannot be the same.")
         }
 
-        let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerPaymentTeam._id, options)
-
-        if (BigInt(diamondBalance) < BigInt(diamondAmount)) {
-            throw new Error("Buyer team does not have enough diamonds to create this offer.")
-        }
-
-        let escrowTransactionId = uuidv4()
-
-        await this.offchainEventService.createTeamBurnEvent(
-            buyerPaymentTeam._id,
-            diamondAmount,
-            escrowTransactionId,
-            options
-        )
-
-        let tmo:TeamMarketOffer = Object.assign(new TeamMarketOffer(), {
-            buyerUserId: buyerPaymentTeam.userId,
+        let tmo: TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            buyerUserId: buyerPaymentTeam?.userId,
             sellerUserId: sellerPaymentTeam.userId,
-            buyerPaymentTeamId: buyerPaymentTeam._id,
+            buyerPaymentTeamId: buyerPaymentTeam?._id,
             sellerPaymentTeamId: sellerPaymentTeam._id,
-            package: marketPackage,
+            salePlayerId: salePlayer._id,
             diamondAmount: diamondAmount,
             status: TeamMarketOfferStatus.PENDING,
-            escrowTransactionId: escrowTransactionId
+            escrowTransactionId: undefined,
+            settlementTransactionId: undefined
         })
+
+        if (buyerPaymentTeam) {
+
+            let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, buyerPaymentTeam._id, options)
+
+            if (BigInt(diamondBalance) < BigInt(diamondAmount)) {
+                throw new Error("Buyer does not have enough diamonds.")
+            }
+
+            let escrowTransactionId = uuidv4()
+
+            await this.offchainEventService.createTeamBurnEvent(buyerPaymentTeam._id, diamondAmount, escrowTransactionId, options)
+
+            tmo.escrowTransactionId = escrowTransactionId
+
+        }
 
         await this.put(tmo, options)
 
@@ -371,15 +466,15 @@ class TeamTransactionService {
 
     }
 
-    async cancelTeamMarketOffer(tmo:TeamMarketOffer, options?:any): Promise<TeamMarketOffer> {
+    async cancelTeamMarketOffer(tmo: TeamMarketOffer, options?: any): Promise<TeamMarketOffer> {
 
         if (tmo.status != TeamMarketOfferStatus.PENDING) {
             throw new Error("Team market offer is not pending.")
         }
 
-        let refundTransactionId = uuidv4()
+        let settlementTransactionId = uuidv4()
 
-        if (BigInt(tmo.diamondAmount) > BigInt(0)) {
+        if (tmo.buyerPaymentTeamId && tmo.escrowTransactionId && BigInt(tmo.diamondAmount) > BigInt(0)) {
 
             await this.offchainEventService.createTeamMintEvent(
                 tmo.buyerPaymentTeamId,
@@ -389,14 +484,14 @@ class TeamTransactionService {
                     teamMarketOfferId: tmo._id,
                     escrowTransactionId: tmo.escrowTransactionId
                 },
-                refundTransactionId,
+                settlementTransactionId,
                 options
             )
 
         }
 
         tmo.status = TeamMarketOfferStatus.CANCELLED
-        tmo.settlementTransactionId = refundTransactionId
+        tmo.settlementTransactionId = settlementTransactionId
 
         await this.put(tmo, options)
 
@@ -408,6 +503,10 @@ class TeamTransactionService {
 
         if (tmo.status != TeamMarketOfferStatus.PENDING) {
             throw new Error("Team market offer is not pending.")
+        }
+
+        if (!tmo.buyerUserId || !tmo.buyerPaymentTeamId || !tmo.escrowTransactionId) {
+            throw new Error("Team market offer is not a private buy offer.")
         }
 
         if (user._id != tmo.sellerUserId) {
@@ -429,100 +528,106 @@ class TeamTransactionService {
 
         let buyerRosterSize = await this.playerLeagueSeasonService.getMostRecentCountByUserSeason(tmo.buyerUserId, season, options)
 
-        if (buyerRosterSize + tmo.package.playerIds.length > DEFAULT_ROSTER_CONSTRAINTS.maxTotalRosterSize) {
+        if (buyerRosterSize + 1 > DEFAULT_ROSTER_CONSTRAINTS.maxTotalRosterSize) {
             throw new Error("Buyer roster is full.")
         }
 
         let settlementTransactionId = uuidv4()
         let changedTlsByTeamId: Map<string, TeamLeagueSeason> = new Map()
 
-        for (let playerId of tmo.package.playerIds) {
+        let player: Player = await this.playerService.get(tmo.salePlayerId, options)
+        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
 
-            let player: Player = await this.playerService.get(playerId, options)
-            let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+        if (pls.userId != tmo.sellerUserId) {
+            throw new Error("Player is not owned by the seller.")
+        }
 
-            if (pls.userId != tmo.sellerUserId) {
-                throw new Error("Player is not owned by the seller.")
+        if (pls.teamId) {
+
+            let activeTeam: Team = await this.teamService.get(pls.teamId, options)
+
+            if (activeTeam.userId != tmo.sellerUserId) {
+                throw new Error("Player is assigned to a team not owned by the seller.")
             }
 
-            if (pls.teamId) {
+            await this.teamQueueService.dequeueTeam(activeTeam, options)
 
-                let activeTeam: Team = await this.teamService.get(pls.teamId, options)
+            let tls: TeamLeagueSeason = changedTlsByTeamId.get(activeTeam._id)
 
-                if (activeTeam.userId != tmo.sellerUserId) {
-                    throw new Error("Player is assigned to a team not owned by the seller.")
-                }
-
-                await this.teamQueueService.dequeueTeam(activeTeam, options)
-
-                let tls: TeamLeagueSeason = changedTlsByTeamId.get(activeTeam._id)
-
-                if (!tls) {
-                    tls = await this.teamLeagueSeasonService.getByTeamSeason(activeTeam, season, options)
-                    changedTlsByTeamId.set(activeTeam._id, tls)
-                }
-
-                this.lineupService.lineupRemove(tls.lineups[0], player._id)
-                this.lineupService.rotationRemove(tls.lineups[0], player._id)
-
-                if (tls.lineups[0].availablePitchers) {
-                    tls.lineups[0].availablePitchers = tls.lineups[0].availablePitchers.filter(p => p.playerId != player._id)
-                }
-
-                if (tls.lineups[0].availableHitters) {
-                    tls.lineups[0].availableHitters = tls.lineups[0].availableHitters.filter(p => p._id != player._id)
-                }
-
-                tls.lineups[0].valid = false
-                tls.hasValidLineup = false
-
-                tls.changed("lineups", true)
-                tls.changed("hasValidLineup", true)
-
+            if (!tls) {
+                tls = await this.teamLeagueSeasonService.getByTeamSeason(activeTeam, season, options)
+                changedTlsByTeamId.set(activeTeam._id, tls)
             }
 
-            pls.endDate = date
+            this.lineupService.lineupRemove(tls.lineups[0], player._id)
+            this.lineupService.rotationRemove(tls.lineups[0], player._id)
 
-            await this.playerLeagueSeasonService.put(pls, options)
-
-            let nextPLS = new PlayerLeagueSeason()
-
-            nextPLS.playerId = pls.playerId
-            nextPLS.seasonId = season._id
-            nextPLS.leagueId = pls.leagueId
-            nextPLS.userId = tmo.buyerUserId
-            nextPLS.teamId = undefined
-            nextPLS.seasonIndex = pls.seasonIndex + 1
-            nextPLS.primaryPosition = pls.primaryPosition
-            nextPLS.overallRating = pls.overallRating
-            nextPLS.hittingRatings = pls.hittingRatings
-            nextPLS.pitchRatings = pls.pitchRatings
-            nextPLS.potentialOverallRating = pls.potentialOverallRating
-            nextPLS.potentialHittingRatings = pls.potentialHittingRatings
-            nextPLS.potentialPitchRatings = pls.potentialPitchRatings
-            nextPLS.startDate = date
-            nextPLS.endDate = season.endDate
-            nextPLS.age = player.age
-
-            nextPLS.stats = {
-                //@ts-ignore
-                hitting: this.statService.mergeHitResultsToStatLine({}, {}),
-                //@ts-ignore
-                pitching: this.statService.mergePitchResultsToStatLine({}, {})
+            if (tls.lineups[0].availablePitchers) {
+                tls.lineups[0].availablePitchers = tls.lineups[0].availablePitchers.filter(p => p.playerId != player._id)
             }
 
-            await this.playerLeagueSeasonService.put(nextPLS, options)
-
-            await this.offchainEventService.createPlayerTransferEvent(sellerPaymentTeam._id, buyerPaymentTeam._id, player._id, settlementTransactionId, options)
-
-            let pendingOffers: TeamMarketOffer[] = await this.teamMarketOfferRepository.listPendingByPlayerId(player._id, options)
-
-            for (let pendingOffer of pendingOffers) {
-                if (pendingOffer._id != tmo._id) {
-                    await this.cancelTeamMarketOffer(pendingOffer, options)
-                }
+            if (tls.lineups[0].availableHitters) {
+                tls.lineups[0].availableHitters = tls.lineups[0].availableHitters.filter(p => p._id != player._id)
             }
 
+            tls.lineups[0].valid = false
+            tls.hasValidLineup = false
+
+            tls.changed("lineups", true)
+            tls.changed("hasValidLineup", true)
+
+        }
+
+        pls.endDate = date
+
+        await this.playerLeagueSeasonService.put(pls, options)
+
+        let nextPLS = new PlayerLeagueSeason()
+
+        nextPLS.playerId = pls.playerId
+        nextPLS.seasonId = season._id
+        nextPLS.leagueId = pls.leagueId
+        nextPLS.userId = tmo.buyerUserId
+        nextPLS.teamId = undefined
+        nextPLS.seasonIndex = pls.seasonIndex + 1
+        nextPLS.primaryPosition = pls.primaryPosition
+        nextPLS.overallRating = pls.overallRating
+        nextPLS.hittingRatings = pls.hittingRatings
+        nextPLS.pitchRatings = pls.pitchRatings
+        nextPLS.potentialOverallRating = pls.potentialOverallRating
+        nextPLS.potentialHittingRatings = pls.potentialHittingRatings
+        nextPLS.potentialPitchRatings = pls.potentialPitchRatings
+        nextPLS.startDate = date
+        nextPLS.endDate = season.endDate
+        nextPLS.age = player.age
+
+        nextPLS.stats = {
+            //@ts-ignore
+            hitting: this.statService.mergeHitResultsToStatLine({}, {}),
+            //@ts-ignore
+            pitching: this.statService.mergePitchResultsToStatLine({}, {})
+        }
+
+        await this.playerLeagueSeasonService.put(nextPLS, options)
+
+        await this.offchainEventService.createPlayerTransferEvent(sellerPaymentTeam._id, buyerPaymentTeam._id, player._id, settlementTransactionId, options)
+
+        let privateBuyOffers: TeamMarketOffer[] = await this.teamMarketOfferRepository.listPendingPrivateBuyOffersByPlayerId(player._id, options)
+
+        for (let privateBuyOffer of privateBuyOffers) {
+
+            if (privateBuyOffer._id == tmo._id) {
+                continue
+            }
+
+            await this.cancelTeamMarketOffer(privateBuyOffer, options)
+
+        }
+
+        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+
+        if (saleListing && saleListing._id != tmo._id && saleListing.sellerUserId == user._id) {
+            await this.cancelTeamMarketOffer(saleListing, options)
         }
 
         await this.offchainEventService.createTeamMintEvent(
@@ -578,31 +683,54 @@ class TeamTransactionService {
 
         for (let position of shuffled) {
 
-            let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsByPosition(position, season, 1, 0, options)
+            let assignedPLS: PlayerLeagueSeason
 
-            let pls: PlayerLeagueSeason
-            let player: Player
+            let inactivePlss = await this.playerLeagueSeasonService.getMostRecentInactiveByUserSeason(user, season, options)
 
-            if (minimumOnly || plss?.length < 1) {
+            let inactivePls = inactivePlss.find(pls => pls.primaryPosition == position)
 
-                player = await this.playerService.scoutPlayer({ onDate: dayjs(date).format("YYYY-MM-DD"), type: position })
+            if (inactivePls) {
 
-                await this.playerService.put(player, options)
+                let inactivePlayer = await this.playerService.get(inactivePls.playerId, options)
 
-                pls = await this.playerLeagueSeasonService.createPlayerLeagueSeason(player, season, 1, options)
+                await this.activatePlayer(user, team, inactivePlayer, date, options)
+
+                assignedPLS = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(inactivePlayer, season, options)
 
             } else {
 
-                pls = await this.playerLeagueSeasonService.getById(plss[0]._id, options)
-                player = await this.playerService.get(plss[0].playerId, options)
+                let freeAgentPlss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getFreeAgentsByPosition(position, season, 1, 0, options)
+
+                let pls: PlayerLeagueSeason
+                let player: Player
+
+                if (minimumOnly || freeAgentPlss?.length < 1) {
+
+                    player = await this.playerService.scoutPlayer({
+                        onDate: dayjs(date).format("YYYY-MM-DD"),
+                        type: position
+                    })
+
+                    await this.playerService.put(player, options)
+
+                    pls = await this.playerLeagueSeasonService.createPlayerLeagueSeason(player, season, 1, options)
+
+                } else {
+
+                    pls = await this.playerLeagueSeasonService.getById(freeAgentPlss[0]._id, options)
+                    player = await this.playerService.get(freeAgentPlss[0].playerId, options)
+
+                }
+
+                assignedPLS = await this.signAvailablePlayer(user, player, pls, team, tls, season, date, offChainEventTransactionId, options)
 
             }
 
-            let assignedPLS: PlayerLeagueSeason = await this.signAvailablePlayer(user, player, pls, team, tls, season, date, offChainEventTransactionId, options)
-
             roster.push(assignedPLS)
 
-            added.players.push(player)
+            let addedPlayer = await this.playerService.get(assignedPLS.playerId, options)
+
+            added.players.push(addedPlayer)
             added.plss.push(assignedPLS)
 
         }
@@ -611,7 +739,11 @@ class TeamTransactionService {
 
             let currentTeamPLSS: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
 
-            this.teamService.setLineupValidityAllowTiredStarters(team, tls, currentTeamPLSS.map(pls => pls.get({ plain: true })))
+            this.teamService.setLineupValidityAllowTiredStarters(
+                team,
+                tls,
+                currentTeamPLSS.map(pls => pls.get({ plain: true }))
+            )
 
             tls.changed("lineups", true)
             tls.changed("hasValidLineup", true)
@@ -791,7 +923,7 @@ class TeamTransactionService {
             throw new Error("Player is already owned.")
         }
 
-        if (!currentPLS.userId) {
+        if (!currentPLS.userId && !this.isZeroAddressUser(user)) {
             let userRosterSize = await this.playerLeagueSeasonService.getMostRecentCountByUserSeason(user._id, season, options)
 
             if (userRosterSize >= DEFAULT_ROSTER_CONSTRAINTS.maxTotalRosterSize) {
@@ -1143,6 +1275,10 @@ class TeamTransactionService {
         }
 
     }
+
+    private isZeroAddressUser(user: User): boolean {
+        return user.address?.toLowerCase() == "0x0000000000000000000000000000000000000000"
+    }    
     
     public async fillAllRosters() {
 

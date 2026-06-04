@@ -190,7 +190,9 @@ describe("TeamService", async () => {
                         position: Position.PITCHER
                     }
                 ],
-                availablePitchers: []
+                rotation: [],
+                availablePitchers: [],
+                availableHitters: []
             }
         ]
 

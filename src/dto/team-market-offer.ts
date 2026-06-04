@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType, ForeignKey, AllowNull, BelongsTo } from
 
 import { Team } from "./team.js"
 import { User } from "./user.js"
+import { Player } from "./player.js"
 import { TeamMarketOfferStatus } from "../service/enums.js"
 
 @Table({
@@ -20,9 +21,9 @@ class TeamMarketOffer extends Model {
     declare _id:string
 
     @ForeignKey(() => User)
-    @AllowNull(false)
+    @AllowNull(true)
     @Column(DataType.UUID)
-    declare buyerUserId:string
+    declare buyerUserId?:string
 
     @BelongsTo(() => User, "buyerUserId")
     buyerUser:User
@@ -36,9 +37,9 @@ class TeamMarketOffer extends Model {
     sellerUser:User
 
     @ForeignKey(() => Team)
-    @AllowNull(false)
+    @AllowNull(true)
     @Column(DataType.UUID)
-    declare buyerPaymentTeamId:string
+    declare buyerPaymentTeamId?:string
 
     @BelongsTo(() => Team, "buyerPaymentTeamId")
     buyerPaymentTeam:Team
@@ -51,9 +52,13 @@ class TeamMarketOffer extends Model {
     @BelongsTo(() => Team, "sellerPaymentTeamId")
     sellerPaymentTeam:Team
 
+    @ForeignKey(() => Player)
     @AllowNull(false)
-    @Column(DataType.JSON)
-    declare package:TeamMarketOfferPackage
+    @Column(DataType.UUID)
+    declare salePlayerId:string
+
+    @BelongsTo(() => Player, "salePlayerId")
+    salePlayer:Player
 
     @AllowNull(false)
     @Column(DataType.STRING)
@@ -69,11 +74,11 @@ class TeamMarketOffer extends Model {
 
     @AllowNull(true)
     @Column(DataType.STRING)
-    declare escrowTransactionId:string
+    declare escrowTransactionId?:string
 
     @AllowNull(true)
     @Column(DataType.STRING)
-    declare settlementTransactionId:string
+    declare settlementTransactionId?:string
 
     @Column(DataType.DATE)
     declare lastUpdated?:Date
@@ -83,11 +88,6 @@ class TeamMarketOffer extends Model {
 
 }
 
-interface TeamMarketOfferPackage {
-    playerIds:string[]
-}
-
 export {
-    TeamMarketOffer,
-    TeamMarketOfferPackage
+    TeamMarketOffer
 }
