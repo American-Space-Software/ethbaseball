@@ -1,0 +1,179 @@
+<template es>
+
+  <main class="page" data-name="offers">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+        <div class="block small-only">
+          <p class="segmented">
+            <a href="#sales-listings" class="button button-outline tab-link tab-link-active">Sales Listings</a>
+            <a href="#buy-offers" class="button button-outline tab-link">Buy Offers</a>
+          </p>
+        </div>
+
+        <div class="block large-only-block small-tabs">
+          <p class="segmented">
+            <a href="#sales-listings" class="button button-outline tab-link tab-link-active">Sales Listings</a>
+            <a href="#buy-offers" class="button button-outline tab-link">Buy Offers</a>
+          </p>
+        </div>
+
+        <div class="tabs">
+
+          <div id="sales-listings" class="tab tab-active">
+
+            ${sellOffers.length == 0 ? $h`
+              <div class="block block-strong text-align-center">
+                No active sales listings.
+              </div>
+            ` : $h`
+              <div class="list media-list">
+                <ul>
+                  ${sellOffers.map((offer) => $h`
+                    <li>
+                      <div class="item-content">
+                        <div class="item-inner">
+
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              <a href="/p/${offer.salePlayer._id}">
+                                ${offer.salePlayer.name}
+                              </a>
+                            </div>
+                            <div class="item-after">
+                              ${universeWebService.displayDiamonds(offer.diamondAmount)}
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </li>
+                  `)}
+                </ul>
+              </div>
+            `}
+
+          </div>
+
+          <div id="buy-offers" class="tab">
+
+            ${buyOffers.length == 0 ? $h`
+              <div class="block block-strong text-align-center">
+                No active buy offers.
+              </div>
+            ` : $h`
+              <div class="list media-list">
+                <ul>
+                  ${buyOffers.map((offer) => $h`
+                    <li>
+                      <div class="item-content">
+                        <div class="item-inner">
+
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              <a href="/p/${offer.salePlayer._id}">
+                                ${offer.salePlayer.name}
+                              </a>
+                            </div>
+                            <div class="item-after">
+                              ${universeWebService.displayDiamonds(offer.diamondAmount)}
+                            </div>
+                          </div>
+
+                          <div class="item-subtitle">
+                            Buyer:
+                            <a href="/u/${offer.buyerUser._id}">
+                              ${offer.buyerUser.name}
+                            </a>
+
+                            ${offer.buyerPaymentTeam ? $h`
+                              from
+                              <a href="/t/${offer.buyerPaymentTeam._id}">
+                                ${offer.buyerPaymentTeam.name}
+                              </a>
+                            ` : $h``}
+                          </div>
+
+                          <div class="item-text">
+                            Seller:
+                            <a href="/u/${offer.sellerUser._id}">
+                              ${offer.sellerUser.name}
+                            </a>
+
+                            ${offer.sellerPaymentTeam ? $h`
+                              ·
+                              <a href="/t/${offer.sellerPaymentTeam._id}">
+                                ${offer.sellerPaymentTeam.name}
+                              </a>
+                            ` : $h``}
+                          </div>
+
+                        </div>
+                      </div>
+                    </li>
+                  `)}
+                </ul>
+              </div>
+            `}
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</template>
+
+<style>
+
+</style>
+
+<script>
+
+  import Navbar from "../common/navbar.f7.html"
+  import Breadcrumbs from "../common/breadcrumbs.f7.html"
+  import Toolbar from "../common/toolbar.f7.html"
+
+  import { ContainerService } from "../../../service/container-service"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let authInfo = props.authInfo
+    let buyOffers = props.offers.buyOffers
+    let sellOffers = props.offers.sellOffers
+
+    $on('pageBeforeIn', async (e) => {
+
+      eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+        detail: {
+          visible: false,
+          tabLink: "/offers",
+          breadcrumbs: [{ text: "Offers", path: "/offers" }]
+        }
+      }))
+
+      universeWebService.setMetadata(
+        `Offers – Ethereum Baseball League`,
+        window.location.href,
+        `${env.WEB}/logo.png`,
+        "Offers in Ethereum Baseball League."
+      )
+
+      await $update()
+    })
+
+    return $render
+  }
+
+</script>

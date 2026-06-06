@@ -46,7 +46,10 @@
                 <li><a href="/" class="panel-close list-button popover-close ${tabLink == '/' ? 'active' : ''}">🏠 Home</a></li>
                 <li><a href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}" class="panel-close list-button popover-close ${tabLink == `/l/standings` ? 'active' : ''}">📊 Standings</a></li>
                 <li><a href="${universeWebService.fullLink(`/games`)}" class="panel-close  list-button popover-close ${tabLink == '/games' ? 'active' : ''}">🏟️ Scores</a></li>
-                <li><a href="${universeWebService.fullLink(`/players/`)}"  class="panel-close  list-button popover-close ${tabLink == '/players/' ? 'active' : ''}">🧢 Players</a></li>
+                <li><a href="${universeWebService.startDateLink(`/players/?rank=1`)}"  class="panel-close  list-button popover-close ${tabLink == '/players/?rank=1' ? 'active' : ''}">📊 League Leaders</a></li>
+                <li><a href="${universeWebService.startDateLink(`/players/?rank=0`)}"  class="panel-close  list-button popover-close ${tabLink == '/players/?rank=0' ? 'active' : ''}">🧢 Sign Free Agents</a></li>
+
+                <li><a href="/offers" class="panel-close list-button popover-close ${tabLink == '/offers' ? 'active' : ''}">🤝 Offers</a></li>
                 <li><a href="/activity" class="panel-close list-button popover-close ${tabLink == '/activity' ? 'active' : ''}">⚡ Transactions</a></li>
                 <li><a href="/about" class="panel-close  list-button popover-close ${tabLink == '/about' ? 'active' : ''}">📖 About</a></li>
                 <li><a class="panel-close list-button external popover-close" href="${discord}" target="_blank">💬 Discord</a></li>

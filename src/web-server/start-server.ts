@@ -59,6 +59,7 @@ import { TeamQueueService } from '../service/data/team-queue-service.js'
 import { PitchingRoleType, Position, RotationPitcher } from '../baseball-sim-engine/index.js';
 import { TeamTransactionService } from '../service/data/team-transaction-service.js';
 import { TeamMarketOfferService } from '../service/data/team-market-offer-service.js';
+import { TeamMarketOffer } from '../dto/team-market-offer.js';
 
 
 const TWITTER = "@ethbaseball"
@@ -900,6 +901,27 @@ let startWebServer = async () => {
 
   })
 
+  app.get("/offers", async function (req, res) {
+
+      try {
+
+        await refreshUniverse()
+
+        await renderIndex(res,{ 
+          twitter: TWITTER,
+          title: `Offers - Ethereum Baseball League`,
+          description: `View offers in Ethereum Baseball League.`,
+          VERSION: version,
+          url: req.originalUrl,
+          image: `${process.env.WEB}/ebl-512.png`
+        })
+
+      } catch (ex) {
+        res.sendStatus(500)
+      }
+
+  })
+
 
   /** END SERVED PAGES */
 
@@ -971,14 +993,17 @@ let startWebServer = async () => {
 
     try {
 
-      let startDate
+      //@ts-ignore
+      let userId = req.session?.passport?.user
 
-      startDate = dayjs(req.params.startDate).toDate()
+      let user:User = await userService.get(userId)
+
+      let startDate = dayjs(req.params.startDate).toDate()
 
       let season: Season = await seasonService.getByDate(startDate)
 
 
-      return res.json(await playerViewService.getPlayerViewModel(req.params.playerId, season))
+      return res.json(await playerViewService.getPlayerViewModel(user, req.params.playerId, season))
     } catch (ex) {
       console.log(ex)
       res.sendStatus(404)
@@ -1360,6 +1385,40 @@ let startWebServer = async () => {
 /**
  * Owners
  */
+
+
+/** Offers */
+
+  app.get('/api/offer/list', async function (req, res) {
+
+    try {
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      let user: User = await userService.get(userId)
+
+      let buyOffers:TeamMarketOffer[] = await teamMarketOfferService.listPendingByBuyerUserId(user._id)
+      let sellOffers:TeamMarketOffer[] = await teamMarketOfferService.listSaleListingsBySellerUserId(user._id)
+
+
+      return res.json({
+        buyOffers: await teamMarketOfferService.getTeamMarketOfferViewModels(buyOffers),
+        sellOffers: await teamMarketOfferService.getTeamMarketOfferViewModels(sellOffers)
+      })
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
 
 
 

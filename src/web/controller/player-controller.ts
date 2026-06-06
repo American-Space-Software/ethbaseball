@@ -10,6 +10,7 @@ import { UniverseWebService } from '../service/universe-web-service.js';
 import { PlayerWebService } from '../service/player-web-service.js';
 import { LoginWebService } from '../service/login-web-service.js';
 import { HitterPitcher } from '../../service/enums.js';
+import { RouteParameters } from '../service/routing-service.js';
 
 
 @injectable()
@@ -27,12 +28,12 @@ class PlayerController {
     @routeMap("/p/:id")
     async showIndex(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
-            this.universeWebService.setRank(routeTo?.query?.rank || 1)
+            this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
+            this.universeWebService.setRank(routeParams.routeTo?.query?.rank || 1)
 
-            let playerId = routeTo?.params?.id
+            let playerId = routeParams.routeTo?.params?.id
 
             let player
             let authInfo
@@ -47,7 +48,7 @@ class PlayerController {
                 player: player,
                 authInfo: authInfo,
                 discord: this.discord,
-                setStartDate: () => this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+                setStartDate: () => this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
 
             }
 
@@ -59,20 +60,20 @@ class PlayerController {
     @routeMap("/players/")
     async showList(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+            this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
 
-            let rank = routeTo?.query?.rank || 0
+            let rank = routeParams.routeTo?.query?.rank || 0
 
             if (rank > 0) {
-                this.universeWebService.setRank(routeTo?.query?.rank)
+                this.universeWebService.setRank(routeParams.routeTo?.query?.rank)
             } 
 
-            let page = parseInt(routeTo?.query?.page) || 1
-            let sortColumn = routeTo?.query?.sortColumn || "overallRating"
-            let sortDirection = routeTo?.query?.sortDirection || "DESC"
-            let position = routeTo?.query?.position || HitterPitcher.HITTER
+            let page = parseInt(routeParams.routeTo?.query?.page) || 1
+            let sortColumn = routeParams.routeTo?.query?.sortColumn || "overallRating"
+            let sortDirection = routeParams.routeTo?.query?.sortDirection || "DESC"
+            let position = routeParams.routeTo?.query?.position || HitterPitcher.HITTER
 
 
             let allPlayers = []
@@ -99,7 +100,7 @@ class PlayerController {
                 sortColumn: sortColumn,
                 sortDirection: sortDirection,
                 page: page,
-                setStartDate: () => this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+                setStartDate: () => this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
 
             }
 

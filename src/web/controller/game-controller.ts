@@ -11,6 +11,7 @@ import { UniverseWebService } from '../service/universe-web-service.js';
 import dayjs from 'dayjs';
 import { GameWebService } from '../service/game-web-service.js';
 import { QuillWebService } from '../service/quill-web-service.js';
+import { RouteParameters } from '../service/routing-service.js';
 
 
 
@@ -29,12 +30,12 @@ class GameController {
     @routeMap("/games")
     async showGames(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
             let leagues = this.universeWebService.getLeagues()
 
-            this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
-            this.universeWebService.setRank(routeTo?.query?.rank || 1)
+            this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
+            this.universeWebService.setRank(routeParams.routeTo?.query?.rank || 1)
 
 
             let games = await this.gameWebService.getGames(this.universeWebService.getRank())
@@ -68,7 +69,7 @@ class GameController {
         
         let gameViewModel = this.gameWebService.getGameViewModel(game)
 
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async () => {
             
             return {
                 gameViewModel: gameViewModel,
@@ -83,9 +84,9 @@ class GameController {
     @routeMap("/g/:id/gamelog")
     async showGamelog(): Promise<ModelView> {
 
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
             
-            let id = routeTo?.params?.id
+            let id = routeParams.routeTo?.params?.id
 
             let game = await this.gameWebService.get(id)
 

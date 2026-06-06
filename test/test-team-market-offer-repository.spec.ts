@@ -333,7 +333,7 @@ describe("TeamMarketOfferRepository", async () => {
         await repository.put(saleListing)
         await repository.put(cancelledOffer)
 
-        let offers:TeamMarketOffer[] = await repository.listPendingPrivateBuyOffersByPlayerId(player._id)
+        let offers:TeamMarketOffer[] = await repository.listPendingByPlayerId(player._id)
 
         assert.equal(offers.length, 2)
         assert.equal(offers[0]._id, highOffer._id)
@@ -380,7 +380,7 @@ describe("TeamMarketOfferRepository", async () => {
         await repository.put(lowOffer)
         await repository.put(highOffer)
 
-        let highestOffer:TeamMarketOffer | undefined = await repository.getHighestPendingPrivateBuyOfferByPlayerId(player._id)
+        let highestOffer:TeamMarketOffer | undefined = await repository.getHighestPendingByPlayerId(player._id)
 
         assert.notEqual(highestOffer, undefined)
         assert.equal(highestOffer!._id, highOffer._id)
@@ -392,7 +392,7 @@ describe("TeamMarketOfferRepository", async () => {
 
         let player:Player = await createTestPlayer()
 
-        let highestOffer:TeamMarketOffer | undefined = await repository.getHighestPendingPrivateBuyOfferByPlayerId(player._id)
+        let highestOffer:TeamMarketOffer | undefined = await repository.getHighestPendingByPlayerId(player._id)
 
         assert.equal(highestOffer, undefined)
 
@@ -449,7 +449,7 @@ describe("TeamMarketOfferRepository", async () => {
         await repository.put(otherBuyerOffer)
         await repository.put(buyerSaleListing)
 
-        let offers:TeamMarketOffer[] = await repository.listPrivateBuyOffersByBuyerUserId(buyerUser._id)
+        let offers:TeamMarketOffer[] = await repository.listPendingByBuyerUserId(buyerUser._id)
 
         assert.equal(offers.some(o => o._id == buyerOffer._id), true)
         assert.equal(offers.some(o => o._id == otherBuyerOffer._id), false)
@@ -457,62 +457,76 @@ describe("TeamMarketOfferRepository", async () => {
 
     })
 
-    it("should list private buy offers by seller user id", async () => {
+
+    it("should list offers by buyer user id and player id", async () => {
 
         let buyerUser:User = await createTestUser()
+        let otherBuyerUser:User = await createTestUser()
         let sellerUser:User = await createTestUser()
-        let otherSellerUser:User = await createTestUser()
 
         let buyerPaymentTeam:Team = await createTestTeam("Buyer Payment Team")
+        let otherBuyerPaymentTeam:Team = await createTestTeam("Other Buyer Payment Team")
         let sellerPaymentTeam:Team = await createTestTeam("Seller Payment Team")
-        let otherSellerPaymentTeam:Team = await createTestTeam("Other Seller Payment Team")
 
-        let playerOne:Player = await createTestPlayer()
-        let playerTwo:Player = await createTestPlayer()
-        let playerThree:Player = await createTestPlayer()
+        let player:Player = await createTestPlayer()
+        let otherPlayer:Player = await createTestPlayer()
 
-        let sellerOffer:TeamMarketOffer = TeamMarketOffer.build({
+        let matchingOffer:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
             buyerUserId: buyerUser._id,
             sellerUserId: sellerUser._id,
             buyerPaymentTeamId: buyerPaymentTeam._id,
             sellerPaymentTeamId: sellerPaymentTeam._id,
-            salePlayerId: playerOne._id,
+            salePlayerId: player._id,
             diamondAmount: "100",
             status: TeamMarketOfferStatus.PENDING,
-            escrowTransactionId: "seller-escrow"
+            escrowTransactionId: "matching-escrow"
         })
 
-        let otherSellerOffer:TeamMarketOffer = TeamMarketOffer.build({
+        let otherBuyerOffer:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
-            buyerUserId: buyerUser._id,
-            sellerUserId: otherSellerUser._id,
-            buyerPaymentTeamId: buyerPaymentTeam._id,
-            sellerPaymentTeamId: otherSellerPaymentTeam._id,
-            salePlayerId: playerTwo._id,
+            buyerUserId: otherBuyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: otherBuyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: player._id,
             diamondAmount: "200",
             status: TeamMarketOfferStatus.PENDING,
-            escrowTransactionId: "other-seller-escrow"
+            escrowTransactionId: "other-buyer-escrow"
         })
 
-        let sellerListing:TeamMarketOffer = TeamMarketOffer.build({
+        let otherPlayerOffer:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            buyerUserId: buyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: buyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: otherPlayer._id,
+            diamondAmount: "300",
+            status: TeamMarketOfferStatus.PENDING,
+            escrowTransactionId: "other-player-escrow"
+        })
+
+        let saleListing:TeamMarketOffer = TeamMarketOffer.build({
             _id: uuidv4(),
             sellerUserId: sellerUser._id,
             sellerPaymentTeamId: sellerPaymentTeam._id,
-            salePlayerId: playerThree._id,
-            diamondAmount: "300",
+            salePlayerId: player._id,
+            diamondAmount: "400",
             status: TeamMarketOfferStatus.PENDING
         })
 
-        await repository.put(sellerOffer)
-        await repository.put(otherSellerOffer)
-        await repository.put(sellerListing)
+        await repository.put(matchingOffer)
+        await repository.put(otherBuyerOffer)
+        await repository.put(otherPlayerOffer)
+        await repository.put(saleListing)
 
-        let offers:TeamMarketOffer[] = await repository.listPrivateBuyOffersBySellerUserId(sellerUser._id)
+        let offers:TeamMarketOffer[] = await repository.listPendingByBuyerUserIdAndPlayerId(buyerUser._id, player._id)
 
-        assert.equal(offers.some(o => o._id == sellerOffer._id), true)
-        assert.equal(offers.some(o => o._id == otherSellerOffer._id), false)
-        assert.equal(offers.some(o => o._id == sellerListing._id), false)
+        assert.equal(offers.length, 1)
+        assert.equal(offers[0]._id, matchingOffer._id)
+        assert.equal(offers[0].buyerUserId, buyerUser._id)
+        assert.equal(offers[0].salePlayerId, player._id)
 
     })
 

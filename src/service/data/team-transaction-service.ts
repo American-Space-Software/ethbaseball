@@ -1,7 +1,6 @@
 import { inject, injectable } from "inversify";
 
 
-import { TeamMarketOfferRepository } from "../../repository/team-market-offer-repository.js";
 import { TeamMarketOffer } from "../../dto/team-market-offer.js";
 import { Team, TEAM_COLORS } from "../../dto/team.js";
 import { Season } from "../../dto/season.js";
@@ -28,6 +27,7 @@ import { PitchingRole } from "../../baseball-sim-engine/service/interfaces.js";
 import { UserService } from "./user-service.js";
 import { LadderService } from "../ladder-service.js";
 import { LeagueService } from "./league-service.js";
+import { TeamMarketOfferService } from "./team-market-offer-service.js";
 
 
 @injectable()
@@ -36,8 +36,6 @@ class TeamTransactionService {
     @inject("sequelize")
     private sequelize:Function
 
-    @inject("TeamMarketOfferRepository")
-    private teamMarketOfferRepository:TeamMarketOfferRepository
 
     constructor(
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
@@ -53,14 +51,15 @@ class TeamTransactionService {
         private ladderService:LadderService,
         private leagueService:LeagueService,
         private financeService:FinanceService,
+        private teamMarketOfferService:TeamMarketOfferService
     ) {}
 
     async get(_id:string, options?:any) : Promise<TeamMarketOffer> {
-        return this.teamMarketOfferRepository.get(_id, options)
+        return this.teamMarketOfferService.get(_id, options)
     }
 
     async put(tmo:TeamMarketOffer, options?:any) : Promise<TeamMarketOffer> {
-        return this.teamMarketOfferRepository.put(tmo, options)
+        return this.teamMarketOfferService.put(tmo, options)
     }
 
     async signFreeAgent(user: User, player: Player, team: Team, date: Date, offChainEventTransactionId: string, options?: any) {
@@ -169,13 +168,13 @@ class TeamTransactionService {
             throw new Error(`Team does not have enough diamonds to drop this player.`)
         }
 
-        let privateBuyOffers: TeamMarketOffer[] = await this.teamMarketOfferRepository.listPendingPrivateBuyOffersByPlayerId(player._id, options)
+        let privateBuyOffers: TeamMarketOffer[] = await this.teamMarketOfferService.listPendingByPlayerId(player._id, options)
 
         for (let privateBuyOffer of privateBuyOffers) {
             await this.cancelTeamMarketOffer(privateBuyOffer, options)
         }
 
-        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferService.getPendingSaleListingByPlayerId(player._id, options)
 
         if (saleListing && saleListing.sellerUserId == user._id) {
             await this.cancelTeamMarketOffer(saleListing, options)
@@ -241,7 +240,7 @@ class TeamTransactionService {
             throw new Error("Not authorized.")
         }
 
-        let existingListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+        let existingListing: TeamMarketOffer | undefined = await this.teamMarketOfferService.getPendingSaleListingByPlayerId(player._id, options)
 
         if (existingListing) {
             throw new Error("Player already has an active sale listing.")
@@ -292,6 +291,14 @@ class TeamTransactionService {
             throw new Error("Player is not owned by the seller.")
         }
 
+        let existingOffers: TeamMarketOffer[] = await this.teamMarketOfferService.listPendingByBuyerUserIdAndPlayerId(buyerPaymentTeam.userId, player._id, options)
+
+        let existingPendingOffer: TeamMarketOffer | undefined = existingOffers.length > 0 ? existingOffers[0] : undefined
+
+        if (existingPendingOffer) {
+            throw new Error("Buyer already has a pending offer for this player.")
+        }
+
         return this.createTeamMarketOffer(buyerPaymentTeam, sellerPaymentTeam, player, diamondAmount, options)
 
     }
@@ -309,7 +316,7 @@ class TeamTransactionService {
             throw new Error("Not authorized.")
         }
 
-        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferService.getPendingSaleListingByPlayerId(player._id, options)
 
         if (!saleListing) {
             return []
@@ -612,7 +619,7 @@ class TeamTransactionService {
 
         await this.offchainEventService.createPlayerTransferEvent(sellerPaymentTeam._id, buyerPaymentTeam._id, player._id, settlementTransactionId, options)
 
-        let privateBuyOffers: TeamMarketOffer[] = await this.teamMarketOfferRepository.listPendingPrivateBuyOffersByPlayerId(player._id, options)
+        let privateBuyOffers: TeamMarketOffer[] = await this.teamMarketOfferService.listPendingByPlayerId(player._id, options)
 
         for (let privateBuyOffer of privateBuyOffers) {
 
@@ -624,7 +631,7 @@ class TeamTransactionService {
 
         }
 
-        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferRepository.getPendingSaleListingByPlayerId(player._id, options)
+        let saleListing: TeamMarketOffer | undefined = await this.teamMarketOfferService.getPendingSaleListingByPlayerId(player._id, options)
 
         if (saleListing && saleListing._id != tmo._id && saleListing.sellerUserId == user._id) {
             await this.cancelTeamMarketOffer(saleListing, options)
@@ -838,7 +845,6 @@ class TeamTransactionService {
         await this.teamLeagueSeasonService.put(currentTLS, options)
 
     }
-
 
     private assertPlayerExistsInLineups(lineups: Lineup[], playerId: string) {
 

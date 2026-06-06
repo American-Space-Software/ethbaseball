@@ -18,6 +18,38 @@ CREATE TABLE `team_market_offer` (
   `escrowTransactionId` varchar(255) DEFAULT NULL,
   `settlementTransactionId` varchar(255) DEFAULT NULL,
 
+  `pendingSaleListingPlayerId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin
+    GENERATED ALWAYS AS (
+      CASE
+        WHEN `buyerUserId` IS NULL
+         AND `buyerPaymentTeamId` IS NULL
+         AND `escrowTransactionId` IS NULL
+         AND `status` = 'PENDING'
+        THEN `salePlayerId`
+        ELSE NULL
+      END
+    ) VIRTUAL,
+
+  `pendingBuyOfferBuyerUserId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin
+    GENERATED ALWAYS AS (
+      CASE
+        WHEN `buyerUserId` IS NOT NULL
+         AND `status` = 'PENDING'
+        THEN `buyerUserId`
+        ELSE NULL
+      END
+    ) VIRTUAL,
+
+  `pendingBuyOfferPlayerId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin
+    GENERATED ALWAYS AS (
+      CASE
+        WHEN `buyerUserId` IS NOT NULL
+         AND `status` = 'PENDING'
+        THEN `salePlayerId`
+        ELSE NULL
+      END
+    ) VIRTUAL,
+
   `lastUpdated` datetime DEFAULT NULL,
   `dateCreated` datetime DEFAULT NULL,
 
@@ -29,6 +61,9 @@ CREATE TABLE `team_market_offer` (
   KEY `idx_tmo_seller_payment_team_id` (`sellerPaymentTeamId`),
   KEY `idx_tmo_sale_player_id` (`salePlayerId`),
   KEY `idx_tmo_status` (`status`),
+
+  UNIQUE KEY `ux_pending_sale_listing` (`pendingSaleListingPlayerId`),
+  UNIQUE KEY `ux_pending_buy_offer` (`pendingBuyOfferBuyerUserId`, `pendingBuyOfferPlayerId`),
 
   CONSTRAINT `fk_tmo_buyer_user`
     FOREIGN KEY (`buyerUserId`)
@@ -62,8 +97,6 @@ CREATE TABLE `team_market_offer` (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_0900_ai_ci;
-
-
 
 
 

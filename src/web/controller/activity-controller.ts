@@ -9,6 +9,7 @@ import { ModelView } from '../../util/model-view.js';
 import { routeMap } from '../../util/route-map.js';
 import { UniverseWebService } from '../service/universe-web-service.js';
 import { GameTransactionWebService } from '../service/game-transaction-web-service.js';
+import { RouteParameters } from '../service/routing-service.js';
 
 
 @injectable()
@@ -23,16 +24,16 @@ class ActivityController {
     @routeMap("/activity/on")
     async showOnChain(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
 
-            let rank = routeTo?.query?.rank || 0
+            let rank = routeParams.routeTo?.query?.rank || 0
 
             if (rank > 0) {
-                this.universeWebService.setRank(routeTo?.query?.rank)
+                this.universeWebService.setRank(routeParams.routeTo?.query?.rank)
             } 
 
-            let page = parseInt(routeTo?.query?.page || 1)
+            let page = parseInt(routeParams.routeTo?.query?.page || 1)
             let previousPage
             let nextPage
 
@@ -63,16 +64,16 @@ class ActivityController {
     @routeMap("/activity")
     async showOffChain(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
             
         
-            let rank = routeTo?.query?.rank || 0
+            let rank = routeParams.routeTo?.query?.rank || 0
 
             if (rank > 0) {
-                this.universeWebService.setRank(routeTo?.query?.rank)
+                this.universeWebService.setRank(routeParams.routeTo?.query?.rank)
             } 
 
-            let page = parseInt(routeTo?.query?.page || 1)
+            let page = parseInt(routeParams.routeTo?.query?.page || 1)
             let previousPage
             let nextPage
             

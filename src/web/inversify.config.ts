@@ -115,6 +115,8 @@ import { QuillWebService } from "./service/quill-web-service.js";
 import { PlayerSharedService } from "../service/shared/player-shared-service.js";
 import { SimSharedService } from "../service/shared/sim-shared-service.js";
 import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
+import { OfferWebService } from "./service/offer-web-service.js";
+import { OfferController } from "./controller/offer-controller.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -254,6 +256,7 @@ async function getContainer(env, footerRoutes, leagues) {
     container.bind(LeagueController).toSelf().inSingletonScope()
     container.bind(UserController).toSelf().inSingletonScope()
     container.bind(ActivityController).toSelf().inSingletonScope()
+    container.bind(OfferController).toSelf().inSingletonScope()
 
 
     container.bind("WalletService").to(WalletServiceImpl).inSingletonScope()
@@ -268,6 +271,7 @@ async function getContainer(env, footerRoutes, leagues) {
     container.bind(TransactionWebService).toSelf().inSingletonScope()
     container.bind(OwnerPageWebService).toSelf().inSingletonScope()
     container.bind(SocketWebService).toSelf().inSingletonScope()
+    container.bind(OfferWebService).toSelf().inSingletonScope()
 
     container.bind(GameWebService).toSelf().inSingletonScope()
     container.bind(GameSharedService).toSelf().inSingletonScope()

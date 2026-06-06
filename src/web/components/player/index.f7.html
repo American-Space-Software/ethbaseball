@@ -210,6 +210,23 @@
 
                       ` : $h` `}
 
+                      ${showCancelSalesListing ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".cancel-sales-listing-popup">
+                              <div class="item-media">❌</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    Cancel Listing @ ${universeWebService.displayDiamonds(player.salesOffer.diamondAmount)}
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+
 
 
                   </ul>
@@ -841,7 +858,7 @@
 
           `}
 
-          ${showDropPopup ? $h`
+          ${showDrop ? $h`
             <div class="popup drop-popup">
               <div class="view">
                 <div class="page">
@@ -895,7 +912,7 @@
             </div>
           ` : $h` `}
 
-          ${showSignPopup ? $h`
+          ${showSign ? $h`
             
             <div class="popup sign-popup">
               <div class="view">
@@ -942,7 +959,7 @@
             
           ` : $h` `}
        
-          ${showActivatePopup ? $h`
+          ${showActivate ? $h`
             
             <div class="popup activate-popup">
               <div class="view">
@@ -1032,7 +1049,7 @@
 
 
 
-          ${showListForSalePopup ? $h`
+          ${showListForSale ? $h`
             
             <div class="popup list-for-sale-popup">
               <div class="view">
@@ -1083,7 +1100,7 @@
           ` : $h` `}
 
 
-          ${showCancelSalesListingPopup ? $h`
+          ${showCancelSalesListing ? $h`
             
             <div class="popup cancel-sales-listing-popup">
               <div class="view">
@@ -1106,7 +1123,7 @@
 
                         <p>
                             <strong>Current Price: </strong><br />
-                            ${universeWebService.displayDiamonds(player.listPrice)}
+                            ${universeWebService.displayDiamonds(player.salesOffer.diamondAmount)}
                         </p>
 
                       </div>
@@ -1151,6 +1168,7 @@
   import { StatService } from "../../../service/stat-service.ts"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
   import { LoginWebService } from "../../service/login-web-service.ts"
+  import { OfferWebService } from "../../service/offer-web-service.ts"
 
   import { Position } from '../../../baseball-sim-engine/index.ts';
 
@@ -1169,43 +1187,30 @@
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let loginWebService = ContainerService.getInstance(LoginWebService)
     let teamComponentService = ContainerService.getInstance(TeamComponentService)
+    let offerWebService = ContainerService.getInstance(OfferWebService)
 
     let authInfo = props.authInfo
     let player = props.player
     
-   
-    const canAffordDrop = () => {
-
-      if (!authInfo?.offChainDiamondBalance) return false
-      if (!player?.minimumPlayerSalary) return false
-
-      if (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary)) return false
-
-      return true
-
-    }
-
-
     let isLoggedIn = authInfo?._id != undefined
-    let isOwner = player.team && player.team.userId == authInfo?._id
+    let isOwned = player.team?._id != undefined && player.team.userId != undefined
+    let isOwner = isOwned && player.team.userId == authInfo?._id
+
+    let canAffordDrop = isOwner && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(DEFAULT_DROP_PLAYER_DIAMONDS))
+
     let showPotential = false
 
-    let showDropPopup = isOwner && player.team?._id
-    let showSignPopup = authInfo && player.team?.userId == undefined
-    let showActivatePopup =  isOwner && player.team?.userId && !player.team?._id
-    let showDeactivatePopup = isOwner && player.team?._id
-    let showListForSalePopup = isOwner && !player.salesOffer?._id
-    let showCancelSalesListingPopup = isOwner && player.salesOffer?._id
-
-    let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop()) == true
-    let showSign = ( isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
-    let showActivate = showActivatePopup
-    let showDeactivate = showDeactivatePopup
-    let showListForSale = showListForSalePopup
-    let showCancelSalesListing = showCancelSalesListingPopup
+    let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop) == true
+    let showSign = ( !isOwned && isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
+    let showActivate =  isOwner && player.team?._id == undefined
+    let showDeactivate = isOwner && player.team?._id != undefined
+    let showListForSale = isOwner && player.salesOffer?._id  == undefined
+    let showCancelSalesListing = isOwner && player.salesOffer?._id  != undefined
+    let showBid = isLoggedIn && !isOwner
+    let showHighestBid = isLoggedIn && isOwner 
 
     let showInsufficientDiamonds = isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.askingPrice))
-    let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.minimumPlayerSalary))
+    let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(DEFAULT_DROP_PLAYER_DIAMONDS))
 
     let showActions = (isOwner && player.team?.isQueued) || showDrop || showSign || showActivate
 
@@ -1213,7 +1218,7 @@
 
     const activateTeamChange = (e) => {
        activeTeamId = $(e.target).val()
-       console.log(activeTeamId)
+
        $update()
     }
 
@@ -1258,50 +1263,49 @@
 
     const listForSaleButtonClick = async (e) => {
 
-      try {
           const input = document.querySelector('input[name="sale-price"]')
 
           if (!input.reportValidity()) {
               return
           }
 
-
           let confirmMessage = `Confirm you would like to list player for sale.`
 
           $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
 
-             let value = $('input[name="sale-price"]').val()
-             let listPrice = ethers.parseUnits( value.toString()  , 'ether')
+              try {
 
+                let value = $('input[name="sale-price"]').val()
+                let listPrice = ethers.parseUnits( value.toString()  , 'ether')
 
-              await playerWebService.listPlayerForSale(player, listPrice.toString())
-              
-              $f7.popup.close('.deactivate-popup')
-              $f7.views.main.router.navigate(universeWebService.startDateLink(`/p/${player._id}`))
+                await offerWebService.listPlayerForSale(player, listPrice.toString())
+                
+                $f7.popup.close('.list-for-sale-popup')
+                $f7.views.main.router.navigate(universeWebService.startDateLink(`/p/${player._id}`))
 
-              const toast = $f7.toast.create({
-                  text: 'Player listing created successfully.',
-                  closeTimeout: 5000,
-                  position: 'bottom',
-                  horizontalPosition: 'center',
-                  on: {
-                      opened: function () { }
-                  }
-              })
+                const toast = $f7.toast.create({
+                    text: 'Player listing created successfully.',
+                    closeTimeout: 5000,
+                    position: 'bottom',
+                    horizontalPosition: 'center',
+                    on: {
+                        opened: function () { }
+                    }
+                })
 
-              toast.open()
+                toast.open()                
 
+              } catch(ex) {
+                $f7.dialog.alert(ex.message)
+              }
 
           })
 
 
 
 
-         
 
-      } catch(ex) {
-        $f7.dialog.alert(ex.message)
-      }
+
     }
 
     
@@ -1309,7 +1313,7 @@
 
       try {
 
-        await playerWebService.cancelPlayerListing(player)
+        await offerWebService.cancelPlayerListing(player)
         
         $f7.popup.close('.cancel-sales-listing-popup')
         $f7.views.main.router.navigate(universeWebService.startDateLink(`/p/${player._id}`))

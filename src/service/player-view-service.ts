@@ -51,7 +51,7 @@ class PlayerViewService {
         
     ) { }
 
-    async getPlayerViewModel(_id: string, season:Season): Promise<PlayerViewModel> {
+    async getPlayerViewModel(user:User, _id: string, season:Season): Promise<PlayerViewModel> {
 
         let player: Player = await this.playerService.get(_id)
         
@@ -59,9 +59,11 @@ class PlayerViewService {
 
         
         let salesOffer:TeamMarketOffer
+        let highestBid:TeamMarketOffer
+        let userOffers:TeamMarketOffer[]
 
         // let pls
-        let currentPls
+        let currentPls:PlayerLeagueSeason
 
         if (plsList?.length > 0) {
             let thisSeasonPls = plsList.filter( pls => pls.seasonId == season._id)
@@ -71,14 +73,8 @@ class PlayerViewService {
         let hitterGameLog = await this.gameHitResultRepository.getByPlayer(player, { limit: 10 } )
         let pitcherGameLog = await this.gamePitchResultRepository.getStartsByPlayer(player._id, { limit: 10 } )
 
-        let askingPrice 
-        let minimumPlayerSalary = this.playerService.getFreeAgentSalary(1, 50, 365)
-
-        if (!currentPls.userId) {
-            askingPrice = this.playerService.getAskingPrice(currentPls )
-        }
         
-        let resultTeam:any
+        let resultTeamVm:any
 
         if (currentPls.userId) {
 
@@ -86,7 +82,14 @@ class PlayerViewService {
             let teams = await this.teamService.getByUser(user)
             let primaryTeam = teams[0]
             let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, primaryTeam._id)
+
             salesOffer = await this.teamMarketOfferService.getPendingSaleListingByPlayerId(player._id)
+            highestBid = await this.teamMarketOfferService.getHighestPendingByPlayerId(player._id)
+
+            if (user) {
+                userOffers = await this.teamMarketOfferService.listPendingByBuyerUserId(user._id)
+            }
+
 
             if (currentPls?.teamId) {
 
@@ -97,7 +100,7 @@ class PlayerViewService {
 
                 tls = tls.get({ plain: true })
 
-                resultTeam = {
+                resultTeamVm = {
                     name: tls.team?.name,
                     cityName: tls.city?.name,
                     _id: tls.team?._id,
@@ -108,10 +111,10 @@ class PlayerViewService {
 
             } else {
 
-                resultTeam = {
-                    name: '',
-                    cityName: '',
-                    _id: '',
+                resultTeamVm = {
+                    name: undefined,
+                    cityName: undefined,
+                    _id: undefined,
                     userId: currentPls.userId,
                     diamondBalance: diamondBalance,
                     isQueued: false
@@ -124,9 +127,8 @@ class PlayerViewService {
         let result:PlayerViewModel = {
             _id: player._id,
             isRetired: player.isRetired,
-            askingPrice: askingPrice,
-            totalExperience: player.totalExperience,
-            minimumPlayerSalary: minimumPlayerSalary,
+            askingPrice: !currentPls.userId ? this.playerService.getAskingPrice(currentPls ) : undefined,
+            totalExperience: player.totalExperience,            
             hits: player.hits,
             age: player.age,
             throws: player.throws,
@@ -134,14 +136,11 @@ class PlayerViewService {
             primaryPosition: player.primaryPosition,
             fullName: `${player.firstName} ${player.lastName}`,
             displayName: `${player.firstName.substring(0, 1).toUpperCase()}. ${player.lastName}`,
-            team: resultTeam,
+            team: resultTeamVm,
             ownerId: player.ownerId,
 
-            salesOffer: salesOffer ? { 
-                _id: salesOffer._id,
-                diamondAmount: salesOffer.diamondAmount,
-                buyerUserId: salesOffer.buyerUserId
-            } : undefined,
+            salesOffer: salesOffer ? this.translateSalesOfferToVM(salesOffer) : undefined,
+            highestBid: highestBid ? this.translateSalesOfferToVM(highestBid) : undefined,
 
             overallRating: player.overallRating,
             pitchRatings: player.pitchRatings,
@@ -150,7 +149,6 @@ class PlayerViewService {
             potentialOverallRating: player.potentialOverallRating,
             potentialPitchRatings: player.potentialPitchRatings,
             potentialHittingRatings: player.potentialHittingRatings,
-
 
             careerHitterStats: player.careerStats.hitting,
             careerPitcherStats: player.careerStats.pitching,
@@ -181,10 +179,17 @@ class PlayerViewService {
             pitcherGameLog: pitcherGameLog
         }
 
-
-
         return result
 
+    }
+
+    private translateSalesOfferToVM(tmo:TeamMarketOffer) : TeamMarketOfferViewModel {
+        return { 
+            _id: tmo._id,
+            diamondAmount: tmo.diamondAmount,
+            buyerUserId: tmo.buyerUserId,
+            sellerUserId: tmo.sellerUserId
+        }
     }
     
 
@@ -214,12 +219,8 @@ interface PlayerViewModel {
     potentialHittingRatings: HittingRatings
 
     askingPrice:string
-    minimumPlayerSalary:string
-    salesOffer: {
-        _id: string
-        diamondAmount: string
-        buyerUserId: string
-    }
+    salesOffer: TeamMarketOfferViewModel
+    highestBid: TeamMarketOfferViewModel
 
     careerHitterStats: HitterStatLine
     careerPitcherStats: PitcherStatLine
@@ -237,11 +238,18 @@ interface PlayerViewModel {
         isQueued:boolean
     }
 
-    dropCost?:string
 
     hitterGameLog
     pitcherGameLog
 
+}
+
+
+interface TeamMarketOfferViewModel {
+    _id: string
+    diamondAmount: string
+    buyerUserId:string
+    sellerUserId?:string
 }
 
 

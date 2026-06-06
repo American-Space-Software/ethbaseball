@@ -22,6 +22,7 @@ import { TeamComponentService } from '../service/team-component-service.js';
 import { TeamWebService } from '../service/team-web-service.js';
 import { GameTransactionWebService } from '../service/game-transaction-web-service.js';
 import dayjs from 'dayjs';
+import { RouteParameters } from '../service/routing-service.js';
 
 
 
@@ -44,14 +45,14 @@ class TeamController {
     @routeMap("/t/index/:teamId")
     async showIndex(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
             let authInfo = await this.loginWebService.getAuthInfo()
 
-            let startDate = routeTo?.query?.startDate
-            let teamId = routeTo?.params?.teamId
+            let startDate = routeParams.routeTo?.query?.startDate
+            let teamId = routeParams.routeTo?.params?.teamId
 
-            this.universeWebService.setStartDate(startDate, routeTo)
+            this.universeWebService.setStartDate(startDate, routeParams.routeTo)
 
             let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
@@ -60,7 +61,7 @@ class TeamController {
             return {
                 authInfo: authInfo,
                 discord: this.discord,
-                setStartDate: () => this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+                setStartDate: () => this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
             }
         }, TeamIndexComponent)
 
@@ -69,13 +70,13 @@ class TeamController {
     @routeMap("/t/results/:teamId")
     async showResults(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            let startDate = routeTo?.query?.startDate
-            let teamId = routeTo?.params?.teamId
-            let date = routeTo?.query?.date
+            let startDate = routeParams.routeTo?.query?.startDate
+            let teamId = routeParams.routeTo?.params?.teamId
+            let date = routeParams.routeTo?.query?.date
 
-            this.universeWebService.setStartDate(startDate, routeTo)
+            this.universeWebService.setStartDate(startDate, routeParams.routeTo)
 
             let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
@@ -111,13 +112,13 @@ class TeamController {
     @routeMap("/t/activity/on/:teamId")
     async showActivity(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            let startDate = routeTo?.query?.startDate
-            let teamId = routeTo?.params?.teamId
-            let page = parseInt(routeTo?.query?.page || 1)
+            let startDate = routeParams.routeTo?.query?.startDate
+            let teamId = routeParams.routeTo?.params?.teamId
+            let page = parseInt(routeParams.routeTo?.query?.page || 1)
 
-            this.universeWebService.setStartDate(startDate, routeTo)
+            this.universeWebService.setStartDate(startDate, routeParams.routeTo)
 
             let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 
@@ -154,13 +155,13 @@ class TeamController {
     @routeMap("/t/activity/index/:teamId")
     async showOffchainActivity(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            let startDate = routeTo?.query?.startDate
-            let teamId = routeTo?.params?.teamId
-            let page = parseInt(routeTo?.query?.page || 1)
+            let startDate = routeParams.routeTo?.query?.startDate
+            let teamId = routeParams.routeTo?.params?.teamId
+            let page = parseInt(routeParams.routeTo?.query?.page || 1)
 
-            this.universeWebService.setStartDate(startDate, routeTo)
+            this.universeWebService.setStartDate(startDate, routeParams.routeTo)
 
             let team = await this.teamComponentService.loadTeam(teamId, this.universeWebService.getStartDate(), { forceRefresh: true })
 

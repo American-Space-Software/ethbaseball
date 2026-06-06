@@ -7,6 +7,7 @@ import UserOwnersComponent from '../components/user/owners.f7.html'
 import { ModelView } from '../../util/model-view.js';
 import { routeMap } from '../../util/route-map.js';
 import { GameTransactionWebService } from '../service/game-transaction-web-service.js';
+import { RouteParameters } from '../service/routing-service.js';
 
 @injectable()
 class UserController {
@@ -45,10 +46,10 @@ class UserController {
     @routeMap("/u/activity")
     async showActivity(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            let page = parseInt(routeTo?.query?.page || 1)
-            let address = routeTo?.query?.address
+            let page = parseInt(routeParams.routeTo?.query?.page || 1)
+            let address = routeParams.routeTo?.query?.address
 
             let model = await this.gameTransactionWebService.getByOwner(address, page)
 

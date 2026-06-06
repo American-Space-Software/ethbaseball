@@ -12,6 +12,7 @@ import { UniverseWebService } from '../service/universe-web-service.js';
 import { LoginWebService } from '../service/login-web-service.js';
 
 import { TeamComponentService } from '../service/team-component-service.js';
+import { RouteParameters } from '../service/routing-service.js';
 
 
 @injectable()
@@ -32,9 +33,9 @@ class HomeController {
 
         if (authInfo?._id) {
 
-            return new ModelView(async (routeTo) => {
+            return new ModelView(async (routeParams:RouteParameters) => {
 
-                this.universeWebService.setStartDate(routeTo?.query?.startDate, routeTo)
+                this.universeWebService.setStartDate(routeParams.routeTo?.query?.startDate, routeParams.routeTo)
 
                 let vm = await this.universeWebService.getHome(this.universeWebService.getStartDate())
 

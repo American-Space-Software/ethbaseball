@@ -37,6 +37,11 @@ class UserService {
         return this.userRepository.get(_id, options)
     }
 
+    
+    async getByIds(ids: string[], options?: any): Promise<User[]> {
+        return this.userRepository.getByIds(ids, options)
+    }
+
     async put(user:User, options?:any) : Promise<void> {
         return this.userRepository.put(user, options)
     }

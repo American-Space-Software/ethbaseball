@@ -112,7 +112,12 @@ class RoutingService {
         if (!modelView) return
 
         let model:Function = await modelView.model
-        let modelResult:any = await model(routeTo)
+
+        let modelParams:RouteParameters = {
+            routeTo: routeTo
+        }
+
+        let modelResult:any = await model(modelParams)
 
 
         //Attach container to props.
@@ -183,7 +188,10 @@ const routingOptions = {
     browserHistory: true,
 }
 
+interface RouteParameters {
+    routeTo:any
+}
 
 export {
-    RoutingService, Route, RouteTo
+    RoutingService, Route, RouteTo, RouteParameters
 }

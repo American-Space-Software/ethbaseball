@@ -238,7 +238,7 @@
 
 
         eventTarget.dispatchEvent(new CustomEvent('main-nav', {
-            detail: { tabLink: "/players/", breadcrumbs:[
+            detail: { tabLink: `/players/?rank=${rank}`, breadcrumbs:[
                 { text: "Home", path: "/"},
                 { text: rank == 0 ? "Shop for Free Agents" : "League Leaders" }
             ] }

@@ -8,6 +8,7 @@ import { ModelView } from '../../util/model-view.js';
 import { routeMap } from '../../util/route-map.js';
 import { UniverseWebService } from '../service/universe-web-service.js';
 import { LeagueWebService } from '../service/league-web-service.js';
+import { RouteParameters } from '../service/routing-service.js';
 
 
 
@@ -37,22 +38,22 @@ class LeagueController {
     @routeMap("/l/standings/:rank/:page")
     async showLeagueStandings(): Promise<ModelView> {
         
-        return new ModelView(async (routeTo) => {
+        return new ModelView(async (routeParams:RouteParameters) => {
 
-            let currentStartDate = routeTo?.query?.startDate
+            let currentStartDate = routeParams.routeTo?.query?.startDate
 
-            this.universeWebService.setStartDate(currentStartDate, routeTo)
-            this.universeWebService.setRank(routeTo?.params?.rank || 1)
+            this.universeWebService.setStartDate(currentStartDate, routeParams.routeTo)
+            this.universeWebService.setRank(routeParams.routeTo?.params?.rank || 1)
 
-            let page = routeTo.params?.page || 1
+            let page = routeParams.routeTo.params?.page || 1
 
             let viewModel = await this.leagueWebService.getStandings(this.universeWebService.getRank(), this.universeWebService.getStartDate(), page)
 
             return {
                 viewModel: viewModel,
                 discord: this.discord,
-                currentURL: routeTo.url,
-                setStartDate: () => this.universeWebService.setStartDate(currentStartDate, routeTo)
+                currentURL: routeParams.routeTo.url,
+                setStartDate: () => this.universeWebService.setStartDate(currentStartDate, routeParams.routeTo)
             }
 
         }, LeagueStandingsComponent)
