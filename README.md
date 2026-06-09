@@ -2,9 +2,13 @@
 
 ## Technical Overview
 
-Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine.
+Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, manage a roster, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine.
 
-The simulation and game state run off-chain for performance. Diamonds can move onto Ethereum through open smart contracts, which allows them to exist outside the main game instead of remaining locked to a single app.
+The simulation and game state run off-chain for performance. Games are resolved pitch by pitch using player ratings, lineups, pitcher stamina, bullpen roles, and game situation.
+
+Diamonds are tracked off-chain by default and can move onto Ethereum through open smart contracts. This allows Diamonds to exist outside the main game instead of remaining locked to a single app.
+
+Players can be acquired through free agency and a basic marketplace. Marketplace offers use escrow: when an offer is submitted, the offered Diamonds are locked until the offer is accepted, declined, or canceled.
 
 This document provides a technical overview of the stack, quick-start steps, environment file examples, and a summary of the core game systems.
 
@@ -193,19 +197,26 @@ Ethereum Baseball League (EBL) is an online baseball management game.
 
 You run a franchise by managing:
 
-- Rosters
+- Player ownership
+- Active rosters
 - Lineups
-- Pitching rotations
-- Player transactions
+- Benches
+- Starting rotations
+- Bullpen roles
+- Marketplace offers
 - Long-term strategy
 
-Games are simulated pitch-by-pitch using player ratings, stamina, matchups, and game situation.
+Managers can own up to **40 players**, with up to **26 players assigned to a team roster** at any given time.
+
+Games are simulated pitch-by-pitch using player ratings, stamina, pitch counts, matchups, bullpen roles, and game situation.
+
+Pitchers are not interchangeable. Starting pitchers can handle larger workloads, relief pitchers operate under smaller pitch-count limits, and pitchers can be stretched out or moved into relief roles over time.
 
 You can watch games live with a field view and pitch-by-pitch updates.
 
 It combines baseball simulation strategy with a browser-based app and a system designed to persist over time.
 
-Diamonds are earned through regular-season game-day revenue and season-end rewards.
+Diamonds are earned through regular-season game-day revenue and season-end rewards and can be used for free agents, marketplace offers, and roster construction.
 
 ---
 
@@ -227,6 +238,7 @@ Seasons run on a real-world calendar.
 - Seasons last **162 days**
 - Each day represents **one game on the schedule**
 - The season day advances daily at **9:30 AM ET**
+- Seasons are followed by a short offseason before the next season begins
 
 If your team falls behind the schedule, you can queue additional games to catch up to the current season day.
 
@@ -480,7 +492,8 @@ Stronger teams generally finish higher in the standings, and stronger ratings ge
 
 Diamonds are used for things such as:
 
-- signing players
+- signing free agents
+- marketplace offers
 - payroll
 - roster actions
 - future upgrades
@@ -488,6 +501,18 @@ Diamonds are used for things such as:
 Diamonds are tracked **off-chain by default**.
 
 Regular-season Diamonds are introduced through game-day revenue. Additional Diamonds are introduced through the season-end reward pool.
+
+Marketplace offers use an escrow system. When a manager submits an offer for a player, the offered Diamonds are removed from their available balance and held in escrow until the offer is accepted, declined, canceled, or expires.
+
+If an offer is accepted:
+
+- the seller receives the escrowed Diamonds
+- ownership of the player transfers to the buyer
+
+If an offer is declined or canceled:
+
+- the escrow is released
+- the Diamonds return to the buyer's available balance
 
 Diamonds are created on Ethereum only when withdrawn.
 

@@ -1,3 +1,4 @@
+
 <template es>
 
   <main class="page" data-name="home">
@@ -10,7 +11,7 @@
         <div class="block block-strong block-outline">
           <p class="landing-hero-title">Run a franchise. Compete against other teams. Build a baseball world that keeps going.</p>
           <p class="landing-hero-subtitle">
-            Ethereum Baseball League (EBL) is an online baseball game where you manage a team, set your lineup, and play through a full season. Games unfold pitch by pitch, and every decision carries across a 162-day schedule.
+            Ethereum Baseball League (EBL) is an online baseball game where you manage a roster, set your lineup, organize your bench and bullpen, and play through a full season. Games unfold pitch by pitch, and every decision carries across a 162-day schedule.
           </p>
 
           <div class="landing-hero-actions">
@@ -84,7 +85,27 @@
                 <div class="item-media">🧢</div>
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Manage your roster</div>
-                  <div class="item-text">Set lineups and rotations. Stamina, depth, and long-term planning matter across the full season.</div>
+                  <div class="item-text">Own up to 40 players, assign up to 26 to your team roster, and manage your lineup, bench, rotation, and bullpen across the full season.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔥</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Plan your pitching staff</div>
+                  <div class="item-text">Use a five-pitcher rotation and bullpen roles like closer, setup, middle, long, and mop-up. Pitch counts and stamina make pitcher usage matter.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🏷️</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Improve through the marketplace</div>
+                  <div class="item-text">Make Diamond-backed offers for players owned by other managers. Offers use escrow, so pending Diamonds are locked until the offer is accepted, declined, or canceled.</div>
                 </div>
               </div>
             </li>
@@ -94,7 +115,7 @@
                 <div class="item-media">⚔️</div>
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Compete in a shared league</div>
-                  <div class="item-text">Teams are managed independently, each with their own lineup decisions, rotations, and strategy. Matchmaking pairs you with opponents based on your selected range.</div>
+                  <div class="item-text">Teams are managed independently, each with their own roster decisions, pitching plans, and strategy. Matchmaking pairs you with opponents based on your selected range.</div>
                 </div>
               </div>
             </li>
@@ -129,10 +150,57 @@
                 <div class="item-media">🏟️</div>
                 <div class="item-inner">
                   <div class="item-title">Read the Manual</div>
-                  <div class="item-text">Learn how to play</div>
+                  <div class="item-text">Learn lineups, roster limits, bullpen roles, stamina, Diamonds, and the marketplace</div>
                 </div>
               </a>
             </li>
+          </ul>
+        </div>
+
+        <div class="block-title block-title-medium">Roster Management</div>
+        <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+          <ul>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">📦</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">40 owned players, 26 on a team roster</div>
+                  <div class="item-text">Managers can own more players than they actively use. Your team roster is the group available for lineup, bench, rotation, and bullpen decisions.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">📋</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Lineup and bench</div>
+                  <div class="item-text">Your lineup has nine starting hitters. Bench players give you extra positional coverage and let you adjust as your roster changes.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔁</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Rotation and bullpen</div>
+                  <div class="item-text">Each team uses a five-pitcher starting rotation plus relief roles. Bullpen roles help the sim choose the right pitcher for the situation.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🧪</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Pitch counts change with role</div>
+                  <div class="item-text">Moving a pitcher from the rotation to the bullpen can reduce their max pitch count. Moving them back toward starter usage stretches them out over time instead of instantly restoring a full starter workload.</div>
+                </div>
+              </div>
+            </li>
+
           </ul>
         </div>
 
@@ -145,7 +213,7 @@
                 <div class="item-media">⚾</div>
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Every pitch matters</div>
-                  <div class="item-text">Games are resolved pitch by pitch using player ratings, matchups, stamina, and game situation.</div>
+                  <div class="item-text">Games are resolved pitch by pitch using player ratings, matchups, pitcher stamina, role-based pitch limits, and game situation.</div>
                 </div>
               </div>
             </li>
@@ -175,7 +243,44 @@
                 <div class="item-media">🧠</div>
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Transparent and open</div>
-                  <div class="item-text">The full simulation logic is open source and designed to be understandable and extensible.</div>
+                  <div class="item-text">The full simulation logic is open source, deterministic, and designed to be understandable and extensible.</div>
+                </div>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+
+        <div class="block-title block-title-medium">Marketplace</div>
+        <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+          <ul>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🏷️</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Make Diamond-backed offers</div>
+                  <div class="item-text">The marketplace lets managers make offers for players owned by other managers.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔒</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Offers use escrow</div>
+                  <div class="item-text">When you submit an offer, the Diamonds are removed from your available balance and locked in escrow so the offer is fully funded.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">✅</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Accept, decline, or cancel</div>
+                  <div class="item-text">If accepted, the seller receives the escrowed Diamonds and the buyer receives the player. If canceled or declined, the Diamonds return to the buyer.</div>
                 </div>
               </div>
             </li>
@@ -212,7 +317,7 @@
                 <div class="item-media">🌱</div>
                 <div class="item-inner">
                   <div class="item-title">Use them for growth</div>
-                  <div class="item-text">Diamonds can be used for roster decisions and development.</div>
+                  <div class="item-text">Diamonds can be used for free agents, marketplace offers, roster decisions, and development.</div>
                 </div>
               </div>
             </li>
@@ -252,8 +357,15 @@
 
         <div class="block-title block-title-medium">Open Source</div>
         <div class="block block-strong block-outline">
-          <p><strong>MIT licensed.</strong> The simulation engine is free and open source.</p>
-          <p>Anyone can inspect it, modify it, or run their own version.</p>
+          <p><strong>MIT licensed.</strong> EBL is powered by an open-source baseball simulation engine written in TypeScript.</p>
+          <p>The engine resolves games pitch by pitch, supports reproducible simulations, and can be inspected, modified, or used to build other baseball worlds.</p>
+          <p>
+            <a class="external link"
+              href="https://github.com/American-Space-Software/ethbaseball"
+              target="_blank">
+              View on GitHub
+            </a>
+          </p>
         </div>
 
       </div>
@@ -270,44 +382,14 @@
 
 <script>
 
-  import main from "../../html/images/main.png"
-
-  import Navbar from "../common/navbar.f7.html"
-  import Breadcrumbs from "../common/breadcrumbs.f7.html"
-
-  import Toolbar from "../common/toolbar.f7.html"
-
-  import GameTransactions from "../activity/game-transaction-events.f7.html"
-  import OnChainEvents from "../activity/onchain-events.f7.html"
-
   import { ContainerService } from "../../../service/container-service"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
-
-  import { StatService } from "../../../service/stat-service.ts"
-  import { Position } from '../../../baseball-sim-engine/index.ts';
-
-
-  import dayjs from "dayjs"
-
-  import InProgress from "./in-progress.f7.html"
-  import Scheduled from "./scheduled.f7.html"
-  import Result from "./result.f7.html"
-
-  import gameShot from "../../html/images/screenshots/game.png"
 
   export default (props, { $, $on, $f7, $update }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
     let universeWebService = ContainerService.getInstance(UniverseWebService)
-    let walletService = ContainerService.getInstance("WalletService")
-
-    let statService = ContainerService.getInstance(StatService)
-
-    let authInfo = props.authInfo
-    let vm = props.vm
-    let contractBalance = props.contractBalance
-    let discord = props.discord
 
     $on('pageBeforeIn', async (e) => {
 
@@ -323,7 +405,7 @@
         `Play a Baseball Game Online – Ethereum Baseball League`,
         window.location.href,
         `${env.WEB}/logo.png`,
-        "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, and play through a 162-day season on top of an open baseball simulation engine."
+        "Ethereum Baseball League (EBL) is an online baseball game where you run a franchise, compete against other teams, watch games live, manage rosters, use a marketplace, and play through a 162-day season on top of an open baseball simulation engine."
       )
 
       await $update()
@@ -332,3 +414,4 @@
     return $render
   }
 </script>
+

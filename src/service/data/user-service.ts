@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ethers } from "ethers";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
 import { Position } from "../../baseball-sim-engine/index.js";
+import { TeamMarketOfferService } from "./team-market-offer-service.js";
 
 
 @injectable()
@@ -24,13 +25,15 @@ class UserService {
     @inject("UserRepository")
     private userRepository:UserRepository
     
+    
     constructor(
         private seasonService:SeasonService,
         private teamService:TeamService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private diamondMintPassService:DiamondMintPassService,
         private offchainEventService:OffchainEventService,
-        private playerLeagueSeasonService:PlayerLeagueSeasonService
+        private playerLeagueSeasonService:PlayerLeagueSeasonService,
+        private teamMarketOfferService:TeamMarketOfferService
     ) {}
 
     async get(_id:string, options?:any) : Promise<User> {
@@ -115,6 +118,7 @@ class UserService {
         if (vm.teamInfo?.inProgressGame?._id != undefined) {
             gamesPlayed++
         }
+
 
         vm.season = {
             _id: season._id,

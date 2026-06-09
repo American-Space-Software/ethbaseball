@@ -13,6 +13,10 @@ interface TeamMarketOfferRepository {
     getHighestPendingByPlayerId(playerId:string, options?:any): Promise<TeamMarketOffer | undefined>
 
     listPendingByBuyerUserIdAndPlayerId(buyerUserId:string, playerId:string, options?:any): Promise<TeamMarketOffer[]>
+
+    listPendingSaleListings(options?:any): Promise<TeamMarketOffer[]>
+
+    getHighestBidsForUserPlayers(userId:string, options?:any): Promise<TeamMarketOffer[]>
 }
 
 export {

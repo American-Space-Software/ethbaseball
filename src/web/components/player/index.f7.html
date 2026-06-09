@@ -95,33 +95,34 @@
           </div>
 
 
-          ${showActions ? $h`
-              <div class="block-title block-title-small">Team Actions</div>
+          ${showRosterManagement ? $h`
+
+              <div class="block-title block-title-small">Roster Management</div>
               <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
 
-                    ${isOwner && player.team?.isQueued ? $h`
+                      ${showQueueingMessage ? $h`
 
-                      <li>
-                          <a class="item-link item-content">
-                              <div class="item-media">🏟️</div>
+                        <li>
+                            <a class="item-link item-content">
+                                <div class="item-media">🏟️</div>
 
-                              <div class="item-inner">
-                                  <div class="item-title-row">
-                                  <div class="item-title">
-                                      Your team is queued.
-                                  </div>
-                                  </div>
+                                <div class="item-inner">
+                                    <div class="item-title-row">
+                                    <div class="item-title">
+                                        Your team is queued.
+                                    </div>
+                                    </div>
 
-                                  <div class="item-text">
-                                  Rosters are locked while in the queue.
-                                  </div>
+                                    <div class="item-text">
+                                    Rosters are locked while in the queue.
+                                    </div>
 
-                              </div>
-                          </a>
-                      </li>
+                                </div>
+                            </a>
+                        </li>
 
-                    ` : $h`  `}
+                      ` : $h`  `}
 
                       ${showDrop ? $h`  
 
@@ -191,13 +192,82 @@
 
                       ` : $h` `}
 
+                  </ul>
+              </div>
+          ` : $h` `}
 
+
+
+          ${showMarketplace ? $h`
+              <div class="block-title block-title-small">Marketplace</div>
+              <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+                  <ul>
+
+                      ${showQueueingMessage ? $h`
+
+                        <li>
+                            <a class="item-link item-content">
+                                <div class="item-media">🏟️</div>
+
+                                <div class="item-inner">
+                                    <div class="item-title-row">
+                                    <div class="item-title">
+                                        Your team is queued.
+                                    </div>
+                                    </div>
+
+                                    <div class="item-text">
+                                    Rosters are locked while in the queue.
+                                    </div>
+
+                                </div>
+                            </a>
+                        </li>
+
+                      ` : $h`  `}
+
+
+                      ${showBuy ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".buy-popup">
+                              <div class="item-media">🏷️</div>
+
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">View listing</div>
+                                  <div class="item-after">${universeWebService.displayDiamonds(player.salesOffer.diamondAmount)}</div>
+                                </div>
+                              </div>
+
+                            </a>
+                          </li>
+
+                      ` : $h` `}
+
+                      ${showCancelSalesListing ? $h`
+
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".cancel-sales-listing-popup">
+                              <div class="item-media">❌</div>
+
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">Cancel listing</div>
+                                  <div class="item-after">${universeWebService.displayDiamonds(player.salesOffer.diamondAmount)}</div>
+                                </div>
+                              </div>
+
+                            </a>
+                          </li>
+
+                      ` : $h` `}
 
                       ${showListForSale ? $h`
 
                           <li>
                             <a class="item-link item-content popup-open" data-popup=".list-for-sale-popup">
-                              <div class="item-media">🔷</div>
+                              <div class="item-media">🏷️</div>
                               <div class="item-inner">
                                 <div class="item-title-row">
                                   <div class="item-title">
@@ -210,15 +280,16 @@
 
                       ` : $h` `}
 
-                      ${showCancelSalesListing ? $h`
+
+                      ${showBid ? $h`
 
                           <li>
-                            <a class="item-link item-content popup-open" data-popup=".cancel-sales-listing-popup">
-                              <div class="item-media">❌</div>
+                            <a class="item-link item-content popup-open" data-popup=".bid-popup">
+                              <div class="item-media">🔷</div>
                               <div class="item-inner">
                                 <div class="item-title-row">
                                   <div class="item-title">
-                                    Cancel Listing @ ${universeWebService.displayDiamonds(player.salesOffer.diamondAmount)}
+                                    Make Offer
                                   </div>
                                 </div>
                               </div>
@@ -227,7 +298,39 @@
 
                       ` : $h` `}
 
+                      ${showCancelBid ? $h`
 
+                        <li>
+                          <a class="item-link item-content popup-open" data-popup=".cancel-bid-popup">
+                            <div class="item-media">❌</div>
+                            <div class="item-inner">
+                              <div class="item-title-row">
+                                <div class="item-title">
+                                  Cancel Bid @ ${universeWebService.displayDiamonds(userOffer.diamondAmount)} ${userOffer._id == player.highestBid?._id ? $h`<span class="chip">Highest offer</span>` : $h` `}
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </li>
+
+                      ` : $h` `}
+
+                      ${showHighestBid ? $h`
+
+                        <li>
+                          <a class="item-link item-content popup-open" data-popup=".highest-bid-popup">
+                            <div class="item-media">🔷</div>
+                            <div class="item-inner">
+                              <div class="item-title-row">
+                                <div class="item-title">
+                                  View highest bid @ ${universeWebService.displayDiamonds(player.highestBid.diamondAmount)}
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </li>
+
+                      ` : $h` `}                      
 
                   </ul>
               </div>
@@ -259,13 +362,14 @@
 
             ${playerWebService.getDisplayLevel(BigInt(player.totalExperience)) < 100 ? $h`
               <div class="text-color-gray" style="font-size:14px;">
-                ${formatBigInt(BigInt(player.totalExperience))} / ${formatBigInt(playerWebService.getNextLevelExperience(BigInt(player.totalExperience)))} XP to Level ${playerWebService.getNextDisplayLevel(BigInt(player.totalExperience))}
+                ${formatBigInt(playerWebService.getCurrentLevelExperience(BigInt(player.totalExperience)))} / ${formatBigInt(playerWebService.getCurrentLevelExperienceNeeded(BigInt(player.totalExperience)))} XP to Level ${playerWebService.getNextDisplayLevel(BigInt(player.totalExperience))}
               </div>
             ` : $h`
               <div class="text-color-green" style="font-size:14px;">
                 Max Level Reached
               </div>
             `}
+
           </div>
 
 
@@ -1079,7 +1183,7 @@
                               <div class="item-inner">
                                 <div class="item-title item-label">Set Price in Diamonds:</div>
                                 <div class="item-input-wrap diamond-input-wrap">
-                                  <input type="number" name="sale-price" placeholder="Sale price" required />
+                                  <input type="number" name="sale-price" placeholder="Sale price" step="any" required />
                                 </div>
                               </div>
                             </div>
@@ -1139,6 +1243,209 @@
 
           ` : $h` `}
 
+          ${showBuy ? $h`
+            
+            <div class="popup buy-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">For Sale</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                        <div class="block">
+
+                          <p>
+                            Buy ${player.fullName}.
+                          </p>
+
+                          <p>
+                            <strong>Current Price: </strong><br />
+                            ${universeWebService.displayDiamonds(player.salesOffer.diamondAmount)}
+                          </p>
+
+                          <p>
+                            <strong>Balance:</strong><br />
+                            ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance)}
+                          </p>               
+                          
+
+                          ${canAffordBuy ? $h`
+
+                            <div class="block">                        
+                              <a @click="${buyButtonClick}" class="button button-fill color-red buy-button">Buy</a>
+                            </div>
+
+                          ` : $h`
+                              <p><strong>You do not have enough diamonds.</strong></p>
+                          `}
+
+                        </div>
+                      
+
+
+
+
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
+
+
+          ${showBid ? $h`
+          
+            <div class="popup bid-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Bid on Player</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                      <div class="block">
+                        <p>
+                          Enter the number of diamonds 🔷 to bid. 
+                        </p>
+
+                        <p>
+                          The diamonds will transferred to escrow and unable to be used for other purposes. 
+                        </p>
+
+                        <p>
+                          Cancelling the bid returns the diamonds.
+                        </p>
+
+                        <p>
+                          <strong>Balance:</strong><br />
+                          ${universeWebService.displayDiamonds(authInfo.offChainDiamondBalance)}
+                        </p>
+
+                      </div>
+
+                      <div class="list list-dividers-ios">
+
+                        <ul>
+                          <li>
+                            <div class="item-content item-input">
+                              <div class="item-inner">
+                                <div class="item-title item-label">Bid in Diamonds:</div>
+                                <div class="item-input-wrap diamond-input-wrap">
+                                    <input type="number" name="bid-price" placeholder="Bid" step="any" min="0" required />
+                                </div>
+                              </div>
+                            </div>
+                          </li>
+                        </ul>
+
+                      </div>
+
+                      <div class="block">                        
+                        <a @click="${bidButtonClick}" class="button button-fill color-red bid-button">Place Bid</a>
+                      </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
+
+
+          ${showCancelBid ? $h`
+            
+            <div class="popup cancel-bid-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Cancel Bid</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                      <div class="block">
+                        <p>
+                          Cancel bid for ${player.fullName}.
+                        </p>
+
+                        <p>
+                            <strong>Current Bid: </strong><br />
+                            ${universeWebService.displayDiamonds(player.userOffer.diamondAmount)}
+                        </p>
+
+                      </div>
+
+                      <div class="block">                        
+                        <a @click="${cancelBidButtonClick}" class="button button-fill color-red cancel-bid-button">Cancel Bid</a>
+                      </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
+
+          ${showHighestBid ? $h`
+          
+            <div class="popup highest-bid-popup">
+              <div class="view">
+                <div class="page">
+                  <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner">
+                      <div class="title">Highest Bid</div>
+                      <div class="right">
+                        <a class="link popup-close">Close</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-content">
+
+                      <div class="block">
+   
+                        <p>
+                          Accept the current highest bid. 
+                        </p>
+
+                        <p>Player will be transferred to buying team and you will receive the listed amount of diamonds.</p>
+
+                        <p>
+                          <strong>Highest Bid:</strong><br />
+                          ${universeWebService.displayDiamonds(player.highestBid.diamondAmount)}
+                        </p>
+
+                      </div>
+
+                      <div class="block">                        
+                        <a @click="${acceptBidButtonClick}" class="button button-fill color-red accept-bid-button">Accept Bid</a>
+                      </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>   
+
+          ` : $h` `}
 
         ` : $h` `}
 
@@ -1178,7 +1485,6 @@
 
   export default (props, { $on, $, $f7, $update, $onMounted, $h }) => {
 
-    
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
     let playerWebService = ContainerService.getInstance(PlayerWebService)
@@ -1191,30 +1497,40 @@
 
     let authInfo = props.authInfo
     let player = props.player
+
     
     let isLoggedIn = authInfo?._id != undefined
-    let isOwned = player.team?._id != undefined && player.team.userId != undefined
+    let isOwned = player.team.userId != undefined
     let isOwner = isOwned && player.team.userId == authInfo?._id
 
     let canAffordDrop = isOwner && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(DEFAULT_DROP_PLAYER_DIAMONDS))
+    let canAffordBuy = authInfo.offChainDiamondBalance && player.salesOffer != undefined && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.salesOffer.diamondAmount))
 
     let showPotential = false
+    let userOffer = player.userOffer
 
+    let showQueueingMessage = isOwner && player.team?.isQueued
+    let showCancelBid = userOffer
     let showDrop = (isOwner && !player.team?.isQueued && canAffordDrop) == true
     let showSign = ( !isOwned && isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.askingPrice) ) ) == true
     let showActivate =  isOwner && player.team?._id == undefined
     let showDeactivate = isOwner && player.team?._id != undefined
     let showListForSale = isOwner && player.salesOffer?._id  == undefined
     let showCancelSalesListing = isOwner && player.salesOffer?._id  != undefined
-    let showBid = isLoggedIn && !isOwner
-    let showHighestBid = isLoggedIn && isOwner 
+    let showBuy = !isOwner && player.salesOffer?._id  != undefined
+    let showBid = isLoggedIn && !isOwner && !showCancelBid
+    let showHighestBid = player.highestBid?._id != undefined && (userOffer?._id != player.highestBid?._id)
 
     let showInsufficientDiamonds = isLoggedIn && player.askingPrice && (BigInt(authInfo.offChainDiamondBalance) < BigInt(player.askingPrice))
     let showInsufficientDiamondsToDrop = isLoggedIn && isOwner && (BigInt(authInfo.offChainDiamondBalance) < BigInt(DEFAULT_DROP_PLAYER_DIAMONDS))
 
-    let showActions = (isOwner && player.team?.isQueued) || showDrop || showSign || showActivate
+
+    let showRosterManagement = isOwner || showSign
+
+    let showMarketplace = isOwned && (showBuy || showCancelSalesListing || showListForSale || showBid || showCancelBid || showHighestBid)
 
     let activeTeamId = isLoggedIn ? authInfo.teams[0]._id : undefined
+
 
     const activateTeamChange = (e) => {
        activeTeamId = $(e.target).val()
@@ -1260,6 +1576,126 @@
       return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
     }
 
+
+    const acceptBidButtonClick = async (e) => {
+
+      let confirmMessage = `Confirm you would like to accept this bid.`
+
+      $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
+
+          try {
+
+            await offerWebService.acceptBid(player.highestBid._id)
+            
+            $f7.popup.close('.highest-bid-popup')
+            $f7.views.main.router.refreshPage()
+
+            const toast = $f7.toast.create({
+                text: 'Bid accepted.',
+                closeTimeout: 5000,
+                position: 'bottom',
+                horizontalPosition: 'center',
+                on: {
+                    opened: function () { }
+                }
+            })
+
+            toast.open()                
+
+          } catch(ex) {
+            $f7.dialog.alert(ex.message)
+          }
+
+      })
+
+    }
+
+
+    const buyButtonClick = async (e) => {
+
+          let confirmMessage = `Confirm you would like to buy player.`
+
+          $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
+
+              try {
+
+                await offerWebService.buy(player.salesOffer._id)
+                
+                $f7.popup.close('.buy-popup')
+                $f7.views.main.router.refreshPage()
+
+                const toast = $f7.toast.create({
+                    text: 'Player bought successfully.',
+                    closeTimeout: 5000,
+                    position: 'bottom',
+                    horizontalPosition: 'center',
+                    on: {
+                        opened: function () { }
+                    }
+                })
+
+                toast.open()                
+
+              } catch(ex) {
+                $f7.dialog.alert(ex.message)
+              }
+
+          })
+
+
+
+
+
+
+    }
+
+
+    const bidButtonClick = async (e) => {
+
+          const input = document.querySelector('input[name="bid-price"]')
+
+          if (!input.reportValidity()) {
+              return
+          }
+
+          let confirmMessage = `Confirm you would like to place bid.`
+
+          $f7.dialog.confirm(confirmMessage, "Confirm", async () => {
+
+              try {
+
+                let value = $('input[name="bid-price"]').val()
+                let bidPrice = ethers.parseUnits( value.toString()  , 'ether')
+
+                await offerWebService.bid(player, bidPrice.toString())
+                
+                $f7.popup.close('.bid-popup')
+                $f7.views.main.router.refreshPage()
+
+                const toast = $f7.toast.create({
+                    text: 'Bid created successfully.',
+                    closeTimeout: 5000,
+                    position: 'bottom',
+                    horizontalPosition: 'center',
+                    on: {
+                        opened: function () { }
+                    }
+                })
+
+                toast.open()                
+
+              } catch(ex) {
+                $f7.dialog.alert(ex.message)
+              }
+
+          })
+
+
+
+
+
+
+    }
 
     const listForSaleButtonClick = async (e) => {
 
@@ -1308,7 +1744,32 @@
 
     }
 
-    
+    const cancelBidButtonClick = async (e) => {
+
+      try {
+
+        await offerWebService.cancelBid(player.userOffer._id)
+        
+        $f7.popup.close('.cancel-bid-popup')
+        $f7.views.main.router.refreshPage()
+
+        const toast = $f7.toast.create({
+            text: 'Player bid cancelled.',
+            closeTimeout: 5000,
+            position: 'bottom',
+            horizontalPosition: 'center',
+            on: {
+                opened: function () { }
+            }
+        })
+
+        toast.open()
+
+      } catch(ex) {
+        $f7.dialog.alert(ex.message)
+      }
+    }
+
     const cancelSalesListingButtonClick = async (e) => {
 
       try {
@@ -1316,7 +1777,7 @@
         await offerWebService.cancelPlayerListing(player)
         
         $f7.popup.close('.cancel-sales-listing-popup')
-        $f7.views.main.router.navigate(universeWebService.startDateLink(`/p/${player._id}`))
+        $f7.views.main.router.refreshPage()
 
         const toast = $f7.toast.create({
             text: 'Player listing cancelled.',
@@ -1334,11 +1795,6 @@
         $f7.dialog.alert(ex.message)
       }
     }
-
-
-
-
-
 
     const deactivateButtonClick = async (e) => {
 

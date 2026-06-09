@@ -207,6 +207,18 @@ let startWebServer = async () => {
     universe = await universeService.get(universe._id)
   }
 
+  const parseFloatWithException = (theStr:string|undefined) => {
+
+    if (theStr == undefined) throw new Error("Missing input.")
+
+    let result = parseFloat(theStr)
+
+    if (isNaN(result)) throw new Error("Error parsing float.")
+
+    return result
+
+  }
+
   const parseIntWithException = (theStr:string|undefined) => {
 
     if (theStr == undefined) throw new Error("Missing input.")
@@ -922,6 +934,28 @@ let startWebServer = async () => {
 
   })
 
+  app.get("/offers/user", async function (req, res) {
+
+      try {
+
+        await refreshUniverse()
+
+        await renderIndex(res,{ 
+          twitter: TWITTER,
+          title: `User Listings - Ethereum Baseball League`,
+          description: `View your listings in Ethereum Baseball League.`,
+          VERSION: version,
+          url: req.originalUrl,
+          image: `${process.env.WEB}/ebl-512.png`
+        })
+
+      } catch (ex) {
+        res.sendStatus(500)
+      }
+
+  })
+
+
 
   /** END SERVED PAGES */
 
@@ -1263,8 +1297,6 @@ let startWebServer = async () => {
         return res.send("Not authorized.")
       }
 
-      await refreshUniverse()
-
       await sequelize.transaction(async (t1) => {
       
           let options = { transaction: t1 }
@@ -1276,10 +1308,6 @@ let startWebServer = async () => {
 
       })
 
-      //Clear cache 
-      await cacheService.clearPlayersTag()
-      await cacheService.clearTeamsTag()
-
       return res.send("success")
 
     } catch (ex) {
@@ -1289,7 +1317,6 @@ let startWebServer = async () => {
     }
 
   })
-
 
   app.post('/api/player/cancel-sales-listing/:playerId', async function (req, res) {
 
@@ -1332,6 +1359,128 @@ let startWebServer = async () => {
     }
 
   })
+
+  app.post('/api/player/bid/:playerId', async function (req, res) {
+
+    try {
+
+      let playerId = req.params.playerId
+
+      let bidPrice = req.body.bidPrice
+
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      await refreshUniverse()
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let player:Player = await playerService.get(playerId, options)
+
+  
+          await teamTransactionService.createPlayerBuyOffer(user, player, bidPrice)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })  
+
+  app.post('/api/player/cancel-bid/:bidId', async function (req, res) {
+
+    try {
+
+      let bidId = req.params.bidId
+
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let tmo:TeamMarketOffer = await teamMarketOfferService.get(bidId, options)
+
+          await teamTransactionService.cancelPlayerBuyOffer(user, tmo, options)
+
+      })
+
+      //Clear cache 
+      await cacheService.clearPlayersTag()
+      await cacheService.clearTeamsTag()
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })   
+
+  app.post('/api/player/accept-bid', async function (req, res) {
+
+    try {
+
+      let bidId = req.body.bidId
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+      if (!userId) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+
+      await sequelize.transaction(async (t1) => {
+      
+          let options = { transaction: t1 }
+
+          let user: User = await userService.get(userId, options)
+          let highestbid:TeamMarketOffer = await teamMarketOfferService.get(bidId, options)
+          let player:Player = await playerService.get(highestbid.salePlayerId, options)
+          let date:Date = new Date(new Date().toUTCString())
+
+          await teamTransactionService.acceptHighestPlayerBuyOffer(user, player, highestbid, date, options)
+
+      })
+
+
+      return res.send("success")
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })    
 
 /**
  * End Players
@@ -1389,28 +1538,20 @@ let startWebServer = async () => {
 
 /** Offers */
 
-  app.get('/api/offer/list', async function (req, res) {
+
+  app.get('/api/offer/list/:page', async function (req, res) {
 
     try {
 
-      //@ts-ignore
-      let userId = req.session?.passport?.user
-
-      if (!userId) {
-        res.status(401)
-        return res.send("Not authorized.")
-      }
-
-      let user: User = await userService.get(userId)
-
-      let buyOffers:TeamMarketOffer[] = await teamMarketOfferService.listPendingByBuyerUserId(user._id)
-      let sellOffers:TeamMarketOffer[] = await teamMarketOfferService.listSaleListingsBySellerUserId(user._id)
+      let perPage = 25
+      let page = parseIntWithException(req.params.page)
+      let options = { limit: perPage, offset: (page - 1) * perPage }
+      
+      let offers:TeamMarketOffer[] = await teamMarketOfferService.listPendingSaleListings(options)
+      let offerVms = await teamMarketOfferService.getTeamMarketOfferViewModels(offers)
 
 
-      return res.json({
-        buyOffers: await teamMarketOfferService.getTeamMarketOfferViewModels(buyOffers),
-        sellOffers: await teamMarketOfferService.getTeamMarketOfferViewModels(sellOffers)
-      })
+      return res.json(offerVms)
 
     } catch (ex) {
       console.log(ex)
@@ -1420,7 +1561,43 @@ let startWebServer = async () => {
 
   })
 
+  app.get('/api/offer/user', async function (req, res) {
 
+    try {
+
+      //@ts-ignore
+      let userId = req.session?.passport?.user
+
+      let user: User = await userService.get(userId)
+
+      if (!user) {
+        res.status(401)
+        return res.send("Not authorized.")
+      }
+
+      
+      let listings:TeamMarketOffer[] = await teamMarketOfferService.listSaleListingsBySellerUserId(user._id)
+      let listingsVms = await teamMarketOfferService.getTeamMarketOfferViewModels(listings)
+
+      let bids:TeamMarketOffer[] = await teamMarketOfferService.listPendingByBuyerUserId(user._id)
+      let bidsVms = await teamMarketOfferService.getTeamMarketOfferViewModels(bids)
+
+      let highestBids:TeamMarketOffer[] = await teamMarketOfferService.getHighestBidsForUserPlayers(user._id)
+      let highestBidsVms = await teamMarketOfferService.getTeamMarketOfferViewModels(highestBids)
+
+      return res.json({
+        listings: listingsVms,
+        bids: bidsVms,
+        highestBids: highestBidsVms
+      })
+
+    } catch (ex) {
+      console.log(ex)
+      res.status(500)
+      res.send(ex.message);
+    }
+
+  })
 
 
 /** Game transactions */
@@ -2279,11 +2456,25 @@ let startWebServer = async () => {
     //Simulate games 
     let gameIds = await ladderService.runGameRunner(universe._id)
 
-    if (gameIds?.length > 0) {
+    if (gameIds?.allGameIds?.length > 0) {
 
-      let updatedGames = await gameService.getByIds(gameIds)
+      let updatedGames = await gameService.getByIds(gameIds?.allGameIds)
 
       for (let game of updatedGames) {
+
+        if (gameIds.startedGameIds?.includes(game._id)) {
+
+          let homeTeam:Team = await teamService.get(game.home._id)
+          let homeUser:User = await userService.get(homeTeam.userId)
+
+
+          let awayTeam:Team = await teamService.get(game.away._id)
+          let awayUser:User = await userService.get(awayTeam.userId)
+
+          socketService.queueGameStarted([homeUser._id, awayUser._id], game)
+
+        }
+
         //Send websocket updates to connected clients.
         socketService.gameUpdate(game)
 

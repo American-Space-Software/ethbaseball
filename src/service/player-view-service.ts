@@ -40,11 +40,7 @@ class PlayerViewService {
         private teamQueueService:TeamQueueService,
         private playerService:PlayerService,
         private seasonService:SeasonService,
-        private leagueSerivce:LeagueService,
         private teamService:TeamService,
-        private gameService:GameService,
-        private userService:UserService,
-        private offchainEventService:OffchainEventService,
         private teamLeagueSeasonService:TeamLeagueSeasonService,
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
         private teamMarketOfferService:TeamMarketOfferService
@@ -57,10 +53,9 @@ class PlayerViewService {
         
         let plsList:PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getByPlayer(player)
 
-        
         let salesOffer:TeamMarketOffer
         let highestBid:TeamMarketOffer
-        let userOffers:TeamMarketOffer[]
+        let userOffer:TeamMarketOffer
 
         // let pls
         let currentPls:PlayerLeagueSeason
@@ -78,16 +73,12 @@ class PlayerViewService {
 
         if (currentPls.userId) {
 
-            let user:User = await this.userService.get(currentPls.userId)
-            let teams = await this.teamService.getByUser(user)
-            let primaryTeam = teams[0]
-            let diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, primaryTeam._id)
-
             salesOffer = await this.teamMarketOfferService.getPendingSaleListingByPlayerId(player._id)
             highestBid = await this.teamMarketOfferService.getHighestPendingByPlayerId(player._id)
 
             if (user) {
-                userOffers = await this.teamMarketOfferService.listPendingByBuyerUserId(user._id)
+                let userOffers = await this.teamMarketOfferService.listPendingByBuyerUserIdAndPlayerId(user._id, player._id)
+                userOffer = userOffers[0]
             }
 
 
@@ -105,7 +96,6 @@ class PlayerViewService {
                     cityName: tls.city?.name,
                     _id: tls.team?._id,
                     userId: tls.team.userId,
-                    diamondBalance: diamondBalance,
                     isQueued: await this.teamQueueService.isTeamQueued(team)
                 }
 
@@ -116,7 +106,6 @@ class PlayerViewService {
                     cityName: undefined,
                     _id: undefined,
                     userId: currentPls.userId,
-                    diamondBalance: diamondBalance,
                     isQueued: false
                 }
             }
@@ -141,6 +130,7 @@ class PlayerViewService {
 
             salesOffer: salesOffer ? this.translateSalesOfferToVM(salesOffer) : undefined,
             highestBid: highestBid ? this.translateSalesOfferToVM(highestBid) : undefined,
+            userOffer: userOffer ? this.translateSalesOfferToVM(userOffer) : undefined,
 
             overallRating: player.overallRating,
             pitchRatings: player.pitchRatings,
@@ -188,7 +178,9 @@ class PlayerViewService {
             _id: tmo._id,
             diamondAmount: tmo.diamondAmount,
             buyerUserId: tmo.buyerUserId,
-            sellerUserId: tmo.sellerUserId
+            sellerUserId: tmo.sellerUserId,
+            buyerTeamId: tmo.buyerPaymentTeamId,
+            sellerTeamId: tmo.sellerPaymentTeamId
         }
     }
     
@@ -221,6 +213,7 @@ interface PlayerViewModel {
     askingPrice:string
     salesOffer: TeamMarketOfferViewModel
     highestBid: TeamMarketOfferViewModel
+    userOffer: TeamMarketOfferViewModel
 
     careerHitterStats: HitterStatLine
     careerPitcherStats: PitcherStatLine
@@ -249,7 +242,10 @@ interface TeamMarketOfferViewModel {
     _id: string
     diamondAmount: string
     buyerUserId:string
+    buyerTeamId:string
+
     sellerUserId?:string
+    sellerTeamId?:string
 }
 
 

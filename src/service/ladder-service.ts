@@ -80,11 +80,12 @@ class LadderService {
     ) {}
 
 
-    async runGameRunner(universeId:string) : Promise<string[]> {
+    async runGameRunner(universeId:string) : Promise<{ allGameIds: string[], startedGameIds: string[]}> {
 
         let s = await this.sequelize()
 
-        let gameIds:string[] = []
+        let allGameIds:string[] = []
+        let startedGameIds:string[] = []
 
         await s.transaction(async (t1) => {
 
@@ -127,17 +128,20 @@ class LadderService {
 
             //Start games
             for (let league of leagues) {
-                await this.startGames(universe.currentDate, league, season, rng, options)
+                startedGameIds.push(...await this.startGames(universe.currentDate, league, season, rng, options))
             }
             
             // Play games
-            gameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
+            allGameIds.push(...await this.processGames(leagues, universe.currentDate, false, rng, options))
 
             console.timeEnd(`Running game runner (${logDate})...`)
 
         })
 
-        return gameIds
+        return {
+            allGameIds: allGameIds,
+            startedGameIds: startedGameIds
+        }
 
     }
 
@@ -264,7 +268,9 @@ class LadderService {
         
     }
 
-    private async startGames(currentDate:Date, league:League, season:Season, rng, options?: any ) {
+    private async startGames(currentDate:Date, league:League, season:Season, rng, options?: any ) : Promise<string[]> {
+
+        let gameIds:string[] = []
 
         let pairs:TeamQueueMatchup[] =  await this.teamQueueService.processQueuePairs(league, options)
 
@@ -327,9 +333,11 @@ class LadderService {
             await this.teamLeagueSeasonService.put(team1Bundle.tls, options)
             await this.teamLeagueSeasonService.put(team2Bundle.tls, options)
 
+            gameIds.push(game._id)
+
         }
 
-
+        return gameIds
     }
 
     private async createGame( homeBundle: TeamBundle, awayBundle:TeamBundle, league: League, season: Season, date: Date,  options?: any ) {
@@ -384,7 +392,6 @@ class LadderService {
         const homeLineup = this.translateLineupToSimLineup(homeBundle.tls.lineups[0], homeBundle.startingPitcher) 
 
 
-        
         this.simSharedService.startGame({
 
             game,
@@ -395,12 +402,12 @@ class LadderService {
             away: awayBundle.team,
             awayTeamOptions: getTeamOptions(awayBundle),
             awayLineup: awayLineup,
-            awayAvailablePitchers: [],
+            awayAvailablePitchers: awayBundle.tls.lineups[0].availablePitchers,
 
             home: homeBundle.team,
             homeTeamOptions: getTeamOptions(homeBundle),
             homeLineup: homeLineup,
-            homeAvailablePitchers: [],
+            homeAvailablePitchers: homeBundle.tls.lineups[0].availablePitchers,
 
             awayStartingPitcher: awayBundle.startingPitcher,
             homeStartingPitcher: homeBundle.startingPitcher,
@@ -416,7 +423,7 @@ class LadderService {
         game.changed('home', true)
         game.changed('startDate', true)
         game.changed('isStarted', true)
-
+        game.changed('substitutions', true)
 
         await this.gameService.put(game, options)
 

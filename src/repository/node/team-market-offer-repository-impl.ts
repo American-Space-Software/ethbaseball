@@ -177,6 +177,54 @@ class TeamMarketOfferRepositoryNodeImpl implements TeamMarketOfferRepository {
 
     }
 
+    async listPendingSaleListings(options?:any): Promise<TeamMarketOffer[]> {
+
+        return this.queryTeamMarketOffers(`
+            SELECT *
+            FROM team_market_offer tmo
+            WHERE
+                tmo.status = :status
+                AND tmo.buyerUserId IS NULL
+                AND tmo.buyerPaymentTeamId IS NULL
+                AND tmo.escrowTransactionId IS NULL
+            ORDER BY tmo.dateCreated DESC
+            ${options?.limit != undefined ? `LIMIT ${Number(options.limit)}` : ""}
+            ${options?.offset != undefined ? `OFFSET ${Number(options.offset)}` : ""}
+        `, {
+            status: TeamMarketOfferStatus.PENDING
+        }, options)
+
+    }    
+
+    async getHighestBidsForUserPlayers(userId:string, options?:any): Promise<TeamMarketOffer[]> {
+
+        return this.queryTeamMarketOffers(`
+            SELECT *
+            FROM (
+                SELECT
+                    tmo.*,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY tmo.salePlayerId
+                        ORDER BY
+                            CAST(tmo.diamondAmount AS DECIMAL(65,0)) DESC,
+                            tmo.dateCreated ASC,
+                            tmo._id DESC
+                    ) AS bidRank
+                FROM team_market_offer tmo
+                WHERE
+                    tmo.sellerUserId = :userId
+                    AND tmo.status = :status
+                    AND tmo.buyerUserId IS NOT NULL
+            ) ranked
+            WHERE ranked.bidRank = 1
+            ORDER BY CAST(ranked.diamondAmount AS DECIMAL(65,0)) DESC, ranked.dateCreated ASC
+        `, {
+            userId,
+            status: TeamMarketOfferStatus.PENDING
+        }, options)
+
+    } 
+
 }
 
 export {

@@ -8,6 +8,7 @@ import { GameService } from "./data/game-service.js";
 class SocketService {
 
     private _gameNamespace
+    private _queueNamespace
 
     constructor(
         private gameService:GameService
@@ -43,6 +44,39 @@ class SocketService {
 
 
 
+        this._queueNamespace = io.of("/queue")
+
+        this._queueNamespace.on("connection", (socket) => {
+
+            socket.on("watch-queue", async () => {
+
+                const userId = socket.request.session?.passport?.user
+
+                if (!userId) {
+                    socket.disconnect()
+                    return
+                }
+
+                socket.join(`queue-user-${userId}`)
+            })
+
+            socket.on("unwatch-queue", () => {
+
+                const userId = socket.request.session?.passport?.user
+
+                if (userId) {
+                    socket.leave(`queue-user-${userId}`)
+                }
+
+            })
+
+        })
+
+
+
+
+
+
     }
 
     gameUpdate(game:Game) {
@@ -61,6 +95,24 @@ class SocketService {
 
 
     }
+
+
+    queueGameStarted(userIds: string[], game: Game) {
+
+        for (const userId of userIds) {
+
+            const room = `queue-user-${userId}`
+
+            this._queueNamespace.to(room).emit("queue-game-started", {
+                gameId: game._id
+            })
+
+            this._queueNamespace.in(room).socketsLeave(room)
+
+        }
+
+    }
+
 
 }
 

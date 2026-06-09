@@ -13,6 +13,7 @@ import { Handedness, Play, GamePlayer, Pitch, PitchCall } from '../../baseball-s
 class GameWebService {
     
     private gameHandlers = new Map<string, (g:any) => void>()
+    private queueHandlers = new Set<({ gameId }: { gameId: string }) => void>()
 
     constructor(
         private socketWebService: SocketWebService,
@@ -20,7 +21,8 @@ class GameWebService {
     ) { }
 
     
-    async watchGame(_id: string, onGameUpdate: (g:any)=>void) {
+    watchGame(_id: string, onGameUpdate: (g:any)=>void) {
+
         const socket = this.socketWebService.gameSocket
 
         // If we were already watching this game, remove the old handler
@@ -31,10 +33,10 @@ class GameWebService {
         this.gameHandlers.set(_id, onGameUpdate)
 
         socket.on("game", onGameUpdate)
-        this.socketWebService.watch(_id)
+        this.socketWebService.watchGame(_id)
     }
 
-    async unwatchGame(_id: string) {
+    unwatchGame(_id: string) {
 
         const socket = this.socketWebService.gameSocket
 
@@ -44,9 +46,51 @@ class GameWebService {
             this.gameHandlers.delete(_id)
         }
 
-        this.socketWebService.unwatch(_id)
+        this.socketWebService.unwatchGame(_id)
 
     }
+
+
+    watchQueue(onQueueGameStarted: ({ gameId }: { gameId: string }) => void) {
+
+        const wasEmpty = this.queueHandlers.size == 0
+
+        if (!this.queueHandlers.has(onQueueGameStarted)) {
+            this.queueHandlers.add(onQueueGameStarted)
+            this.socketWebService.onQueueGameStarted(onQueueGameStarted)
+        }
+
+        if (wasEmpty) {
+            this.socketWebService.watchQueue()
+        }
+
+    }
+
+    unwatchQueue(onQueueGameStarted?: ({ gameId }: { gameId: string }) => void) {
+
+        if (onQueueGameStarted) {
+
+            if (this.queueHandlers.has(onQueueGameStarted)) {
+                this.socketWebService.offQueueGameStarted(onQueueGameStarted)
+                this.queueHandlers.delete(onQueueGameStarted)
+            }
+
+        } else {
+
+            for (const handler of this.queueHandlers) {
+                this.socketWebService.offQueueGameStarted(handler)
+            }
+
+            this.queueHandlers.clear()
+
+        }
+
+        if (this.queueHandlers.size == 0) {
+            this.socketWebService.unwatchQueue()
+        }
+
+    }
+
 
     async getGames(rank:number) {
 

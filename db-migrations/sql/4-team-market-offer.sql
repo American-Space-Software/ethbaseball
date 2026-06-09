@@ -163,3 +163,10 @@ ALTER TABLE `player_league_season`
 ADD KEY `userId` (`userId`),
 ADD KEY `playerSeasonUser` (`seasonId`, `userId`, `playerId`, `seasonIndex`),
 ADD CONSTRAINT `pls_ibfk_5` FOREIGN KEY (`userId`) REFERENCES `user` (`_id`) ON UPDATE CASCADE;
+
+
+
+
+ALTER TABLE `game`
+ADD COLUMN `substitutions` JSON DEFAULT NULL
+AFTER `gameDate`;

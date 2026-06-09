@@ -120,11 +120,12 @@ class TeamTransactionService {
             await this.teamLeagueSeasonService.put(tls, options)
 
         }
-        
 
         await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, offChainEventTransactionId, options)
 
         await this.offchainEventService.createTeamBurnEvent(team._id, askingPrice, offChainEventTransactionId, options)
+
+        await this.cancelPendingPlayerBuyOffersIfUserRosterFull(user, season, options)
 
     }
 
@@ -282,6 +283,62 @@ class TeamTransactionService {
 
     }
 
+    async createPlayerBuyOffer(user: User, player: Player, diamondAmount: string, options?: any): Promise<TeamMarketOffer> {
+
+        let season: Season = await this.seasonService.getMostRecent(options)
+        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (!pls?.userId) {
+            throw new Error("Player is not owned.")
+        }
+
+        if (pls.userId == user._id) {
+            throw new Error("Cannot create a buy offer for your own player.")
+        }
+
+        let buyerTeams: Team[] = await this.teamService.getByUser(user, options)
+        let buyerPaymentTeam: Team = buyerTeams[0]
+
+        if (!buyerPaymentTeam) {
+            throw new Error("User does not have a team.")
+        }
+
+        let sellerUser: User = await this.userService.get(pls.userId, options)
+        let sellerTeams: Team[] = await this.teamService.getByUser(sellerUser, options)
+        let sellerPaymentTeam: Team = sellerTeams[0]
+
+        if (!sellerPaymentTeam) {
+            throw new Error("Seller does not have a team.")
+        }
+
+        return this.createPrivatePlayerBuyOffer(buyerPaymentTeam, sellerPaymentTeam, player, diamondAmount, options)
+
+    }
+
+    async cancelPlayerBuyOffer(user:User, tmo:TeamMarketOffer, options?:any): Promise<TeamMarketOffer> {
+
+        let currentOffer:TeamMarketOffer = await this.teamMarketOfferService.get(tmo._id, options)
+
+        if (!currentOffer) {
+            throw new Error("Team market offer not found.")
+        }
+
+        if (currentOffer.status != TeamMarketOfferStatus.PENDING) {
+            throw new Error("Team market offer is not pending.")
+        }
+
+        if (!currentOffer.buyerUserId) {
+            throw new Error("Team market offer is not a private buy offer.")
+        }
+
+        if (currentOffer.buyerUserId != user._id) {
+            throw new Error("Not authorized.")
+        }
+
+        return this.cancelTeamMarketOffer(currentOffer, options)
+
+    }
+
     async createPrivatePlayerBuyOffer(buyerPaymentTeam: Team, sellerPaymentTeam: Team, player: Player, diamondAmount: string, options?: any): Promise<TeamMarketOffer> {
 
         let season: Season = await this.seasonService.getMostRecent(options)
@@ -329,6 +386,57 @@ class TeamTransactionService {
         await this.cancelTeamMarketOffer(saleListing, options)
 
         return [saleListing]
+
+    }
+
+    async acceptHighestPlayerBuyOffer(user: User, player: Player, tmo: TeamMarketOffer, date: Date, options?: any): Promise<TeamMarketOffer> {
+
+        let season: Season = await this.seasonService.getMostRecent(options)
+        let pls: PlayerLeagueSeason = await this.playerLeagueSeasonService.getMostRecentByPlayerSeason(player, season, options)
+
+        if (!pls?.userId) {
+            throw new Error("Player is not owned.")
+        }
+
+        if (pls.userId != user._id) {
+            throw new Error("Not authorized.")
+        }
+
+        if (tmo.status != TeamMarketOfferStatus.PENDING) {
+            throw new Error("Team market offer is not pending.")
+        }
+
+        if (!tmo.buyerUserId || !tmo.buyerPaymentTeamId || !tmo.escrowTransactionId) {
+            throw new Error("Team market offer is not a private buy offer.")
+        }
+
+        if (tmo.salePlayerId != player._id) {
+            throw new Error("Team market offer is not for this player.")
+        }
+
+        if (tmo.sellerUserId != user._id) {
+            throw new Error("Not authorized.")
+        }
+
+        let pendingOffers: TeamMarketOffer[] = await this.teamMarketOfferService.listPendingByPlayerId(player._id, options)
+
+        let highestOffer: TeamMarketOffer = tmo
+
+        for (const offer of pendingOffers) {
+
+            if (
+                offer.buyerUserId &&
+                offer.buyerPaymentTeamId &&
+                offer.escrowTransactionId &&
+                offer.sellerUserId == user._id &&
+                BigInt(offer.diamondAmount) > BigInt(highestOffer.diamondAmount)
+            ) {
+                highestOffer = offer
+            }
+
+        }
+
+        return this.acceptAndProcessTeamMarketOffer(user, highestOffer, date, options)
 
     }
 
@@ -658,6 +766,10 @@ class TeamTransactionService {
 
         await this.put(tmo, options)
 
+        let buyerUser: User = await this.userService.get(tmo.buyerUserId, options)
+
+        await this.cancelPendingPlayerBuyOffersIfUserRosterFull(buyerUser, season, options)
+
         return tmo
 
     }
@@ -843,6 +955,26 @@ class TeamTransactionService {
         currentTLS.changed("hasValidLineup", true)
 
         await this.teamLeagueSeasonService.put(currentTLS, options)
+
+    }
+
+    async cancelPendingPlayerBuyOffersIfUserRosterFull(user: User, season: Season, options?: any): Promise<TeamMarketOffer[]> {
+
+        let rosterSize = await this.playerLeagueSeasonService.getMostRecentCountByUserSeason( user._id, season, options )
+
+        if (rosterSize < DEFAULT_ROSTER_CONSTRAINTS.maxTotalRosterSize) {
+            return []
+        }
+
+        let offers: TeamMarketOffer[] = await this.teamMarketOfferService.listPendingByBuyerUserId( user._id, options )
+
+        let cancelled: TeamMarketOffer[] = []
+
+        for (const offer of offers) {
+            cancelled.push(await this.cancelTeamMarketOffer(offer, options))
+        }
+
+        return cancelled
 
     }
 
@@ -1071,15 +1203,17 @@ class TeamTransactionService {
 
     }
 
-    private async signAvailablePlayer(user:User, player:Player, pls:PlayerLeagueSeason, team:Team, tls:TeamLeagueSeason, season:Season, date:Date, offChainEventTransactionId:string, options?:any): Promise<PlayerLeagueSeason> {
+    async signAvailablePlayer(user: User, player: Player, pls: PlayerLeagueSeason, team: Team, tls: TeamLeagueSeason, season: Season, date: Date, offChainEventTransactionId: string, options?: any): Promise<PlayerLeagueSeason> {
 
-        let signedPLS:PlayerLeagueSeason = await this.movePlayerToUser(player, pls, user, season, date, options)
+        let signedPLS: PlayerLeagueSeason = await this.movePlayerToUser(player, pls, user, season, date, options)
 
-        let assignedPLS:PlayerLeagueSeason = await this.assignPlayerToTeamByPLS(player, signedPLS, team, tls, season, date, options)
+        let assignedPLS: PlayerLeagueSeason = await this.assignPlayerToTeamByPLS(player, signedPLS, team, tls, season, date, options)
 
         await this.offchainEventService.createFreeAgentTransferEvent(team._id, player._id, offChainEventTransactionId, options)
 
         await this.playerService.put(player, options)
+
+        await this.cancelPendingPlayerBuyOffersIfUserRosterFull(user, season, options)
 
         return assignedPLS
 

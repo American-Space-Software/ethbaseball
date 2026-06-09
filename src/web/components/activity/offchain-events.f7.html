@@ -13,8 +13,6 @@
                 </div>
               </div>
 
-  
-
               <div class="item-text transaction-events">
                 ${getDisplayEvents(tx).map(oce => $h`
                   <div class="transaction-event-row">
@@ -132,13 +130,28 @@
       oce?.contractType === "DIAMONDS" &&
       oce?.event === "Transfer" &&
       oce?.fromAddress === ZERO &&
-      oce?.source?.type === "reward" &&
-      (oce?.source?.rewardType === "daily" || oce?.source?.rewardType === "season")
+      oce?.source?.type === "reward"
 
     const isPlayerDevelopment = (oce) =>
       oce?.contractType === "DIAMONDS" &&
       oce?.event === "Transfer" &&
       oce?.source?.type === "playerDevelopment"
+
+    const isMarketOfferAccepted = (oce) =>
+      oce?.contractType === "DIAMONDS" &&
+      oce?.event === "Transfer" &&
+      oce?.source?.type === "team-market-offer-accepted"
+
+    const isMarketOfferCancelled = (oce) =>
+      oce?.contractType === "DIAMONDS" &&
+      oce?.event === "Transfer" &&
+      oce?.source?.type === "team-market-offer-cancelled"
+
+    const isEscrowBurn = (oce) =>
+      oce?.contractType === "DIAMONDS" &&
+      oce?.event === "Transfer" &&
+      oce?.toAddress === ZERO &&
+      !oce?.source
 
     const isExperienceTransfer = (oce) =>
       oce?.contractType === "EXPERIENCE" &&
@@ -148,6 +161,7 @@
       if (!isRewardMint(oce)) return null
       if (oce.source.rewardType === "daily") return "Daily reward"
       if (oce.source.rewardType === "season") return "Season reward"
+      if (oce.source.rewardType === "game") return "Game reward"
       return "Reward"
     }
 
@@ -181,11 +195,11 @@
         }
 
         if (!oce.fromTeamId && oce.toTeamId) {
-          return $h`${playerNode} transferred from free agent pool to ${renderTeamNode(oce.toTeamId)}.`
+          return $h`${playerNode} signed by ${renderTeamNode(oce.toTeamId)}.`
         }
 
         if (oce.fromTeamId && oce.toTeamId) {
-          return $h`${playerNode} transferred from ${renderTeamNode(oce.fromTeamId)} to ${renderTeamNode(oce.toTeamId)}.`
+          return $h`${playerNode} traded from ${renderTeamNode(oce.fromTeamId)} to ${renderTeamNode(oce.toTeamId)}.`
         }
 
         return $h`${playerNode} transferred.`
@@ -196,12 +210,27 @@
         return $h`${playerNode} gained experience.`
       }
 
+      if (isPlayerDevelopment(oce)) {
+        return $h`Player development`
+      }
+
+      if (isMarketOfferAccepted(oce)) {
+        return $h`Player buy offer accepted`
+      }
+
+      if (isMarketOfferCancelled(oce)) {
+        return $h`Player buy offer cancelled`
+      }
+
+      if (isEscrowBurn(oce)) {
+        return $h`Player buy offer escrow`
+      }
+
+      if (isRewardMint(oce)) {
+        return $h`${getRewardLabel(oce)}`
+      }
+
       if (oce?.contractType == "DIAMONDS" && oce?.event == "Transfer") {
-        if (isPlayerDevelopment(oce)) return $h`Player Development`
-
-        const rewardLabel = getRewardLabel(oce)
-        if (rewardLabel) return $h`${rewardLabel}`
-
         return $h`Diamond transfer`
       }
 

@@ -212,7 +212,13 @@ class TeamComponentService {
 
 
     public updateInProgressGame(inProgressGame) {
-        Object.assign(this.inProgressGame, this.gameWebService.getGameViewModel(inProgressGame))
+
+        if (!this._inProgressGame) {
+            this._inProgressGame = {}
+            return
+        }
+
+        Object.assign(this._inProgressGame, this.gameWebService.getGameViewModel(inProgressGame))
     }
 
     public getRosterSize() {

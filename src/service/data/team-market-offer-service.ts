@@ -9,6 +9,7 @@ import { PlayerService } from "./player-service.js";
 import { User } from "../../dto/user.js";
 import { Team } from "../../dto/team.js";
 import { Player } from "../../dto/player.js";
+import { UserRepository } from "../../repository/user-repository.js";
 
 @injectable()
 class TeamMarketOfferService {
@@ -16,8 +17,11 @@ class TeamMarketOfferService {
     @inject("TeamMarketOfferRepository")
     private teamMarketOfferRepository: TeamMarketOfferRepository
 
+    @inject("UserRepository")
+    private userRepository:UserRepository
+    
+
     constructor(
-        private userService:UserService,
         private teamService:TeamService,
         private playerService:PlayerService
     ) { }
@@ -55,6 +59,10 @@ class TeamMarketOfferService {
         return this.teamMarketOfferRepository.listSaleListingsBySellerUserId(sellerUserId)
     }
 
+    async listPendingSaleListings(options?:any): Promise<TeamMarketOffer[]> {
+        return this.teamMarketOfferRepository.listPendingSaleListings(options)
+    }    
+
     async getTeamMarketOfferViewModels(tmos:TeamMarketOffer[], options?:any): Promise<TeamMarketOfferViewModel[]> {
 
         let userIds:string[] = []
@@ -77,7 +85,7 @@ class TeamMarketOfferService {
         teamIds = [...new Set(teamIds)]
         playerIds = [...new Set(playerIds)]
 
-        let users:User[] = userIds.length ? await this.userService.getByIds(userIds, options) : []
+        let users:User[] = userIds.length ? await this.userRepository.getByIds(userIds, options) : []
         let teams:Team[] = teamIds.length ? await this.teamService.getByIds(teamIds, options) : []
         let players:Player[] = playerIds.length ? await this.playerService.getByIds(playerIds, options) : []
 
@@ -139,7 +147,9 @@ class TeamMarketOfferService {
 
     }
 
-
+    async getHighestBidsForUserPlayers(userId:string, options?:any): Promise<TeamMarketOffer[]> {
+        return this.teamMarketOfferRepository.getHighestBidsForUserPlayers(userId, options)
+    }
 
 }
 

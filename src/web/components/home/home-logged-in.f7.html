@@ -140,6 +140,26 @@
                     </ul>
 
                   </div> 
+
+
+                  <div class="block-title block-title-medium">Offers</div>
+                  <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+
+                    <ul>
+                          <li>
+                            <a class="item-link item-content" href="/offers/user">
+                              <div class="item-media">🔷</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">View trade offers</div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+                    </ul>
+
+                  </div> 
+
                   
                 ` : $h`
                 
@@ -592,6 +612,7 @@
     let vm = props.vm
     let authInfo = props.authInfo
 
+    let isQueued = vm.teamInfo.team.isQueued
 
     let hasValidLineup = vm.teamInfo?.team?.hasValidLineup
 
@@ -674,6 +695,7 @@
 
         try {
           await gameWebService.dequeue()
+          gameWebService.unwatchQueue()
           $f7.views.main.router.refreshPage()
         } catch (ex) {
           $f7.dialog.alert(ex.message, "There was an error")
@@ -750,6 +772,11 @@
       return `You’re queued for ranked matchmaking.`
     }
 
+    const onQueueGameStarted = ({ gameId }) => {
+      gameWebService.unwatchQueue(onQueueGameStarted)
+      gameWebService.watchGame(gameId, onGameUpdate)
+    }
+
     const onGameUpdate = async (game) => {
 
       teamComponentService.updateInProgressGame(game)
@@ -787,9 +814,14 @@
         $update()
       })
 
+      if (isQueued) {
+        gameWebService.watchQueue(onQueueGameStarted)
+      }
+
       if (teamComponentService.inProgressGame?.game._id) {
         gameWebService.watchGame(teamComponentService.inProgressGame?.game._id, onGameUpdate)
       }
+
 
       eventTarget.dispatchEvent(new CustomEvent('main-nav', {
         detail: {
@@ -810,8 +842,10 @@
     })
 
     $on('pageBeforeOut', async () => {
+      gameWebService.unwatchQueue(onQueueGameStarted)
+
       if (teamComponentService.inProgressGame?.game?._id) {
-        gameWebService.unwatchGame(teamComponentService.inProgressGame?.game?._id, onGameUpdate)
+        gameWebService.unwatchGame(teamComponentService.inProgressGame?.game?._id)
       }
     })
 

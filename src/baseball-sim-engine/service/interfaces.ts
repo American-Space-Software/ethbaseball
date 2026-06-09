@@ -2050,5 +2050,6 @@ export {
     BattedBallOutcomeBucketRaw,
     BattedBallXyBucketRaw,
     BattedBallXyByTrajectoryBucketRaw,
-    BattedBallXyByTrajectoryEvLaBucketRaw
+    BattedBallXyByTrajectoryEvLaBucketRaw,
+    GameSubstitution
 }

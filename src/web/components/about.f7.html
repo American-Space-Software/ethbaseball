@@ -46,7 +46,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">
-                    <p><strong>Ethereum Baseball League (EBL)</strong> is an online baseball game where you run a franchise, manage rosters, set lineups, and control pitching rotations with the goal of winning games and building a strong baseball business.</p>
+                    <p><strong>Ethereum Baseball League (EBL)</strong> is an online baseball game where you run a franchise, manage rosters, build lineups, organize your bench and bullpen, and control your pitching staff with the goal of winning games and building a strong baseball business.</p>
                     <p>Seasons last 162 days.</p>
                   </div>
                 </div>
@@ -58,7 +58,7 @@
                 <div class="item-media">🧢</div>
                 <div class="item-inner">
                   <div class="item-title">Team Management</div>
-                  <div class="item-text">Set lineups and rotations, then join matchmaking when you are ready to play. You can watch games live with a field view, real-time updates, and pitch-by-pitch action as it happens.</div>
+                  <div class="item-text">Set lineups, manage your bench, organize your pitching staff, and join matchmaking when you are ready to play. You can watch games live with a field view, real-time updates, and pitch-by-pitch action as it happens.</div>
                 </div>
               </div>
             </li>
@@ -68,7 +68,7 @@
                 <div class="item-media">⚔️</div>
                 <div class="item-inner">
                   <div class="item-title">Shared Competition</div>
-                  <div class="item-text">EBL is built around teams competing against each other across the same season. Lineup choices, rotation planning, stamina, and long-term roster decisions all matter.</div>
+                  <div class="item-text">EBL is built around teams competing against each other across the same season. Lineup choices, bench depth, bullpen roles, stamina, and long-term roster decisions all matter.</div>
                 </div>
               </div>
             </li>
@@ -78,7 +78,7 @@
                 <div class="item-media">👤</div>
                 <div class="item-inner">
                   <div class="item-title">Anyone Can Play</div>
-                  <div class="item-text">Log in with Discord and you are instantly given a team with generated players.</div>
+                  <div class="item-text">Log in with Discord and you are instantly given a team with an initial roster of players.</div>
                 </div>
               </div>
             </li>
@@ -195,7 +195,7 @@
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Every pitch matters</div>
                   <div class="item-text">
-                    Games are resolved pitch by pitch using player grades, matchups, stamina, and game situation.
+                    Games are resolved pitch by pitch using player grades, matchups, pitcher stamina, role-based pitch limits, and game situation.
                   </div>
                 </div>
               </div>
@@ -239,6 +239,251 @@
 
           </ul>
         </div>
+
+
+        <div class="block-title block-title-medium">Open Simulation Engine</div>
+        <div class="block block-strong block-outline">
+
+          <p>
+            EBL is powered by <strong>baseball-sim-engine</strong>, an open-source baseball simulation engine written in TypeScript.
+          </p>
+
+          <p>
+            The engine resolves games pitch by pitch rather than jumping directly from one plate appearance to the next. Every pitch can generate swings, foul balls, balls in play, stolen bases, wild pitches, passed balls, defensive plays, and runner advancement.
+          </p>
+
+          <p>
+            The simulation is deterministic and reproducible. Given the same inputs and random seed, the exact same game will produce the exact same sequence of pitches and outcomes. This makes the engine useful not only for online play, but also for replay systems, testing, and statistical analysis.
+          </p>
+
+          <p>
+            The default baseball environment is built from real baseball data. The engine uses pitch-level and batted-ball-level information such as pitch velocity, pitch movement, swing behavior, exit velocity, launch angle, and fielding outcomes to help shape the statistical environment players compete within.
+          </p>
+
+          <p>
+            The simulation engine is released separately from EBL itself. Anyone can inspect the code, study how games are resolved, fork the project, or use the engine to build their own baseball simulations and custom league worlds.
+          </p>
+
+          <p>
+            <a class="external link"
+              href="https://github.com/American-Space-Software/baseball-sim-engine"
+              target="_blank">
+              View baseball-sim-engine on GitHub
+            </a>
+          </p>
+
+        </div>
+
+
+        <div class="block-title block-title-medium">Managing Your Team</div>
+        <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+          <ul>
+
+            <li class="about-leadin">
+              <div class="item-content">
+                <div class="item-media">🧢</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">
+                    Each manager can own up to <strong>40 players</strong>, with up to <strong>26 players assigned to a team roster</strong>.
+                  </div>
+                  <div class="item-text">
+                    Players you own do not all need to be on the active team roster. Your team roster is the group available for lineup, bench, rotation, and bullpen decisions.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">📋</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Starting Lineup</div>
+                  <div class="item-text">
+                    Your lineup has nine starting hitters. You choose the batting order and defensive positions. The lineup determines who hits and who starts in the field during games.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🪑</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Bench</div>
+                  <div class="item-text">
+                    Bench players are hitters on your team roster who are not currently in the starting lineup. A useful bench gives you extra positional coverage and lets you move players in and out of the lineup as your roster changes.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔁</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Starting Rotation</div>
+                  <div class="item-text">
+                    Each team uses a five-pitcher starting rotation. Starters are built to handle larger pitch counts than relievers, but they also need more recovery after heavy use.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🚪</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Bullpen</div>
+                  <div class="item-text">
+                    The bullpen contains relief pitchers. Bullpen roles include closer, setup reliever, middle reliever, long reliever, and mop-up reliever. These roles help determine which pitcher the sim chooses in different game situations.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔥</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Bullpen Roles</div>
+                  <div class="item-text">
+                    Closers are used for late close leads. Setup relievers handle important late innings. Middle relievers cover normal relief work. Long relievers can handle more innings when the starter exits early. Mop-up relievers are used in lower-leverage or lopsided situations.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🧪</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Pitch Counts and Stamina</div>
+                  <div class="item-text">
+                    Pitchers have stamina and pitch-count limits. Starters can usually throw more pitches than relievers. Relief roles have lower pitch-count limits because those pitchers are expected to appear more often.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">⬇️</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Moving a Starter to the Bullpen</div>
+                  <div class="item-text">
+                    When a pitcher is moved from the rotation to the bullpen, their max pitch count can be reduced to fit the bullpen role. A pitcher used as a closer, setup reliever, or middle reliever should not keep a starter-sized workload.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">⬆️</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Stretching a Pitcher Back Out</div>
+                  <div class="item-text">
+                    When a pitcher moves back toward starter usage, their pitch count does not instantly jump back to a full starter workload. They can be stretched out over time by reaching their current pitch limit in games.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔷</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Basic Roster Management</div>
+                  <div class="item-text">
+                    Good roster management means keeping enough hitters, starters, and relievers available to cover a full season. A strong team is not just nine hitters and one ace. You need bench depth, rotation depth, and bullpen balance.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+
+        <div class="block-title block-title-medium">Marketplace</div>
+        <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+          <ul>
+
+            <li class="about-leadin">
+              <div class="item-content">
+                <div class="item-media">🏷️</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">
+                    The marketplace lets managers make Diamond-backed offers for players owned by other managers.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">🔒</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Offer Escrow</div>
+                  <div class="item-text">
+                    When you submit an offer, the offered Diamonds are immediately removed from your available balance and placed into escrow. This guarantees that accepted offers are fully funded.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">📨</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Pending Offers</div>
+                  <div class="item-text">
+                    The receiving manager can review the offer and choose to accept or decline it. While an offer is pending, the Diamonds remain locked in escrow and cannot be spent elsewhere.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">❌</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Canceling an Offer</div>
+                  <div class="item-text">
+                    If you cancel a pending offer, the escrow is released and the Diamonds are returned to your available balance.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">✅</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Accepted Offers</div>
+                  <div class="item-text">
+                    When an offer is accepted, the escrowed Diamonds are transferred to the seller and ownership of the player transfers to the buyer.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-media">📦</div>
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">Roster Limits</div>
+                  <div class="item-text">
+                    Marketplace acquisitions must still fit within roster limits. Managers can own up to 40 players, and each team can have up to 26 players assigned to its active roster.
+                  </div>
+                </div>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+
+
+
 
         <div class="block-title block-title-medium">Player Development & Letter Grades</div>
         <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
@@ -507,8 +752,8 @@
         <div class="block block-strong block-outline">
           <ol>
             <li><strong>Login:</strong> Sign in with Discord.</li>
-            <li><strong>Get Your Team:</strong> On your first login, you are given a team with generated players.</li>
-            <li><strong>Set Lineup and Rotation:</strong> Choose batting order, fielding positions, and plan pitcher usage.</li>
+            <li><strong>Get Your Team:</strong> On your first login, you are given a team with an initial roster of players.</li>
+            <li><strong>Set Your Roster:</strong> Choose your batting order, fielding positions, bench players, starting rotation, and bullpen roles.</li>
             <li><strong>Play Games:</strong> Join matchmaking whenever you are ready to play and earn Diamonds.</li>
             <li><strong>Optional Wallet:</strong> Link a wallet only if you want to withdraw Diamonds to Ethereum or deposit from Ethereum.</li>
           </ol>
@@ -519,11 +764,11 @@
         <div class="block-title block-title-medium">Regular Responsibilities</div>
         <div class="block block-strong block-outline">
           <ul>
-            <li>Set lineup: batting order and fielding positions.</li>
-            <li>Manage rotation: rest pitchers and plan matchups.</li>
+            <li>Set your lineup, batting order, and fielding positions.</li>
+            <li>Manage your bench, starting rotation, and bullpen roles.</li>
             <li>Adjust for fatigue, performance, and team strategy.</li>
           </ul>
-          <p><strong>Tip:</strong> Small, regular adjustments beat neglect. Missing starters? The sim auto-fills with minimum-salary rookies.</p>
+          <p><strong>Tip:</strong> Small, regular adjustments beat neglect. Teams that keep their lineups, bullpen roles, and roster depth organized tend to perform better over a full season.</p>
         </div>
 
         <div class="block-title block-title-medium">Wallet Linking (Optional)</div>
@@ -561,7 +806,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">What is Ethereum Baseball League and how does it work?</div>
-                  <div class="item-text">EBL is an online baseball game where you sign in with Discord, get a team with generated players, set lineups and rotations, and join matchmaking when you are ready to play. You can watch games live as they unfold with a field view, real-time updates, and pitch-by-pitch action.</div>
+                  <div class="item-text">EBL is an online baseball game where you sign in with Discord, get a team with an initial roster of players, set lineups, manage your bench and pitching staff, and join matchmaking when you are ready to play. You can watch games live as they unfold with a field view, real-time updates, and pitch-by-pitch action.</div>
                 </div>
               </div>
             </li>
@@ -570,7 +815,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">How do I get a team?</div>
-                  <div class="item-text">When you log in with Discord for the first time, you are automatically given a team with generated players.</div>
+                  <div class="item-text">When you log in with Discord for the first time, you are automatically given a team with an initial roster of players.</div>
                 </div>
               </div>
             </li>
@@ -597,7 +842,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">How are games simulated?</div>
-                  <div class="item-text">An off-chain engine processes every pitch using grades, matchups, stamina, and game context. Live game state, results, stats, and standings update through the game experience.</div>
+                  <div class="item-text">An off-chain engine processes every pitch using grades, matchups, pitcher stamina, role-based pitch limits, and game context. Live game state, results, stats, and standings update through the game experience.</div>
                 </div>
               </div>
             </li>
@@ -611,14 +856,6 @@
               </div>
             </li>
 
-            <li>
-              <div class="item-content">
-                <div class="item-inner">
-                  <div class="item-title item-title-wrap">Can I own multiple teams?</div>
-                  <div class="item-text">Yes. Each Discord account manages one team. You can also run multiple teams if you choose, especially when testing or managing teams across different strategies.</div>
-                </div>
-              </div>
-            </li>
 
             <li>
               <div class="item-content">
@@ -706,7 +943,16 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">What can Diamonds be spent on?</div>
-                  <div class="item-text">Free agents, waiver claims, and other future upgrades.</div>
+                  <div class="item-text">Free agents, player acquisitions through the marketplace, and future upgrades.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">How does the marketplace work?</div>
+                  <div class="item-text">The marketplace lets managers make basic player acquisition offers using Diamonds. A buyer can offer Diamonds for a player, the seller can accept or decline, and completed offers transfer the player while moving Diamonds between the teams involved.</div>
                 </div>
               </div>
             </li>
@@ -776,7 +1022,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">The Sim Engine</div>
-                  <div class="item-text">You join matchmaking when you are ready to play. Pitcher stamina limits how often you can run your best arms, so rotation planning and roster depth matter. You can watch games live as they unfold on the field with real-time game state and pitch-by-pitch action.</div>
+                  <div class="item-text">You join matchmaking when you are ready to play. Pitcher stamina and role-based pitch limits affect how often you can use your best arms, so rotation planning, bullpen roles, and roster depth matter. You can watch games live as they unfold on the field with real-time game state and pitch-by-pitch action.</div>
                 </div>
               </div>
             </li>
@@ -803,7 +1049,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Strategy and Control</div>
-                  <div class="item-text">You control strategy, lineups, rotations, and roster moves. The engine runs off-chain for speed. Diamonds can be withdrawn to Ethereum if you choose.</div>
+                  <div class="item-text">You control strategy, lineups, bench depth, bullpen roles, rotations, and roster moves. The engine runs off-chain for speed. Diamonds can be withdrawn to Ethereum if you choose.</div>
                 </div>
               </div>
             </li>
@@ -813,6 +1059,15 @@
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Ratings and Diamonds</div>
                   <div class="item-text">Each team has a rating. Regular-season Diamonds are based on the actual rating difference between the two teams. Closer matches generate larger Diamond amounts, while large mismatches generate less and may reach zero. The Diamond amount is based on the matchup, not on whether you win or lose.</div>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div class="item-content">
+                <div class="item-inner">
+                  <div class="item-title item-title-wrap">The Marketplace</div>
+                  <div class="item-text">Managers can use Diamonds to make basic offers for players. Marketplace offers are player-specific, can be accepted or declined by the seller, and give teams another way to improve their roster beyond free agency.</div>
                 </div>
               </div>
             </li>
@@ -830,7 +1085,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Accounts and Wallets</div>
-                  <div class="item-text">Your team is tied to your Discord account for day-to-day play. Linking a wallet is optional and only required for on-chain deposits and withdrawals of Diamonds.</div>
+                  <div class="item-text">Your account is tied to Discord for day-to-day play. Linking a wallet is optional and only required for on-chain deposits and withdrawals of Diamonds.</div>
                 </div>
               </div>
             </li>
@@ -912,7 +1167,7 @@
               <div class="item-content">
                 <div class="item-inner">
                   <div class="item-title item-title-wrap">Franchise Management (Future)</div>
-                  <div class="item-text">Planned systems include agent roles for contract negotiation, staff and scouting systems, stadium upgrades, cosmetic customization, and expanded player trading tools.</div>
+                  <div class="item-text">Planned systems include agent roles for contract negotiation, staff and scouting systems, stadium upgrades, cosmetic customization, and expanded marketplace tools.</div>
                 </div>
               </div>
             </li>
@@ -932,18 +1187,13 @@
 
 <script>
 
-  import Navbar from "./common/navbar.f7.html"
-  import Toolbar from "./common/toolbar.f7.html"
-
   import { ContainerService } from "../../service/container-service"
-  import { LoginWebService } from "../service/login-web-service"
   import { UniverseWebService } from "../service/universe-web-service.ts"
 
   export default (props, { $on, $f7, $update }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
-    let loginWebService = ContainerService.getInstance(LoginWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
     let walletService = ContainerService.getInstance("WalletService")
 

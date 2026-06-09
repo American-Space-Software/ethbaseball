@@ -7,6 +7,7 @@ import { Stadium } from './stadium.js';
 import { League } from './league.js';
 import { Season } from './season.js';
 import { Count, HalfInning, PitchEnvironmentTarget, Score } from '../baseball-sim-engine/index.js';
+import { GameSubstitution } from '../baseball-sim-engine/service/interfaces.js';
 
 
 
@@ -40,6 +41,9 @@ class Game extends Model {
 
     @Column(DataType.JSON)
     declare score:Score
+
+    @Column(DataType.JSON)
+    declare substitutions:GameSubstitution[]    
 
     @Column(DataType.JSON)
     declare halfInnings?: HalfInning[]

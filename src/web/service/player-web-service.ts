@@ -357,7 +357,21 @@ class PlayerWebService {
         return this.playerSharedService.getNextLevelExperience(totalExperience)
     }
 
+    getCurrentLevelExperience(totalExperience: bigint): bigint {
+        let currentLevel = this.getDisplayLevel(totalExperience)
+        let currentLevelExperience = this.getExperienceForDisplayLevel(currentLevel)
 
+        return totalExperience - currentLevelExperience
+    }
+
+    getCurrentLevelExperienceNeeded(totalExperience: bigint): bigint {
+        let currentLevel = this.getDisplayLevel(totalExperience)
+        let currentLevelExperience = this.getExperienceForDisplayLevel(currentLevel)
+        let nextLevelExperience = this.getNextLevelExperience(totalExperience)
+
+        return nextLevelExperience - currentLevelExperience
+    }
+    
 }
 
 

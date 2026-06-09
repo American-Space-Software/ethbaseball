@@ -403,6 +403,7 @@ async function getContainer() {
     container.bind(DiamondService).toSelf().inSingletonScope()
     container.bind(GameService).toSelf().inSingletonScope()
     container.bind(SimSharedService).toSelf().inSingletonScope()
+    container.bind(TeamMarketOfferService).toSelf().inSingletonScope()
 
     container.bind("WalletService").to(NodeWalletServiceImpl).inSingletonScope()
     container.bind(IPFSService).toSelf().inSingletonScope()

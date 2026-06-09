@@ -530,6 +530,136 @@ describe("TeamMarketOfferRepository", async () => {
 
     })
 
+
+    it("should list pending sale listings", async () => {
+
+        let sellerUser:User = await createTestUser()
+        let buyerUser:User = await createTestUser()
+
+        let sellerPaymentTeam:Team = await createTestTeam("Seller Payment Team")
+        let buyerPaymentTeam:Team = await createTestTeam("Buyer Payment Team")
+
+        let playerOne:Player = await createTestPlayer()
+        let playerTwo:Player = await createTestPlayer()
+        let playerThree:Player = await createTestPlayer()
+
+        let listingOne:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            sellerUserId: sellerUser._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: playerOne._id,
+            diamondAmount: "100",
+            status: TeamMarketOfferStatus.PENDING
+        })
+
+        let listingTwo:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            sellerUserId: sellerUser._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: playerTwo._id,
+            diamondAmount: "200",
+            status: TeamMarketOfferStatus.PENDING
+        })
+
+        let cancelledListing:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            sellerUserId: sellerUser._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: playerThree._id,
+            diamondAmount: "300",
+            status: TeamMarketOfferStatus.CANCELLED
+        })
+
+        let buyOffer:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            buyerUserId: buyerUser._id,
+            sellerUserId: sellerUser._id,
+            buyerPaymentTeamId: buyerPaymentTeam._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: playerThree._id,
+            diamondAmount: "400",
+            status: TeamMarketOfferStatus.PENDING,
+            escrowTransactionId: uuidv4()
+        })
+
+        await repository.put(listingOne)
+        await repository.put(listingTwo)
+        await repository.put(cancelledListing)
+        await repository.put(buyOffer)
+
+        let listings:TeamMarketOffer[] = await repository.listPendingSaleListings()
+        let listingIds:string[] = listings.map((offer) => offer._id)
+
+        assert.equal(listingIds.includes(listingOne._id), true)
+        assert.equal(listingIds.includes(listingTwo._id), true)
+        assert.equal(listingIds.includes(cancelledListing._id), false)
+        assert.equal(listingIds.includes(buyOffer._id), false)
+
+    })   
+
+    it("should page pending sale listings", async () => {
+
+        let sellerUser:User = await createTestUser()
+        let sellerPaymentTeam:Team = await createTestTeam("Seller Payment Team")
+
+        let firstPlayer:Player = await createTestPlayer()
+        let secondPlayer:Player = await createTestPlayer()
+        let thirdPlayer:Player = await createTestPlayer()
+
+        let firstListing:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            sellerUserId: sellerUser._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: firstPlayer._id,
+            diamondAmount: "100",
+            status: TeamMarketOfferStatus.PENDING,
+            dateCreated: new Date("2099-01-01T00:00:00.000Z")
+        })
+
+        let secondListing:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            sellerUserId: sellerUser._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: secondPlayer._id,
+            diamondAmount: "200",
+            status: TeamMarketOfferStatus.PENDING,
+            dateCreated: new Date("2099-01-02T00:00:00.000Z")
+        })
+
+        let thirdListing:TeamMarketOffer = TeamMarketOffer.build({
+            _id: uuidv4(),
+            sellerUserId: sellerUser._id,
+            sellerPaymentTeamId: sellerPaymentTeam._id,
+            salePlayerId: thirdPlayer._id,
+            diamondAmount: "300",
+            status: TeamMarketOfferStatus.PENDING,
+            dateCreated: new Date("2099-01-03T00:00:00.000Z")
+        })
+
+        await repository.put(firstListing)
+        await repository.put(secondListing)
+        await repository.put(thirdListing)
+
+        let firstPage:TeamMarketOffer[] = await repository.listPendingSaleListings({
+            limit: 2,
+            offset: 0
+        })
+
+        let secondPage:TeamMarketOffer[] = await repository.listPendingSaleListings({
+            limit: 2,
+            offset: 2
+        })
+
+        assert.equal(firstPage.length, 2)
+        assert.equal(firstPage[0]._id, thirdListing._id)
+        assert.equal(firstPage[1]._id, secondListing._id)
+
+        assert.equal(secondPage.some((offer) => offer._id == firstListing._id), true)
+        assert.equal(secondPage.some((offer) => offer._id == secondListing._id), false)
+        assert.equal(secondPage.some((offer) => offer._id == thirdListing._id), false)
+
+    })
+
     async function createTestUser(): Promise<User> {
 
         let user:User = User.build({

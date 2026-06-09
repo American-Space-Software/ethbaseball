@@ -1,0 +1,97 @@
+<template es>
+
+  <main class="page" data-name="offers">
+
+    <div class="page-content">
+
+      <div class="fixed-width-content center">
+
+        <div class="block">
+          <p class="segmented">
+            <a href="/offers" class="button button-outline tab-link tab-link-active">All Listings</a>
+            <a href="/offers/user" class="button button-outline tab-link">Your Listings</a>
+          </p>
+        </div>
+
+
+        ${offers.length == 0 ? $h`
+          <div class="block block-strong text-align-center">
+            No active sales listings.
+          </div>
+        ` : $h`
+          <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
+            <ul>
+              ${offers.map((offer) => $h`
+                <li>
+                  <a class="item-link item-content" href="/p/${offer.salePlayer._id}">
+                    <div class="item-media">🔷</div>
+                    <div class="item-inner">
+                      <div class="item-title-row">
+                        <div class="item-title">${offer.salePlayer.name}</div>
+                        <div class="item-after">${universeWebService.displayDiamonds(offer.diamondAmount)}</div>
+                      </div>
+                      <div class="item-subtitle">
+                        <a href="${universeWebService.fullLink(`/t/${offer.sellerPaymentTeam._id}`)}">${offer.sellerPaymentTeam.name}</a>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+              `)}
+            </ul>
+          </div>
+        `}
+
+      </div>
+
+    </div>
+
+  </main>
+
+</template>
+
+<style>
+
+</style>
+
+<script>
+
+  import Navbar from "../common/navbar.f7.html"
+  import Breadcrumbs from "../common/breadcrumbs.f7.html"
+  import Toolbar from "../common/toolbar.f7.html"
+
+  import { ContainerService } from "../../../service/container-service"
+  import { UniverseWebService } from "../../service/universe-web-service.ts"
+
+  export default (props, { $, $on, $f7, $update }) => {
+
+    let env = ContainerService.getInstance("env")()
+    let eventTarget = ContainerService.getInstance("eventTarget")
+    let universeWebService = ContainerService.getInstance(UniverseWebService)
+
+    let authInfo = props.authInfo
+    let offers = props.offers
+
+    $on('pageBeforeIn', async (e) => {
+
+      eventTarget.dispatchEvent(new CustomEvent('main-nav', {
+        detail: {
+          visible: false,
+          tabLink: "/offers",
+          breadcrumbs: [{ text: "Offers", path: "/offers" }]
+        }
+      }))
+
+      universeWebService.setMetadata(
+        `Offers – Ethereum Baseball League`,
+        window.location.href,
+        `${env.WEB}/logo.png`,
+        "Offers in Ethereum Baseball League."
+      )
+
+      await $update()
+    })
+
+    return $render
+  }
+
+</script>
