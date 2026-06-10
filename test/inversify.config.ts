@@ -76,7 +76,7 @@ import { UniverseIndexerService } from "../src/service/universe-indexer-service.
 import { ConnectLinkRepository } from "../src/repository/connect-link-repository.js";
 import { ConnectLinkRepositoryNodeImpl } from "../src/repository/node/connect-link-repository-impl.js";
 
-import { GameNotificationService } from "../src/service/data/game-notification-service.js";
+import { NotificationService } from "../src/service/data/notification-service.js";
 
 import { UserIOService } from "../src/service/userio-service.js";
 
@@ -126,8 +126,8 @@ import { BlockRepository } from "../src/repository/block-repository.js";
 import { BlockRepositoryNodeImpl } from "../src/repository/node/block-repository-impl.js"
 import { ContractStateRepositoryNodeImpl } from "../src/repository/node/contract-state-repository-impl.js"
 import { ContractStateRepository } from "../src/repository/contract-state-repository.js";
-import { GameNotificationsRepositoryNodeImpl } from "../src/repository/node/game-notifications-repository-impl.js"
-import { GameNotificationsRepository } from "../src/repository/game-notifications-repository.js";
+import { NotificationRepositoryNodeImpl } from "../src/repository/node/notification-repository-impl.js"
+import {  NotificationRepository } from "../src/repository/notification-repository.js";
 
 import { ProcessedTransactionRepositoryNodeImpl } from "../src/repository/node/processed-transaction-repository-impl.js"
 import { TransactionRepositoryNodeImpl } from "../src/repository/node/transaction-repository-impl.js"
@@ -243,12 +243,13 @@ import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
 import { SimSharedService } from "../src/service/shared/sim-shared-service.js"
 import { WIN_EXPECTANCY_CHART } from "../src/service/enums.js"
-import { GameNotifications } from "../src/dto/game-notifications.js"
+import { Notification } from "../src/dto/notification.js"
 import { TeamComponentService } from "../src/web/service/team-component-service.js"
 import { LoginWebService } from "../src/web/service/login-web-service.js"
 import { TeamWebService } from "../src/web/service/team-web-service.js"
 import { GameWebService } from "../src/web/service/game-web-service.js"
 import { SocketWebService } from "../src/web/service/socket-web-service.js"
+import { DiscordService } from "../src/service/discord-service.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -321,7 +322,7 @@ function getContainer(command?: GetContainerCommand) {
           multipleStatements: true   ,   
           timezone: 'Z'  
          },
-         models: [ TeamMarketOffer, GameNotifications, TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
+         models: [ TeamMarketOffer, Notification, TeamQueue, TeamMintPass, Post, GameHitResult, GamePitchResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken,TeamLeagueSeason,PlayerLeagueSeason,
           DiamondMintPass, Universe, Animation, Image, ConnectLink,
           Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
           ]
@@ -461,7 +462,7 @@ function getContainer(command?: GetContainerCommand) {
 
   container.bind<GameHitResultRepository>("GameHitResultRepository").to(GameHitResultRepositoryNodeImpl).inSingletonScope()
   container.bind<GamePitchResultRepository>("GamePitchResultRepository").to(GamePitchResultRepositoryNodeImpl).inSingletonScope()
-  container.bind<GameNotificationsRepository>("GameNotificationsRepository").to(GameNotificationsRepositoryNodeImpl).inSingletonScope()
+  container.bind<NotificationRepository>("NotificationRepository").to(NotificationRepositoryNodeImpl).inSingletonScope()
 
   container.bind(DiamondService).toSelf().inSingletonScope()
   container.bind(AbiPayloadService).toSelf().inSingletonScope()
@@ -484,6 +485,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(SignatureTokenService).toSelf().inSingletonScope()
   container.bind(ChatGPTService).toSelf().inSingletonScope()
   container.bind(TeamMintPassService).toSelf().inSingletonScope()
+  container.bind(DiscordService).toSelf().inSingletonScope()
 
   container.bind(DiamondService).toSelf().inSingletonScope()
   container.bind(GameService).toSelf().inSingletonScope()
@@ -522,7 +524,7 @@ function getContainer(command?: GetContainerCommand) {
   container.bind(TeamSharedService).toSelf().inSingletonScope()
   container.bind(PlayerSharedService).toSelf().inSingletonScope()
   container.bind(SimSharedService).toSelf().inSingletonScope()
-  container.bind(GameNotificationService).toSelf().inSingletonScope()
+  container.bind(NotificationService).toSelf().inSingletonScope()
 
   //Override the RNG
   let seedService: SeedService = container.get(SeedService)

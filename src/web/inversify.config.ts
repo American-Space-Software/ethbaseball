@@ -117,6 +117,7 @@ import { SimSharedService } from "../service/shared/sim-shared-service.js";
 import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
 import { OfferWebService } from "./service/offer-web-service.js";
 import { OfferController } from "./controller/offer-controller.js";
+import { BoxscoreService } from "./service/boxscore-service.js";
 
 
 Framework7.registerComponent("transaction-row", TransactionRow)
@@ -286,6 +287,7 @@ async function getContainer(env, footerRoutes, leagues) {
     container.bind(TeamSharedService).toSelf().inSingletonScope()
     container.bind(PlayerSharedService).toSelf().inSingletonScope()
     container.bind(SimSharedService).toSelf().inSingletonScope()
+    container.bind(BoxscoreService).toSelf().inSingletonScope()
 
     container.bind(GameTransactionWebService).toSelf().inSingletonScope()
 

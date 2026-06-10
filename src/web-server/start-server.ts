@@ -1788,15 +1788,20 @@ let startWebServer = async () => {
 
       let startDate = dayjs(req.params.startDate).toDate()
 
+      await refreshUniverse()
+
+
       let season: Season = await seasonService.getByDate(startDate)
+      let seasonInfo:SeasonInfo = await seasonService.getSeasonInfo(season, universe.currentDate)
 
       let user:User 
+
 
       if (team.userId) {
           user = await userService.get(team.userId)
       }
 
-      return res.json(await teamService.getTeamViewModel(team, season, user))
+      return res.json(await teamService.getTeamViewModel(team, season, seasonInfo, user))
 
     } catch (ex) {
       console.log(ex)
@@ -2098,12 +2103,13 @@ let startWebServer = async () => {
         season = seasons[0]
       }
 
+      await refreshUniverse()
 
       let perPage = 25
       let page = parseIntWithException(req.params.page)
       let options = { limit: perPage, offset: (page - 1) * perPage }
 
-      let vm = await teamService.getStandingsViewModel(seasons,leagues, league, season, options)
+      let vm = await teamService.getStandingsViewModel(universe.currentDate, seasons,leagues, league, season, options)
       vm['page'] = page
 
       return res.json(vm)

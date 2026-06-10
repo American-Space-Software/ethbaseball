@@ -7,10 +7,13 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 import { Season } from "../../dto/season.js";
 import { Stadium } from "../../dto/stadium.js";
 import { City } from "../../dto/city.js";
-import { FinanceSeason, TeamSeasonId } from "../enums.js";
+import { FinanceSeason, SeasonInfo, TeamSeasonId } from "../enums.js";
 import { v4 as uuidv4 } from 'uuid';
 import { User } from "../../dto/user.js";
 import { Position } from '../../baseball-sim-engine/index.js';
+import { SeasonService } from "./season-service.js";
+
+const MINIMUM_GAMES_TO_QUALIFY = 130
 
 @injectable()
 class TeamLeagueSeasonService {
@@ -19,6 +22,7 @@ class TeamLeagueSeasonService {
     private teamLeagueSeasonRepository:TeamLeagueSeasonRepository
 
     constructor(
+        private seasonService:SeasonService
     ) {}
 
     initNew(team:Team, league:League, season:Season, city:City, stadium:Stadium, financeSeason:FinanceSeason) : TeamLeagueSeason {
@@ -173,6 +177,31 @@ class TeamLeagueSeasonService {
         return this.teamLeagueSeasonRepository.listUserTeamsByLeagueAndSeason(league, season, options)
     }
 
+    async listQualifyingTeamsByLeagueAndSeason(league: League, season: Season, currentDate:Date, options?: any): Promise<TeamLeagueSeason[]> {
+
+        let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
+
+        let minimumGames:number = this.getMinimumCompletedGamesForStandings(seasonInfo.dayNumber, seasonInfo.totalDays)
+
+        return this.teamLeagueSeasonRepository.listQualifyingTeamsByLeagueAndSeason(league, season, minimumGames, options)
+    }
+
+
+
+    public getMinimumCompletedGamesForStandings(dayNumber:number, totalDays:number): number {
+        return Math.floor((dayNumber * MINIMUM_GAMES_TO_QUALIFY) / totalDays)
+    }
+
+
+
+    async listNonQualifyingTeamsByLeagueAndSeason(league: League, season: Season, currentDate:Date, options?: any): Promise<TeamLeagueSeason[]> {
+
+        let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
+
+        let minimumGames:number = this.getMinimumCompletedGamesForStandings(seasonInfo.dayNumber, seasonInfo.totalDays)
+
+        return this.teamLeagueSeasonRepository.listNonQualifyingTeamsByLeagueAndSeason(league, season, minimumGames, options)
+    }
 
 }
 

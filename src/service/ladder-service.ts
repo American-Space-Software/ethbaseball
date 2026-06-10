@@ -4,7 +4,7 @@ import { PlayerService } from "./data/player-service.js"
 
 import { GameService } from "./data/game-service.js"
 import { Team } from "../dto/team.js"
-import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART, DEFAULT_PLAYER_STARTING_AGE, Lineup, DEFAULT_MAX_PITCH_COUNT } from "./enums.js"
+import {  MINIMUM_PLAYER_POOL, Rating, ContractType, TeamSeasonId, DIAMONDS_PER_DAY, RewardPerTeam, OffChainEventSource, PLAYER_LEAGUE_AVERAGE_RATING, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, FinanceSeason, WIN_EXPECTANCY_CHART, DEFAULT_PLAYER_STARTING_AGE, Lineup, DEFAULT_MAX_PITCH_COUNT, NotificationEntityType, NotificationEventType, NotificationChannel, NotificationStatus } from "./enums.js"
 import { Game, GamePlayer as GP } from "../dto/game.js"
 import { TeamService } from "./data/team-service.js"
 
@@ -39,9 +39,9 @@ import { TeamQueueMatchup } from "../dto/team-queue.js"
 import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher, Player as SimPlayer, Lineup as SimLineup, PitchingRoleType }  from '../baseball-sim-engine/index.js';
 import { SimSharedService, WPAReward } from "./shared/sim-shared-service.js"
 import { PlayerSharedService } from "./shared/player-shared-service.js"
-import { GameNotificationService } from "./data/game-notification-service.js"
-import { GameNotifications } from "../dto/game-notifications.js"
-import { GameNotificationsRepository } from "../repository/game-notifications-repository.js"
+import { NotificationService } from "./data/notification-service.js"
+import { Notification } from "../dto/notification.js"
+import { NotificationRepository } from "../repository/notification-repository.js"
 
 
 @injectable()
@@ -59,8 +59,8 @@ class LadderService {
     @inject("GamePitchResultRepository")
     private gamePitchResultRepository:GamePitchResultRepository
 
-    @inject("GameNotificationsRepository")
-    private gameNotificationsRepository:GameNotificationsRepository //just need to get around a circular dependency issue. not great.
+    @inject("NotificationRepository")
+    private notificationsRepository:NotificationRepository //just need to get around a circular dependency issue. not great.
 
     constructor(
         private playerService:PlayerService,
@@ -318,17 +318,17 @@ class LadderService {
 
             await this.gameService.put(game, options)
 
-            let gn:GameNotifications = Object.assign(new GameNotifications(), {
-                _id: uuidv4(),
-                gameId: game._id,
-                updatesSent: {
-                    discordStarted: false,
-                    discordEnded: false
-                },
-                isComplete: false
+
+            let notification = Object.assign(new Notification(), {
+                entityType: NotificationEntityType.GAME,
+                entityId: game._id,
+                eventType: NotificationEventType.GAME_STARTED,
+                channel: NotificationChannel.DISCORD,
+                status: NotificationStatus.PENDING
             })
 
-            await this.gameNotificationsRepository.put(gn, options)
+            await this.notificationsRepository.put(notification, options)
+
 
             await this.teamLeagueSeasonService.put(team1Bundle.tls, options)
             await this.teamLeagueSeasonService.put(team2Bundle.tls, options)
@@ -781,6 +781,7 @@ class LadderService {
 
         }
 
+
         await this.playerLeagueSeasonService.updateGameFields(plss, options)
         await this.playerService.updateGameFields(players, options)
 
@@ -805,6 +806,17 @@ class LadderService {
 
         game.changed("away", true)
         game.changed("home", true)
+
+
+        let notification = Object.assign(new Notification(), {
+            entityType: NotificationEntityType.GAME,
+            entityId: game._id,
+            eventType: NotificationEventType.GAME_FINISHED,
+            channel: NotificationChannel.DISCORD,
+            status: NotificationStatus.PENDING
+        })
+
+        await this.notificationsRepository.put(notification, options)
 
     }
 
@@ -995,41 +1007,48 @@ class LadderService {
 
         const TEAMS_TO_RELEGATE = 3
 
-        let rewardTeamIds = await this.teamService.getTeamIdsBySeason(season, options)
+        let rewardTlss: TeamLeagueSeason[] = []
 
-        let rewardTeamSeasonIds: TeamSeasonId[] = rewardTeamIds.map(teamId => {
-            return {
-                teamId: teamId,
-                seasonId: season._id
-            }
-        })
+        for (let league of leagues) {
+            rewardTlss.push(...await this.teamLeagueSeasonService.listQualifyingTeamsByLeagueAndSeason(league, season, season.endDate, options))
+        }
 
-        let rewardTlss: TeamLeagueSeason[] = rewardTeamSeasonIds.length > 0
-            ? await this.teamLeagueSeasonService.getByTeamSeasonIds(rewardTeamSeasonIds, options)
-            : []
-
-        let rewardTeams: Team[] = rewardTeamIds.length > 0
-            ? await this.teamService.getByIds(rewardTeamIds, options)
-            : []
-
-        let rewardTeamsNonCPU = rewardTeams.filter(team => team.userId != undefined)
-        let rewardsPerTeam = this.financeService.calculateRewardsPerTeam(DIAMONDS_PER_DAY * 20, rewardTeamsNonCPU)
+        let leagueById = new Map<string, League>(leagues.map(league => [league._id, league]))
 
         let offChainEventTransactionId = uuidv4()
 
-        await this.distributeRewards(
-            rewardsPerTeam,
-            rewardTeamsNonCPU,
-            rewardTlss,
-            season,
-            {
-                type: "reward",
-                rewardType: "season",
-                fromDate: season.endDate
-            },
-            offChainEventTransactionId,
-            options
-        )
+        for (let tls of rewardTlss) {
+
+            let team: Team = await this.teamService.get(tls.teamId, options)
+            let league: League = leagueById.get(tls.leagueId)
+
+            if (!league) {
+                throw new Error(`Could not find league ${tls.leagueId} for season end reward.`)
+            }
+
+            let wins = BigInt(tls.overallRecord.wins)
+            let baseDiamondReward = BigInt(league.baseDiamondReward)
+            let rewardAmount = (baseDiamondReward * wins) / 2n
+
+            if (rewardAmount <= 0n) {
+                continue
+            }
+
+            await this.distributeReward(
+                team,
+                tls,
+                season,
+                rewardAmount,
+                {
+                    type: "reward",
+                    rewardType: "season",
+                    fromDate: season.endDate
+                },
+                offChainEventTransactionId,
+                options
+            )
+
+        }
 
         let nextSeason = new Season()
 

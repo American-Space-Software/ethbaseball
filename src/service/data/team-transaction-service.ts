@@ -3,8 +3,10 @@ import { inject, injectable } from "inversify";
 
 import { TeamMarketOffer } from "../../dto/team-market-offer.js";
 import { Team, TEAM_COLORS } from "../../dto/team.js";
+import { Notification } from "../../dto/notification.js";
+
 import { Season } from "../../dto/season.js";
-import { ContractType, FinanceSeason, GLICKO_SETTINGS, DEFAULT_ROSTER_CONSTRAINTS, TeamMarketOfferStatus, Lineup, DEFAULT_MAX_PITCH_COUNT, DEFAULT_DROP_PLAYER_DIAMONDS } from "../enums.js";
+import { ContractType, FinanceSeason, GLICKO_SETTINGS, DEFAULT_ROSTER_CONSTRAINTS, TeamMarketOfferStatus, Lineup, DEFAULT_MAX_PITCH_COUNT, DEFAULT_DROP_PLAYER_DIAMONDS, NotificationEventType, NotificationChannel, NotificationStatus, NotificationEntityType } from "../enums.js";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
 import { PlayerLeagueSeason } from "../../dto/player-league-season.js";
 import { Player } from "../../dto/player.js";
@@ -28,6 +30,7 @@ import { UserService } from "./user-service.js";
 import { LadderService } from "../ladder-service.js";
 import { LeagueService } from "./league-service.js";
 import { TeamMarketOfferService } from "./team-market-offer-service.js";
+import { NotificationRepository } from "../../repository/notification-repository.js";
 
 
 @injectable()
@@ -36,6 +39,8 @@ class TeamTransactionService {
     @inject("sequelize")
     private sequelize:Function
 
+    @inject("NotificationRepository")
+    private notificationRepository: NotificationRepository
 
     constructor(
         private playerLeagueSeasonService:PlayerLeagueSeasonService,
@@ -51,7 +56,8 @@ class TeamTransactionService {
         private ladderService:LadderService,
         private leagueService:LeagueService,
         private financeService:FinanceService,
-        private teamMarketOfferService:TeamMarketOfferService
+        private teamMarketOfferService:TeamMarketOfferService,
+        
     ) {}
 
     async get(_id:string, options?:any) : Promise<TeamMarketOffer> {
@@ -254,7 +260,19 @@ class TeamTransactionService {
             throw new Error("User does not have a team.")
         }
 
-        return this.createTeamMarketOffer(undefined, sellerPaymentTeam, player, listPrice, options)
+        let tmo: TeamMarketOffer = await this.createTeamMarketOffer(undefined, sellerPaymentTeam, player, listPrice, options)
+
+        let notification = Object.assign(new Notification(), {
+            entityType: NotificationEntityType.TEAM_MARKET_OFFER,
+            entityId: tmo._id,
+            eventType: NotificationEventType.TEAM_MARKET_OFFER_LISTED,
+            channel: NotificationChannel.DISCORD,
+            status: NotificationStatus.PENDING
+        })
+
+        await this.notificationRepository.put(notification, options)
+
+        return tmo
 
     }
 
@@ -311,13 +329,25 @@ class TeamTransactionService {
             throw new Error("Seller does not have a team.")
         }
 
-        return this.createPrivatePlayerBuyOffer(buyerPaymentTeam, sellerPaymentTeam, player, diamondAmount, options)
+        let tmo = await this.createPrivatePlayerBuyOffer(buyerPaymentTeam, sellerPaymentTeam, player, diamondAmount, options)
+
+        let notification = Object.assign(new Notification(), {
+            entityType: NotificationEntityType.TEAM_MARKET_OFFER,
+            entityId: tmo._id,
+            eventType: NotificationEventType.TEAM_MARKET_OFFER_CREATED,
+            channel: NotificationChannel.DISCORD,
+            status: NotificationStatus.PENDING
+        })
+
+        await this.notificationRepository.put(notification, options)
+
+        return tmo
 
     }
 
-    async cancelPlayerBuyOffer(user:User, tmo:TeamMarketOffer, options?:any): Promise<TeamMarketOffer> {
+    async cancelPlayerBuyOffer(user: User, tmo: TeamMarketOffer, options?: any): Promise<TeamMarketOffer> {
 
-        let currentOffer:TeamMarketOffer = await this.teamMarketOfferService.get(tmo._id, options)
+        let currentOffer: TeamMarketOffer = await this.teamMarketOfferService.get(tmo._id, options)
 
         if (!currentOffer) {
             throw new Error("Team market offer not found.")
@@ -335,7 +365,19 @@ class TeamTransactionService {
             throw new Error("Not authorized.")
         }
 
-        return this.cancelTeamMarketOffer(currentOffer, options)
+        let cancelledOffer = await this.cancelTeamMarketOffer(currentOffer, options)
+
+        let notification = Object.assign(new Notification(), {
+            entityType: NotificationEntityType.TEAM_MARKET_OFFER,
+            entityId: cancelledOffer._id,
+            eventType: NotificationEventType.TEAM_MARKET_OFFER_CANCELLED,
+            channel: NotificationChannel.DISCORD,
+            status: NotificationStatus.PENDING
+        })
+
+        await this.notificationRepository.put(notification, options)
+
+        return cancelledOffer
 
     }
 
@@ -436,7 +478,19 @@ class TeamTransactionService {
 
         }
 
-        return this.acceptAndProcessTeamMarketOffer(user, highestOffer, date, options)
+        let acceptedOffer = await this.acceptAndProcessTeamMarketOffer(user, highestOffer, date, options)
+
+        let notification = Object.assign(new Notification(), {
+            entityType: NotificationEntityType.TEAM_MARKET_OFFER,
+            entityId: acceptedOffer._id,
+            eventType: NotificationEventType.TEAM_MARKET_OFFER_ACCEPTED,
+            channel: NotificationChannel.DISCORD,
+            status: NotificationStatus.PENDING
+        })
+
+        await this.notificationRepository.put(notification, options)
+
+        return acceptedOffer
 
     }
 

@@ -19,22 +19,36 @@
               <ul>
                 <li>
                   <div class="item-content">
-                    <div class="item-media">
-                      <img src="/image/thumbnail/100/${vm.teamInfo.team.logoId}" width="56" height="56" class="profilePic" />
-                    </div>
+
+                    <div class="item-media primaryProfilePicMedia">
+                      <img src="/image/thumbnail/100/${vm.teamInfo.team.logoId}" width="56" height="56" class="primaryProfilePic profilePic" />
+                    </div>                    
+
 
                     <div class="item-inner">
                       <div class="item-title-row">
-                        <div class="item-title">${teamWebService.getTeamName(vm.teamInfo.team)}</div>
+                        <div class="item-title">${teamWebService.getTeamName(vm.teamInfo.team)} <span class="chip">${getAvailableQueueCount(vm.season)} games to play</span></div>
                         <div class="item-after">${vm.teamInfo.team.longTermRating.rating.toFixed(0)} ⭐</div>
                       </div>
 
                       <div class="item-subtitle">
-                        ${vm.teamInfo.team.overallRecord.wins}-${vm.teamInfo.team.overallRecord.losses}
+                        ${vm.teamInfo.team.overallRecord.wins}-${vm.teamInfo.team.overallRecord.losses} 
                         <span class="separator">|</span>
                         ${statService.formatRatio(vm.teamInfo.team.overallRecord.winPercent)}
                         <span class="separator">|</span>
                         ${universeWebService.displayDiamonds(vm.teamInfo.team.diamondBalance)}
+
+                        <br /><br />
+                        Day ${vm.season.dayNumber} of ${vm.season.totalDays} 
+                        <br />
+                        Season ends ${dayjs(vm.season.endDate).format('MMMM D')}
+                        <br />
+
+                        ${vm.teamInfo.team.isQualified ? $h`
+                          <a class="button button-outline small-button" href="${universeWebService.startDateLink(`/l/standings/${universeWebService.getRank()}/1`)}">View Standings</a>
+                        ` : $h` `}
+
+                      
                       </div>
 
                     </div>
@@ -42,6 +56,9 @@
                 </li>
               </ul>
             </div>
+
+
+
 
             ${teamComponentService.inProgressGame?.game?._id ? $h`
                 <div class="block-title block-title-medium">In Progress</div>
@@ -119,10 +136,20 @@
                     </ul>
                   </div>
 
-                  <div class="block-title block-title-medium">Player Development</div>
+                  <div class="block-title block-title-medium">Marketplace & Training</div>
                   <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
 
                     <ul>
+                          <li>
+                            <a class="item-link item-content" href="/offers/user">
+                              <div class="item-media">🔷</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">View trade offers</div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>                      
                           <li>
                             <a class="item-link item-content popup-open" data-popup=".development-budget-popup">
                               <div class="item-media">🏋️</div>
@@ -133,25 +160,6 @@
                                 </div>
                                 <div class="item-text">
                                   Choose the % of your rewards that go towards player development.
-                                </div>
-                              </div>
-                            </a>
-                          </li>
-                    </ul>
-
-                  </div> 
-
-
-                  <div class="block-title block-title-medium">Offers</div>
-                  <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-
-                    <ul>
-                          <li>
-                            <a class="item-link item-content" href="/offers/user">
-                              <div class="item-media">🔷</div>
-                              <div class="item-inner">
-                                <div class="item-title-row">
-                                  <div class="item-title">View trade offers</div>
                                 </div>
                               </div>
                             </a>
@@ -595,6 +603,7 @@
   import Result from "./result.f7.html"
   import Roster from "../team/roster.f7.html"
   import OffChainEvents from "../activity/offchain-events.f7.html"
+  import dayjs from "dayjs"
 
   export default (props, { $, $h, $on, $f7, $update }) => {
 

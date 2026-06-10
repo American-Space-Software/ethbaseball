@@ -97,7 +97,9 @@ class UserService {
         let teams:Team[] = await this.teamService.getByUser(user)
         let team = teams[0]
 
-        vm.teamInfo = await this.teamService.getTeamViewModel(team, season, user)
+        let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
+
+        vm.teamInfo = await this.teamService.getTeamViewModel(team, season, seasonInfo, user, currentDate)
 
         vm.teamInfo.team.diamondBalance = await this.offchainEventService.getBalanceForTeamId(ContractType.DIAMONDS, team._id)
         vm.teamInfo.team.diamondMintPasses = await this.diamondMintPassService.getUnmintedByUser(user)
@@ -111,7 +113,6 @@ class UserService {
         vm.inactivePitchers = inactivePlainPitcherPlss.map(pls => this.teamService.translatePLSToPlayerRowViewModel(pls.player, pls, false))
         vm.inactiveHitters = inactivePlainHitterPlss.map(pls => this.teamService.translatePLSToPlayerRowViewModel(pls.player, pls, false))
 
-        let seasonInfo:SeasonInfo = this.seasonService.getSeasonInfo(season, currentDate)
 
         let gamesPlayed = vm.teamInfo.team.overallRecord.wins + vm.teamInfo.team.overallRecord.losses 
 

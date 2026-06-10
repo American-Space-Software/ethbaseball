@@ -122,75 +122,80 @@
                             </a>
                         </li>
 
-                      ` : $h`  `}
-
-                      ${showDrop ? $h`  
-
-                        <li>
-                          <a class="item-link item-content popup-open" data-popup=".drop-popup">
-                            <div class="item-media">⛔</div>
-                            <div class="item-inner">
-                              <div class="item-title-row">
-                                <div class="item-title">
-                                  Drop Player
-                                </div>
-                              </div>
-                            </div>
-                          </a>
-                        </li>
-
-                      ` : $h` `}
-
-                      ${showSign ? $h`
+                      ` : $h`  
+                      
+                        ${showDrop ? $h`  
 
                           <li>
-                            <a class="item-link item-content popup-open" data-popup=".sign-popup">
-                              <div class="item-media">✍️</div>
+                            <a class="item-link item-content popup-open" data-popup=".drop-popup">
+                              <div class="item-media">⛔</div>
                               <div class="item-inner">
                                 <div class="item-title-row">
                                   <div class="item-title">
-                                    Sign Player
+                                    Drop Player
                                   </div>
                                 </div>
                               </div>
                             </a>
                           </li>
 
-                      ` : $h` `}
-              
-                      ${showActivate ? $h`
+                        ` : $h` `}
 
-                          <li>
-                            <a class="item-link item-content popup-open" data-popup=".activate-popup">
-                              <div class="item-media">👆</div>
-                              <div class="item-inner">
-                                <div class="item-title-row">
-                                  <div class="item-title">
-                                    Activate Player
+                        ${showSign ? $h`
+
+                            <li>
+                              <a class="item-link item-content popup-open" data-popup=".sign-popup">
+                                <div class="item-media">✍️</div>
+                                <div class="item-inner">
+                                  <div class="item-title-row">
+                                    <div class="item-title">
+                                      Sign Player
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </a>
-                          </li>
+                              </a>
+                            </li>
 
-                      ` : $h` `}
+                        ` : $h` `}
+                
+                        ${showActivate ? $h`
 
-                      ${showDeactivate ? $h`
-
-                          <li>
-                            <a class="item-link item-content popup-open" data-popup=".deactivate-popup">
-                              <div class="item-media">👇</div>
-                              <div class="item-inner">
-                                <div class="item-title-row">
-                                  <div class="item-title">
-                                    Deactivate Player
+                            <li>
+                              <a class="item-link item-content popup-open" data-popup=".activate-popup">
+                                <div class="item-media">👆</div>
+                                <div class="item-inner">
+                                  <div class="item-title-row">
+                                    <div class="item-title">
+                                      Activate Player
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </a>
-                          </li>
+                              </a>
+                            </li>
 
-                      ` : $h` `}
+                        ` : $h` `}
+
+                        ${showDeactivate ? $h`
+
+                            <li>
+                              <a class="item-link item-content popup-open" data-popup=".deactivate-popup">
+                                <div class="item-media">👇</div>
+                                <div class="item-inner">
+                                  <div class="item-title-row">
+                                    <div class="item-title">
+                                      Deactivate Player
+                                    </div>
+                                  </div>
+                                </div>
+                              </a>
+                            </li>
+
+                        ` : $h` `}                      
+                      
+                      
+                      `}
+
+                      
 
                   </ul>
               </div>
@@ -202,30 +207,6 @@
               <div class="block-title block-title-small">Marketplace</div>
               <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
                   <ul>
-
-                      ${showQueueingMessage ? $h`
-
-                        <li>
-                            <a class="item-link item-content">
-                                <div class="item-media">🏟️</div>
-
-                                <div class="item-inner">
-                                    <div class="item-title-row">
-                                    <div class="item-title">
-                                        Your team is queued.
-                                    </div>
-                                    </div>
-
-                                    <div class="item-text">
-                                    Rosters are locked while in the queue.
-                                    </div>
-
-                                </div>
-                            </a>
-                        </li>
-
-                      ` : $h`  `}
-
 
                       ${showBuy ? $h`
 
@@ -317,18 +298,35 @@
 
                       ${showHighestBid ? $h`
 
-                        <li>
-                          <a class="item-link item-content popup-open" data-popup=".highest-bid-popup">
-                            <div class="item-media">🔷</div>
-                            <div class="item-inner">
-                              <div class="item-title-row">
-                                <div class="item-title">
-                                  View highest bid @ ${universeWebService.displayDiamonds(player.highestBid.diamondAmount)}
+                        ${isOwner ? $h`
+                          <li>
+                            <a class="item-link item-content popup-open" data-popup=".highest-bid-popup">
+                              <div class="item-media">🔷</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    View highest bid @ ${universeWebService.displayDiamonds(player.highestBid.diamondAmount)}
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          </li>
+                          
+                        ` : $h` 
+                          <li>
+                            <div class="item-content" >
+                              <div class="item-media">🔷</div>
+                              <div class="item-inner">
+                                <div class="item-title-row">
+                                  <div class="item-title">
+                                    Highest bid @ ${universeWebService.displayDiamonds(player.highestBid.diamondAmount)}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </a>
-                        </li>
+                          </li>                        
+                        
+                        ` }
 
                       ` : $h` `}                      
 
@@ -1500,8 +1498,8 @@
 
     
     let isLoggedIn = authInfo?._id != undefined
-    let isOwned = player.team.userId != undefined
-    let isOwner = isOwned && player.team.userId == authInfo?._id
+    let isOwned = player.team?.userId != undefined
+    let isOwner = isOwned && player.team?.userId == authInfo?._id
 
     let canAffordDrop = isOwner && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(DEFAULT_DROP_PLAYER_DIAMONDS))
     let canAffordBuy = authInfo.offChainDiamondBalance && player.salesOffer != undefined && (BigInt(authInfo.offChainDiamondBalance) >= BigInt(player.salesOffer.diamondAmount))
@@ -1527,7 +1525,7 @@
 
     let showRosterManagement = isOwner || showSign
 
-    let showMarketplace = isOwned && (showBuy || showCancelSalesListing || showListForSale || showBid || showCancelBid || showHighestBid)
+    let showMarketplace = isOwned && (showBuy || showCancelSalesListing || showListForSale || showBid || showCancelBid || showHighestBid) && (!showQueueingMessage)
 
     let activeTeamId = isLoggedIn ? authInfo.teams[0]._id : undefined
 

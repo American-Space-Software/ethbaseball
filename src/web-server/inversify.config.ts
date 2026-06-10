@@ -160,9 +160,9 @@ import { TeamSharedService } from "../service/shared/team-shared-service.js";
 import { PlayerSharedService } from "../service/shared/player-shared-service.js";
 import { SimSharedService } from "../service/shared/sim-shared-service.js";
 import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
-import { GameNotificationService } from "../service/data/game-notification-service.js";
-import { GameNotificationsRepositoryNodeImpl } from "../repository/node/game-notifications-repository-impl.js";
-import { GameNotifications } from "../dto/game-notifications.js"
+import {  NotificationService } from "../service/data/notification-service.js";
+import { NotificationRepositoryNodeImpl } from "../repository/node/notification-repository-impl.js";
+import { Notification } from "../dto/notification.js"
 
 import { TeamMarketOfferRepositoryNodeImpl } from "../repository/node/team-market-offer-repository-impl.js"
 import { TeamMarketOffer } from "../dto/team-market-offer.js"
@@ -283,7 +283,7 @@ async function getContainer(command?:GetContainerCommand) {
                 multipleStatements: true,
                 timezone: 'Z'    
                },
-               models: [TeamMarketOffer, GameNotifications, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
+               models: [TeamMarketOffer,Notification, TeamQueue, TeamMintPass, Post, GamePitchResult, GameHitResult, OffchainEvent, Season, Player, Team, Game, GameTeam, GamePlayer, Owner, Seed, League, User, Stadium, City, SignatureToken, TeamLeagueSeason, DiamondMintPass,
                  Universe, Animation, Image, ConnectLink, PlayerLeagueSeason,
                 Block, ContractState, ProcessedTransaction, ProcessedEvent, ProcessedTransactionToken, ProcessedTransactionTrader, Transaction, LadderChallenge
                 ]
@@ -387,7 +387,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(SeasonService).toSelf().inSingletonScope()
     container.bind(FinanceService).toSelf().inSingletonScope()
     container.bind(SimSharedService).toSelf().inSingletonScope()
-    container.bind(GameNotificationService).toSelf().inSingletonScope()
+    container.bind(NotificationService).toSelf().inSingletonScope()
     container.bind(TeamMarketOfferService).toSelf().inSingletonScope()
 
     container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
@@ -415,7 +415,7 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind("TeamRepository").to(TeamRepositoryNodeImpl).inSingletonScope()
     container.bind("UserRepository").to(UserRepositoryNodeImpl).inSingletonScope()
     container.bind("LeagueRepository").to(LeagueRepositoryNodeImpl).inSingletonScope()
-    container.bind("GameNotificationsRepository").to(GameNotificationsRepositoryNodeImpl).inSingletonScope()
+    container.bind("NotificationRepository").to(NotificationRepositoryNodeImpl).inSingletonScope()
     container.bind("TeamMarketOfferRepository").to(TeamMarketOfferRepositoryNodeImpl).inSingletonScope()
 
     container.bind("BlockRepository").to(BlockRepositoryNodeImpl).inSingletonScope()

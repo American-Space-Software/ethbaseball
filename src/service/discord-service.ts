@@ -37,6 +37,7 @@ class DiscordService {
 
     public isStarted = false
     private playChannelId:string
+    private marketplaceChannelId:string
     private web:string
 
 
@@ -57,11 +58,12 @@ class DiscordService {
         private teamLeagueSeasonService:TeamLeagueSeasonService,    
     ) {}
 
-    async start(discordToken:string, playChannelId:string, web:string, onReady?:Function) {
+    async start(discordToken:string, playChannelId:string, marketplaceChannelId:string, web:string, onReady?:Function) {
 
-        if (!discordToken || !playChannelId) return
+        if (!discordToken || !playChannelId || !marketplaceChannelId) return
 
         this.playChannelId = playChannelId
+        this.marketplaceChannelId = marketplaceChannelId
         this.web = web
 
         //Start discord bot
@@ -351,6 +353,81 @@ class DiscordService {
         await channel.send({
             content: `⚾ ${winningTeamDisplay} defeated ${losingTeamDisplay} by a score of ${winningRuns} to ${losingRuns}. [View recap](${gameUrl})`
         })
+    }
+
+
+    async notifyPlayerBuyOfferCreated(player: Player, diamondAmount: string, buyer: { team: Team, user: User }, seller: { team: Team, user: User }) {
+
+        const channel = await this.discord.channels.fetch(this.marketplaceChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Marketplace channel not found or is not a text channel')
+        }
+
+        const playerUrl = `${this.web}/p/${player._id}`
+
+        const buyerDisplay = await this.getDiscordDisplay(channel, buyer)
+        const sellerDisplay = await this.getDiscordDisplay(channel, seller)
+
+        await channel.send({
+            content: `📨 ${buyerDisplay} sent an offer to ${sellerDisplay} for **${player.fullName}** (${displayDiamonds(diamondAmount)}). [View player](${playerUrl})`
+        })
+
+    }
+
+    async notifyPlayerBuyOfferAccepted(player: Player, diamondAmount: string, buyer: { team: Team, user: User }, seller: { team: Team, user: User }) {
+
+        const channel = await this.discord.channels.fetch(this.marketplaceChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Marketplace channel not found or is not a text channel')
+        }
+
+        const playerUrl = `${this.web}/p/${player._id}`
+
+        const buyerDisplay = await this.getDiscordDisplay(channel, buyer)
+        const sellerDisplay = await this.getDiscordDisplay(channel, seller)
+
+        await channel.send({
+            content: `🤝 ${sellerDisplay} accepted an offer from ${buyerDisplay} for **${player.fullName}** (${displayDiamonds(diamondAmount)}). [View player](${playerUrl})`
+        })
+
+    }
+
+    async notifyPlayerBuyOfferCancelled(player: Player, diamondAmount: string, buyer: { team: Team, user: User }) {
+
+        const channel = await this.discord.channels.fetch(this.marketplaceChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Marketplace channel not found or is not a text channel')
+        }
+
+        const playerUrl = `${this.web}/p/${player._id}`
+
+        const buyerDisplay = await this.getDiscordDisplay(channel, buyer)
+
+        await channel.send({
+            content: `❌ ${buyerDisplay} cancelled an offer for **${player.fullName}** (${displayDiamonds(diamondAmount)}). [View player](${playerUrl})`
+        })
+
+    }
+
+    async notifyPlayerSaleListed(player: Player, diamondAmount: string, seller: { team: Team, user: User }) {
+
+        const channel = await this.discord.channels.fetch(this.marketplaceChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Marketplace channel not found or is not a text channel')
+        }
+
+        const playerUrl = `${this.web}/p/${player._id}`
+
+        const sellerDisplay = await this.getDiscordDisplay(channel, seller)
+
+        await channel.send({
+            content: `🏷️ ${sellerDisplay} listed **${player.fullName}** for sale (${displayDiamonds(diamondAmount)}). [View player](${playerUrl})`
+        })
+
     }
 
 

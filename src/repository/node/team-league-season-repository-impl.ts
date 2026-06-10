@@ -7,7 +7,6 @@ import { Season } from "../../dto/season.js"
 import { League } from "../../dto/league.js"
 import { Stadium } from "../../dto/stadium.js"
 import { City } from "../../dto/city.js"
-import { Owner } from "../../dto/owner.js"
 import { TeamSeasonId, TokenSeasonId } from "../../service/enums.js"
 import { Op } from "sequelize"
 import { User } from "../../dto/user.js"
@@ -286,6 +285,86 @@ class TeamLeagueSeasonRepositoryNodeImpl implements TeamLeagueSeasonRepository {
         }
 
         return TeamLeagueSeason.findAll(Object.assign(query, options))
+    }
+
+
+    async listQualifyingTeamsByLeagueAndSeason(league: League, season: Season, minimumCompletedGames: number, options?: any): Promise<TeamLeagueSeason[]> {
+
+        const tlsAlias = TeamLeagueSeason.name
+
+        let query = {
+            where: {
+                seasonId: season._id,
+                leagueId: league._id,
+                hasValidLineup: true,
+                '$team.userId$': { [Op.ne]: null },
+
+                [Op.and]: [
+                    Sequelize.literal(`
+                        (
+                            SELECT COUNT(*)
+                            FROM game_team gt
+                            JOIN game g ON g._id = gt.gameId
+                            WHERE gt.teamId = \`${tlsAlias}\`.\`teamId\`
+                            AND g.seasonId = :seasonId
+                            AND g.isComplete = 1
+                        ) >= :minimumCompletedGames
+                    `)
+                ]
+            },
+            replacements: {
+                seasonId: season._id,
+                minimumCompletedGames
+            },
+            order: [
+                ['longTermRating.rating', 'desc'],
+                ['seasonRating.rating', 'desc']
+            ],
+            include: [Team, League, Season, City, Stadium]
+        }
+
+        return TeamLeagueSeason.findAll(Object.assign(query, options))
+
+    }
+
+    async listNonQualifyingTeamsByLeagueAndSeason(league: League, season: Season, minimumCompletedGames: number, options?: any): Promise<TeamLeagueSeason[]> {
+
+        const tlsAlias = TeamLeagueSeason.name
+
+        let query = {
+            where: {
+                seasonId: season._id,
+                leagueId: league._id,
+
+                [Op.or]: [
+                    { hasValidLineup: false },
+                    { '$team.userId$': null },
+                    Sequelize.literal(`
+                        (
+                            SELECT COUNT(*)
+                            FROM game_team gt
+                            JOIN game g ON g._id = gt.gameId
+                            WHERE gt.teamId = \`${tlsAlias}\`.\`teamId\`
+                            AND g.seasonId = :seasonId
+                            AND g.isComplete = 1
+                        ) < :minimumCompletedGames
+                    `)
+                ]
+            },
+            replacements: {
+                seasonId: season._id,
+                minimumCompletedGames
+            },
+            order: [
+                [Sequelize.literal(`CAST(JSON_UNQUOTE(JSON_EXTRACT(\`${tlsAlias}\`.\`overallRecord\`, '$.wins')) AS UNSIGNED)`), 'DESC'],
+                ['longTermRating.rating', 'desc'],
+                ['seasonRating.rating', 'desc']
+            ],
+            include: [Team, League, Season, City, Stadium]
+        }
+
+        return TeamLeagueSeason.findAll(Object.assign(query, options))
+
     }
 
 }

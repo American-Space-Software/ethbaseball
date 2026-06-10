@@ -6,7 +6,7 @@ import { TeamRepository } from "../../repository/team-repository.js";
 import { Player } from "../../dto/player.js";
 import {   PlayerService } from "./player-service.js";
 import { City } from "../../dto/city.js";
-import {  ContractType, DEFAULT_ROSTER_CONSTRAINTS, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, PlayerRowViewModel, Rating, TEAMS_PER_TIER, TeamViewModel } from "../enums.js";
+import {  ContractType, DEFAULT_ROSTER_CONSTRAINTS, DevelopmentStrategy, FinanceSeason, GLICKO_SETTINGS, Lineup, OverallRecord, PlayerRowViewModel, Rating, SeasonInfo, TEAMS_PER_TIER, TeamViewModel } from "../enums.js";
 import {  TeamRecord } from "../../repository/node/team-repository-impl.js";
 import { GameRepository } from "../../repository/game-repository.js";
 import { Game } from "../../dto/game.js";
@@ -30,6 +30,7 @@ import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
 import { TeamSharedService } from "../shared/team-shared-service.js";
 import { Colors, PitchingRoleType, Position, RotationPitcher } from '../../baseball-sim-engine/index.js';
+import { SeasonService } from "./season-service.js";
 
 
 const MAX_ROSTER_SIZE = 13
@@ -52,7 +53,7 @@ n
         private teamLeagueSeasonService: TeamLeagueSeasonService,
         private playerLeagueSeasonService: PlayerLeagueSeasonService,
         private financeService: FinanceService,
-        private lineupService:LineupService,
+        private seasonService:SeasonService,
         private offchainEventService:OffchainEventService,
         private gameService:GameService,
         private imageService:ImageService,
@@ -158,7 +159,7 @@ n
         })
     }
 
-    async getTeamViewModel(team: Team, season: Season, userOwner:User, options?: any): Promise<TeamViewModel> {
+    async getTeamViewModel(team: Team, season: Season, seasonInfo:SeasonInfo, userOwner:User, options?: any): Promise<TeamViewModel> {
 
         let tls: TeamLeagueSeason = await this.teamLeagueSeasonService.getByTeamSeason(team, season, options)
         let plss: PlayerLeagueSeason[] = await this.playerLeagueSeasonService.getMostRecentByTeamSeason(team, season, options)
@@ -179,7 +180,20 @@ n
         
         let plainPLSS = plss.map(p => p.get({ plain: true }))
 
-        return {
+        let minimumGames = this.teamLeagueSeasonService.getMinimumCompletedGamesForStandings(seasonInfo.dayNumber, seasonInfo.totalDays)
+
+        let inProgressGame = games.find( g => !g.isFinished)
+
+        let gamesPlayed = tls.overallRecord.wins + tls.overallRecord.losses 
+
+        if (inProgressGame?._id != undefined) {
+            gamesPlayed++
+        }
+
+        let isQualified = gamesPlayed >= minimumGames
+
+        let teamViewModel = {
+            
             team: {
                 _id: team._id,
                 diamondBalance: diamondBalance,
@@ -207,14 +221,18 @@ n
                     _id: team.userId,
                     discordId: userOwner?.discordId,
                     discordUsername: userOwner?.discordProfile?.global_name
-                }
+                },
+                isQualified: isQualified
             },
             players: plainPLSS.map(pls => this.translatePLSToPlayerRowViewModel(pls.player, pls, pls.player._id == nextStarter?._id) ),
 
             completedGames: games?.filter(g => g.isFinished == true).map( g => this.gameService.getGameSummaryViewModel(g)),
-            inProgressGame: games.find( g => !g.isFinished),
+            inProgressGame: inProgressGame,
             eventsViewModel: eventsViewModel
         }
+
+
+        return teamViewModel
 
     }
 
@@ -399,67 +417,37 @@ n
 
     }
 
-    async getStandingsViewModel(seasons: Season[], leagues:League[], league: League, season: Season, options?: any) {
+    async getStandingsViewModel(currentDate:Date, seasons: Season[], leagues:League[], league: League, season: Season, options?: any) {
 
         let leagueVm 
 
-        let teams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listUserTeamsByLeagueAndSeason(league, season, options)
+        let teams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listQualifyingTeamsByLeagueAndSeason(league, season, currentDate, options)
+        let nonQualifyingTeams:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listNonQualifyingTeamsByLeagueAndSeason(league, season, currentDate,  { limit: 25, offset: 0 })
 
         let viewModels = teams.map((t, index) => {
             t = t.get({ plain: true })
             return this.getTeamStandingsViewModel(t, index + 1)
         })
 
-        let leagueFinance = {
-            cash: "0",
-            revenue: "0",
-            expenses: "0",
-            profit: "0",
-            teamCostETH: "0",
-            teamCostDiamonds: "0",
-
-            projectedTotalRevenue: "0",
-            projectedTotalExpenses: "0",
-            projectedTotalProfit: "0"
-        }
-
-        for (let vm of viewModels) {
-            leagueFinance.cash = (BigInt(leagueFinance.cash) + BigInt(vm.financeSeason.diamondBalance)).toString()
-            leagueFinance.revenue = (BigInt(leagueFinance.revenue) + BigInt(vm.financeSeason.revenue.seasonToDate.total)).toString()
-            leagueFinance.projectedTotalRevenue = (BigInt(leagueFinance.projectedTotalRevenue) + BigInt(vm.financeSeason.revenue.projectedTotal.total)).toString()
-            
-        }
+        let nonQualifyingViewModels = nonQualifyingTeams.map((t, index) => {
+            t = t.get({ plain: true })
+            return this.getTeamStandingsViewModel(t, index + 1)
+        })
 
         leagueVm = {
             league: league,
             viewModels: viewModels,
-            leagueFinance: leagueFinance
+            nonQualifyingViewModels: nonQualifyingViewModels
         }
 
-        // let financeTotals = {
-        //     cash: "0",
-        //     expenses:  "0",
-        //     profit:  "0",
-        //     revenue: "0",
-        //     projectedTotalRevenue: "0",
-        //     projectedTotalExpenses: "0",
-        //     projectedTotalProfit: "0"
-        //   }
 
-        //   for (let lf of leagueVms.map( l => l.leagueFinance)) {
-        //     financeTotals.cash = (BigInt(financeTotals.cash) + BigInt(lf.cash)).toString()
-        //     financeTotals.expenses = (BigInt(financeTotals.expenses) + BigInt(lf.expenses)).toString()
-        //     financeTotals.profit = (BigInt(financeTotals.profit) + BigInt(lf.profit)).toString()
-        //     financeTotals.revenue = (BigInt(financeTotals.revenue) + BigInt(lf.revenue)).toString()
-        //     financeTotals.projectedTotalRevenue = (BigInt(financeTotals.projectedTotalRevenue) + BigInt(lf.projectedTotalRevenue)).toString()
-        //     financeTotals.projectedTotalExpenses = (BigInt(financeTotals.projectedTotalExpenses) + BigInt(lf.projectedTotalExpenses)).toString()
-        //     financeTotals.projectedTotalProfit = (BigInt(financeTotals.projectedTotalProfit) + BigInt(lf.projectedTotalProfit)).toString()
-
-        //   }
-
+        let seasonInfo:SeasonInfo = await this.seasonService.getSeasonInfo(season, currentDate)
+        let minimumCompletedGamesForStandings = this.teamLeagueSeasonService.getMinimumCompletedGamesForStandings(seasonInfo.dayNumber, seasonInfo.totalDays)
 
         return {
+            minimumCompletedGamesForStandings: minimumCompletedGamesForStandings,
             season: season,
+            seasonInfo: seasonInfo,
             seasons: seasons.map(s => {
                 return {
                     _id: s._id,
@@ -804,40 +792,48 @@ n
     }
 
 
-    getStartingPitcherFromPLS( rotation: RotationPitcher[], plss: PlayerLeagueSeason[] ): RotationPitcher {
+    getStartingPitcherFromPLS(rotation: RotationPitcher[], plss: PlayerLeagueSeason[]): RotationPitcher {
 
         const getPlayer = (pls?: PlayerLeagueSeason) => {
             if (!pls) return undefined
             return (pls as any).player ?? pls.get({ plain: true }).player
         }
 
-        const select = (pitcher: RotationPitcher, stamina: number) => {
-            selected = JSON.parse(JSON.stringify(pitcher))
-        }
-
         let selected: RotationPitcher | undefined
         let bestStamina = -Infinity
 
         for (const pitcher of rotation) {
-            
+
+            if (!pitcher?._id) {
+                continue
+            }
+
             const pls = plss.find(p => p.playerId === pitcher._id)
             const player = getPlayer(pls)
-            if (!player) continue
 
-            const stamina = player.stamina
-
-            if (stamina === 1) {
-                select(pitcher, stamina)
-                break
+            if (!player) {
+                continue
             }
+
+            if (player.isNextStarter === true) {
+                return JSON.parse(JSON.stringify(pitcher))
+            }
+
+            const stamina = player.stamina ?? 0
 
             if (stamina > bestStamina) {
                 bestStamina = stamina
-                select(pitcher, stamina)
+                selected = JSON.parse(JSON.stringify(pitcher))
             }
+
+        }
+
+        if (!selected) {
+            throw new Error("No starting pitcher found from rotation.")
         }
 
         return selected
+
     }
 
     getNextStartDate(team: Team): Date {

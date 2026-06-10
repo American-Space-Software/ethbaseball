@@ -110,7 +110,7 @@ ADD COLUMN `maxPitchCount` INT NOT NULL DEFAULT 0 AFTER `stamina`;
 
 UPDATE `player`
 SET `maxPitchCount` = 100
-WHERE `primaryPosition` = 'PITCHER';
+WHERE `primaryPosition` = 'P';
 
 
 
@@ -170,3 +170,72 @@ ADD CONSTRAINT `pls_ibfk_5` FOREIGN KEY (`userId`) REFERENCES `user` (`_id`) ON 
 ALTER TABLE `game`
 ADD COLUMN `substitutions` JSON DEFAULT NULL
 AFTER `gameDate`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+DROP TABLE IF EXISTS `game_notifications`;
+
+CREATE TABLE `notification` (
+  `_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+
+  `entityType` varchar(64) NOT NULL,
+  `entityId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+
+  `eventType` varchar(64) NOT NULL,
+  `channel` varchar(64) NOT NULL,
+
+  `status` varchar(32) NOT NULL DEFAULT 'PENDING',
+  `attempts` int NOT NULL DEFAULT 0,
+  `lastError` text DEFAULT NULL,
+
+  `processedAt` datetime DEFAULT NULL,
+  `lastAttemptedAt` datetime DEFAULT NULL,
+  `lastUpdated` datetime DEFAULT NULL,
+  `dateCreated` datetime DEFAULT NULL,
+
+  PRIMARY KEY (`_id`),
+
+  UNIQUE KEY `uniq_notification_delivery`
+    (`entityType`, `entityId`, `eventType`, `channel`),
+
+  KEY `idx_notification_pending`
+    (`status`, `channel`, `dateCreated`),
+
+  KEY `idx_notification_entity`
+    (`entityType`, `entityId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+
+
+
+
+DROP INDEX idx_sort_pit_era ON player_league_season;
+
+CREATE INDEX idx_sort_pit_era
+ON player_league_season (
+  seasonId,
+  primaryPosition,
+  teamId,
+  (
+    CASE
+      WHEN stats->>"$.pitching.era" IS NULL THEN CAST(999.999 AS DECIMAL(10,3))
+      WHEN stats->>"$.pitching.era" IN ('Infinity', 'NaN', 'null') THEN CAST(999.999 AS DECIMAL(10,3))
+      ELSE CAST(stats->>"$.pitching.era" AS DECIMAL(10,3))
+    END
+  )
+);
+
+

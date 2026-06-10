@@ -1127,58 +1127,116 @@ h1 {
 
 
 
-
-
 .game-state .game-main {
   flex: 1 1 100%;
   display: flex;
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.game-state .left .content, .game-state .right .content {
-  /* max-width: 300px; */
+.game-state .left,
+.game-state .right {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.game-state .middle {
+  flex: 0 0 550px;
+  min-width: 0;
+  max-width: 550px;
+  position: relative;
+}
+
+.game-state .left .content,
+.game-state .right .content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
   font-size: .75em;
 }
 
 .game-state .left .content {
   float: right;
+}
+
+.game-state .left .card,
+.game-state .right .card,
+.game-state .left .card-content,
+.game-state .right .card-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.game-state .lineup {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+  display: table;
+  border-collapse: collapse;
+}
+
+.game-state .lineup th,
+.game-state .lineup td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-state .lineup .order {
+  width: 25px;
+}
+
+.game-state .lineup .image {
+  width: 40px;
+}
+
+.game-state .lineup .name {
+  width: auto;
+  min-width: 0;
+}
+
+.game-state .lineup .pos {
+  width: 40px;
+}
+
+.game-state .lineup .stats {
+  width: 70px;
+  min-width: 0;
 }
 
 .game-state .left .content .rating-table {
-    margin-top: 0px;
-    font-size: .85em;
-    display: flex;
+  margin-top: 0px;
+  font-size: .85em;
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .game-state .left .content .rating-table .left {
-    min-width: 100%;
-    padding: 0px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0px;
 }
 
 .game-state .left .content .skill-wrapper {
-  min-width: 100%;
-}
-
-.game-state .left {
-  flex: 1;
-  /* min-width: 300px; */
-}
-
-.game-state .middle {
-  flex: 0 0 550px;
-  position: relative;
-}
-
-.game-state .right {
-  flex: 1;
-  /* min-width: 300px; */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .game-state .right .content .play-by-play-button {
   top: 100%;
   right: 0%;
   width: 150px;
+  max-width: 100%;
   float: right;
   margin-right: calc(var(--f7-card-margin-horizontal) + var(--f7-safe-area-left));
   margin-left: calc(var(--f7-card-margin-horizontal) + var(--f7-safe-area-right));
@@ -3174,6 +3232,7 @@ td.action, th.action {
   opacity: 0.6;
   font-weight: normal;
   white-space: nowrap;
+  margin-left: 10px;
 }
 
 
@@ -3487,4 +3546,9 @@ td.action, th.action {
 .item-input-wrap.diamond-input-wrap input {
     text-align: right;
     padding-right: 43px;
+}
+
+
+.primaryProfilePicMedia {
+  align-self: flex-start;
 }

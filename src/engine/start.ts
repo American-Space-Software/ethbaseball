@@ -18,9 +18,7 @@ import { SchemaService } from "../service/data/schema-service.js"
 
 import { v4 as uuidv4 } from 'uuid';
 import { DiscordService } from "../service/discord-service.js"
-import { GameNotificationService } from "../service/data/game-notification-service.js"
-import { TeamService } from "../service/data/team-service.js"
-import { Team } from "../dto/team.js"
+import { NotificationService } from "../service/data/notification-service.js"
 import { TeamTransactionService } from "../service/data/team-transaction-service.js"
 
 
@@ -34,6 +32,7 @@ let startEngine = async () => {
   const BLOCK_CONFIRMATIONS = process.env.BLOCK_CONFIRMATIONS  ? parseInt(process.env.BLOCK_CONFIRMATIONS) : 35
   const DISCORD_TOKEN = process.env.DISCORD
   const DISCORD_PLAY_CHANNEL_ID = process.env.DISCORD_PLAY_CHANNEL_ID
+  const DISCORD_MARKETPLACE_CHANNEL_ID = process.env.DISCORD_MARKETPLACE_CHANNEL_ID  
   const WEB = process.env.WEB
 
   //@ts-ignore
@@ -55,7 +54,7 @@ let startEngine = async () => {
   let universeService: UniverseService = container.get(UniverseService)
   let mintPassIndexerService: MintPassIndexerService = container.get(MintPassIndexerService)
   let universeIndexerService: UniverseIndexerService = container.get(UniverseIndexerService)
-  let gameNotificationService:GameNotificationService = container.get(GameNotificationService)
+  let notificationService:NotificationService = container.get(NotificationService)
   let minterWalletAddress: string = container.get("minterWalletAddress")
   let adminWalletAddress:string = container.get("adminWalletAddress")
   let teamTransactionService:TeamTransactionService = container.get(TeamTransactionService)
@@ -165,14 +164,14 @@ let startEngine = async () => {
   await universeIndexerService.init(diamondService.diamondsContract, BLOCK_CONFIRMATIONS)
   
 
-  const gameNotificationLoop = async () => {
+  const notificationLoop = async () => {
   
-      await gameNotificationService.processGameNotifications()
+      await notificationService.processPending()
 
-      console.log(`Game notification loop complete...waiting...`)
+      console.log(`Notification loop complete...waiting...`)
 
 
-      setTimeout(async () => { await gameNotificationLoop() }, SECONDS_BETWEEN_DISCORD_NOTIFICATIONS*1000)
+      setTimeout(async () => { await notificationLoop() }, SECONDS_BETWEEN_DISCORD_NOTIFICATIONS*1000)
 
   }
 
@@ -232,9 +231,9 @@ let startEngine = async () => {
 
       console.log(`Starting discord service.`)
 
-      await discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, WEB, async () => { })
+      await discordService.start(DISCORD_TOKEN, DISCORD_PLAY_CHANNEL_ID, DISCORD_MARKETPLACE_CHANNEL_ID, WEB, async () => { })
 
-      await gameNotificationLoop()
+      await notificationLoop()
 
     } catch(ex:any) {
 

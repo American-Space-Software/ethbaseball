@@ -16299,6 +16299,7 @@ interface TeamViewModel {
         isQueued:boolean
         minimumPlayerSalary:string
         developmentStrategy:DevelopmentStrategy
+        isQualified:boolean
     }
 
     players?: PlayerRowViewModel[]
@@ -16347,7 +16348,41 @@ interface PlayerRowViewModel {
     maxPitchCount:number
 }
 
-export  {DEFAULT_DROP_PLAYER_DIAMONDS, TeamViewModel, PlayerRowViewModel, DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
+enum NotificationEntityType {
+    GAME = "GAME",
+    TEAM_MARKET_OFFER = "TEAM_MARKET_OFFER"
+}
+
+enum NotificationEventType {
+    GAME_STARTED = "GAME_STARTED",
+    GAME_FINISHED = "GAME_FINISHED",
+
+    TEAM_MARKET_OFFER_CREATED = "TEAM_MARKET_OFFER_CREATED",
+    TEAM_MARKET_OFFER_ACCEPTED = "TEAM_MARKET_OFFER_ACCEPTED",
+    TEAM_MARKET_OFFER_CANCELLED = "TEAM_MARKET_OFFER_CANCELLED",
+    TEAM_MARKET_OFFER_REJECTED = "TEAM_MARKET_OFFER_REJECTED",
+    TEAM_MARKET_OFFER_EXPIRED = "TEAM_MARKET_OFFER_EXPIRED",
+    TEAM_MARKET_OFFER_LISTED = "TEAM_MARKET_OFFER_LISTED"
+}
+
+enum NotificationChannel {
+    DISCORD = "DISCORD",
+    EMAIL = "EMAIL"
+}
+
+enum NotificationStatus {
+    PENDING = "PENDING",
+    SENT = "SENT",
+    FAILED = "FAILED"
+}
+
+
+export  {
+    NotificationEntityType,
+    NotificationEventType,
+    NotificationChannel,
+    NotificationStatus,
+    DEFAULT_DROP_PLAYER_DIAMONDS, TeamViewModel, PlayerRowViewModel, DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, Lineup, DEFAULT_PLAYER_STARTING_AGE, TeamMarketOfferStatus, STANDARD_INNINGS, Revenue,  OverallRecord, DevelopmentStrategy, FinanceSeason, Expenses, TeamLogo, GLICKO_SETTINGS, PLAYER_RETIREMENT_AGE, HITTER_GAME_AVERAGE_XP, PlayerGrade, PLAYER_LEAGUE_AVERAGE_RATING, PlayDescription, PlayDescriptionMeta, PlayDescriptionType, AtBatState, 
     WIN_EXPECTANCY_CHART, STARTING_FREE_AGENT_PRICE, FREE_AGENT_DAYS_TO_FLOOR, FREE_AGENT_FLOOR_PRICE, SeasonInfo, RewardPerTeam, OffChainEventSource, DIAMONDS_PER_DAY, GameTeamFinance, PLAYER_STATS_SORT_EXPRESSION, TokenSeasonId, PlayerPercentileRatings, TeamCost, OwnerSorts, 
     ContractType, TeamSeasonId, PlayerTransactionType, PitchResultGame, HitResultGame, PromotionRelegationLog, ROSTER_LOCK_HOUR, MINIMUM_PLAYER_POOL, TEAMS_PER_TIER, PlayerFinalContract, PlayerReport,
     LEASE_PER_CAPACITY, SERIES_LENGTH, TeamInfo, BaseRunners,  BaseRunnerIds, HitterPitcher,  ScheduleDetails, ScheduledGame, SeriesSchedule,Matchup, Schedule,

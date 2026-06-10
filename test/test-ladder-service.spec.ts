@@ -15,9 +15,13 @@ import { TeamLeagueSeason } from "../src/dto/team-league-season.js"
 import { PlayerLeagueSeason } from "../src/dto/player-league-season.js"
 import { v4 as uuidv4 } from "uuid"
 import dayjs from "dayjs"
-import { DEFAULT_MAX_PITCH_COUNT } from "../src/service/enums.js"
+import { ContractType, DEFAULT_MAX_PITCH_COUNT } from "../src/service/enums.js"
 import { Player } from "../src/dto/player.js"
 import { PitchingRoleType, Position } from "../src/baseball-sim-engine/index.js"
+import { TeamService } from "../src/service/data/team-service.js"
+import { Team } from "../src/dto/team.js"
+import { OffchainEventService } from "../src/service/data/offchain-event-service.js"
+import { ethers } from "ethers"
 
 describe("LadderService", async () => {
 
@@ -29,6 +33,9 @@ describe("LadderService", async () => {
     let playerLeagueSeasonService: PlayerLeagueSeasonService
     let schemaService: SchemaService
 
+    let teamService:TeamService
+    let offchainEventService:OffchainEventService
+    let sequelize: Function
     let universe: Universe
     let season: Season
     let nextSeason: Season
@@ -52,6 +59,10 @@ describe("LadderService", async () => {
         teamLeagueSeasonService = container.get(TeamLeagueSeasonService)
         playerLeagueSeasonService = container.get(PlayerLeagueSeasonService)
         schemaService = container.get(SchemaService)
+        teamService = container.get(TeamService)
+        sequelize = container.get("sequelize")
+        offchainEventService = container.get(OffchainEventService)
+        
 
         await schemaService.load()
 
@@ -227,15 +238,94 @@ describe("LadderService", async () => {
 
     })
 
-    it("should finish a season", async () => {
+    it("should finish a season and only reward qualifying teams", async () => {
 
         seasonsBeforeFinish = await seasonService.list(1000, 0)
+
+        let qualifyingTls = topTls[0]
+        let notEnoughGamesTls = topTls[1]
+        let invalidLineupTls = topTls[2]
+
+        let league = leagues.find(l => l._id == qualifyingTls.leagueId)
+
+        qualifyingTls.hasValidLineup = true
+        notEnoughGamesTls.hasValidLineup = true
+        invalidLineupTls.hasValidLineup = false
+
+        qualifyingTls.overallRecord.wins = 100
+        notEnoughGamesTls.overallRecord.wins = 100
+        invalidLineupTls.overallRecord.wins = 100
+
+        qualifyingTls.changed("hasValidLineup", true)
+        notEnoughGamesTls.changed("hasValidLineup", true)
+        invalidLineupTls.changed("hasValidLineup", true)
+
+        qualifyingTls.changed("overallRecord", true)
+        notEnoughGamesTls.changed("overallRecord", true)
+        invalidLineupTls.changed("overallRecord", true)
+
+        await teamLeagueSeasonService.put(qualifyingTls)
+        await teamLeagueSeasonService.put(notEnoughGamesTls)
+        await teamLeagueSeasonService.put(invalidLineupTls)
+
+        let qualifyingTeam = await makeTeamUserOwned(qualifyingTls.teamId)
+        let notEnoughGamesTeam = await makeTeamUserOwned(notEnoughGamesTls.teamId)
+        let invalidLineupTeam = await makeTeamUserOwned(invalidLineupTls.teamId)
+
+        await createCompletedGamesForTeam(qualifyingTls.teamId, league._id, season._id, 130)
+        await createCompletedGamesForTeam(notEnoughGamesTls.teamId, league._id, season._id, 129)
+        await createCompletedGamesForTeam(invalidLineupTls.teamId, league._id, season._id, 130)
+
+        let qualifyingTeamsBeforeFinish = await teamLeagueSeasonService.listQualifyingTeamsByLeagueAndSeason(
+            league,
+            season,
+            season.endDate
+        )
+
+        let qualifyingTeamIdsBeforeFinish = qualifyingTeamsBeforeFinish.map(tls => tls.teamId)
+
+        assert.ok(qualifyingTeamIdsBeforeFinish.includes(qualifyingTls.teamId))
+        assert.ok(!qualifyingTeamIdsBeforeFinish.includes(notEnoughGamesTls.teamId))
+        assert.ok(!qualifyingTeamIdsBeforeFinish.includes(invalidLineupTls.teamId))
 
         await service.finishSeason(season, leagues)
 
         let updatedSeason = await seasonService.get(season._id)
 
         assert.equal(updatedSeason.isComplete, true)
+
+        let qualifyingEvents = await offchainEventService.getByTeamId(qualifyingTeam._id)
+        let notEnoughGamesEvents = await offchainEventService.getByTeamId(notEnoughGamesTeam._id)
+        let invalidLineupEvents = await offchainEventService.getByTeamId(invalidLineupTeam._id)
+
+        let qualifyingSeasonRewards = qualifyingEvents.filter(e =>
+            e.contractType == ContractType.DIAMONDS &&
+            e.toTeamId == qualifyingTeam._id &&
+            e.source?.type == "reward" &&
+            e.source?.rewardType == "season"
+        )
+
+        let notEnoughGamesSeasonRewards = notEnoughGamesEvents.filter(e =>
+            e.contractType == ContractType.DIAMONDS &&
+            e.toTeamId == notEnoughGamesTeam._id &&
+            e.source?.type == "reward" &&
+            e.source?.rewardType == "season"
+        )
+
+        let invalidLineupSeasonRewards = invalidLineupEvents.filter(e =>
+            e.contractType == ContractType.DIAMONDS &&
+            e.toTeamId == invalidLineupTeam._id &&
+            e.source?.type == "reward" &&
+            e.source?.rewardType == "season"
+        )
+
+        let expectedReward = (BigInt(league.baseDiamondReward) * BigInt(qualifyingTls.overallRecord.wins)) / 2n
+
+        assert.equal(qualifyingSeasonRewards.length, 1)
+        assert.equal(qualifyingSeasonRewards[0].amount, expectedReward.toString())
+
+        assert.equal(notEnoughGamesSeasonRewards.length, 0)
+        assert.equal(invalidLineupSeasonRewards.length, 0)
 
     })
 
@@ -747,5 +837,83 @@ describe("LadderService", async () => {
             .sort((a, b) => a.overallRecord.rank - b.overallRecord.rank)
 
     }
+
+    async function makeTeamUserOwned(teamId: string): Promise<Team> {
+
+        let team = await teamService.get(teamId)
+
+        team.userId = uuidv4()
+
+        await teamService.put(team)
+
+        return await teamService.get(teamId)
+
+    }
+
+    async function createCompletedGamesForTeam(teamId: string, leagueId: string, seasonId: string, count: number) {
+
+        for (let i = 0; i < count; i++) {
+            await createCompletedGameForTeam(teamId, leagueId, seasonId)
+        }
+
+    }
+
+    async function createCompletedGameForTeam(teamId: string, leagueId: string, seasonId: string) {
+
+        let s = await sequelize()
+        let gameId = uuidv4()
+
+        await s.query(`
+            INSERT INTO game (
+                _id,
+                seasonId,
+                leagueId,
+                playIndex,
+                isComplete,
+                isFinished,
+                startDate,
+                dateCreated,
+                lastUpdated
+            )
+            VALUES (
+                :gameId,
+                :seasonId,
+                :leagueId,
+                0,
+                1,
+                1,
+                NOW(),
+                NOW(),
+                NOW()
+            )
+        `, {
+            replacements: {
+                gameId,
+                seasonId,
+                leagueId
+            }
+        })
+
+        await s.query(`
+            INSERT INTO game_team (
+                gameId,
+                teamId,
+                createdAt,
+                updatedAt
+            )
+            VALUES (
+                :gameId,
+                :teamId,
+                NOW(),
+                NOW()
+            )
+        `, {
+            replacements: {
+                gameId,
+                teamId
+            }
+        })
+
+    }    
 
 })
