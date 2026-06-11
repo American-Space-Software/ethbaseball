@@ -76,8 +76,8 @@
 
 
                   <div class="grid grid-cols-1 large-grid-cols-2">
-                      <${Boxscore} vm=${getAwayBoxscoreViewModel} />
-                      <${Boxscore} vm=${getHomeBoxscoreViewModel} />
+                      <${Boxscore} substitutions=${gameViewModel?.game?.substitutions} vm=${getAwayBoxscoreViewModel} />
+                      <${Boxscore} substitutions=${gameViewModel?.game?.substitutions} vm=${getHomeBoxscoreViewModel} />
                   </div>  
 
                 </div>
@@ -140,7 +140,8 @@
 
     let vm = props.vm()
 
-    let info = boxscoreService.getBoxscoreInfo(vm)
+    let substitutions = props.substitutions
+    let info = boxscoreService.getBoxscoreInfo(substitutions, vm)
 
     let batters = info.batters
     let pitchers = info.pitchers
@@ -153,8 +154,9 @@
     $f7.on('gameUpdate', () => {
 
       Object.assign(vm, props.vm())
+      Object.assign(substitutions, props.substitutions)
 
-      info = boxscoreService.getBoxscoreInfo(vm)
+      let info = boxscoreService.getBoxscoreInfo(substitutions, vm)
 
       batters = info.batters
       pitchers = info.pitchers

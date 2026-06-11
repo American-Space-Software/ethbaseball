@@ -159,8 +159,7 @@ import { GameSharedService } from "../service/shared/game-shared-service.js";
 import { TeamSharedService } from "../service/shared/team-shared-service.js";
 import { PlayerSharedService } from "../service/shared/player-shared-service.js";
 import { SimSharedService } from "../service/shared/sim-shared-service.js";
-import { WIN_EXPECTANCY_CHART } from "../service/enums.js";
-import {  NotificationService } from "../service/data/notification-service.js";
+import { NotificationChannel, NotificationEntityType, NotificationEventType, NotificationStatus, WIN_EXPECTANCY_CHART } from "../service/enums.js";
 import { NotificationRepositoryNodeImpl } from "../repository/node/notification-repository-impl.js";
 import { Notification } from "../dto/notification.js"
 
@@ -169,6 +168,7 @@ import { TeamMarketOffer } from "../dto/team-market-offer.js"
 import { TeamMarketOfferRepository } from "../repository/team-market-offer-repository.js"
 import { TeamTransactionService } from "../service/data/team-transaction-service.js";
 import { TeamMarketOfferService } from "../service/data/team-market-offer-service.js";
+import { NotificationRepository } from "../repository/notification-repository.js";
 
 let _diamondsAddress:string
 let _universe:Universe
@@ -387,7 +387,6 @@ async function getContainer(command?:GetContainerCommand) {
     container.bind(SeasonService).toSelf().inSingletonScope()
     container.bind(FinanceService).toSelf().inSingletonScope()
     container.bind(SimSharedService).toSelf().inSingletonScope()
-    container.bind(NotificationService).toSelf().inSingletonScope()
     container.bind(TeamMarketOfferService).toSelf().inSingletonScope()
 
     container.bind(TeamLeagueSeasonService).toSelf().inSingletonScope()
@@ -471,6 +470,7 @@ async function getContainer(command?:GetContainerCommand) {
                 let seasonService:SeasonService = container.get(SeasonService)
                 let financeService:FinanceService = container.get(FinanceService)
                 let teamTransactionService:TeamTransactionService = container.get(TeamTransactionService)
+                let notificationRepository:NotificationRepository = container.get("NotificationRepository")
 
                 let existingUser:User
 
@@ -501,8 +501,17 @@ async function getContainer(command?:GetContainerCommand) {
                         let season:Season = await seasonService.getMostRecent(options)
                         let league:League = await leagueService.getByRank(1, options)
 
-                        await teamTransactionService.createForUser(existingUser, league, season, options)
+                        let createdTeam = await teamTransactionService.createForUser(existingUser, league, season, options)
 
+                        let notification = Object.assign(new Notification(), {
+                            entityType: NotificationEntityType.TEAM,
+                            entityId: createdTeam.team._id,
+                            eventType: NotificationEventType.FRANCHISE_CREATED,
+                            channel: NotificationChannel.DISCORD,
+                            status: NotificationStatus.PENDING
+                        })
+
+                        await notificationRepository.put(notification, options)
 
                     }
 

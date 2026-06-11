@@ -202,7 +202,7 @@ let startEngine = async () => {
 
   const startupTasks = async () => {
 
-    await teamTransactionService.fillAllRosters()
+    // await teamTransactionService.fillAllRosters()
     
 
 

@@ -575,6 +575,7 @@ class LadderService {
         game.changed('losingPitcherId', true)
         game.changed('winningTeamId', true)
         game.changed('losingTeamId', true)        
+        game.changed('substitutions', true)
 
         await this.gameService.put(game, options)
 

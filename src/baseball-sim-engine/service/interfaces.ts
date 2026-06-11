@@ -109,7 +109,7 @@ interface Game {
     startDate?: Date
     gameDate?: Date
 
-    substitutions?: GameSubstitution[]
+    substitutions: GameSubstitution[]
 
     lastUpdated?: Date
     dateCreated?: Date
@@ -125,6 +125,10 @@ interface GameSubstitution {
     fromPosition?: Position
     toPosition?: Position
     isPitchingChange: boolean
+    playIndex: number
+
+    requiresPitcherChange?: boolean
+    resolvedPitcherChange?: boolean
 }
 
 interface Player {

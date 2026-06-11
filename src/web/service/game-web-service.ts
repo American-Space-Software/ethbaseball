@@ -522,12 +522,12 @@ class GameWebService {
 
     getPitchHeader(pitch:Pitch) {
         if (!pitch.quality) return ``
-        return `${this.getPitchResultDescription(pitch)} - ${pitch.count.balls}-${pitch.count.strikes} - ${pitch.quality.velocity.toFixed(1)} MPH ${this.gameSharedService.getPitchTypeFull(pitch.type)}`
+        return `${this.getPitchResultDescription(pitch)} - ${pitch.count.balls}-${pitch.count.strikes} - ${pitch.quality.velocity?.toFixed(1)} MPH ${this.gameSharedService.getPitchTypeFull(pitch.type)}`
     }
 
     getInPlayHeader(pitch:Pitch) {
         if (!pitch.contactQuality) return ``
-        return `EV ${pitch.contactQuality.exitVelocity.toFixed(1)} MPH / LA ${pitch.contactQuality.launchAngle.toFixed(1)}° / Dst ${pitch.contactQuality.distance.toFixed(0)} ft`
+        return `EV ${pitch.contactQuality?.exitVelocity.toFixed(1)} MPH / LA ${pitch.contactQuality?.launchAngle.toFixed(1)}° / Dst ${pitch.contactQuality?.distance?.toFixed(0)} ft`
     }
 
     getPitchResultDescription(pitch: Pitch) {

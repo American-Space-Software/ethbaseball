@@ -320,6 +320,10 @@ class GameSharedService {
         const hitter:GamePlayer =   Object.values(gamePlayers).find((p: GamePlayer) => p._id == play.hitterId) as GamePlayer
         const pitcher:GamePlayer =   Object.values(gamePlayers).find((p: GamePlayer) => p._id == play.pitcherId) as GamePlayer
 
+
+        descriptions.push(...this.getSubstitutionDescriptions(game, play))
+
+
         descriptions.push({
             type: PlayDescriptionType.RECAP,
             text: this.getMatchupDescription(play, hitter)
@@ -1398,6 +1402,265 @@ class GameSharedService {
 
     }
 
+
+    getSubstitutionDescriptions(game, play: Play): PlayDescription[] {
+
+        const descriptions: PlayDescription[] = []
+
+        const substitutions = (game.substitutions || [])
+            .filter(substitution => substitution.playIndex == play.index)
+            .sort((a, b) => {
+                if (a.isPitchingChange && !b.isPitchingChange) return 1
+                if (!a.isPitchingChange && b.isPitchingChange) return -1
+                return 0
+            })
+
+        for (const substitution of substitutions) {
+
+            if (substitution.isPitchingChange) {
+                descriptions.push(...this.getPitchingChangeDescriptions(game, substitution))
+                continue
+            }
+
+            if (substitution.requiresPitcherChange) {
+                descriptions.push(...this.getPinchHitterDescriptions(game, substitution))
+                continue
+            }
+
+            descriptions.push(...this.getLineupSubstitutionDescriptions(game, substitution))
+
+        }
+
+        return descriptions
+
+    }
+
+    getPitchingChangeDescriptions(game, substitution): PlayDescription[] {
+
+        const gamePlayers = this.gamePlayers(game)
+
+        const team = substitution.teamId == game.away._id
+            ? game.away
+            : game.home
+
+        const teamName = this.teamSharedService.getTeamName(team)
+
+        const outPlayer: GamePlayer = gamePlayers[substitution.outPlayerId]
+        const inPlayer: GamePlayer = gamePlayers[substitution.inPlayerId]
+
+        if (!inPlayer) {
+            return []
+        }
+
+        const seed = this.getSubstitutionDescriptionSeed(game, substitution)
+
+        const text = outPlayer
+            ? this.getPitchingChangeText(teamName, inPlayer.fullName, outPlayer.fullName, seed)
+            : this.getPitchingChangeTextWithoutOutgoingPlayer(teamName, inPlayer.fullName, seed)
+
+        return [{
+            type: PlayDescriptionType.SUBSTITUTION,
+            text
+        }]
+
+    }
+
+    getPitchingChangeText(teamName: string, inPlayerName: string, outPlayerName: string, seed: number): string {
+
+        return this.pickSubstitutionText([
+            `Pitching change for ${teamName}. ${inPlayerName} takes over for ${outPlayerName}.`,
+            `A call to the bullpen for ${teamName}. ${inPlayerName} replaces ${outPlayerName}.`,
+            `That's all for ${outPlayerName}. ${inPlayerName} is the new pitcher for ${teamName}.`,
+            `A new pitcher for ${teamName}. ${inPlayerName} comes on in relief of ${outPlayerName}.`,
+            `${inPlayerName} enters for ${teamName}, replacing ${outPlayerName} on the mound.`
+        ], seed)
+
+    }
+
+    getPitchingChangeTextWithoutOutgoingPlayer(teamName: string, inPlayerName: string, seed: number): string {
+
+        return this.pickSubstitutionText([
+            `Pitching change for ${teamName}. ${inPlayerName} takes over on the mound.`,
+            `A call to the bullpen for ${teamName}. ${inPlayerName} is the new pitcher.`,
+            `A new pitcher for ${teamName}. ${inPlayerName} comes on in relief.`,
+            `${inPlayerName} enters to pitch for ${teamName}.`
+        ], seed)
+
+    }
+
+    getPinchHitterText(teamName: string, inPlayerName: string, outPlayerName: string, seed: number): string {
+
+        return this.pickSubstitutionText([
+            `Pinch hitter for ${teamName}. ${inPlayerName} will bat for ${outPlayerName}.`,
+            `A move to the bench for ${teamName}. ${inPlayerName} bats in place of ${outPlayerName}.`,
+            `${inPlayerName} comes off the bench to hit for ${outPlayerName}.`,
+            `An offensive change for ${teamName}. ${inPlayerName} will hit for ${outPlayerName}.`,
+            `${inPlayerName} is announced as a pinch hitter for ${outPlayerName}.`
+        ], seed)
+
+    }
+
+    getPinchHitterTextWithoutOutgoingPlayer(teamName: string, inPlayerName: string, seed: number): string {
+
+        return this.pickSubstitutionText([
+            `Pinch hitter for ${teamName}. ${inPlayerName} steps in.`,
+            `A move to the bench for ${teamName}. ${inPlayerName} will hit.`,
+            `${inPlayerName} comes off the bench as a pinch hitter.`,
+            `An offensive change for ${teamName}. ${inPlayerName} will bat.`
+        ], seed)
+
+    }
+
+    getLineupSubstitutionTextWithoutOutgoingPlayer(teamName: string, inPlayerName: string, positionText: string | undefined, seed: number): string {
+
+        if (!positionText) {
+            return this.pickSubstitutionText([
+                `A substitution for ${teamName}. ${inPlayerName} enters the game.`,
+                `${inPlayerName} enters the game for ${teamName}.`,
+                `A new player enters for ${teamName}. ${inPlayerName} is into the game.`
+            ], seed)
+        }
+
+        return this.pickSubstitutionText([
+            `Defensive change for ${teamName}. ${inPlayerName} takes over at ${positionText}.`,
+            `A defensive substitution for ${teamName}. ${inPlayerName} enters at ${positionText}.`,
+            `${inPlayerName} enters the game at ${positionText} for ${teamName}.`,
+            `A defensive move for ${teamName}. ${inPlayerName} is now at ${positionText}.`
+        ], seed)
+
+    }
+
+    getLineupSubstitutionText(teamName: string, inPlayerName: string, outPlayerName: string, positionText: string | undefined, seed: number): string {
+
+        if (!positionText) {
+            return this.pickSubstitutionText([
+                `A substitution for ${teamName}. ${inPlayerName} replaces ${outPlayerName}.`,
+                `${inPlayerName} enters the game for ${teamName}, replacing ${outPlayerName}.`,
+                `A new player for ${teamName}. ${inPlayerName} replaces ${outPlayerName}.`
+            ], seed)
+        }
+
+        return this.pickSubstitutionText([
+            `Defensive change for ${teamName}. ${inPlayerName} takes over at ${positionText}.`,
+            `A defensive substitution for ${teamName}. ${inPlayerName} replaces ${outPlayerName} at ${positionText}.`,
+            `${inPlayerName} enters the game at ${positionText} for ${teamName}.`,
+            `A defensive move for ${teamName}. ${inPlayerName} is now at ${positionText}.`,
+            `${inPlayerName} comes in for ${outPlayerName} and takes over at ${positionText}.`
+        ], seed)
+
+    }
+
+    getPositionDisplay(position: Position): string {
+
+        switch (position) {
+            case Position.PITCHER: return "pitcher"
+            case Position.CATCHER: return "catcher"
+            case Position.FIRST_BASE: return "first base"
+            case Position.SECOND_BASE: return "second base"
+            case Position.THIRD_BASE: return "third base"
+            case Position.SHORTSTOP: return "shortstop"
+            case Position.LEFT_FIELD: return "left field"
+            case Position.CENTER_FIELD: return "center field"
+            case Position.RIGHT_FIELD: return "right field"
+            default: return String(position)
+        }
+
+    }
+
+    getPinchHitterDescriptions(game, substitution): PlayDescription[] {
+
+        const gamePlayers = this.gamePlayers(game)
+
+        const team = substitution.teamId == game.away._id
+            ? game.away
+            : game.home
+
+        const teamName = this.teamSharedService.getTeamName(team)
+
+        const outPlayer: GamePlayer = gamePlayers[substitution.outPlayerId]
+        const inPlayer: GamePlayer = gamePlayers[substitution.inPlayerId]
+
+        if (!inPlayer) {
+            return []
+        }
+
+        const seed = this.getSubstitutionDescriptionSeed(game, substitution)
+
+        const text = outPlayer
+            ? this.getPinchHitterText(teamName, inPlayer.fullName, outPlayer.fullName, seed)
+            : this.getPinchHitterTextWithoutOutgoingPlayer(teamName, inPlayer.fullName, seed)
+
+        return [{
+            type: PlayDescriptionType.SUBSTITUTION,
+            text
+        }]
+
+    }
+
+    getLineupSubstitutionDescriptions(game, substitution): PlayDescription[] {
+
+        const gamePlayers = this.gamePlayers(game)
+
+        const team = substitution.teamId == game.away._id
+            ? game.away
+            : game.home
+
+        const teamName = this.teamSharedService.getTeamName(team)
+
+        const outPlayer: GamePlayer = gamePlayers[substitution.outPlayerId]
+        const inPlayer: GamePlayer = gamePlayers[substitution.inPlayerId]
+
+        if (!inPlayer) {
+            return []
+        }
+
+        const seed = this.getSubstitutionDescriptionSeed(game, substitution)
+
+        const positionText = substitution.toPosition
+            ? this.getPositionDisplay(substitution.toPosition)
+            : undefined
+
+        const text = outPlayer
+            ? this.getLineupSubstitutionText(teamName, inPlayer.fullName, outPlayer.fullName, positionText, seed)
+            : this.getLineupSubstitutionTextWithoutOutgoingPlayer(teamName, inPlayer.fullName, positionText, seed)
+
+        return [{
+            type: PlayDescriptionType.SUBSTITUTION,
+            text
+        }]
+
+    }
+
+    getSubstitutionDescriptionSeed(game, substitution): number {
+
+        const hash = (s: string) => {
+            let h = 2166136261
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i)
+                h = Math.imul(h, 16777619)
+            }
+            return h >>> 0
+        }
+
+
+        return hash([
+            game?._id || "",
+            substitution.teamId || "",
+            substitution.outPlayerId || "",
+            substitution.inPlayerId || "",
+            substitution.playIndex ?? 0,
+            substitution.lineupIndex ?? "",
+            substitution.isPitchingChange ? "P" : "B"
+        ].join("|"))
+
+    }
+
+
+
+
+    pickSubstitutionText(list: string[], seed: number): string {
+        return list[Math.abs(seed) % list.length]
+    }
 
     pitcherGameStats(pitcher) {
 

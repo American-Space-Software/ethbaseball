@@ -98,9 +98,29 @@ class NotificationService {
             return
         }
 
+        if (notification.entityType == NotificationEntityType.TEAM) {
+            await this.processDiscordTeamNotification(notification, options)
+            return
+        }
+
         throw new Error(`Unsupported discord notification entity type: ${notification.entityType}`)
 
     }
+
+    async processDiscordTeamNotification(notification: Notification, options?: any): Promise<void> {
+
+        let team: Team = await this.teamService.get(notification.entityId, options)
+        let user: User = await this.userService.get(team.userId, options)
+
+        if (notification.eventType == NotificationEventType.FRANCHISE_CREATED) {
+            await this.discordService.notifyTeamCreated(team, user)
+            return
+        }
+
+        throw new Error(`Unsupported discord team notification event type: ${notification.eventType}`)
+
+    }
+
 
     async processDiscordGameNotification(notification: Notification, options?: any): Promise<void> {
 

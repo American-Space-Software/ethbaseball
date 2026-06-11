@@ -306,6 +306,7 @@ class GameService {
         game.changed('isComplete', true)
         game.changed('isStarted', true)
         game.changed('currentSimDate', true)
+        game.changed('substitutions', true)
         
     }
 

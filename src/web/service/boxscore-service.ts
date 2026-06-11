@@ -1,4 +1,5 @@
 import { injectable } from "inversify"
+import { GameSubstitution } from "../../baseball-sim-engine/service/interfaces.js"
 
 interface BoxscorePlayerRow {
     player: any
@@ -8,28 +9,36 @@ interface BoxscorePlayerRow {
 @injectable()
 class BoxscoreService {
 
-    getBoxscoreInfo(boxscoreViewModel: any) {
+    getBoxscoreInfo(substitutions: GameSubstitution[], boxscoreViewModel: any) {
 
         let lineup = boxscoreViewModel.teamInfo.lineupIds
+        let teamId = boxscoreViewModel.teamInfo._id
 
-        let substitutions = boxscoreViewModel.teamInfo.substitutions || []
+        let teamSubstitutions = substitutions
+            .filter(substitution => substitution.teamId == teamId)
+            .sort((a, b) => (a.playIndex ?? 0) - (b.playIndex ?? 0))
 
-        let subNumberByPlayerId = this.getSubNumberByPlayerId(substitutions)
+        let subNumberByPlayerId = this.getSubNumberByPlayerId(teamSubstitutions)
 
-        let battingSubstitutions = substitutions.filter(substitution => !substitution.isPitchingChange)
-        let pitchingSubstitutions = substitutions.filter(substitution => substitution.isPitchingChange)
+        let pitchingSubstitutions = teamSubstitutions.filter(substitution => substitution.isPitchingChange)
+        let lineupSubstitutions = teamSubstitutions.filter(substitution => substitution.lineupIndex !== undefined)
+
+        let batterSeedIds = this.getBatterAppearanceIds(
+            lineup,
+            lineupSubstitutions
+        )
 
         let batters = this.getRowsFromSubstitutions(
-            lineup,
+            batterSeedIds,
             boxscoreViewModel.teamInfo.players,
-            battingSubstitutions,
+            lineupSubstitutions,
             subNumberByPlayerId,
             p => lineup.includes(p._id) || this.hasBattingLine(p)
         )
 
-        let pitcherSeedIds = boxscoreViewModel.teamInfo.players
-            .filter(p => p._id == boxscoreViewModel.teamInfo.currentPitcherId || this.hasPitchingLine(p))
-            .map(p => p._id)
+        let pitcherSeedIds = this.getPitcherAppearanceIds(
+            pitchingSubstitutions
+        )
 
         let pitchers = this.getRowsFromSubstitutions(
             pitcherSeedIds,
@@ -101,6 +110,7 @@ class BoxscoreService {
 
     }
 
+
     getSubNumberByPlayerId(substitutions: any[]): Map<string, number> {
 
         let subNumberByPlayerId = new Map<string, number>()
@@ -130,7 +140,6 @@ class BoxscoreService {
 
         let rows: BoxscorePlayerRow[] = []
         let used = new Set<string>()
-        let subNumber = 1
 
         for (let playerId of seedIds) {
 
@@ -144,8 +153,11 @@ class BoxscoreService {
                 continue
             }
 
+            let existingSubNumber = subNumberByPlayerId.get(player._id)
+
             rows.push({
-                player: player
+                player: player,
+                subNumber: existingSubNumber
             })
 
             used.add(player._id)
@@ -166,14 +178,10 @@ class BoxscoreService {
 
             rows.push({
                 player: player,
-                subNumber: existingSubNumber || subNumber
+                subNumber: existingSubNumber
             })
 
             used.add(player._id)
-
-            if (!existingSubNumber) {
-                subNumber++
-            }
 
         }
 
@@ -213,6 +221,96 @@ class BoxscoreService {
             p.pitchResult.so > 0 ||
             p.pitchResult.hbp > 0
         )
+    }
+
+    getPitcherAppearanceIds(pitchingSubstitutions: any[]): string[] {
+
+        let sortedPitchingSubstitutions = [...pitchingSubstitutions].sort((a, b) => {
+            return (a.playIndex ?? 0) - (b.playIndex ?? 0)
+        })
+
+        let ids: string[] = []
+        let used = new Set<string>()
+
+        const add = (playerId?: string) => {
+
+            if (!playerId) {
+                return
+            }
+
+            if (used.has(playerId)) {
+                return
+            }
+
+            ids.push(playerId)
+            used.add(playerId)
+
+        }
+
+        if (sortedPitchingSubstitutions.length > 0) {
+            add(sortedPitchingSubstitutions[0].outPlayerId)
+        }
+
+        for (let substitution of sortedPitchingSubstitutions) {
+            add(substitution.inPlayerId)
+        }
+
+        return ids
+
+    }
+
+    getBatterAppearanceIds(lineup: string[], substitutions: any[]): string[] {
+
+        let lineupSubstitutions = substitutions
+            .filter(substitution => substitution.lineupIndex !== undefined)
+            .sort((a, b) => (a.playIndex ?? 0) - (b.playIndex ?? 0))
+
+        let originalLineup = [...lineup]
+
+        for (let substitution of [...lineupSubstitutions].reverse()) {
+
+            if (originalLineup[substitution.lineupIndex] === substitution.inPlayerId) {
+                originalLineup[substitution.lineupIndex] = substitution.outPlayerId
+            }
+
+        }
+
+        let ids: string[] = []
+        let used = new Set<string>()
+
+        const add = (playerId?: string) => {
+
+            if (!playerId) {
+                return
+            }
+
+            if (used.has(playerId)) {
+                return
+            }
+
+            ids.push(playerId)
+            used.add(playerId)
+
+        }
+
+        for (let lineupIndex = 0; lineupIndex < originalLineup.length; lineupIndex++) {
+
+            add(originalLineup[lineupIndex])
+
+            for (let substitution of lineupSubstitutions) {
+
+                if (substitution.lineupIndex !== lineupIndex) {
+                    continue
+                }
+
+                add(substitution.inPlayerId)
+
+            }
+
+        }
+
+        return ids
+
     }
 
 }

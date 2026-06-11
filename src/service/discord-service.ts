@@ -430,6 +430,31 @@ class DiscordService {
 
     }
 
+    async notifyTeamCreated(team: Team, user: User) {
+
+        const channel = await this.discord.channels.fetch(this.playChannelId)
+
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('Play channel not found or is not a text channel')
+        }
+
+        const display = await this.getDiscordDisplay(channel, {
+            team,
+            user
+        })
+
+        const teamUrl = `${this.web}/t/${team._id}`
+
+        const message = await channel.send({
+            content:
+                `🎉 Welcome ${display} to the EBL!\n\n` +
+                `⚾ A new franchise has joined the league. Make sure to say hello and check out their team.\n\n` +
+                `🏟️ [View Team](${teamUrl})`
+        })
+
+        await message.react("👋")
+
+    }
 
     async getDiscordDisplay(channel: TextChannel, info: { team: Team, user: User }): Promise<string> {
 
