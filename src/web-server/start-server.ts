@@ -1057,6 +1057,7 @@ let startWebServer = async () => {
 
       let rankOneLeague
       let league:League
+      
       if (rank > 0) {
         league = await leagueService.getByRank(rank)
       }
@@ -1788,8 +1789,11 @@ let startWebServer = async () => {
 
       let startDate = dayjs(req.params.startDate).toDate()
 
-      await refreshUniverse()
+      if (!team) {
+        throw new Error("No team found with that id.")
+      }
 
+      await refreshUniverse()
 
       let season: Season = await seasonService.getByDate(startDate)
       let seasonInfo:SeasonInfo = await seasonService.getSeasonInfo(season, universe.currentDate)
@@ -1797,7 +1801,7 @@ let startWebServer = async () => {
       let user:User 
 
 
-      if (team.userId) {
+      if (team?.userId) {
           user = await userService.get(team.userId)
       }
 

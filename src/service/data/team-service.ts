@@ -388,16 +388,16 @@ n
         }
     }
 
-    getTeamStandingsViewModel(tls:TeamLeagueSeason, rank:number) {
+    getTeamStandingsViewModel(tls:TeamLeagueSeason, team:Team, rank:number) {
     
         return {
-            _id: tls.team._id,
+            _id: team._id,
             logoId: tls.logoId,
-            name: tls.team.name,
-            abbrev: tls.team.abbrev,
+            name: team.name,
+            abbrev: team.abbrev,
             city: tls.city,
             owner: {
-                _id: tls.team.userId
+                _id: team.userId
             },
             seasonRating: tls.seasonRating,
             longTermRating: tls.longTermRating,
@@ -421,17 +421,22 @@ n
 
         let leagueVm 
 
-        let teams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listQualifyingTeamsByLeagueAndSeason(league, season, currentDate, options)
+        let qualifiyingTeams: TeamLeagueSeason[] = await this.teamLeagueSeasonService.listQualifyingTeamsByLeagueAndSeason(league, season, currentDate, options)
         let nonQualifyingTeams:TeamLeagueSeason[] = await this.teamLeagueSeasonService.listNonQualifyingTeamsByLeagueAndSeason(league, season, currentDate,  { limit: 25, offset: 0 })
 
-        let viewModels = teams.map((t, index) => {
-            t = t.get({ plain: true })
-            return this.getTeamStandingsViewModel(t, index + 1)
+        let teamIds = [].concat(qualifiyingTeams.map( t => t.teamId)).concat(nonQualifyingTeams.map( t => t.teamId))
+
+
+        let allTeams:Team[] = await this.getByIds(teamIds, options)
+
+        let viewModels = qualifiyingTeams.map((tls, index) => {
+            let team = allTeams.find( t => t._id == tls.teamId)
+            return this.getTeamStandingsViewModel(tls, team, index + 1)
         })
 
-        let nonQualifyingViewModels = nonQualifyingTeams.map((t, index) => {
-            t = t.get({ plain: true })
-            return this.getTeamStandingsViewModel(t, index + 1)
+        let nonQualifyingViewModels = nonQualifyingTeams.map((tls, index) => {
+            let team = allTeams.find( t => t._id == tls.teamId)
+            return this.getTeamStandingsViewModel(tls, team, index + 1)
         })
 
         leagueVm = {

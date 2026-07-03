@@ -235,11 +235,7 @@
                   <td class="image">
                     <span class="icon">
                       <img src="/player/image/${row.player._id}" />
-                      ${row.player.overallRating?.before ? $h`
-                        <span class="badge ${playerWebService.getRatingBadgeColor(row.player.overallRating.before)}">
-                          ${playerWebService.ratingToGrade(row.player.overallRating.before)}
-                        </span>
-                      ` : $h` `}
+
                     </span>
                   </td>
 
@@ -295,11 +291,7 @@
                   <td class="image">
                     <span class="icon">
                       <img src="/player/image/${row.player._id}" />
-                      ${row.player.overallRating?.before ? $h`
-                        <span class="badge ${playerWebService.getRatingBadgeColor(row.player.overallRating?.before)}">
-                          ${playerWebService.ratingToGrade(row.player.overallRating.before)}
-                        </span>
-                      ` : $h` `}
+
                     </span>
                   </td>
 

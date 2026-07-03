@@ -53,10 +53,11 @@ class TeamQueue extends Model {
 
 }
 
-interface TeamQueueMatchup { 
-    team1: TeamQueue, 
-    team2: TeamQueue, 
-    ratingDiff: number 
+interface TeamQueueMatchup {
+    team1: TeamQueue
+    team2: TeamQueue
+    ratingDiff: number
+    rewardAsCloseMatchup: boolean
 }
 
 export {

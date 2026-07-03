@@ -9,14 +9,7 @@
 
             <${StartDate} />
 
-            <div class="block small-only">
-                <p class="segmented">
-                    <a href="${$f7.views.main.router.currentRoute.path}?rank=1&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 1 ? 'tab-link-active' : ''}" >League Leaders</a>
-                    <a href="${$f7.views.main.router.currentRoute.path}?rank=0&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 0 ? 'tab-link-active' : ''}">Shop for Free Agents</a>
-                </p>
-            </div>
-
-            <div class="block large-only-block small-tabs">
+            <div class="block">
                 <p class="segmented">
                     <a href="${$f7.views.main.router.currentRoute.path}?rank=1&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 1 ? 'tab-link-active' : ''}" >League Leaders</a>
                     <a href="${$f7.views.main.router.currentRoute.path}?rank=0&startDate=${universeWebService.getStartDate()}" class="button button-outline tab-link ${rank == 0 ? 'tab-link-active' : ''}">Shop for Free Agents</a>

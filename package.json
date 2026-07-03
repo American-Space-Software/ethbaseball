@@ -28,7 +28,11 @@
     "start": "node --env-file=.env.start.production  dist/index.js",
     "start:dev": "node --env-file=.env.start.development --max-old-space-size=4096 dist/index.js",
     "start:sepolia": "node --env-file=.env.start.sepolia --max-old-space-size=4096 dist/index.js",
-    
+
+    "docs:dev": "node --env-file=.env.engine.development --loader ts-node/esm docs/index.ts dev",
+    "docs:publish": "node --env-file=.env.engine.production --loader ts-node/esm docs/index.ts",
+    "docs:delete": "node --env-file=.env.engine.production --loader ts-node/esm docs/index.ts delete",
+
     "create-car": "node --env-file=.env.start.production  dist/create-car.js",
     "create-car:dev": "node --env-file=.env.start.development  dist/create-car.js",
 
@@ -52,6 +56,8 @@
   },
   "homepage": "https://github.com/American-Space-Software/ethbaseball#readme",
   "devDependencies": {
+    
+    "@atproto/api": "^0.13.31",
     "crypto-random-bigint": "2.1.1",
     "ollama": "0.5.16",
     "openai": "4.95.0",

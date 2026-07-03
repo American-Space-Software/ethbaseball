@@ -74,15 +74,23 @@ class TeamQueueService {
 
     async processQueuePairs( league: League, options?: any ): Promise<TeamQueueMatchup[]> {
 
-        const pairs: { team1: TeamQueue, team2: TeamQueue, ratingDiff: number }[] = []
+        const pairs: TeamQueueMatchup[] = []
         const queue = await this.teamQueueRepository.listByLeagueTeamRatingDesc(league, 10000, 0, options)
 
         const used = new Set<string>()
+        const forceMatchAfterMs = 60 * 60 * 1000
+        const now = new Date().getTime()
 
         const isUsed = (tq: TeamQueue) => used.has(tq._id)
 
         const ratingDiff = (a: TeamQueue, b: TeamQueue) =>
             Math.abs(a.teamRating - b.teamRating)
+
+        const queuedMs = (tq: TeamQueue) =>
+            now - new Date(tq.dateCreated).getTime()
+
+        const isExpired = (tq: TeamQueue) =>
+            queuedMs(tq) >= forceMatchAfterMs
 
         const isCompatible = (a: TeamQueue, b: TeamQueue) => {
             const diff = ratingDiff(a, b)
@@ -92,26 +100,40 @@ class TeamQueueService {
             return diff <= aMax && diff <= bMax
         }
 
+        const canForceMatch = (a: TeamQueue, b: TeamQueue) =>
+            isExpired(a) || isExpired(b)
+
+        const canMatch = (a: TeamQueue, b: TeamQueue) =>
+            isCompatible(a, b) || canForceMatch(a, b)
+
         for (let i = 0; i < queue.length; i++) {
             const team1 = queue[i]
             if (isUsed(team1)) continue
 
             let best: TeamQueue = null
             let bestDiff = Infinity
+            let bestIsCloseMatchup = false
 
             for (let j = i + 1; j < queue.length; j++) {
                 const team2 = queue[j]
                 if (isUsed(team2)) continue
 
                 const diff = ratingDiff(team1, team2)
+                const compatible = isCompatible(team1, team2)
+                const forceMatched = canForceMatch(team1, team2)
 
-                // Because queue is sorted by rating, gaps only increase
-                if (diff > bestDiff) break
-
-                if (!isCompatible(team1, team2)) continue
+                if (!compatible && !forceMatched) {
+                    if (!forceMatched && diff > bestDiff) break
+                    continue
+                }
 
                 best = team2
                 bestDiff = diff
+
+                // Forced matches count as close for rewards.
+                bestIsCloseMatchup = compatible || forceMatched
+
+                break
             }
 
             if (!best) continue
@@ -119,7 +141,8 @@ class TeamQueueService {
             pairs.push({
                 team1,
                 team2: best,
-                ratingDiff: bestDiff
+                ratingDiff: bestDiff,
+                rewardAsCloseMatchup: bestIsCloseMatchup
             })
 
             used.add(team1._id)
@@ -128,9 +151,6 @@ class TeamQueueService {
 
         return pairs
     }
-
-
-
 
     private getEffectiveMaxRatingDiff(teamQueue: TeamQueue): number {
 

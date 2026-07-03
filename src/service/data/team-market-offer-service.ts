@@ -132,7 +132,8 @@ class TeamMarketOfferService {
 
             salePlayer: {
                 _id: salePlayer?._id ?? tmo.salePlayerId,
-                name: salePlayer ? salePlayer?.fullName : ""
+                name: salePlayer ? salePlayer?.fullName : "",
+                overallRating: salePlayer ? salePlayer.overallRating : undefined
             },
 
             diamondAmount: tmo.diamondAmount,
@@ -178,6 +179,7 @@ interface TeamMarketOfferViewModel {
     salePlayer:{
         _id:string
         name:string
+        overallRating:number
     }
 
     diamondAmount:string

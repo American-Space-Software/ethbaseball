@@ -298,8 +298,8 @@ class LadderService {
             const team1GapDown = Math.max(0, pair.team1.teamRating - pair.team2.teamRating)
             const team2GapDown = Math.max(0, pair.team2.teamRating - pair.team1.teamRating)
 
-            const team1RewardAmount = this.teamService.calculateProjectedReward(baseReward, team1GapDown)
-            const team2RewardAmount = this.teamService.calculateProjectedReward(baseReward, team2GapDown)
+            const team1RewardAmount = pair.rewardAsCloseMatchup ? baseReward : this.teamService.calculateProjectedReward(baseReward, team1GapDown)
+            const team2RewardAmount = pair.rewardAsCloseMatchup  ? baseReward : this.teamService.calculateProjectedReward(baseReward, team2GapDown)
 
             //Create game
             let game:Game = await this.createGame(home, away, league, season, currentDate, options)

@@ -222,11 +222,11 @@
       "lineDrive": 24
     },
     "powerRollInput": {
-      "out": 693,
-      "singles": 200,
-      "doubles": 59,
+      "out": 674,
+      "singles": 212,
+      "doubles": 63,
       "triples": 5,
-      "hr": 43
+      "hr": 46
     },
     "evLaModel": {
       "groundBall": {
@@ -615,26 +615,26 @@
   },
   "fielderChance": {
     "vsR": {
-      "pitcher": 31,
-      "catcher": 8,
-      "first": 8,
-      "second": 9,
-      "third": 9,
-      "shortstop": 8,
-      "leftField": 9,
-      "centerField": 9,
-      "rightField": 9
+      "pitcher": 4,
+      "catcher": 1,
+      "first": 7,
+      "second": 12,
+      "third": 11,
+      "shortstop": 12,
+      "leftField": 17,
+      "centerField": 19,
+      "rightField": 17
     },
     "vsL": {
-      "pitcher": 31,
-      "catcher": 8,
-      "first": 8,
-      "second": 9,
-      "third": 9,
-      "shortstop": 8,
-      "leftField": 9,
-      "centerField": 9,
-      "rightField": 9
+      "pitcher": 4,
+      "catcher": 1,
+      "first": 7,
+      "second": 12,
+      "third": 11,
+      "shortstop": 12,
+      "leftField": 17,
+      "centerField": 19,
+      "rightField": 17
     },
     "shallowDeep": {
       "shallow": 20,
@@ -656,7 +656,7 @@
     "hbpPercent": 0.011
   },
   "team": {
-    "runsPerGame": 4.46,
+    "runsPerGame": 4.53,
     "hitsPerGame": 8.42,
     "homeRunsPerGame": 1.18,
     "bbPerGame": 3.22,
@@ -769,6 +769,8 @@
       "starts": 32,
       "battersFaced": 1000,
       "outs": 704,
+      "runsAllowed": 118,
+      "earnedRunsAllowed": 109,
       "hitsAllowed": 220,
       "doublesAllowed": 42,
       "triplesAllowed": 3,
@@ -1028,7 +1030,9 @@
           "homeRunsAllowed": 14,
           "bbAllowed": 41,
           "so": 97,
-          "hbpAllowed": 4
+          "hbpAllowed": 4,
+          "runsAllowed": 48,
+          "earnedRunsAllowed": 44
         },
         "vsR": {
           "battersFaced": 560,
@@ -1039,21 +1043,23 @@
           "homeRunsAllowed": 17,
           "bbAllowed": 43,
           "so": 125,
-          "hbpAllowed": 6
+          "hbpAllowed": 6,
+          "runsAllowed": 59,
+          "earnedRunsAllowed": 54
         }
       }
     }
   },
   "pitchEnvironmentTuning": {
-    "_id": "7c995983-5c3e-4f48-9b13-5fcc2bede41a",
+    "_id": "6db13a48-2682-4a3f-bcf4-87f31107e415",
     "tuning": {
       "contactQuality": {
         "evScale": 0,
         "laScale": 0,
         "distanceScale": 0,
-        "outOutcomeScale": -0.018,
-        "doubleOutcomeScale": 0.02,
-        "tripleOutcomeScale": 0.02,
+        "outOutcomeScale": 0,
+        "doubleOutcomeScale": 0,
+        "tripleOutcomeScale": 0,
         "homeRunOutcomeScale": 0
       },
       "swing": {
@@ -1061,15 +1067,15 @@
         "pitchQualityChaseSwingEffect": 0,
         "disciplineZoneSwingEffect": 0,
         "disciplineChaseSwingEffect": 0,
-        "walkRateScale": 0.02167705876936902
+        "walkRateScale": 0.01823550568344432
       },
       "contact": {
         "pitchQualityContactEffect": 0,
         "contactSkillEffect": 0
       },
       "running": {
-        "stealAttemptAggressionScale": 0.35,
-        "advancementAggressionScale": 0.02
+        "stealAttemptAggressionScale": 0.27966388292338284,
+        "advancementAggressionScale": 0
       },
       "meta": {
         "fullPitchQualityBonus": 0,

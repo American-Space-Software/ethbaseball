@@ -65,6 +65,7 @@ interface RunnerThrowCommand {
     defense:TeamInfo
     offense:TeamInfo
     throwFrom:GamePlayer
+    throwTo:GamePlayer
     chanceRunnerSafe:number
     isForce:boolean
     isFieldersChoice:boolean
@@ -1233,6 +1234,8 @@ interface PitchEnvironmentTarget {
 
             battersFaced: number
             outs: number
+            runsAllowed:number
+            earnedRunsAllowed:number
 
             hitsAllowed: number
             doublesAllowed: number
@@ -1348,45 +1351,37 @@ interface PitchEnvironmentTuning {
 
     }
 
-    ratingTuning?: {
-        hitting: {
-            overallPlateDisciplineScale: number
-            splitPlateDisciplineScale: number
+}
 
-            overallContactScale: number
-            splitContactScale: number
-            contactSkillScale: number
-            contactDecisionScale: number
-            contactEvScale: number
+interface RatingTuning {
+    _id: string
 
-            overallGapPowerScale: number
-            splitGapPowerScale: number
-
-            overallHrPowerScale: number
-            splitHrPowerScale: number
-            hrEvScale: number
-        }
-
-        pitching: {
-            minFastball: number
-            maxFastball: number
-            veloScale: number
-            kScale: number
-            baselinePowerScale: number
-
-            overallControlScale: number
-            splitControlScale: number
-            strikeoutControlHelpScale: number
-
-            overallMovementScale: number
-            splitMovementScale: number
-            arsenalMovementScale: number
-            contactSuppressionScale: number
-            missBatScale: number
-        }
+    hitting: {
+        contactScale: number
+        plateDisciplineScale: number
+        gapPowerScale: number
+        homerunPowerScale: number
+        splitScale: number
     }
 
+    pitching: {
+        powerScale: number
+        controlScale: number
+        movementScale: number
+        splitScale: number
+    }
+
+    running: {
+        speedScale: number
+        stealsScale: number
+    }
+
+    fielding: {
+        defenseScale: number
+        armScale: number
+    }
 }
+
 
 interface InZoneByCount {
     balls:number
@@ -1433,8 +1428,7 @@ interface PlayerFromStatsCommand {
     splits: PlayerSplitsStats
 
     pitchEnvironmentTarget:PitchEnvironmentTarget
-    playerImportBaseline: PlayerImportBaseline
-    leagueImportBaseline: PlayerImportBaseline
+
 }
 
 interface PlayerHittingStats {
@@ -1572,6 +1566,9 @@ interface PlayerPitchingSplitStats {
     battersFaced: number
     outs: number
 
+    runsAllowed: number
+    earnedRunsAllowed: number
+
     hitsAllowed: number
     doublesAllowed: number
     triplesAllowed: number
@@ -1589,43 +1586,7 @@ interface PlayerPitchingSplitStats {
     ballsInPlayAllowed?: number
 }
 
-interface PlayerImportBaseline {
-    hitting: {
-        plateDisciplineBBPercent: number
-        contactSOPercent: number
-        gapPowerPercent: number
-        homerunPowerPercent: number
 
-        speedExtraBaseTakenPercent: number
-        stealsAttemptPercent: number
-        stealsSuccessPercent: number
-
-        defenseErrorPercent: number
-        defenseFieldingPlayPercent: number
-        armThrowOutPercent: number
-        defenseDoublePlayPercent: number
-
-        catcherCaughtStealingPercent?: number
-        catcherPassedBallPercent?: number
-        outfieldAssistPercent?: number
-
-        contactProfile: {
-            groundball: number
-            flyBall: number
-            lineDrive: number
-        }
-    }
-    pitching: {
-        powerSOPercent: number
-        controlBBPercent: number
-        movementHRPercent: number
-        contactProfile: {
-            groundball: number
-            flyBall: number
-            lineDrive: number
-        }
-    }
-}
 
 interface ExitVelocityStat {
     count: number
@@ -1906,6 +1867,9 @@ interface PlayerImportRaw {
         battersFaced: number
         outs: number
 
+        runsAllowed: number
+        earnedRunsAllowed: number
+
         hitsAllowed: number
         doublesAllowed: number
         triplesAllowed: number
@@ -2038,7 +2002,6 @@ export {
     PlayerSplitsStats,
     PlayerHittingSplitStats,
     PlayerPitchingSplitStats,
-    PlayerImportBaseline,
     PlayerImportRaw,
     PitchTypeMovementStat,
     ExitVelocityStat,
@@ -2055,5 +2018,6 @@ export {
     BattedBallXyBucketRaw,
     BattedBallXyByTrajectoryBucketRaw,
     BattedBallXyByTrajectoryEvLaBucketRaw,
-    GameSubstitution
+    GameSubstitution,
+    RatingTuning
 }

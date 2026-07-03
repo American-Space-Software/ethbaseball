@@ -13,33 +13,61 @@
           </p>
         </div>
 
+        <table class="data-table players">
+          <thead>
+            <tr>
+              <th class="image"></th>
+              <th class="name label-cell">Name</th>
+              <th>Seller</th>
+              <th class="numeric-cell">Cost</th>
 
-        ${offers.length == 0 ? $h`
-          <div class="block block-strong text-align-center">
-            No active sales listings.
-          </div>
-        ` : $h`
-          <div class="list media-list list-outline-ios list-strong-ios list-dividers-ios">
-            <ul>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${offers.length > 0 ? $h`
+
               ${offers.map((offer) => $h`
-                <li>
-                  <a class="item-link item-content" href="/p/${offer.salePlayer._id}">
-                    <div class="item-media">🔷</div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title">${offer.salePlayer.name}</div>
-                        <div class="item-after">${universeWebService.displayDiamonds(offer.diamondAmount)}</div>
-                      </div>
-                      <div class="item-subtitle">
-                        <a href="${universeWebService.fullLink(`/t/${offer.sellerPaymentTeam._id}`)}">${offer.sellerPaymentTeam.name}</a>
-                      </div>
-                    </div>
-                  </a>
-                </li>
+                <tr>
+                  <td class="image">
+                    <span class="icon">
+                      <img src="/player/image/${offer.salePlayer._id}" />
+                      <span class="badge ${playerWebService.getRatingBadgeColor(offer.salePlayer.overallRating)} overall-badge">
+                        ${playerWebService.ratingToGrade(offer.salePlayer.overallRating)}
+                      </span>
+                    </span>
+                  </td>
+
+                  <td class="name">
+                    <a href="${universeWebService.startDateLink(`/p/${offer.salePlayer._id}`)}">
+                      ${offer.salePlayer.fullName || offer.salePlayer.name}
+                    </a><br />
+                    <span class="position">${offer.salePlayer.primaryPosition}</span>
+                  </td>
+
+
+
+
+                  <td class="seller">
+                    <a href="${universeWebService.startDateLink(`/t/${offer.sellerPaymentTeam._id}`)}">
+                      ${offer.sellerPaymentTeam.name}
+                    </a>
+                  </td>
+
+                  <td class="numeric-cell">
+                    ${universeWebService.displayDiamonds(offer.diamondAmount)}
+                  </td>
+
+                </tr>
               `)}
-            </ul>
-          </div>
-        `}
+
+            ` : $h`
+              <tr>
+                <td colspan="5">No active sales listings.</td>
+              </tr>
+            `}
+          </tbody>
+        </table>
 
       </div>
 
@@ -61,15 +89,22 @@
 
   import { ContainerService } from "../../../service/container-service"
   import { UniverseWebService } from "../../service/universe-web-service.ts"
+  import { PlayerWebService } from "../../service/player-web-service.ts"
 
-  export default (props, { $, $on, $f7, $update }) => {
+  export default (props, { $, $on, $f7, $h, $update }) => {
 
     let env = ContainerService.getInstance("env")()
     let eventTarget = ContainerService.getInstance("eventTarget")
+    let playerWebService = ContainerService.getInstance(PlayerWebService)
     let universeWebService = ContainerService.getInstance(UniverseWebService)
 
     let authInfo = props.authInfo
     let offers = props.offers
+
+    const badge = (rating) => {
+      if (rating == null) return ""
+      return $h`<span class="badge ${playerWebService.getRatingBadgeColor(rating)}">${playerWebService.ratingToGrade(rating)}</span>`
+    }
 
     $on('pageBeforeIn', async (e) => {
 

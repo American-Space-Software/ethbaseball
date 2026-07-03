@@ -877,6 +877,7 @@ class PlayerService {
             }
 
             if (t) {
+                
                 vm.team = {
                     name: t.team.name,
                     cityName: t.city?.name,
