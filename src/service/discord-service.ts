@@ -24,7 +24,7 @@ import { TeamLeagueSeason } from 'src/dto/team-league-season.js';
 import { PlayerLeagueSeason } from 'src/dto/player-league-season.js';
 import { Season } from '../dto/season.js';
 import { League } from '../dto/league.js';
-import { RotationPitcher } from 'baseball-sim-engine/service/interfaces.js';
+import { RotationPitcher } from 'baseball-sim-engine';
 import { Game } from '../dto/game.js';
 
 

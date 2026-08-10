@@ -11,11 +11,11 @@ import { TeamMarketOffer } from "../src/dto/team-market-offer.js"
 import { Team } from "../src/dto/team.js"
 import { User } from "../src/dto/user.js"
 import { Player } from "../src/dto/player.js"
-import { Position } from "../src/baseball-sim-engine/service/enums.js"
+import { Position } from "baseball-sim-engine"
 import { TeamMarketOfferStatus } from "../src/service/enums.js"
 
 import { DEFAULT_MAX_PITCH_COUNT, PersonalityType } from "../src/service/enums.js"
-import { Handedness, PitchType } from "../src/baseball-sim-engine/index.js"
+import { Handedness, PitchType } from "baseball-sim-engine"
 import { PlayerService } from "../src/service/data/player-service.js"
 
 let id1:string

@@ -1,5 +1,5 @@
 import { Table, Column, Model, HasMany, CreatedAt, UpdatedAt, DataType, PrimaryKey, Unique, AllowNull } from 'sequelize-typescript'
-import { PitchEnvironmentTarget } from '../baseball-sim-engine/service/interfaces.js'
+import type { PitchEnvironmentTarget } from 'baseball-sim-engine'
 
 
 

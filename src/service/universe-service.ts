@@ -36,7 +36,7 @@ import dayjs from "dayjs";
 
 import { FinanceService } from "./finance-service.js";
 import { FinanceSeason, GLICKO_SETTINGS } from "./enums.js";
-import { Rolls }  from '../baseball-sim-engine/index.js';
+import { Rolls }  from 'baseball-sim-engine';
 import { TeamTransactionService } from "./data/team-transaction-service.js";
 import { UserService } from "./data/user-service.js";
 import { User } from "../dto/user.js";

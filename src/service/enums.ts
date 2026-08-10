@@ -1,6 +1,6 @@
 
-import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, Handedness, HitResultCount, HitterStatLine, HittingRatings, HomeAway, LineupPlayer, Pitch, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RotationPitcher, RunnerResult, Score }  from '../baseball-sim-engine/index.js';
-import { Colors, PitchingRole } from '../baseball-sim-engine/service/interfaces.js';
+import { BaseResult, ContactProfile, GamePlayer, GamePlayerBio, Handedness, HitResultCount, HitterStatLine, HittingRatings, HomeAway, LineupPlayer, Pitch, PitcherStatLine, PitchRatings, PitchResultCount, PitchType, Play, PlayResult, Position, RotationPitcher, RunnerResult, Score }  from 'baseball-sim-engine';
+import { Colors, PitchingRole } from 'baseball-sim-engine';
 import { City } from '../dto/city.js';
 import { Stadium } from '../dto/stadium.js';
 

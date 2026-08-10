@@ -2,9 +2,9 @@ import { inject, injectable } from "inversify"
 import { StatService } from "../stat-service.js";
 import { PlayerSharedService } from "./player-shared-service.js";
 
-import { StartGameCommand, Game, RotationPitcher, TeamInfo, Player, Play, LastPlay, GamePlayerBio, UpcomingMatchup, GamePlayer, ThrowRoll, RunnerResult, RunnerEvent, PlayResult, DefensiveCredit, ShallowDeep, Contact, Score, HalfInning } from '../../baseball-sim-engine/index.js';
+import { StartGameCommand, Game, RotationPitcher, TeamInfo, Player, Play, LastPlay, GamePlayerBio, UpcomingMatchup, GamePlayer, ThrowRoll, RunnerResult, RunnerEvent, PlayResult, DefensiveCredit, ShallowDeep, Contact, Score, HalfInning } from 'baseball-sim-engine';
 
-import { simService } from '../../baseball-sim-engine/index.js';
+import { simService } from 'baseball-sim-engine';
 
 @injectable()
 class SimSharedService {

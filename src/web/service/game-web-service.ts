@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { SocketWebService } from "./socket-web-service.js";
 
 import { GameSharedService } from "../../service/shared/game-shared-service.js";
-import { Handedness, Play, GamePlayer, Pitch, PitchCall } from '../../baseball-sim-engine/index.js';
+import { Handedness, Play, GamePlayer, Pitch, PitchCall } from 'baseball-sim-engine';
 
 
 @injectable()

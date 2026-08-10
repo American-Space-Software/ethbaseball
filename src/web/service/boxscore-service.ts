@@ -1,5 +1,5 @@
 import { injectable } from "inversify"
-import { GameSubstitution } from "../../baseball-sim-engine/service/interfaces.js"
+import type { GameSubstitution } from "baseball-sim-engine"
 
 interface BoxscorePlayerRow {
     player: any

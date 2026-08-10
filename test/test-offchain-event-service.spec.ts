@@ -15,7 +15,7 @@ import { League } from "../src/dto/league.js"
 import { Owner } from "../src/dto/owner.js"
 
 import { ContractType, DEFAULT_MAX_PITCH_COUNT, OffChainEventSource, PersonalityType } from "../src/service/enums.js"
-import { Handedness, PitchType, Position } from "../src/baseball-sim-engine/index.js"
+import { Handedness, PitchType, Position } from "baseball-sim-engine"
 
 import { v4 as uuidv4 } from "uuid"
 

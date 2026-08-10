@@ -26,8 +26,8 @@ import { TeamQueue } from "../src/dto/team-queue.js"
 import { User } from "../src/dto/user.js"
 
 import { ContractType, DEFAULT_DROP_PLAYER_DIAMONDS, DEFAULT_MAX_PITCH_COUNT, DEFAULT_ROSTER_CONSTRAINTS, PersonalityType, TeamMarketOfferStatus } from "../src/service/enums.js"
-import { Handedness, PitchType, Position } from "../src/baseball-sim-engine/index.js"
-import { PitchingRoleType } from "../src/baseball-sim-engine/service/enums.js"
+import { Handedness, PitchType, Position } from "baseball-sim-engine"
+import { PitchingRoleType } from "baseball-sim-engine"
 import { TeamMarketOffer } from "../src/dto/team-market-offer.js"
 
 describe("TeamTransactionService", async () => {

@@ -1,5 +1,5 @@
 import { Table, Column, Model, PrimaryKey, ForeignKey, AllowNull, DataType, BelongsTo } from 'sequelize-typescript'
-import { HitterStatLine } from '../baseball-sim-engine/index.js';
+import { HitterStatLine } from 'baseball-sim-engine';
 
 @Table({
     tableName: 'game_hit_result',

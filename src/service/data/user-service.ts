@@ -15,7 +15,7 @@ import { TeamLeagueSeason } from "../../dto/team-league-season.js";
 import { v4 as uuidv4 } from 'uuid';
 import { ethers } from "ethers";
 import { PlayerLeagueSeasonService } from "./player-league-season-service.js";
-import { Position } from "../../baseball-sim-engine/index.js";
+import { Position } from "baseball-sim-engine";
 import { TeamMarketOfferService } from "./team-market-offer-service.js";
 
 

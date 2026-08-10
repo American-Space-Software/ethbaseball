@@ -6,8 +6,7 @@ import { BelongsToManyAddAssociationMixin, BelongsToManyRemoveAssociationMixin }
 import { Stadium } from './stadium.js';
 import { League } from './league.js';
 import { Season } from './season.js';
-import { Count, HalfInning, PitchEnvironmentTarget, Score } from '../baseball-sim-engine/index.js';
-import { GameSubstitution } from '../baseball-sim-engine/service/interfaces.js';
+import type { Count, HalfInning, PitchEnvironmentTarget, Score, GameSubstitution } from 'baseball-sim-engine';
 
 
 
@@ -77,6 +76,14 @@ class Game extends Model {
 
     @Column(DataType.BOOLEAN)
     declare isFinished:boolean
+
+    @AllowNull(true)
+    @Column({
+        type: DataType.BOOLEAN,
+        defaultValue: false
+    })
+    declare useDH: boolean
+
 
     @ForeignKey(() => Season)
     @AllowNull(false)	

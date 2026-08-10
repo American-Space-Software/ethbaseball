@@ -6,7 +6,7 @@ import { Player } from "../../dto/player.js"
 import dayjs from "dayjs"
 import { Game } from "../../dto/game.js"
 import { Season } from "../../dto/season.js"
-import { PitchResultCount }  from '../../baseball-sim-engine/index.js';
+import { PitchResultCount }  from 'baseball-sim-engine';
 
 const SUM_QUERY_FIELDS = `
     SUM(atBats) atBats,

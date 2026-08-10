@@ -1,7 +1,7 @@
 import { Table, Column, Model, DataType, AllowNull, Is, Length, ForeignKey, BelongsTo } from 'sequelize-typescript'
 import { Owner } from './owner.js'
 import { HittingProfile,  PersonalityType,  PitchingProfile,  PlayerStatLines } from '../service/enums.js'
-import { Handedness, HittingRatings, PitchRatings, Position } from '../baseball-sim-engine/index.js';
+import type { Handedness, HittingRatings, PitchRatings, Position } from 'baseball-sim-engine';
 
 @Table({
     tableName: 'player',

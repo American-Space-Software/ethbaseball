@@ -36,7 +36,7 @@ import { GamePitchResultRepository } from "../repository/game-pitch-result-repos
 import { ethers } from "ethers"
 import { TeamQueueService } from "./data/team-queue-service.js"
 import { TeamQueueMatchup } from "../dto/team-queue.js"
-import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher, Player as SimPlayer, Lineup as SimLineup, PitchingRoleType }  from '../baseball-sim-engine/index.js';
+import { GamePlayer, HitResultCount, PitchResultCount, Position, Rolls, RotationPitcher, Player as SimPlayer, Lineup as SimLineup, PitchingRoleType }  from 'baseball-sim-engine';
 import { SimSharedService, WPAReward } from "./shared/sim-shared-service.js"
 import { PlayerSharedService } from "./shared/player-shared-service.js"
 import { NotificationService } from "./data/notification-service.js"
@@ -391,6 +391,7 @@ class LadderService {
         const awayLineup = this.translateLineupToSimLineup(awayBundle.tls.lineups[0], awayBundle.startingPitcher) 
         const homeLineup = this.translateLineupToSimLineup(homeBundle.tls.lineups[0], homeBundle.startingPitcher) 
 
+        const useDH = false
 
         this.simSharedService.startGame({
 
@@ -414,6 +415,8 @@ class LadderService {
 
             pitchEnvironmentTarget: league.pitchEnvironmentTarget,
 
+            useDH: useDH,
+
             date
 
         })
@@ -424,6 +427,7 @@ class LadderService {
         game.changed('startDate', true)
         game.changed('isStarted', true)
         game.changed('substitutions', true)
+        game.changed('useDH', true)
 
         await this.gameService.put(game, options)
 

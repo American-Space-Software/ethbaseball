@@ -29,7 +29,7 @@ import { LineupService } from "../lineup-service.js";
 import { TeamQueueService } from "./team-queue-service.js";
 import { StatService } from "../stat-service.js";
 import { TeamSharedService } from "../shared/team-shared-service.js";
-import { Colors, PitchingRoleType, Position, RotationPitcher } from '../../baseball-sim-engine/index.js';
+import { Colors, PitchingRoleType, Position, RotationPitcher } from 'baseball-sim-engine';
 import { SeasonService } from "./season-service.js";
 
 

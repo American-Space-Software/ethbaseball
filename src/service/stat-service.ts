@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { HitResultCount, HitterStatLine, PitcherStatLine, PitchResultCount, StatService as SimStatService }  from '../baseball-sim-engine/index.js';
+import { HitResultCount, HitterStatLine, PitcherStatLine, PitchResultCount, StatService as SimStatService }  from 'baseball-sim-engine';
 
 
 

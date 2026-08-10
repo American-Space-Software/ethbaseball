@@ -56,7 +56,7 @@ import http from 'http'
 import { SocketService } from '../service/socket-service.js'
 import { LadderService } from '../service/ladder-service.js'
 import { TeamQueueService } from '../service/data/team-queue-service.js'
-import { PitchingRoleType, Position, RotationPitcher } from '../baseball-sim-engine/index.js';
+import { PitchingRoleType, Position, RotationPitcher } from 'baseball-sim-engine';
 import { TeamTransactionService } from '../service/data/team-transaction-service.js';
 import { TeamMarketOfferService } from '../service/data/team-market-offer-service.js';
 import { TeamMarketOffer } from '../dto/team-market-offer.js';

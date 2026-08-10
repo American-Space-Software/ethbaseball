@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { AtBatState, BaseResult,  PlayDescription, PlayDescriptionType} from "../enums.js";
 import { TeamSharedService } from "./team-shared-service.js";
-import { Contact, Count, GamePlayer, Handedness, MatchupHandedness, OfficialRunnerResult, Pitch, PitchCall, PitchType, PitchZone, Play, PlayResult, Position, RunnerEvent, ShallowDeep, RunnerResult, OfficialPlayResult } from '../../baseball-sim-engine/index.js';
+import { Contact, Count, GamePlayer, Handedness, MatchupHandedness, OfficialRunnerResult, Pitch, PitchCall, PitchType, PitchZone, Play, PlayResult, Position, RunnerEvent, ShallowDeep, RunnerResult, OfficialPlayResult, Game } from 'baseball-sim-engine';
 import { SimSharedService } from "./sim-shared-service.js";
 
 
@@ -13,64 +13,7 @@ class GameSharedService {
         private simSharedService:SimSharedService
     ) {}
 
-
-    // splitRewards(reward: number, pitcherId: string, defensiveCredits: DefensiveCredit[]): { playerId: string; reward: number }[] {
-
-    //     const rewardsDistribution: { playerId: string; reward: number }[] = []
-
-    //     const addReward = (id: string, amount: number) => {
-    //         if (!id || !Number.isFinite(amount) || amount === 0) return
-    //         const existing = rewardsDistribution.find(r => r.playerId === id)
-    //         if (existing) existing.reward += amount
-    //         else rewardsDistribution.push({ playerId: id, reward: amount })
-    //     }
-
-    //     // Eligible defenders for the "equal split" pool (exclude ERROR and CAUGHT_STEALING)
-    //     const equalSplitDefenders = defensiveCredits.filter(dc =>
-    //         dc.type !== DefenseCreditType.ERROR &&
-    //         dc.type !== DefenseCreditType.CAUGHT_STEALING
-    //     )
-
-    //     let pool = reward
-
-    //     // 1) Special awards come off the top (based on the original reward)
-    //     const caughtStealing = defensiveCredits.find(dc => dc.type === DefenseCreditType.CAUGHT_STEALING)
-    //     if (caughtStealing) {
-    //         const amt = reward * 0.25
-    //         addReward(caughtStealing._id, amt)
-    //         pool -= amt
-    //     }
-
-    //     const error = defensiveCredits.find(dc => dc.type === DefenseCreditType.ERROR)
-    //     if (error) {
-    //         const amt = reward * 0.50
-    //         addReward(error._id, amt)
-    //         pool -= amt
-    //     }
-
-    //     if (pool < 0) pool = 0
-
-    //     // 2) Pitcher minimum (up to 50% of original reward, but not more than remaining pool)
-    //     const pitcherMinTarget = reward * 0.50
-    //     const pitcherMinAward = Math.min(pool, pitcherMinTarget)
-    //     addReward(pitcherId, pitcherMinAward)
-    //     pool -= pitcherMinAward
-
-    //     // 3) Split whatever remains equally among pitcher + eligible defenders
-    //     const splitIds = [pitcherId, ...equalSplitDefenders.map(dc => dc._id)]
-    //     const perPlayer = splitIds.length > 0 ? pool / splitIds.length : 0
-
-    //     for (const id of splitIds) {
-    //         addReward(id, perPlayer)
-    //     }
-
-    //     return rewardsDistribution
-    //         .filter(r => r.reward > 0)
-    //         .sort((a, b) => b.reward - a.reward)
-    // }
-
-
-    getGameRecapDescriptions(game, play: Play): PlayDescription[] {
+    getGameRecapDescriptions(game:Game, play: Play): PlayDescription[] {
 
         const descriptions: PlayDescription[] = []
 
@@ -163,7 +106,7 @@ class GameSharedService {
         return descriptions
     }
 
-    getGameStartDescriptions(game): PlayDescription[] {
+    getGameStartDescriptions(game:Game): PlayDescription[] {
 
         const descriptions: PlayDescription[] = []
 
@@ -311,7 +254,7 @@ class GameSharedService {
 
     }
 
-    getPlayDescriptions(game, play:Play) {
+    getPlayDescriptions(game:Game, play:Play) {
 
         let descriptions:PlayDescription[] = []
 
@@ -446,8 +389,6 @@ class GameSharedService {
 
         return descriptions
     }
-
-
 
     getPlayResultDescription(play: Play, hitter: GamePlayer, fielderPlayer?: GamePlayer, inPlayPitch?:Pitch) {
 
@@ -878,7 +819,7 @@ class GameSharedService {
         return [locationSentence, outcomeSentence ? outcomeSentence + "." : "", countSentence].filter(Boolean).join(" ")
     }
 
-    getRunnerRecapDescription(game, play: Play): PlayDescription[] {
+    getRunnerRecapDescription(game:Game, play: Play): PlayDescription[] {
         const descriptions: PlayDescription[] = []
         const events = play.runner?.events ?? []
         if (!events.length) return descriptions
@@ -913,7 +854,7 @@ class GameSharedService {
         return descriptions
     }
 
-    getRunnerDescription(game, runnerEvent: RunnerEvent) {
+    getRunnerDescription(game:Game, runnerEvent: RunnerEvent) {
 
         const gamePlayers = this.gamePlayers(game)
 
@@ -1076,7 +1017,6 @@ class GameSharedService {
         }
     }
 
-
     getBaseName(base:BaseResult) {
 
         switch (base) {
@@ -1130,17 +1070,17 @@ class GameSharedService {
       } 
     }    
 
-    getLastPlay(game) {
+    getLastPlay(game:Game) {
         let plays:Play[] = this.getPlays(game)
         return plays?.length > 0 ?  plays.find( p => p.result != undefined) : undefined
     }
 
-    getCurrentPlay(game) {
+    getCurrentPlay(game:Game) {
         let plays:Play[] = this.getPlays(game)
         return plays?.length > 0 ?  plays.find( p => !p.result) : undefined
     }
 
-    getPlays(game): Play[] {
+    getPlays(game:Game): Play[] {
 
         let plays: Play[] = []
 
@@ -1152,13 +1092,13 @@ class GameSharedService {
 
     }
 
-    isFirstPlayOfHalfInning(game, play: Play): boolean {
+    isFirstPlayOfHalfInning(game:Game, play: Play): boolean {
         const half = game.halfInnings?.find(h => h.num === play.inningNum && h.top === play.inningTop)
         if (!half || half.plays.length === 0) return false
         return half.plays[0].index === play.index
     }
 
-    isGameEndingPlay(game, play: Play): boolean {
+    isGameEndingPlay(game:Game, play: Play): boolean {
         return !!game.isFinished && play.index === game.playIndex
     }
 
@@ -1168,7 +1108,7 @@ class GameSharedService {
     }    
 
 
-    getLineScore(game) {
+    getLineScore(game:Game) {
 
         if (!game) return
 
@@ -1207,7 +1147,7 @@ class GameSharedService {
 
     }    
 
-    gamePlayers(game) {
+    gamePlayers(game:Game) {
 
         if (!game) return {}
 
@@ -1243,9 +1183,7 @@ class GameSharedService {
 
     }
 
-
-
-    getOffense(game) {
+    getOffense(game:Game) {
 
         if (game.isTopInning) {
             return game.away
@@ -1254,7 +1192,7 @@ class GameSharedService {
         }
     }
 
-    getDefense(game) {
+    getDefense(game:Game) {
 
         if (game.isTopInning) {
             return game.home
@@ -1263,7 +1201,7 @@ class GameSharedService {
         }
     }
 
-    getHitter(game, currentPlay) {
+    getHitter(game:Game, currentPlay) {
 
         if (game.isComplete || !currentPlay) return
 
@@ -1275,7 +1213,7 @@ class GameSharedService {
 
     }
 
-    getPitcher(game) {
+    getPitcher(game:Game) {
 
         if (game.isComplete) return
 
@@ -1287,8 +1225,7 @@ class GameSharedService {
 
     }
 
-
-    getPlayByPlay(game) {
+    getPlayByPlay(game:Game) {
 
         let halfInnings = JSON.parse(JSON.stringify(game.halfInnings))
 
@@ -1347,7 +1284,7 @@ class GameSharedService {
         }
     }
 
-    getPlayMetadata(game, play:Play) {
+    getPlayMetadata(game:Game, play:Play) {
         
         let gamePlayers = this.gamePlayers(game)
 
@@ -1402,8 +1339,7 @@ class GameSharedService {
 
     }
 
-
-    getSubstitutionDescriptions(game, play: Play): PlayDescription[] {
+    getSubstitutionDescriptions(game:Game, play: Play): PlayDescription[] {
 
         const descriptions: PlayDescription[] = []
 
@@ -1435,7 +1371,7 @@ class GameSharedService {
 
     }
 
-    getPitchingChangeDescriptions(game, substitution): PlayDescription[] {
+    getPitchingChangeDescriptions(game:Game, substitution): PlayDescription[] {
 
         const gamePlayers = this.gamePlayers(game)
 
@@ -1567,7 +1503,7 @@ class GameSharedService {
 
     }
 
-    getPinchHitterDescriptions(game, substitution): PlayDescription[] {
+    getPinchHitterDescriptions(game:Game, substitution): PlayDescription[] {
 
         const gamePlayers = this.gamePlayers(game)
 
@@ -1597,7 +1533,7 @@ class GameSharedService {
 
     }
 
-    getLineupSubstitutionDescriptions(game, substitution): PlayDescription[] {
+    getLineupSubstitutionDescriptions(game:Game, substitution): PlayDescription[] {
 
         const gamePlayers = this.gamePlayers(game)
 
@@ -1631,7 +1567,7 @@ class GameSharedService {
 
     }
 
-    getSubstitutionDescriptionSeed(game, substitution): number {
+    getSubstitutionDescriptionSeed(game:Game, substitution): number {
 
         const hash = (s: string) => {
             let h = 2166136261
@@ -1654,9 +1590,6 @@ class GameSharedService {
         ].join("|"))
 
     }
-
-
-
 
     pickSubstitutionText(list: string[], seed: number): string {
         return list[Math.abs(seed) % list.length]

@@ -7,7 +7,7 @@ import { TeamComponentService } from "../src/web/service/team-component-service.
 import { LineupService } from "../src/service/lineup-service.js"
 
 import { v4 as uuidv4 } from "uuid"
-import { PitchingRoleType, Position } from "../src/baseball-sim-engine/index.js"
+import { PitchingRoleType, Position } from "baseball-sim-engine"
 
 describe("TeamComponentService", async () => {
 

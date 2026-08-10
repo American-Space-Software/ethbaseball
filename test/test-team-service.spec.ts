@@ -20,7 +20,7 @@ import { PlayerLeagueSeason } from "../src/dto/player-league-season.js"
 import { TeamLeagueSeason } from "../src/dto/team-league-season.js"
 
 import { DEFAULT_MAX_PITCH_COUNT, PersonalityType } from "../src/service/enums.js"
-import { Handedness, PitchType, Position } from "../src/baseball-sim-engine/index.js"
+import { Handedness, PitchType, Position } from "baseball-sim-engine"
 
 import { v4 as uuidv4 } from "uuid"
 

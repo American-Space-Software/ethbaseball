@@ -4,7 +4,7 @@ import { HitterPitcher, PlayerGrade } from "../../service/enums.js";
 import { Player } from "../../dto/player.js";
 import { UniverseWebService } from "./universe-web-service.js";
 import { PlayerSharedService } from "../../service/shared/player-shared-service.js";
-import { PitchType, Position } from '../../baseball-sim-engine/index.js';
+import { PitchType, Position } from 'baseball-sim-engine';
 
 
 
